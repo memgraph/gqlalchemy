@@ -2,6 +2,7 @@
 name = "pymgogm"
 version = "0.1.0"
 description = "Memgraph dsl library"
+repository = "https://github.com/memgraph/pymgogm"
 authors = [
     "Matko Budiselic <marko.budiselic@memgraph.io>",
     "Jure Bajic <jure.bajic@memgraph.io>",
@@ -9,6 +10,8 @@ authors = [
     "Josip Matak <josip.matak@memgraph.io>",
 ]
 license = "Apache-2.0"
+readme = "README.md"
+packages = [{ include = "memgraph" }]
 
 [tool.black]
 line-length = 120
