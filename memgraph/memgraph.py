@@ -1,5 +1,6 @@
 import os
-from typing import Any, Dict, List, Iterator, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
+
 from memgraph.connection import Connection
 from memgraph.models import (
     MemgraphConstraint,
@@ -28,7 +29,12 @@ class MemgraphConstants:
 
 class Memgraph:
     def __init__(
-        self, host: str = None, port: int = None, username: str = "", password: str = "", encrypted: bool = None,
+        self,
+        host: str = None,
+        port: int = None,
+        username: str = "",
+        password: str = "",
+        encrypted: bool = None,
     ):
         self._host = host or MG_HOST
         self._port = port or MG_PORT
@@ -83,19 +89,36 @@ class Memgraph:
         query = f"DROP CONSTRAINT ON {index.to_cypher()}"
         self.execute_query(query)
 
-    def get_constraints(self) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
+    def get_constraints(
+        self,
+    ) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
         """Returns a list of all database constraints (label and label-property types)"""
         indexes: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]] = []
         for result in self.execute_and_fetch("SHOW CONSTRAINT INFO"):
             if result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.UNIQUE:
                 indexes.append(
-                    MemgraphConstraintUnique(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTIES])
+                    MemgraphConstraintUnique(
+                        result[MemgraphConstants.LABEL],
+                        result[MemgraphConstants.PROPERTIES],
+                    )
                 )
             elif result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.EXISTS:
                 indexes.append(
-                    MemgraphConstraintExists(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTIES])
+                    MemgraphConstraintExists(
+                        result[MemgraphConstants.LABEL],
+                        result[MemgraphConstants.PROPERTIES],
+                    )
                 )
         return indexes
+
+    def ensure_constraints(self, constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]) -> None:
+        """Ensures that database constraints match input constraints"""
+        old_constraints = set(self.get_constraints())
+        new_constraints = set(constraints)
+        for obsolete_constraints in old_constraints.difference(new_constraints):
+            self.drop_constraint(obsolete_constraints)
+        for missing_constraint in new_constraints.difference(old_constraints):
+            self.create_constraint(missing_constraint)
 
     def drop_database(self):
         """Drops database by removing all nodes and edges"""
