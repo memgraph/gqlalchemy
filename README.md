@@ -17,7 +17,7 @@ To install `gqlalchemy`, simply run the following command:
 pip install gqlalchemy
 ```
 
-Search Example
+Match Example
 --------------
 
 When working with the `pymgclient`, Python developer can connect to database
@@ -30,8 +30,8 @@ conn = mgclient.connect(host='127.0.0.1', port=7687)
 
 cursor = conn.cursor()
 cursor.execute("""
-MATCH (from:Node)-[:Connection]->(to:Node)
-RETURN from, to
+    MATCH (from:Node)-[:Connection]->(to:Node)
+    RETURN from, to;
 """)
 result = cursor.fetchone()
 conn.commit()
