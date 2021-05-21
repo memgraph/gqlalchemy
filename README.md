@@ -1,8 +1,12 @@
 GQLAlchemy
 =================
 
+<p align="left">
+    <a href="https://github.com/memgraph/gqlalchemy/actions" alt="Actions"> <img src="https://img.shields.io/github/workflow/status/memgraph/gqlalchemy/Build%20and%20Test" /></a>
+</p>
+
 GQLAlchemy is library developed with purpose of assisting writing and running
-queries on Memgraph DB. GQLAlchemy supports high-level connection to Memgraph
+queries on Memgraph. GQLAlchemy supports high-level connection to Memgraph
 as well as modular query builder.
 
 GQLAlchemy is built on top of Memgraph's low-level client pymgclient
@@ -51,7 +55,7 @@ Now, rewrite the exact same query by using the functionality of `gqlalchemy`.
 from gqlalchemy import Memgraph
 from gqlalchemy.build import Match
 
-db = Memgraph()
+memgraph = Memgraph()
 
 results = Match().node("Node",variable="from")
                  .to("Connection")

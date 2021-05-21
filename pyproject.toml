@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "GQLAlchemy"
-version = "0.1.0"
-description = "Memgraph dsl library"
+version = "1.0.0"
+description = "GQLAlchemy is library developed with purpose of assisting writing and running queries on Memgraph."
 repository = "https://github.com/memgraph/gqlalchemy"
 authors = [
-    "Matko Budiselic <marko.budiselic@memgraph.io>",
-    "Jure Bajic <jure.bajic@memgraph.io>",
-    "Josip Mrden <josip.mrden@memgraph.io>",
-    "Josip Matak <josip.matak@memgraph.io>",
+    "Jure Bajic <jure.bajic@memgraph.com>",
+    "Josip Mrden <josip.mrden@memgraph.com>",
+    "Josip Matak <josip.matak@memgraph.com>",
+    "Marko Budiselic <marko.budiselic@memgraph.com>",
 ]
 license = "Apache-2.0"
 readme = "README.md"
@@ -32,11 +32,11 @@ exclude = '''
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pytest = "^6.2.4"
 pymgclient = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "^21.5b1"
+pytest = "^6.2.4"
 pytest-black = "^0.3.12"
 pytest-flake8 = "^1.0.7"
 
