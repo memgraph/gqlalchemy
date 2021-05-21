@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict, List, Iterator, Optional, Union
-from memgraph.connection import Connection
-from memgraph.models import (
+from .connection import Connection
+from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
     MemgraphConstraintUnique,

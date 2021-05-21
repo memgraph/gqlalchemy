@@ -1,6 +1,6 @@
 import pytest
-from project_name.database import Memgraph, Node
-from project_name import query
+from memgraph_pymgogm import Memgraph, Node
+from query import *
 
 
 @pytest.fixture

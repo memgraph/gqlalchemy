@@ -1,5 +1,5 @@
 import pytest
-from project_name.database import Memgraph
+from memgraph_pymgogm.memgraph import Memgraph
 
 
 @pytest.fixture

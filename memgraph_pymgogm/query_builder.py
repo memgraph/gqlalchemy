@@ -2,7 +2,7 @@ import string
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .memgraph import Memgraph
-from memgraph.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 
 memgraph = Memgraph()
 

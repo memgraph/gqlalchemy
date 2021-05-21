@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator
 
 import mgclient
-from memgraph.models import Node, Relationship
+from .models import Node, Relationship
 
 __all__ = ("Connection",)
 

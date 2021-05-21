@@ -1,4 +1,4 @@
-from project_name.database import MemgraphConstraintExists, MemgraphConstraintUnique
+from memgraph_pymgogm.database import MemgraphConstraintExists, MemgraphConstraintUnique
 
 
 def test_create_constraint_exist(db):
