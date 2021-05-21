@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict, List, Iterator, Optional, Union
-from .database.connection import Connection
-from .database.models import (
+from memgraph.connection import Connection
+from memgraph.models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
@@ -9,7 +9,6 @@ from .database.models import (
 )
 
 __all__ = ("Memgraph",)
-
 
 MG_HOST = os.getenv("MG_HOST", "127.0.0.1")
 MG_PORT = int(os.getenv("MG_PORT", "7687"))
@@ -19,19 +18,17 @@ MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 
 
 class MemgraphConstants:
+    CONSTRAINT_TYPE = "constraint type"
+    EXISTS = "exists"
     LABEL = "label"
     PROPERTY = "property"
     PROPERTIES = "properties"
+    UNIQUE = "unique"
 
 
 class Memgraph:
     def __init__(
-        self,
-        host: str = None,
-        port: int = None,
-        username: str = "",
-        password: str = "",
-        encrypted: bool = None,
+        self, host: str = None, port: int = None, username: str = "", password: str = "", encrypted: bool = None,
     ):
         self._host = host or MG_HOST
         self._port = port or MG_PORT
@@ -48,7 +45,7 @@ class Memgraph:
     def execute_query(self, query: str, connection: Connection = None) -> None:
         """Executes Cypher query without returning any results."""
         connection = connection or self._get_cached_connection()
-        return connection.execute_query(query)
+        connection.execute_query(query)
 
     def create_index(self, index: MemgraphIndex) -> None:
         """Creates an index (label or label-property type) in the database"""
@@ -90,11 +87,11 @@ class Memgraph:
         """Returns a list of all database constraints (label and label-property types)"""
         indexes: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]] = []
         for result in self.execute_and_fetch("SHOW CONSTRAINT INFO"):
-            if result["constraint type"] == "unique":
+            if result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.UNIQUE:
                 indexes.append(
                     MemgraphConstraintUnique(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTIES])
                 )
-            elif result["constraint type"] == "exists":
+            elif result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.EXISTS:
                 indexes.append(
                     MemgraphConstraintExists(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTIES])
                 )

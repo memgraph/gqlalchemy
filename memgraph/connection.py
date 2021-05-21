@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator
 
 import mgclient
+from memgraph.models import Node, Relationship
 
 __all__ = ("Connection",)
 
@@ -38,6 +39,7 @@ class Connection(ABC):
 
     @staticmethod
     def create(**kwargs) -> "Connection":
+        """Creates an instance of a connection."""
         return MemgraphConnection(**kwargs)
 
 
@@ -75,7 +77,7 @@ class MemgraphConnection(Connection):
         """Returns True if connection is active and can be used"""
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
-    def _create_connection(self):
+    def _create_connection(self) -> Connection:
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE
         return mgclient.connect(
             host=self.host,
@@ -85,3 +87,20 @@ class MemgraphConnection(Connection):
             sslmode=sslmode,
             lazy=self.lazy,
         )
+
+
+def _convert_memgraph_value(value: Any) -> Any:
+    """Converts Memgraph objects to custom Node/Relationship objects"""
+    if isinstance(value, mgclient.Relationship):
+        return Relationship(
+            rel_id=value.id,
+            rel_type=value.type,
+            start_node=value.start_id,
+            end_node=value.end_id,
+            properties=value.properties,
+        )
+
+    if isinstance(value, mgclient.Node):
+        return Node(node_id=value.id, labels=value.labels, properties=value.properties)
+
+    return value
