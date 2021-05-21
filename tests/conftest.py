@@ -1,5 +1,6 @@
 import pytest
-from memgraph_pymgogm.memgraph import Memgraph
+
+from memgraph import Memgraph
 
 
 @pytest.fixture

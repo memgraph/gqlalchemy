@@ -1,5 +1,6 @@
 import os
 from typing import Any, Dict, Iterator, List, Optional, Union
+
 from .connection import Connection
 from .models import (
     MemgraphConstraint,
@@ -88,27 +89,21 @@ class Memgraph:
         query = f"DROP CONSTRAINT ON {index.to_cypher()}"
         self.execute_query(query)
 
-    def get_constraints(
-        self,
-    ) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
+    def get_constraints(self) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
         """Returns a list of all database constraints (label and label-property types)"""
-        indexes: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]] = []
+        constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]] = []
         for result in self.execute_and_fetch("SHOW CONSTRAINT INFO"):
             if result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.UNIQUE:
-                indexes.append(
+                constraints.append(
                     MemgraphConstraintUnique(
-                        result[MemgraphConstants.LABEL],
-                        result[MemgraphConstants.PROPERTIES],
+                        result[MemgraphConstants.LABEL], tuple(result[MemgraphConstants.PROPERTIES])
                     )
                 )
             elif result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.EXISTS:
-                indexes.append(
-                    MemgraphConstraintExists(
-                        result[MemgraphConstants.LABEL],
-                        result[MemgraphConstants.PROPERTIES],
-                    )
+                constraints.append(
+                    MemgraphConstraintExists(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTIES])
                 )
-        return indexes
+        return constraints
 
     def ensure_constraints(self, constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]) -> None:
         """Ensures that database constraints match input constraints"""

@@ -1,7 +1,6 @@
-from collections.abc import Iterator
-from typing import Any, Dict
+from typing import Any, Dict, Iterator
 
-from memgraph_pymgogm import Memgraph
+from memgraph import Memgraph
 
 
 def query(command: str) -> Iterator[Dict[str, Any]]:

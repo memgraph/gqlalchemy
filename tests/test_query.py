@@ -1,5 +1,7 @@
 import pytest
-from memgraph_pymgogm import Memgraph, Node
+
+from memgraph import Memgraph, Node
+
 from .query import *
 
 
