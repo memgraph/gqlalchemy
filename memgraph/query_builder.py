@@ -1,180 +1,230 @@
-import string
+from abc import abstractmethod, ABC
+from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional, Union
 
-from .memgraph import Memgraph
-from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+import re
 
-memgraph = Memgraph()
+from .memgraph import Memgraph, Connection
+from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 
 
 class MatchTypes:
-    NODE = "node"
-    EDGE = "edge"
-    MATCH = "match"
-    WHERE = "where"
-    AND_WHERE = "and_where"
-    OR_WHERE = "or_where"
+    NODE = "NODE"
+    EDGE = "EDGE"
+    MATCH = "MATCH"
+    WHERE = "WHERE"
+    AND_WHERE = "AND_WHERE"
+    OR_WHERE = "OR_WHERE"
 
 
-class VariableDuplicatedMemgraph(Exception):
-    def __init__(self, variable: Any):
-        message = f"Variable {variable} has been mentioned more than once!"
+class MatchConstants:
+    DIRECTED = "directed"
+    LABELS_STR = "labels_str"
+    OPTIONAL = "optional"
+    PROPERTIES_STR = "properties_str"
+    QUERY = "query"
+    TYPE = "type"
+    VARIABLE = "variable"
+
+
+class WhereConditionConstants:
+    WHERE = "WHERE"
+    AND = "AND"
+    OR = "OR"
+
+
+class NoVariablesMatchedException(Exception):
+    def __init__(self):
+        message = f"No variables have been matched in the query"
         super().__init__(message)
 
 
-class NumberOfVariablesMemgraph(Exception):
+class InvalidMatchChainException(Exception):
     def __init__(self):
-        self._message = "The number of used variables has been exceeded, the number of variables is limited to 27!"
-        super().__init__(self._message)
+        message = f"Invalid match query when linking!"
+        super().__init__(message)
+
+
+@dataclass
+class PartialQuery(ABC):
+    type: str
+
+    @abstractmethod
+    def construct_query(self) -> str:
+        pass
+
+
+@dataclass
+class MatchPartialQuery(PartialQuery):
+    def __init__(self, optional: bool):
+        super().__init__(MatchTypes.MATCH)
+
+        self.optional = optional
+
+    def construct_query(self) -> str:
+        if self.optional:
+            return f" OPTIONAL MATCH "
+
+        return f" MATCH "
+
+
+class WhereConditionPartialQuery(PartialQuery):
+    def __init__(self, keyword: str, query: str):
+        super().__init__(MatchTypes.WHERE)
+
+        self.keyword = keyword
+        self.query = query
+
+    def construct_query(self) -> str:
+        return f" {self.keyword} {self.query} "
+
+
+class NodePartialQuery(PartialQuery):
+    def __init__(self, variable: str, labels: str, properties: str):
+        super().__init__(MatchTypes.NODE)
+
+        self._variable = variable
+        self._labels = labels
+        self._properties = properties
+
+    @property
+    def variable(self):
+        return self._variable if self._variable is not None else ""
+
+    @property
+    def labels(self):
+        return self._labels if self._labels is not None else ""
+
+    @property
+    def properties(self):
+        return self._properties if self._properties is not None else ""
+
+    def construct_query(self) -> str:
+        return f"({self.variable}{self.labels}{self.properties})"
+
+
+class EdgePartialQuery(PartialQuery):
+    def __init__(self, variable: str, labels: str, properties: str, directed: bool):
+        super().__init__(MatchTypes.EDGE)
+
+        self.directed = directed
+        self._variable = variable
+        self._labels = labels
+        self._properties = properties
+
+    @property
+    def variable(self):
+        return self._variable if self._variable is not None else ""
+
+    @property
+    def labels(self):
+        return self._labels if self._labels is not None else ""
+
+    @property
+    def properties(self):
+        return self._properties if self._properties is not None else ""
+
+    def construct_query(self) -> str:
+        relationship_query = f"{self.variable}{self.labels}{self.properties}"
+        if self.directed:
+            relationship_query = f"-[{relationship_query}]->"
+        else:
+            relationship_query = f"-[{relationship_query}]-"
+
+        return relationship_query
 
 
 class Match:
-    def __init__(self):
-        self._query = []
-        self._variables = set()
+    def __init__(self, connection: Connection = None):
+        self._query: List[PartialQuery] = []
+        self._connection = connection if connection is not None else Memgraph()
 
     def match(self, optional: bool = False) -> "Match":
-        self._query.append({"optional": optional, "type": MatchTypes.MATCH})
+        self._query.append(MatchPartialQuery(optional))
 
         return self
 
-    def node(
-        self,
-        labels: Union[str, Union[List[str], None]] = "",
-        variable: Optional[str] = None,
-        **kwargs,
-    ) -> "Match":
+    def node(self, labels: Union[str, List[str], None] = "", variable: Optional[str] = None, **kwargs,) -> "Match":
         labels_str = to_cypher_labels(labels)
         properties_str = to_cypher_properties(kwargs)
 
-        self._query.append(
-            {
-                "variable": variable,
-                "labels_str": labels_str,
-                "properties_str": properties_str,
-                "type": MatchTypes.NODE,
-            }
-        )
+        if not self._is_linking_valid_with_query(MatchTypes.NODE):
+            raise InvalidMatchChainException()
+
+        self._query.append(NodePartialQuery(variable, labels_str, properties_str))
+
         return self
 
     def to(
-        self,
-        edge_label: Optional[str] = "",
-        directed: Optional[bool] = True,
-        variable: Optional[str] = None,
-        **kwargs,
+        self, edge_label: Optional[str] = "", directed: Optional[bool] = True, variable: Optional[str] = None, **kwargs,
     ) -> "Match":
+
+        if not self._is_linking_valid_with_query(MatchTypes.EDGE):
+            raise InvalidMatchChainException()
+
         labels_str = to_cypher_labels(edge_label)
         properties_str = to_cypher_properties(kwargs)
 
-        self._query.append(
-            {
-                "variable": variable,
-                "labels_str": labels_str,
-                "properties_str": properties_str,
-                "directed": directed,
-                "type": MatchTypes.EDGE,
-            }
-        )
+        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, directed))
 
         return self
 
     def where(self, property: str, operator: str, value: Any) -> "Match":
         value_cypher = to_cypher_value(value)
         self._query.append(
-            {
-                "query": " ".join([property, operator, value_cypher]),
-                "type": MatchTypes.WHERE,
-            }
+            WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property, operator, value_cypher]))
         )
+
         return self
 
     def and_where(self, property: str, operator: str, value: Any) -> "Match":
         value_cypher = to_cypher_value(value)
         self._query.append(
-            {
-                "query": " ".join([property, operator, value_cypher]),
-                "type": MatchTypes.AND_WHERE,
-            }
+            WhereConditionPartialQuery(WhereConditionConstants.AND, " ".join([property, operator, value_cypher]))
         )
+
         return self
 
     def or_where(self, property: str, operator: str, value: Any) -> "Match":
         value_cypher = to_cypher_value(value)
         self._query.append(
-            {
-                "query": " ".join([property, operator, value_cypher]),
-                "type": MatchTypes.OR_WHERE,
-            }
+            WhereConditionPartialQuery(WhereConditionConstants.OR, " ".join([property, operator, value_cypher]))
         )
+
         return self
 
-    def get_single(self, retrive: str) -> Any:
+    def get_single(self, retrieve: str) -> Any:
         query = self._construct_query()
 
-        query += f" RETURN {retrive}"
-        result = next(memgraph.execute_and_fetch(query), None)
+        query = f"{query} RETURN {retrieve}"
+        result = next(self._connection.execute_and_fetch(query), None)
 
         if result:
-            return result[retrive]
+            return result[retrieve]
         return result
 
-    def execute(self, retrive: Optional[Union[List[str], str]] = None) -> Iterator[Dict[str, Any]]:
+    def execute(self) -> Iterator[Dict[str, Any]]:
         query = self._construct_query()
-        if not retrive:
-            retrive_query = ",".join(self._variables)
-        else:
-            retrive_query = "*"
-        query += f" RETURN {retrive_query}"
+        query = f"{query} RETURN *"
 
-        return memgraph.execute_and_fetch(query)
+        return self._connection.execute_and_fetch(query)
 
     def _construct_query(self) -> str:
         query = ["MATCH "]
-        self._assign_variables()
-        for partial_query in self._query:
-            if partial_query["type"] == MatchTypes.NODE:
-                query.append(
-                    f"({partial_query['variable']}{partial_query['labels_str']}{partial_query['properties_str']})"
-                )
-            elif partial_query["type"] == MatchTypes.EDGE:
-                relationship_query = (
-                    f"{partial_query['variable']}{partial_query['labels_str']}{partial_query['properties_str']}"
-                )
-                if partial_query["directed"]:
-                    query.append(f"-[{relationship_query}]->")
-                else:
-                    query.append(f"-[{relationship_query}]-")
-            elif partial_query["type"] == "match":
-                if partial_query["optional"]:
-                    query.append("\n OPTIONAL MATCH ")
-                else:
-                    query.append("\n MATCH ")
-            elif partial_query["type"] == MatchTypes.WHERE:
-                query.append(f"\n WHERE {partial_query['query']} ")
-            elif partial_query["type"] == MatchTypes.AND_WHERE:
-                query.append(f"\n AND {partial_query['query']} ")
-            elif partial_query["type"] == MatchTypes.OR_WHERE:
-                query.append(f"\n OR {partial_query['query']} ")
-        return "".join(query)
 
-    def _assign_variables(self) -> None:
-        for partial_query in self._query:
-            if self._should_partial_query_contain_variable(partial_query) and partial_query["variable"]:
-                if partial_query["variable"] not in self._variables:
-                    self._variables.add(partial_query["variable"])
+        if not self._any_variables_matched():
+            raise NoVariablesMatchedException()
 
         for partial_query in self._query:
-            if self._should_partial_query_contain_variable(partial_query) and not partial_query["variable"]:
-                variable = self._get_unassigned_letter()
-                self._variables.add(variable)
-                partial_query["variable"] = variable
+            query.append(partial_query.construct_query())
 
-    def _should_partial_query_contain_variable(self, query: Dict[str, Any]) -> bool:
-        return query["type"] == MatchTypes.NODE or query["type"] == MatchTypes.EDGE
+        joined_query = ''.join(query)
+        joined_query = re.sub("\s\s+", " ", joined_query)
+        return joined_query
 
-    def _get_unassigned_letter(self) -> str:
-        for letter in string.ascii_lowercase:
-            if letter not in self._variables:
-                return letter
-        raise NumberOfVariablesMemgraph()
+    def _any_variables_matched(self) -> bool:
+        return any(q.type in [MatchTypes.EDGE, MatchTypes.NODE] and q.variable not in [None, ""] for q in self._query)
+
+    def _is_linking_valid_with_query(self, match_type: str):
+        return len(self._query) == 0 or self._query[-1].type != match_type
+

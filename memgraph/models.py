@@ -65,7 +65,7 @@ class UniqueGraphObject(GraphObject):
         return self._properties
 
     def __str__(self) -> str:
-        return "<GraphObject id={self.id} properties={self.properties}>"
+        return f"<GraphObject id={self.id} properties={self.properties}>"
 
     def __repr__(self) -> str:
         return str(self)
@@ -136,7 +136,7 @@ class Relationship(UniqueGraphObject):
 
 
 class Path(GraphObject):
-    def __init__(self,  nodes: Iterable[Node], relationships: Iterable[Relationship]):
+    def __init__(self, nodes: Iterable[Node], relationships: Iterable[Relationship]):
         self._nodes = nodes
         self._relationships = relationships
 
@@ -153,7 +153,6 @@ class Path(GraphObject):
             (
                 "<Path",
                 f" nodes={self.nodes}",
-                f" relationships={self.relationships}"
-                ">",
+                f" relationships={self.relationships}" ">",
             )
         )

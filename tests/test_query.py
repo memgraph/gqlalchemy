@@ -1,8 +1,14 @@
+from typing import Any, Dict, Iterator
+
 import pytest
 
 from memgraph import Memgraph, Node
 
-from .query import *
+
+def query(command: str) -> Iterator[Dict[str, Any]]:
+    """Queries Memgraph database and returns iterator of results"""
+    db = Memgraph()
+    yield from db.execute_and_fetch(command)
 
 
 @pytest.fixture
