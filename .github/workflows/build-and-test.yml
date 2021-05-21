@@ -1,0 +1,31 @@
+name: Build and Test
+
+env:
+  MG_VERSION: '1.4.0'
+  PY_VERSION: '3.8'
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python ${{ env.PY_VERSION }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ env.PY_VERSION }}
+    - name: Install dependencies
+      run: |
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+
+    - name: Run memgraph instance
+      run: |
+        docker run -d -p 7687:7687 memgraph/memgraph --telemetry-enabled=False
+    - name: Test project
+      run: |
+        poetry install
+        poetry run pytest
