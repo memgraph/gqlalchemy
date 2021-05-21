@@ -1,5 +1,4 @@
 from abc import abstractmethod, ABC
-from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 import re
@@ -45,16 +44,15 @@ class InvalidMatchChainException(Exception):
         super().__init__(message)
 
 
-@dataclass
 class PartialQuery(ABC):
-    type: str
+    def __init__(self, type: str):
+        self.type = type
 
     @abstractmethod
     def construct_query(self) -> str:
         pass
 
 
-@dataclass
 class MatchPartialQuery(PartialQuery):
     def __init__(self, optional: bool):
         super().__init__(MatchTypes.MATCH)
@@ -80,7 +78,7 @@ class WhereConditionPartialQuery(PartialQuery):
 
 
 class NodePartialQuery(PartialQuery):
-    def __init__(self, variable: str, labels: str, properties: str):
+    def __init__(self, variable: Optional[str], labels: Optional[str], properties: Optional[str]):
         super().__init__(MatchTypes.NODE)
 
         self._variable = variable
@@ -88,15 +86,15 @@ class NodePartialQuery(PartialQuery):
         self._properties = properties
 
     @property
-    def variable(self):
+    def variable(self) -> str:
         return self._variable if self._variable is not None else ""
 
     @property
-    def labels(self):
+    def labels(self) -> str:
         return self._labels if self._labels is not None else ""
 
     @property
-    def properties(self):
+    def properties(self) -> str:
         return self._properties if self._properties is not None else ""
 
     def construct_query(self) -> str:
@@ -104,7 +102,7 @@ class NodePartialQuery(PartialQuery):
 
 
 class EdgePartialQuery(PartialQuery):
-    def __init__(self, variable: str, labels: str, properties: str, directed: bool):
+    def __init__(self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool):
         super().__init__(MatchTypes.EDGE)
 
         self.directed = directed
@@ -113,15 +111,15 @@ class EdgePartialQuery(PartialQuery):
         self._properties = properties
 
     @property
-    def variable(self):
+    def variable(self) -> str:
         return self._variable if self._variable is not None else ""
 
     @property
-    def labels(self):
+    def labels(self) -> str:
         return self._labels if self._labels is not None else ""
 
     @property
-    def properties(self):
+    def properties(self) -> str:
         return self._properties if self._properties is not None else ""
 
     def construct_query(self) -> str:
@@ -135,8 +133,8 @@ class EdgePartialQuery(PartialQuery):
 
 
 class Match:
-    def __init__(self, connection: Connection = None):
-        self._query: List[PartialQuery] = []
+    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
+        self._query: List[Any] = []
         self._connection = connection if connection is not None else Memgraph()
 
     def match(self, optional: bool = False) -> "Match":
@@ -144,7 +142,12 @@ class Match:
 
         return self
 
-    def node(self, labels: Union[str, List[str], None] = "", variable: Optional[str] = None, **kwargs,) -> "Match":
+    def node(
+        self,
+        labels: Union[str, List[str], None] = "",
+        variable: Optional[str] = None,
+        **kwargs,
+    ) -> "Match":
         labels_str = to_cypher_labels(labels)
         properties_str = to_cypher_properties(kwargs)
 
@@ -156,7 +159,11 @@ class Match:
         return self
 
     def to(
-        self, edge_label: Optional[str] = "", directed: Optional[bool] = True, variable: Optional[str] = None, **kwargs,
+        self,
+        edge_label: Optional[str] = "",
+        directed: Optional[bool] = True,
+        variable: Optional[str] = None,
+        **kwargs,
     ) -> "Match":
 
         if not self._is_linking_valid_with_query(MatchTypes.EDGE):
@@ -165,7 +172,7 @@ class Match:
         labels_str = to_cypher_labels(edge_label)
         properties_str = to_cypher_properties(kwargs)
 
-        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, directed))
+        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed)))
 
         return self
 
@@ -218,8 +225,8 @@ class Match:
         for partial_query in self._query:
             query.append(partial_query.construct_query())
 
-        joined_query = ''.join(query)
-        joined_query = re.sub("\s\s+", " ", joined_query)
+        joined_query = "".join(query)
+        joined_query = re.sub("\\s\\s+", " ", joined_query)
         return joined_query
 
     def _any_variables_matched(self) -> bool:
@@ -227,4 +234,3 @@ class Match:
 
     def _is_linking_valid_with_query(self, match_type: str):
         return len(self._query) == 0 or self._query[-1].type != match_type
-
