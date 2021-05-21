@@ -15,8 +15,7 @@
 from unittest.mock import patch
 
 import pytest
-from gqlalchemy import (InvalidMatchChainException, Match,
-                        NoVariablesMatchedException)
+from gqlalchemy import InvalidMatchChainException, Match, NoVariablesMatchedException
 from gqlalchemy.memgraph import Memgraph
 
 
