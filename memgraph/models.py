@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Optional, Tuple, Set, Union
+from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
 
 
 @dataclass(frozen=True, eq=True)
@@ -81,11 +81,26 @@ class Node(UniqueGraphObject):
         return self._labels
 
     def __str__(self) -> str:
-        return "".join(("<Node", f" id={self.id}", f" labels={self.labels}", f" properties={self.properties}", ">"))
+        return "".join(
+            (
+                "<Node",
+                f" id={self.id}",
+                f" labels={self.labels}",
+                f" properties={self.properties}",
+                ">",
+            )
+        )
 
 
 class Relationship(UniqueGraphObject):
-    def __init__(self, rel_id: Any, rel_type: str, start_node: Node, end_node: Node, properties: Dict[str, Any] = None):
+    def __init__(
+        self,
+        rel_id: Any,
+        rel_type: str,
+        start_node: Node,
+        end_node: Node,
+        properties: Dict[str, Any] = None,
+    ):
         super().__init__(rel_id, properties)
         self._type = rel_type
         self._start_node = start_node

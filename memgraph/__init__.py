@@ -1,3 +1,7 @@
-from memgraph.memgraph import Memgraph  # noqa F401
-from memgraph.models import Node, Relationship  # noqa F401
-from memgraph.query_builder import Match  # noqa F401
+from .memgraph import Memgraph  # noqa F401
+from .models import MemgraphConstraintExists, MemgraphConstraintUnique, Node, Relationship  # noqa F401
+from .query_builder import Match  # noqa F401
+
+
+__all__ = ["Memgraph"]
+

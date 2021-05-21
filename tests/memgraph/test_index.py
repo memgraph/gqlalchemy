@@ -1,4 +1,4 @@
-from project_name.database import MemgraphIndex
+from memgraph.models import MemgraphIndex
 
 
 def test_no_index(db):

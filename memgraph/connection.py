@@ -2,19 +2,19 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator
 
 import mgclient
-from memgraph.models import Node, Relationship, Path
+from .models import Node, Relationship, Path
 
 __all__ = ("Connection",)
 
 
 class Connection(ABC):
     def __init__(
-            self,
-            host: str,
-            port: int,
-            username: str,
-            password: str,
-            encrypted: bool,
+        self,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        encrypted: bool,
     ):
         self.host = host
         self.port = port
@@ -45,13 +45,13 @@ class Connection(ABC):
 
 class MemgraphConnection(Connection):
     def __init__(
-            self,
-            host: str,
-            port: int,
-            username: str,
-            password: str,
-            encrypted: bool,
-            lazy: bool = True,
+        self,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        encrypted: bool,
+        lazy: bool = True,
     ):
         super().__init__(host, port, username, password, encrypted)
         self.lazy = lazy

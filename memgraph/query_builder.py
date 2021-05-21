@@ -2,7 +2,7 @@ import string
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .memgraph import Memgraph
-from memgraph.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 
 memgraph = Memgraph()
 
@@ -39,18 +39,30 @@ class Match:
         return self
 
     def node(
-        self, labels: Union[str, Union[List[str], None]] = "", variable: Optional[str] = None, **kwargs
+        self,
+        labels: Union[str, Union[List[str], None]] = "",
+        variable: Optional[str] = None,
+        **kwargs,
     ) -> "Match":
         labels_str = to_cypher_labels(labels)
         properties_str = to_cypher_properties(kwargs)
 
         self._query.append(
-            {"variable": variable, "labels_str": labels_str, "properties_str": properties_str, "type": MatchTypes.NODE}
+            {
+                "variable": variable,
+                "labels_str": labels_str,
+                "properties_str": properties_str,
+                "type": MatchTypes.NODE,
+            }
         )
         return self
 
     def to(
-        self, edge_label: Optional[str] = "", directed: Optional[bool] = True, variable: Optional[str] = None, **kwargs
+        self,
+        edge_label: Optional[str] = "",
+        directed: Optional[bool] = True,
+        variable: Optional[str] = None,
+        **kwargs,
     ) -> "Match":
         labels_str = to_cypher_labels(edge_label)
         properties_str = to_cypher_properties(kwargs)
@@ -69,17 +81,32 @@ class Match:
 
     def where(self, property: str, operator: str, value: Any) -> "Match":
         value_cypher = to_cypher_value(value)
-        self._query.append({"query": " ".join([property, operator, value_cypher]), "type": MatchTypes.WHERE})
+        self._query.append(
+            {
+                "query": " ".join([property, operator, value_cypher]),
+                "type": MatchTypes.WHERE,
+            }
+        )
         return self
 
     def and_where(self, property: str, operator: str, value: Any) -> "Match":
         value_cypher = to_cypher_value(value)
-        self._query.append({"query": " ".join([property, operator, value_cypher]), "type": MatchTypes.AND_WHERE})
+        self._query.append(
+            {
+                "query": " ".join([property, operator, value_cypher]),
+                "type": MatchTypes.AND_WHERE,
+            }
+        )
         return self
 
     def or_where(self, property: str, operator: str, value: Any) -> "Match":
         value_cypher = to_cypher_value(value)
-        self._query.append({"query": " ".join([property, operator, value_cypher]), "type": MatchTypes.OR_WHERE})
+        self._query.append(
+            {
+                "query": " ".join([property, operator, value_cypher]),
+                "type": MatchTypes.OR_WHERE,
+            }
+        )
         return self
 
     def get_single(self, retrive: str) -> Any:
