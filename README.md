@@ -52,8 +52,7 @@ Now, rewrite the exact same query by using the functionality of `gqlalchemy`.
 
 ```python
 
-from gqlalchemy import Memgraph
-from gqlalchemy.build import Match
+from gqlalchemy import Match, Memgraph
 
 memgraph = Memgraph()
 
