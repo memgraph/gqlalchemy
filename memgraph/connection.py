@@ -2,19 +2,19 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator
 
 import mgclient
-from memgraph.models import Node, Relationship
+from memgraph.models import Node, Relationship, Path
 
 __all__ = ("Connection",)
 
 
 class Connection(ABC):
     def __init__(
-        self,
-        host: str,
-        port: int,
-        username: str,
-        password: str,
-        encrypted: bool,
+            self,
+            host: str,
+            port: int,
+            username: str,
+            password: str,
+            encrypted: bool,
     ):
         self.host = host
         self.port = port
@@ -45,13 +45,13 @@ class Connection(ABC):
 
 class MemgraphConnection(Connection):
     def __init__(
-        self,
-        host: str,
-        port: int,
-        username: str,
-        password: str,
-        encrypted: bool,
-        lazy: bool = True,
+            self,
+            host: str,
+            port: int,
+            username: str,
+            password: str,
+            encrypted: bool,
+            lazy: bool = True,
     ):
         super().__init__(host, port, username, password, encrypted)
         self.lazy = lazy
@@ -102,5 +102,11 @@ def _convert_memgraph_value(value: Any) -> Any:
 
     if isinstance(value, mgclient.Node):
         return Node(node_id=value.id, labels=value.labels, properties=value.properties)
+
+    if isinstance(value, mgclient.Path):
+        return Path(
+            nodes=list([_convert_memgraph_value(node) for node in value.nodes]),
+            relationships=list([_convert_memgraph_value(rel) for rel in value.relationships]),
+        )
 
     return value

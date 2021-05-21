@@ -44,6 +44,14 @@ class MemgraphConstraintExists(MemgraphConstraint):
 
 
 class GraphObject:
+    def __str__(self) -> str:
+        return "<GraphObject>"
+
+    def __repr__(self) -> str:
+        return str(self)
+
+
+class UniqueGraphObject(GraphObject):
     def __init__(self, object_id: Any, properties: Dict[str, Any] = None):
         self._id = object_id
         self._properties = properties or dict()
@@ -63,7 +71,7 @@ class GraphObject:
         return str(self)
 
 
-class Node(GraphObject):
+class Node(UniqueGraphObject):
     def __init__(self, node_id: Any, labels: Iterable[str] = None, properties: Dict[str, Any] = None):
         super().__init__(node_id, properties)
         self._labels = set(labels) if labels else set()
@@ -76,7 +84,7 @@ class Node(GraphObject):
         return "".join(("<Node", f" id={self.id}", f" labels={self.labels}", f" properties={self.properties}", ">"))
 
 
-class Relationship(GraphObject):
+class Relationship(UniqueGraphObject):
     def __init__(self, rel_id: Any, rel_type: str, start_node: Node, end_node: Node, properties: Dict[str, Any] = None):
         super().__init__(rel_id, properties)
         self._type = rel_type
@@ -107,6 +115,30 @@ class Relationship(GraphObject):
                 f" nodes={self.nodes}",
                 f" type={self.type}",
                 f" properties={self.properties}",
+                ">",
+            )
+        )
+
+
+class Path(GraphObject):
+    def __init__(self,  nodes: Iterable[Node], relationships: Iterable[Relationship]):
+        self._nodes = nodes
+        self._relationships = relationships
+
+    @property
+    def nodes(self) -> Iterable[Node]:
+        return self._nodes
+
+    @property
+    def relationships(self) -> Iterable[Relationship]:
+        return self._relationships
+
+    def __str__(self) -> str:
+        return "".join(
+            (
+                "<Path",
+                f" nodes={self.nodes}",
+                f" relationships={self.relationships}"
                 ">",
             )
         )
