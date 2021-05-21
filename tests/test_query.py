@@ -16,7 +16,7 @@ from typing import Any, Dict, Iterator
 
 import pytest
 
-from memgraph import Memgraph, Node
+from gqlalchemy import Memgraph, Node
 
 
 def query(command: str) -> Iterator[Dict[str, Any]]:

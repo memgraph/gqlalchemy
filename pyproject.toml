@@ -2,7 +2,7 @@
 name = "GQLAlchemy"
 version = "0.1.0"
 description = "Memgraph dsl library"
-repository = "https://github.com/memgraph/pymgogm"
+repository = "https://github.com/memgraph/gqlalchemy"
 authors = [
     "Matko Budiselic <marko.budiselic@memgraph.io>",
     "Jure Bajic <jure.bajic@memgraph.io>",
@@ -11,7 +11,7 @@ authors = [
 ]
 license = "Apache-2.0"
 readme = "README.md"
-packages = [{ include = "memgraph" }]
+packages = [{ include = "gqlalchemy" }]
 
 [tool.black]
 line-length = 120

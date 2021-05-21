@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import pytest
-
-from memgraph import Memgraph
+from gqlalchemy import Memgraph
 
 
 @pytest.fixture

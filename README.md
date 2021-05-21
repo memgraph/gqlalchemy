@@ -2,8 +2,8 @@ GQLAlchemy
 =================
 
 GQLAlchemy is library developed with purpose of assisting writing and running
-queries on Memgraph DB. GQL supports high-level connection to Memgraph as well
-as modular query builder.
+queries on Memgraph DB. GQLAlchemy supports high-level connection to Memgraph
+as well as modular query builder.
 
 GQLAlchemy is built on top of Memgraph's low-level client pymgclient
 ([pypi](https://pypi.org/project/pymgclient/) /
@@ -24,21 +24,21 @@ When working with the `pymgclient`, Python developer can connect to database
 and execute `MATCH` cypher query with following syntax:
 
 ```python
-    import mgclient
+import mgclient
 
-    conn = mgclient.connect(host='127.0.0.1', port=7687)
+conn = mgclient.connect(host='127.0.0.1', port=7687)
 
-    cursor = conn.cursor()
-    cursor.execute("""
-    MATCH (from:Node)-[:Connection]->(to:Node)
-    RETURN from, to
-    """)
-    result = cursor.fetchone()
-    conn.commit()
+cursor = conn.cursor()
+cursor.execute("""
+MATCH (from:Node)-[:Connection]->(to:Node)
+RETURN from, to
+""")
+result = cursor.fetchone()
+conn.commit()
 
-    for result in results:
-        print(result['from'])
-        print(result['to'])
+for result in results:
+    print(result['from'])
+    print(result['to'])
 ```
 
 As we can see, example above can be error-prone, because we do not have
@@ -48,19 +48,19 @@ Now, rewrite the exact same query by using the functionality of `gqlalchemy`.
 
 ```python
 
-    from gqlalchemy import Memgraph
-    from gqlalchemy.build import Match
+from gqlalchemy import Memgraph
+from gqlalchemy.build import Match
 
-    db = Memgraph()
+db = Memgraph()
 
-    results = Match().node("Node",variable="from")
-                     .to("Connection")
-                     .node("Node",variable="to")
-                     .execute()
+results = Match().node("Node",variable="from")
+                 .to("Connection")
+                 .node("Node",variable="to")
+                 .execute()
 
-    for result in results:
-        print(result['from'])
-        print(result['to'])
+for result in results:
+    print(result['from'])
+    print(result['to'])
 ```
 
 License

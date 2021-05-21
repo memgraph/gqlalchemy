@@ -3,6 +3,7 @@ name: Build and Test
 env:
   MG_VERSION: '1.4.0'
   PY_VERSION: '3.8'
+  POETRY_VERSION: '1.1.4'
 
 on: [push]
 
@@ -15,13 +16,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up Python ${{ env.PY_VERSION }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ env.PY_VERSION }}
-    - name: Install dependencies
-      run: |
-        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-        export PATH="${PATH}:/root/.poetry/bin"
+    - name: Setup poetry
+      uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: ${{ env.POETRY_VERSION }}
 
     - name: Run memgraph instance
       run: |

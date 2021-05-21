@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from memgraph.models import MemgraphIndex
+from gqlalchemy.models import MemgraphIndex
 
 
 def test_no_index(db):

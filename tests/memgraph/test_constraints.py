@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from memgraph import MemgraphConstraintExists, MemgraphConstraintUnique
+from gqlalchemy import MemgraphConstraintExists, MemgraphConstraintUnique
 
 
 def test_create_constraint_exist(db):
