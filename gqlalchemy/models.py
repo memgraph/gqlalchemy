@@ -111,8 +111,8 @@ class Relationship(UniqueGraphObject):
         self,
         rel_id: Any,
         rel_type: str,
-        start_node: Node,
-        end_node: Node,
+        start_node: int,
+        end_node: int,
         properties: Dict[str, Any] = None,
     ):
         super().__init__(rel_id, properties)
@@ -125,15 +125,15 @@ class Relationship(UniqueGraphObject):
         return self._type
 
     @property
-    def end_node(self) -> Node:
+    def end_node(self) -> int:
         return self._start_node
 
     @property
-    def start_node(self) -> Node:
+    def start_node(self) -> int:
         return self._end_node
 
     @property
-    def nodes(self) -> Tuple[Node, Node]:
+    def nodes(self) -> Tuple[int, int]:
         return (self.start_node, self.end_node)
 
     def __str__(self) -> str:
