@@ -33,6 +33,7 @@ exclude = '''
 [tool.poetry.dependencies]
 python = "^3.8"
 pymgclient = "^1.0.0"
+networkx = "^2.5.1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.5b1"
