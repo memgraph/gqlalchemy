@@ -22,9 +22,19 @@ from gqlalchemy.transformations import nx_graph_to_memgraph_parallel, nx_to_cyph
 
 
 @pytest.fixture
-def random_nx_graph(number_of_nodes: int = 100000, number_of_edges: int = 150000) -> nx.Graph:
+def random_nx_graph(number_of_nodes=100000, number_of_edges=150000) -> nx.Graph:
     graph = nx.Graph()
+    for i in range(number_of_nodes):
+        graph.add_node(i, labels="Label")
+    for _ in range(number_of_edges):
+        graph.add_edge(randint(0, number_of_nodes), randint(0, number_of_nodes))
 
+    return graph
+
+
+@pytest.fixture
+def big_random_nx_graph(number_of_nodes=200000, number_of_edges=1000000) -> nx.Graph:
+    graph = nx.Graph()
     for i in range(number_of_nodes):
         graph.add_node(i, labels="Label")
     for _ in range(number_of_edges):
@@ -85,7 +95,6 @@ def test_nx_to_memgraph(memgraph: Memgraph):
 
 
 @pytest.mark.timeout(60)
-@pytest.mark.parametrize("random_nx_graph", [(100000, 200000)], indirect=True)
 def test_big_nx_to_memgraph(db: Memgraph, random_nx_graph: nx.Graph):
     db.create_index(MemgraphIndex("Label", "id"))
 
@@ -93,9 +102,8 @@ def test_big_nx_to_memgraph(db: Memgraph, random_nx_graph: nx.Graph):
         db.execute_query(query)
 
 
-@pytest.mark.timeout(180)
-@pytest.mark.parametrize("random_nx_graph", [(100000, 1000000)], indirect=True)
-def test_big_nx_to_memgraph_parallel(db: Memgraph, random_nx_graph: nx.Graph):
+@pytest.mark.timeout(240)
+def test_huge_nx_to_memgraph_parallel(db: Memgraph, big_random_nx_graph: nx.Graph):
     db.create_index(MemgraphIndex("Label", "id"))
 
-    nx_graph_to_memgraph_parallel(random_nx_graph)
+    nx_graph_to_memgraph_parallel(big_random_nx_graph)

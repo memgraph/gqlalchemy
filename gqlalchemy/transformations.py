@@ -19,6 +19,7 @@ from typing import Any, Dict, Iterator, List, Union
 import mgclient
 import networkx as nx
 
+from gqlalchemy import Memgraph
 from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties
 
 __all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
@@ -37,9 +38,23 @@ def nx_to_cypher(graph: nx.Graph) -> Iterator[str]:
     yield from _nx_edges_to_cypher(graph)
 
 
-def nx_graph_to_memgraph_parallel(graph: nx.Graph, host: str = "127.0.0.1", port: int = 7687) -> None:
+def nx_graph_to_memgraph_parallel(
+    graph: nx.Graph,
+    host: str = "127.0.01",
+    port: int = 7687,
+    username: str = "",
+    password: str = "",
+    encrypted: bool = False,
+) -> None:
     """Generates a Cypher queries and inserts data into Memgraph in parallel"""
     num_of_processes = mp.cpu_count() // 2
+    _check_for_index_hint(
+        host,
+        port,
+        username,
+        password,
+        encrypted,
+    )
     for queries_gen in [_nx_nodes_to_cypher(graph), _nx_edges_to_cypher(graph)]:
         queries = list(queries_gen)
         chunk_size = len(queries) // num_of_processes
@@ -49,7 +64,14 @@ def nx_graph_to_memgraph_parallel(graph: nx.Graph, host: str = "127.0.0.1", port
             processes.append(
                 mp.Process(
                     target=_insert_queries,
-                    args=(process_queries, host, port),
+                    args=(
+                        process_queries,
+                        host,
+                        port,
+                        username,
+                        password,
+                        encrypted,
+                    ),
                 )
             )
         for p in processes:
@@ -58,9 +80,22 @@ def nx_graph_to_memgraph_parallel(graph: nx.Graph, host: str = "127.0.0.1", port
             p.join()
 
 
-def _insert_queries(queries: List[str], host: str, port: int) -> None:
+def _check_for_index_hint(
+    host: str = "127.0.01",
+    port: int = 7687,
+    username: str = "",
+    password: str = "",
+    encrypted: bool = False,
+):
+    memgraph = Memgraph(host, port, username, password, encrypted)
+    indexes = memgraph.get_indexes()
+    if len(indexes) == 0:
+        logging.warning(f"Be careful you do not have any indexes set up, the queries will take longer than expected!")
+
+
+def _insert_queries(queries: List[str], host, port, username, password, encrypted) -> None:
     """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries."""
-    conn = mgclient.connect(host=host, port=port)
+    conn = mgclient.connect(host=host, port=port, username=username, password=password, encrypted=encrypted)
     while len(queries) > 0:
         try:
             query = queries.pop()
