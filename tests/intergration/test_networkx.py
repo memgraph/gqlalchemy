@@ -18,7 +18,8 @@ import networkx as nx
 import pytest
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex
-from gqlalchemy.transformations import nx_graph_to_memgraph_parallel, nx_to_cypher
+from gqlalchemy.transformations import (nx_graph_to_memgraph_parallel,
+                                        nx_to_cypher)
 
 
 @pytest.fixture
@@ -63,6 +64,29 @@ def test_simple_nx_to_memgraph(memgraph: Memgraph):
         assert edge["e"].type == "TO"
 
 
+def test_simple_index_nx_to_memgraph(memgraph: Memgraph):
+    graph = nx.Graph()
+    graph.add_nodes_from(
+        [
+            (1, {"labels": "L1", "num": 123}),
+            (2, {"labels": "L1", "num": 123}),
+            (3, {"labels": ["L1", "L2", "L3"], "num": 123}),
+        ]
+    )
+    graph.add_edges_from([(1, 2), (1, 3)])
+    expected_indexes = {
+        MemgraphIndex("L1"),
+        MemgraphIndex("L2"),
+        MemgraphIndex("L3"),
+    }
+
+    for query in nx_to_cypher(graph, True):
+        memgraph.execute_query(query)
+    actual_indexes = set(memgraph.get_indexes())
+
+    assert actual_indexes == expected_indexes
+
+
 def test_nx_to_memgraph(memgraph: Memgraph):
     graph = nx.Graph()
     expected_nodes = [
@@ -96,16 +120,14 @@ def test_nx_to_memgraph(memgraph: Memgraph):
 
 @pytest.mark.timeout(60)
 @pytest.mark.slow
-def test_big_nx_to_memgraph(db: Memgraph, random_nx_graph: nx.Graph):
-    db.create_index(MemgraphIndex("Label", "id"))
-
-    for query in nx_to_cypher(random_nx_graph):
-        db.execute_query(query)
+def test_big_nx_to_memgraph_with_index(memgraph: Memgraph, random_nx_graph: nx.Graph):
+    for query in nx_to_cypher(random_nx_graph, create_index=True):
+        memgraph.execute_query(query)
 
 
 @pytest.mark.timeout(240)
 @pytest.mark.slow
-def test_huge_nx_to_memgraph_parallel(db: Memgraph, big_random_nx_graph: nx.Graph):
-    db.create_index(MemgraphIndex("Label", "id"))
+def test_huge_nx_to_memgraph_parallel_with_index(memgraph: Memgraph, big_random_nx_graph: nx.Graph):
+    memgraph.create_index(MemgraphIndex("Label", "id"))
 
     nx_graph_to_memgraph_parallel(big_random_nx_graph)

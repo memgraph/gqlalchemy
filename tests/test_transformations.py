@@ -100,3 +100,26 @@ def test_nx_create_edge_and_node_with_properties():
     actual_cypher_queries = list(nx_to_cypher(graph))
 
     assert actual_cypher_queries == expected_cypher_queries
+
+
+def test_nx_create_edge_and_node_with_index():
+    graph = nx.Graph()
+    graph.add_nodes_from(
+        [(1, {"labels": "Label1"}), (2, {"labels": ["Label1", "Label2"], "name": "name1"}), (3, {"labels": "Label1"})]
+    )
+    graph.add_edges_from([(1, 2, {"type": "TYPE1"}), (2, 3, {"type": "TYPE2", "data": "abc"})])
+    expected_cypher_queries = [
+        "CREATE (:Label1 {id: 1});",
+        "CREATE (:Label1:Label2 {name: 'name1', id: 2});",
+        "CREATE (:Label1 {id: 3});",
+        "CREATE INDEX ON :Label2;",
+        "CREATE INDEX ON :Label1;",
+        "MATCH (n:Label1 {id: 1}), (m:Label1:Label2 {id: 2}) CREATE (n)-[:TYPE1 ]->(m);",
+        "MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
+    ]
+
+    actual_cypher_queries = list(nx_to_cypher(graph, True))
+
+    assert actual_cypher_queries[0:3] == expected_cypher_queries[0:3]
+    assert set(actual_cypher_queries[3:5]) == set(expected_cypher_queries[3:5])
+    assert actual_cypher_queries[5:7] == expected_cypher_queries[5:7]

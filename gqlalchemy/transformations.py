@@ -20,6 +20,7 @@ import mgclient
 import networkx as nx
 
 from gqlalchemy import Memgraph
+from gqlalchemy.models import MemgraphIndex
 from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties
 
 __all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
@@ -31,10 +32,13 @@ class NetworkXGraphConstants:
     ID = "id"
 
 
-def nx_to_cypher(graph: nx.Graph) -> Iterator[str]:
+def nx_to_cypher(graph: nx.Graph, create_index=False) -> Iterator[str]:
     """Generates a Cypher queries for creating graph"""
 
-    yield from _nx_nodes_to_cypher(graph)
+    if create_index:
+        yield from _nx_nodes_to_cypher_with_index(graph)
+    else:
+        yield from _nx_nodes_to_cypher(graph)
     yield from _nx_edges_to_cypher(graph)
 
 
@@ -91,11 +95,11 @@ def _check_for_index_hint(
     indexes = memgraph.get_indexes()
     if len(indexes) == 0:
         logging.getLogger(__file__).warning(
-            f"Be careful you do not have any indexes set up, the queries will take longer than expected!"
+            "Be careful you do not have any indexes set up, the queries will take longer than expected!"
         )
 
 
-def _insert_queries(queries: List[str], host, port, username, password, encrypted) -> None:
+def _insert_queries(queries: List[str], host: str, port: int, username: str, password: str, encrypted: bool) -> None:
     """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries."""
     memgraph = Memgraph(host, port, username, password, encrypted)
     while len(queries) > 0:
@@ -106,7 +110,7 @@ def _insert_queries(queries: List[str], host, port, username, password, encrypte
             break
         except mgclient.DatabaseError as e:
             queries.append(query)
-            logging.getLogger(__file__).warning(f"Ignoring database error: {str(e)}")
+            logging.getLogger(__file__).warning(f"Ignoring database error: {e}")
             continue
 
 
@@ -114,6 +118,19 @@ def _nx_nodes_to_cypher(graph: nx.Graph) -> Iterator[str]:
     """Generates a Cypher queries for creating nodes"""
     for nx_id, data in graph.nodes(data=True):
         yield _create_node(nx_id, data)
+
+
+def _nx_nodes_to_cypher_with_index(graph: nx.Graph) -> Iterator[str]:
+    labels = set()
+    for nx_id, data in graph.nodes(data=True):
+        node_labels = data.get(NetworkXGraphConstants.LABELS, None)
+        if isinstance(node_labels, (list, set)):
+            labels |= set(node_labels)
+        else:
+            labels.add(node_labels)
+        yield _create_node(nx_id, data)
+    for label in labels:
+        yield _create_index(label)
 
 
 def _nx_edges_to_cypher(graph: nx.Graph) -> Iterator[str]:
@@ -150,3 +167,8 @@ def _create_edge(
     to_label_str = to_cypher_labels(to_label)
 
     return f"MATCH (n{from_label_str} {{id: {from_id}}}), (m{to_label_str} {{id: {to_id}}}) CREATE (n)-[{edge_type} {properties_str}]->(m);"
+
+
+def _create_index(label: str, property: str = None):
+    index = MemgraphIndex(label, property)
+    return f"CREATE INDEX ON {index.to_cypher()};"
