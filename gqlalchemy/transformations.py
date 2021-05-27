@@ -49,39 +49,53 @@ def nx_graph_to_memgraph_parallel(
     username: str = "",
     password: str = "",
     encrypted: bool = False,
+    create_index=False,
 ) -> None:
     """Generates a Cypher queries and inserts data into Memgraph in parallel"""
+    query_groups = []
+    if create_index:
+        query_groups.append(_nx_nodes_to_cypher_with_index(graph))
+    else:
+        _check_for_index_hint(
+            host,
+            port,
+            username,
+            password,
+            encrypted,
+        )
+        query_groups.append(_nx_nodes_to_cypher(graph))
+    query_groups.append(_nx_edges_to_cypher(graph))
+    for query_group in query_groups:
+        _start_parallel_execution(query_group, host, port, username, password, encrypted)
+
+
+def _start_parallel_execution(
+    queries_gen: Iterator[str], host: str, port: int, username: str, password: str, encrypted: bool
+) -> None:
     num_of_processes = mp.cpu_count() // 2
-    _check_for_index_hint(
-        host,
-        port,
-        username,
-        password,
-        encrypted,
-    )
-    for queries_gen in [_nx_nodes_to_cypher(graph), _nx_edges_to_cypher(graph)]:
-        queries = list(queries_gen)
-        chunk_size = len(queries) // num_of_processes
-        processes = []
-        for i in range(num_of_processes):
-            process_queries = queries[i * chunk_size : chunk_size * (i + 1)]
-            processes.append(
-                mp.Process(
-                    target=_insert_queries,
-                    args=(
-                        process_queries,
-                        host,
-                        port,
-                        username,
-                        password,
-                        encrypted,
-                    ),
-                )
+    queries = list(queries_gen)
+    chunk_size = len(queries) // num_of_processes
+    processes = []
+
+    for i in range(num_of_processes):
+        process_queries = queries[i * chunk_size : chunk_size * (i + 1)]
+        processes.append(
+            mp.Process(
+                target=_insert_queries,
+                args=(
+                    process_queries,
+                    host,
+                    port,
+                    username,
+                    password,
+                    encrypted,
+                ),
             )
-        for p in processes:
-            p.start()
-        for p in processes:
-            p.join()
+        )
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
 
 
 def _check_for_index_hint(
@@ -91,6 +105,7 @@ def _check_for_index_hint(
     password: str = "",
     encrypted: bool = False,
 ):
+    """Check if the there are indexes, if not show warnings"""
     memgraph = Memgraph(host, port, username, password, encrypted)
     indexes = memgraph.get_indexes()
     if len(indexes) == 0:
@@ -100,7 +115,7 @@ def _check_for_index_hint(
 
 
 def _insert_queries(queries: List[str], host: str, port: int, username: str, password: str, encrypted: bool) -> None:
-    """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries."""
+    """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries"""
     memgraph = Memgraph(host, port, username, password, encrypted)
     while len(queries) > 0:
         try:
@@ -121,6 +136,7 @@ def _nx_nodes_to_cypher(graph: nx.Graph) -> Iterator[str]:
 
 
 def _nx_nodes_to_cypher_with_index(graph: nx.Graph) -> Iterator[str]:
+    """Generates a Cypher queries for creating nodes and indexes"""
     labels = set()
     for nx_id, data in graph.nodes(data=True):
         node_labels = data.get(NetworkXGraphConstants.LABELS, None)
@@ -129,6 +145,7 @@ def _nx_nodes_to_cypher_with_index(graph: nx.Graph) -> Iterator[str]:
         else:
             labels.add(node_labels)
         yield _create_node(nx_id, data)
+    labels.discard(None)
     for label in labels:
         yield _create_index(label)
 
@@ -170,5 +187,6 @@ def _create_edge(
 
 
 def _create_index(label: str, property: str = None):
+    """Returns Cypher query for index creation"""
     index = MemgraphIndex(label, property)
-    return f"CREATE INDEX ON {index.to_cypher()};"
+    return f"CREATE INDEX ON {index.to_cypher()}(id);"

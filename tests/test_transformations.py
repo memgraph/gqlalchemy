@@ -112,8 +112,8 @@ def test_nx_create_edge_and_node_with_index():
         "CREATE (:Label1 {id: 1});",
         "CREATE (:Label1:Label2 {name: 'name1', id: 2});",
         "CREATE (:Label1 {id: 3});",
-        "CREATE INDEX ON :Label2;",
-        "CREATE INDEX ON :Label1;",
+        "CREATE INDEX ON :Label2(id);",
+        "CREATE INDEX ON :Label1(id);",
         "MATCH (n:Label1 {id: 1}), (m:Label1:Label2 {id: 2}) CREATE (n)-[:TYPE1 ]->(m);",
         "MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
     ]
