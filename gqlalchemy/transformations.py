@@ -90,25 +90,24 @@ def _check_for_index_hint(
     memgraph = Memgraph(host, port, username, password, encrypted)
     indexes = memgraph.get_indexes()
     if len(indexes) == 0:
-        logging.warning(f"Be careful you do not have any indexes set up, the queries will take longer than expected!")
+        logging.getLogger(__file__).warning(
+            f"Be careful you do not have any indexes set up, the queries will take longer than expected!"
+        )
 
 
 def _insert_queries(queries: List[str], host, port, username, password, encrypted) -> None:
     """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries."""
-    conn = mgclient.connect(host=host, port=port, username=username, password=password, encrypted=encrypted)
+    memgraph = Memgraph(host, port, username, password, encrypted)
     while len(queries) > 0:
         try:
             query = queries.pop()
-            cursor = conn.cursor()
-            cursor.execute(query)
-            cursor.fetchall()
+            memgraph.execute_query(query)
         except IndexError:
             break
         except mgclient.DatabaseError as e:
             queries.append(query)
             logging.getLogger(__file__).warning(f"Ignoring database error: {str(e)}")
             continue
-        conn.commit()
 
 
 def _nx_nodes_to_cypher(graph: nx.Graph) -> Iterator[str]:
