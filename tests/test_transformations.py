@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import networkx as nx
-from gqlalchemy.transformations import nx_edges_to_cypher, nx_nodes_to_cypher
+from gqlalchemy.transformations import nx_to_cypher
 
 
 def test_nx_create_nodes():
@@ -24,7 +24,7 @@ def test_nx_create_nodes():
         "CREATE ( {id: 2});",
     ]
 
-    actual_cypher_queries = list(nx_nodes_to_cypher(graph))
+    actual_cypher_queries = list(nx_to_cypher(graph))
 
     assert actual_cypher_queries == expected_cypher_queries
 
@@ -44,7 +44,7 @@ def test_nx_create_nodes_with_properties():
         "CREATE (:L1:L2:L3 {data: [1, 2, 3], id: 3});",
     ]
 
-    actual_cypher_queries = list(nx_nodes_to_cypher(graph))
+    actual_cypher_queries = list(nx_to_cypher(graph))
 
     assert actual_cypher_queries == expected_cypher_queries
 
@@ -54,11 +54,14 @@ def test_nx_create_edges():
     graph.add_nodes_from([1, 2, 3])
     graph.add_edges_from([(1, 2), (2, 3)])
     expected_cypher_queries = [
+        "CREATE ( {id: 1});",
+        "CREATE ( {id: 2});",
+        "CREATE ( {id: 3});",
         "MATCH (n {id: 1}), (m {id: 2}) CREATE (n)-[:TO ]->(m);",
         "MATCH (n {id: 2}), (m {id: 3}) CREATE (n)-[:TO ]->(m);",
     ]
 
-    actual_cypher_queries = list(nx_edges_to_cypher(graph))
+    actual_cypher_queries = list(nx_to_cypher(graph))
 
     assert actual_cypher_queries == expected_cypher_queries
 
@@ -68,10 +71,32 @@ def test_nx_create_edges_with_properties():
     graph.add_nodes_from([1, 2, 3])
     graph.add_edges_from([(1, 2, {"type": "TYPE1"}), (2, 3, {"type": "TYPE2", "data": "abc"})])
     expected_cypher_queries = [
+        "CREATE ( {id: 1});",
+        "CREATE ( {id: 2});",
+        "CREATE ( {id: 3});",
         "MATCH (n {id: 1}), (m {id: 2}) CREATE (n)-[:TYPE1 ]->(m);",
         "MATCH (n {id: 2}), (m {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
     ]
 
-    actual_cypher_queries = list(nx_edges_to_cypher(graph))
+    actual_cypher_queries = list(nx_to_cypher(graph))
+
+    assert actual_cypher_queries == expected_cypher_queries
+
+
+def test_nx_create_edge_and_node_with_properties():
+    graph = nx.Graph()
+    graph.add_nodes_from(
+        [(1, {"labels": "Label1"}), (2, {"labels": ["Label1", "Label2"], "name": "name1"}), (3, {"labels": "Label1"})]
+    )
+    graph.add_edges_from([(1, 2, {"type": "TYPE1"}), (2, 3, {"type": "TYPE2", "data": "abc"})])
+    expected_cypher_queries = [
+        "CREATE (:Label1 {id: 1});",
+        "CREATE (:Label1:Label2 {name: 'name1', id: 2});",
+        "CREATE (:Label1 {id: 3});",
+        "MATCH (n:Label1 {id: 1}), (m:Label1:Label2 {id: 2}) CREATE (n)-[:TYPE1 ]->(m);",
+        "MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
+    ]
+
+    actual_cypher_queries = list(nx_to_cypher(graph))
 
     assert actual_cypher_queries == expected_cypher_queries

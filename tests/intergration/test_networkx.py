@@ -12,9 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from random import randint
+
 import networkx as nx
+import pytest
 from gqlalchemy import Memgraph
-from gqlalchemy.transformations import nx_to_cypher
+from gqlalchemy.models import MemgraphIndex
+from gqlalchemy.transformations import nx_graph_to_memgraph_parallel, nx_to_cypher
+
+
+@pytest.fixture
+def random_nx_graph(number_of_nodes: int = 100000, number_of_edges: int = 150000) -> nx.Graph:
+    graph = nx.Graph()
+
+    for i in range(number_of_nodes):
+        graph.add_node(i, labels="Label")
+    for _ in range(number_of_edges):
+        graph.add_edge(randint(0, number_of_nodes), randint(0, number_of_nodes))
+
+    return graph
 
 
 def test_simple_nx_to_memgraph(memgraph: Memgraph):
@@ -66,3 +82,20 @@ def test_nx_to_memgraph(memgraph: Memgraph):
     for i, edge in enumerate(actual_edges):
         assert edge["e"].type == expected_edges[i][2]["type"]
         assert edge["e"].properties["num"] == expected_edges[i][2]["num"]
+
+
+@pytest.mark.timeout(60)
+@pytest.mark.parametrize("random_nx_graph", [(100000, 200000)], indirect=True)
+def test_big_nx_to_memgraph(db: Memgraph, random_nx_graph: nx.Graph):
+    db.create_index(MemgraphIndex("Label", "id"))
+
+    for query in nx_to_cypher(random_nx_graph):
+        db.execute_query(query)
+
+
+@pytest.mark.timeout(180)
+@pytest.mark.parametrize("random_nx_graph", [(100000, 1000000)], indirect=True)
+def test_big_nx_to_memgraph_parallel(db: Memgraph, random_nx_graph: nx.Graph):
+    db.create_index(MemgraphIndex("Label", "id"))
+
+    nx_graph_to_memgraph_parallel(random_nx_graph)
