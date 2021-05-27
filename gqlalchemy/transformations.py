@@ -40,7 +40,7 @@ def nx_to_cypher(graph: nx.Graph) -> Iterator[str]:
 
 def nx_graph_to_memgraph_parallel(
     graph: nx.Graph,
-    host: str = "127.0.01",
+    host: str = "127.0.0.1",
     port: int = 7687,
     username: str = "",
     password: str = "",
@@ -81,7 +81,7 @@ def nx_graph_to_memgraph_parallel(
 
 
 def _check_for_index_hint(
-    host: str = "127.0.01",
+    host: str = "127.0.0.1",
     port: int = 7687,
     username: str = "",
     password: str = "",

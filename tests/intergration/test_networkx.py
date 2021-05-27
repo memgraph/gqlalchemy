@@ -95,6 +95,7 @@ def test_nx_to_memgraph(memgraph: Memgraph):
 
 
 @pytest.mark.timeout(60)
+@pytest.mark.slow
 def test_big_nx_to_memgraph(db: Memgraph, random_nx_graph: nx.Graph):
     db.create_index(MemgraphIndex("Label", "id"))
 
@@ -103,6 +104,7 @@ def test_big_nx_to_memgraph(db: Memgraph, random_nx_graph: nx.Graph):
 
 
 @pytest.mark.timeout(240)
+@pytest.mark.slow
 def test_huge_nx_to_memgraph_parallel(db: Memgraph, big_random_nx_graph: nx.Graph):
     db.create_index(MemgraphIndex("Label", "id"))
 
