@@ -1,54 +1,56 @@
-GQLAlchemy
-=================
+# GQLAlchemy
 
-<p align="left">
-    <a href="https://github.com/memgraph/gqlalchemy/actions" alt="Actions"> <img src="https://img.shields.io/github/workflow/status/memgraph/gqlalchemy/Build%20and%20Test" /></a>
-</p>
+![Github Action build-and-test](https://github.com/memgraph/gqlalchemy/workflows/Build%20and%20Test/badge.svg)
+[![GitHub license](https://img.shields.io/github/license/memgraph/gqlalchemy)](https://github.com/memgraph/gqlalchemy/master/LICENSE)
+[![PyPi release version](https://img.shields.io/pypi/v/gqlalchemy)](https://pypi.org/project/gqlalchemy)
 
-GQLAlchemy is library developed with purpose of assisting writing and running
-queries on Memgraph. GQLAlchemy supports high-level connection to Memgraph
-as well as modular query builder.
+GQLAlchemy is a library developed to assist in writing and running queries on Memgraph. GQLAlchemy supports high-level connection to Memgraph as well as modular query builder.
 
-GQLAlchemy is built on top of Memgraph's low-level client pymgclient
+GQLAlchemy is built on top of Memgraph's low-level client `pymgclient`
 ([pypi](https://pypi.org/project/pymgclient/) /
 [documentation](https://memgraph.github.io/pymgclient/) /
 [GitHub](https://github.com/memgraph/pymgclient)).
 
-Installation
-------------
+## Installation
+
 To install `gqlalchemy`, simply run the following command:
 ```
 pip install gqlalchemy
 ```
 
-Match Example
---------------
+## Build & Test
 
-When working with the `pymgclient`, Python developer can connect to database
-and execute `MATCH` cypher query with following syntax:
+The project uses [poetry](https://python-poetry.org/) to build the GQLAlchemy. To build and run tests execute the following commands:
+`poetry install`
+
+Before running tets make sure you have an active memgraph instance, then you can run:
+`poetry run pytest .`
+
+## GQLAlchemy example
+
+
+When working with the `gqlalchemy`, Python developer can connect to database and execute `MATCH` cypher query with following syntax:
 
 ```python
-import mgclient
+from gqlalchemy import Memgraph
 
-conn = mgclient.connect(host='127.0.0.1', port=7687)
-
-cursor = conn.cursor()
-cursor.execute("""
+memgraph = Memgraph("127.0.0.1", 7687)
+memgraph.execute_query("CREATE (:Node)-[:Connection]->(:Node)")
+results = memgraph.execute_and_fetch("""
     MATCH (from:Node)-[:Connection]->(to:Node)
     RETURN from, to;
 """)
-result = cursor.fetchone()
-conn.commit()
 
 for result in results:
     print(result['from'])
     print(result['to'])
 ```
 
-As we can see, example above can be error-prone, because we do not have
-abstractions for creating a database connection and `MATCH` query.
+## Query builder example
 
-Now, rewrite the exact same query by using the functionality of `gqlalchemy`.
+As we can see, the example above can be error-prone, because we do not have abstractions for creating a database connection and `MATCH` query.
+
+Now, rewrite the exact same query by using the functionality of gqlalchemys query builder..
 
 ```python
 
@@ -66,8 +68,7 @@ for result in results:
     print(result['to'])
 ```
 
-License
--------
+## License
 
 Copyright (c) 2016-2021 [Memgraph Ltd.](https://memgraph.com)
 
