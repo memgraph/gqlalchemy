@@ -121,8 +121,6 @@ def _insert_queries(queries: List[str], host: str, port: int, username: str, pas
         try:
             query = queries.pop()
             memgraph.execute_query(query)
-        except IndexError:
-            break
         except mgclient.DatabaseError as e:
             queries.append(query)
             logging.getLogger(__file__).warning(f"Ignoring database error: {e}")
