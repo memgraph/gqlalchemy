@@ -15,55 +15,55 @@
 from gqlalchemy.models import MemgraphIndex
 
 
-def test_no_index(db):
-    assert db.get_indexes() == []
+def test_no_index(memgraph):
+    assert memgraph.get_indexes() == []
 
 
-def test_create_index(db):
+def test_create_index(memgraph):
     index1 = MemgraphIndex("NodeOne")
     index2 = MemgraphIndex("NodeOne", "name")
 
-    db.create_index(index1)
-    db.create_index(index2)
+    memgraph.create_index(index1)
+    memgraph.create_index(index2)
 
-    assert set(db.get_indexes()) == {index1, index2}
+    assert set(memgraph.get_indexes()) == {index1, index2}
 
 
-def test_create_duplicate_index(db):
+def test_create_duplicate_index(memgraph):
     index = MemgraphIndex("NodeOne")
 
-    db.create_index(index)
-    db.create_index(index)
+    memgraph.create_index(index)
+    memgraph.create_index(index)
 
-    assert set(db.get_indexes()) == {index}
+    assert set(memgraph.get_indexes()) == {index}
 
 
-def test_drop_index(db):
+def test_drop_index(memgraph):
     index1 = MemgraphIndex("NodeOne")
     index2 = MemgraphIndex("NodeOne", "name")
 
-    db.create_index(index1)
-    db.create_index(index2)
+    memgraph.create_index(index1)
+    memgraph.create_index(index2)
 
-    db.drop_index(index1)
-    assert set(db.get_indexes()) == {index2}
+    memgraph.drop_index(index1)
+    assert set(memgraph.get_indexes()) == {index2}
 
-    db.drop_index(index2)
-    assert set(db.get_indexes()) == set()
+    memgraph.drop_index(index2)
+    assert set(memgraph.get_indexes()) == set()
 
 
-def test_drop_duplicate_index(db):
+def test_drop_duplicate_index(memgraph):
     index = MemgraphIndex("NodeOne")
 
-    db.create_index(index)
-    db.drop_index(index)
-    assert set(db.get_indexes()) == set()
+    memgraph.create_index(index)
+    memgraph.drop_index(index)
+    assert set(memgraph.get_indexes()) == set()
 
-    db.drop_index(index)
-    assert set(db.get_indexes()) == set()
+    memgraph.drop_index(index)
+    assert set(memgraph.get_indexes()) == set()
 
 
-def test_ensure_index(db):
+def test_ensure_index(memgraph):
     old_indexes = [
         MemgraphIndex("NodeOne"),
         MemgraphIndex("NodeOne", "name"),
@@ -71,9 +71,9 @@ def test_ensure_index(db):
         MemgraphIndex("NodeTwo", "age"),
     ]
     for old_index in old_indexes:
-        db.create_index(old_index)
+        memgraph.create_index(old_index)
 
-    assert set(db.get_indexes()) == set(old_indexes)
+    assert set(memgraph.get_indexes()) == set(old_indexes)
 
     new_indexes = [
         MemgraphIndex("NodeOne", "name"),
@@ -81,6 +81,6 @@ def test_ensure_index(db):
         MemgraphIndex("NodeThree"),
         MemgraphIndex("NodeFour", "created_at"),
     ]
-    db.ensure_indexes(new_indexes)
+    memgraph.ensure_indexes(new_indexes)
 
-    assert set(db.get_indexes()) == set(new_indexes)
+    assert set(memgraph.get_indexes()) == set(new_indexes)

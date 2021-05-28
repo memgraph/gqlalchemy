@@ -12,13 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 import pytest
 from gqlalchemy import Memgraph
 
 
+def get_data_dir() -> Path:
+    return Path(__file__).parents[0].joinpath("data")
+
+
 @pytest.fixture
-def db():
-    db = Memgraph()
-    db.ensure_indexes([])
-    db.ensure_constraints([])
-    return db
+def memgraph() -> Memgraph:
+    memgraph = Memgraph()
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+    return memgraph
+
+
+@pytest.fixture
+def populated_memgraph(dataset_file: str) -> Memgraph:
+    memgraph = Memgraph()
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+    memgraph.drop_database()
+    with get_data_dir().joinpath(dataset_file).open("r") as dataset:
+        for query in dataset:
+            memgraph.execute_query(query)
+
+    yield memgraph
+
+    memgraph.drop_database()

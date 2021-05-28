@@ -15,55 +15,55 @@
 from gqlalchemy import MemgraphConstraintExists, MemgraphConstraintUnique
 
 
-def test_create_constraint_exist(db):
+def test_create_constraint_exist(memgraph):
     memgraph_constraint = MemgraphConstraintExists("TestLabel", "name")
 
-    db.create_constraint(memgraph_constraint)
-    actual_constraints = db.get_constraints()
+    memgraph.create_constraint(memgraph_constraint)
+    actual_constraints = memgraph.get_constraints()
 
     assert actual_constraints == [memgraph_constraint]
 
 
-def test_create_constraint_unique(db):
+def test_create_constraint_unique(memgraph):
     memgraph_constraint = MemgraphConstraintUnique("TestLabel", ("name",))
 
-    db.create_constraint(memgraph_constraint)
-    actual_constraints = db.get_constraints()
+    memgraph.create_constraint(memgraph_constraint)
+    actual_constraints = memgraph.get_constraints()
 
     assert actual_constraints == [memgraph_constraint]
 
 
-def test_drop_constraint_exist(db):
+def test_drop_constraint_exist(memgraph):
     memgraph_constraint = MemgraphConstraintExists("TestLabel", "name")
 
-    db.create_constraint(memgraph_constraint)
-    db.drop_constraint(memgraph_constraint)
-    actual_constraints = db.get_constraints()
+    memgraph.create_constraint(memgraph_constraint)
+    memgraph.drop_constraint(memgraph_constraint)
+    actual_constraints = memgraph.get_constraints()
 
     assert actual_constraints == []
 
 
-def test_drop_constraint_unique(db):
+def test_drop_constraint_unique(memgraph):
     memgraph_constraint = MemgraphConstraintUnique("TestLabel", ("name",))
 
-    db.create_constraint(memgraph_constraint)
-    db.drop_constraint(memgraph_constraint)
-    actual_constraints = db.get_constraints()
+    memgraph.create_constraint(memgraph_constraint)
+    memgraph.drop_constraint(memgraph_constraint)
+    actual_constraints = memgraph.get_constraints()
 
     assert actual_constraints == []
 
 
-def test_create_duplicate_constraint(db):
+def test_create_duplicate_constraint(memgraph):
     memgraph_constraint_exist = MemgraphConstraintExists("TestLabel", "name")
 
-    db.create_constraint(memgraph_constraint_exist)
-    db.create_constraint(memgraph_constraint_exist)
-    actual_constraints = db.get_constraints()
+    memgraph.create_constraint(memgraph_constraint_exist)
+    memgraph.create_constraint(memgraph_constraint_exist)
+    actual_constraints = memgraph.get_constraints()
 
     assert set(actual_constraints) == {memgraph_constraint_exist}
 
 
-def test_ensure_constraints_remove_all(db):
+def test_ensure_constraints_remove_all(memgraph):
     old_constraints = [
         MemgraphConstraintExists("NodeOne", "name"),
         MemgraphConstraintExists("NodeTwo", "age"),
@@ -77,19 +77,19 @@ def test_ensure_constraints_remove_all(db):
         MemgraphConstraintUnique("NodeThree", ("code",)),
     ]
     for old_constraint in old_constraints:
-        db.create_constraint(old_constraint)
-    actual_constraints = db.get_constraints()
+        memgraph.create_constraint(old_constraint)
+    actual_constraints = memgraph.get_constraints()
 
     assert set(actual_constraints) == set(old_constraints)
 
     new_constraints = []
-    db.ensure_constraints(new_constraints)
-    actual_constraints_ensured = db.get_constraints()
+    memgraph.ensure_constraints(new_constraints)
+    actual_constraints_ensured = memgraph.get_constraints()
 
     assert set(actual_constraints_ensured) == set(new_constraints)
 
 
-def test_ensure_constraints(db):
+def test_ensure_constraints(memgraph):
     old_constraints = [
         MemgraphConstraintExists("NodeOne", "name"),
         MemgraphConstraintExists("NodeTwo", "age"),
@@ -103,8 +103,8 @@ def test_ensure_constraints(db):
         MemgraphConstraintUnique("NodeThree", ("code",)),
     ]
     for old_constraint in old_constraints:
-        db.create_constraint(old_constraint)
-    actual_constraints = db.get_constraints()
+        memgraph.create_constraint(old_constraint)
+    actual_constraints = memgraph.get_constraints()
 
     assert set(actual_constraints) == set(old_constraints)
 
@@ -120,7 +120,7 @@ def test_ensure_constraints(db):
         ),
         MemgraphConstraintUnique("NodeThree", ("attribtue3",)),
     ]
-    db.ensure_constraints(new_constraints)
-    actual_constraints_ensured = db.get_constraints()
+    memgraph.ensure_constraints(new_constraints)
+    actual_constraints_ensured = memgraph.get_constraints()
 
     assert set(actual_constraints_ensured) == set(new_constraints)
