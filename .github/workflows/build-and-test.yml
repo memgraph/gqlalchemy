@@ -30,4 +30,4 @@ jobs:
     - name: Test project
       run: |
         poetry install
-        poetry run pytest
+        poetry run pytest -vvv -m "not slow"

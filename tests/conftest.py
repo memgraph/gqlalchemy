@@ -27,6 +27,7 @@ def memgraph() -> Memgraph:
     memgraph = Memgraph()
     memgraph.ensure_indexes([])
     memgraph.ensure_constraints([])
+    memgraph.drop_database()
     return memgraph
 
 
