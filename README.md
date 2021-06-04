@@ -1,8 +1,14 @@
 # GQLAlchemy
 
-![Github Action build-and-test](https://github.com/memgraph/gqlalchemy/workflows/Build%20and%20Test/badge.svg)
-[![GitHub license](https://img.shields.io/github/license/memgraph/gqlalchemy)](https://github.com/memgraph/gqlalchemy/master/LICENSE)
-[![PyPi release version](https://img.shields.io/pypi/v/gqlalchemy)](https://pypi.org/project/gqlalchemy)
+
+<p>
+    <a href="https://github.com/memgraph/gqlalchemy/actions"><img src="https://github.com/memgraph/gqlalchemy/workflows/Build%20and%20Test/badge.svg" /></a>
+    <a href="https://github.com/memgraph/gqlalchemy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/memgraph/gqlalchemy" /></a>
+    <a href="https://pypi.org/project/gqlalchemy"><img src="https://img.shields.io/pypi/v/gqlalchemy" /></a>
+    <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+    <a href="https://github.com/memgraph/gqlalchemy/stargazers" alt="Stargazers"><img src="https://img.shields.io/github/stars/memgraph/gqlalchemy?style=social" /></a>
+</p>
+
 
 GQLAlchemy is a library developed to assist in writing and running queries on Memgraph. GQLAlchemy supports high-level connection to Memgraph as well as modular query builder.
 
