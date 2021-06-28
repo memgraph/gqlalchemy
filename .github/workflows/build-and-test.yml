@@ -2,23 +2,26 @@ name: Build and Test
 
 env:
   MG_VERSION: '1.4.0'
-  PY_VERSION: '3.8'
   POETRY_VERSION: '1.1.4'
 
 on: [push]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9']
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Set up Python ${{ env.PY_VERSION }}
+    - name: Set up Python ${{ matrix.py-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ env.PY_VERSION }}
+        python-version: ${{ matrix.python-version }}
     - name: Setup poetry
       uses: abatilo/actions-poetry@v2.0.0
       with:
