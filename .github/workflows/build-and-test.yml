@@ -10,7 +10,7 @@ jobs:
   build_and_test_ubuntu:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9']
+        python-version: [ '3.8', '3.9' ]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
