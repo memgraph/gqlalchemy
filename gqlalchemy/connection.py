@@ -16,7 +16,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator
 
 import mgclient
-from .models import Node, Relationship, Path
+
+from .models import Node, Path, Relationship
 
 __all__ = ("Connection",)
 
@@ -37,7 +38,7 @@ class Connection(ABC):
         self.encrypted = encrypted
 
     @abstractmethod
-    def execute_query(self, query: str) -> None:
+    def execute(self, query: str) -> None:
         """Executes Cypher query without returning any results."""
         pass
 
@@ -71,7 +72,7 @@ class MemgraphConnection(Connection):
         self.lazy = lazy
         self._connection = self._create_connection()
 
-    def execute_query(self, query: str) -> None:
+    def execute(self, query: str) -> None:
         """Executes Cypher query without returning any results."""
         cursor = self._connection.cursor()
         cursor.execute(query)

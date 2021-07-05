@@ -49,7 +49,7 @@ def test_simple_nx_to_memgraph(memgraph: Memgraph):
     graph.add_edges_from([(1, 2), (1, 3)])
 
     for query in nx_to_cypher(graph):
-        memgraph.execute_query(query)
+        memgraph.execute(query)
 
     actual_nodes = list(memgraph.execute_and_fetch("MATCH (n) RETURN n ORDER BY n.id"))
     assert len(actual_nodes) == 3
@@ -80,7 +80,7 @@ def test_simple_index_nx_to_memgraph(memgraph: Memgraph):
     }
 
     for query in nx_to_cypher(graph, True):
-        memgraph.execute_query(query)
+        memgraph.execute(query)
     actual_indexes = set(memgraph.get_indexes())
 
     assert actual_indexes == expected_indexes
@@ -98,7 +98,7 @@ def test_nx_to_memgraph(memgraph: Memgraph):
     graph.add_edges_from(expected_edges)
 
     for query in nx_to_cypher(graph):
-        memgraph.execute_query(query)
+        memgraph.execute(query)
 
     actual_nodes = list(memgraph.execute_and_fetch("MATCH (n) RETURN n ORDER BY n.id"))
     assert len(actual_nodes) == 3
@@ -123,14 +123,14 @@ def test_big_nx_to_memgraph_with_manual_index(memgraph: Memgraph, random_nx_grap
     memgraph.create_index(MemgraphIndex("Label", "id"))
 
     for query in nx_to_cypher(random_nx_graph):
-        memgraph.execute_query(query)
+        memgraph.execute(query)
 
 
 @pytest.mark.timeout(60)
 @pytest.mark.slow
 def test_big_nx_to_memgraph(memgraph: Memgraph, random_nx_graph: nx.Graph):
     for query in nx_to_cypher(random_nx_graph, create_index=True):
-        memgraph.execute_query(query)
+        memgraph.execute(query)
 
 
 @pytest.mark.timeout(240)

@@ -16,12 +16,7 @@ import os
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
-from .models import (
-    MemgraphConstraint,
-    MemgraphConstraintExists,
-    MemgraphConstraintUnique,
-    MemgraphIndex,
-)
+from .models import MemgraphConstraint, MemgraphConstraintExists, MemgraphConstraintUnique, MemgraphIndex
 
 __all__ = ("Memgraph",)
 
@@ -62,20 +57,20 @@ class Memgraph:
         connection = connection or self._get_cached_connection()
         return connection.execute_and_fetch(query)
 
-    def execute_query(self, query: str, connection: Connection = None) -> None:
+    def execute(self, query: str, connection: Connection = None) -> None:
         """Executes Cypher query without returning any results."""
         connection = connection or self._get_cached_connection()
-        connection.execute_query(query)
+        connection.execute(query)
 
     def create_index(self, index: MemgraphIndex) -> None:
         """Creates an index (label or label-property type) in the database"""
         query = f"CREATE INDEX ON {index.to_cypher()}"
-        self.execute_query(query)
+        self.execute(query)
 
     def drop_index(self, index: MemgraphIndex) -> None:
         """Drops an index (label or label-property type) in the database"""
         query = f"DROP INDEX ON {index.to_cypher()}"
-        self.execute_query(query)
+        self.execute(query)
 
     def get_indexes(self) -> List[MemgraphIndex]:
         """Returns a list of all database indexes (label and label-property types)"""
@@ -96,12 +91,12 @@ class Memgraph:
     def create_constraint(self, index: MemgraphConstraint) -> None:
         """Creates a constraint (label or label-property type) in the database"""
         query = f"CREATE CONSTRAINT ON {index.to_cypher()}"
-        self.execute_query(query)
+        self.execute(query)
 
     def drop_constraint(self, index: MemgraphConstraint) -> None:
         """Drops a constraint (label or label-property type) in the database"""
         query = f"DROP CONSTRAINT ON {index.to_cypher()}"
-        self.execute_query(query)
+        self.execute(query)
 
     def get_constraints(self) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
         """Returns a list of all database constraints (label and label-property types)"""
@@ -130,7 +125,7 @@ class Memgraph:
 
     def drop_database(self):
         """Drops database by removing all nodes and edges"""
-        self.execute_query("MATCH (n) DETACH DELETE n")
+        self.execute("MATCH (n) DETACH DELETE n")
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""

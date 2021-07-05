@@ -41,7 +41,7 @@ When working with the `gqlalchemy`, Python developer can connect to database and
 from gqlalchemy import Memgraph
 
 memgraph = Memgraph("127.0.0.1", 7687)
-memgraph.execute_query("CREATE (:Node)-[:Connection]->(:Node)")
+memgraph.execute("CREATE (:Node)-[:Connection]->(:Node)")
 results = memgraph.execute_and_fetch("""
     MATCH (from:Node)-[:Connection]->(to:Node)
     RETURN from, to;
