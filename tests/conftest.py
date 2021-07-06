@@ -39,7 +39,7 @@ def populated_memgraph(dataset_file: str) -> Memgraph:
     memgraph.drop_database()
     with get_data_dir().joinpath(dataset_file).open("r") as dataset:
         for query in dataset:
-            memgraph.execute_query(query)
+            memgraph.execute(query)
 
     yield memgraph
 

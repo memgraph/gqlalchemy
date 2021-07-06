@@ -120,7 +120,7 @@ def _insert_queries(queries: List[str], host: str, port: int, username: str, pas
     while len(queries) > 0:
         try:
             query = queries.pop()
-            memgraph.execute_query(query)
+            memgraph.execute(query)
         except mgclient.DatabaseError as e:
             queries.append(query)
             logging.getLogger(__file__).warning(f"Ignoring database error: {e}")
