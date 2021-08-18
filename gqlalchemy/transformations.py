@@ -21,7 +21,7 @@ import networkx as nx
 
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex
-from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties
+from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 
 __all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
 
@@ -153,7 +153,10 @@ def _nx_edges_to_cypher(graph: nx.Graph) -> Iterator[str]:
     for n1, n2, data in graph.edges(data=True):
         from_label = graph.nodes[n1].get(NetworkXGraphConstants.LABELS, "")
         to_label = graph.nodes[n2].get(NetworkXGraphConstants.LABELS, "")
-        yield _create_edge(n1, n2, from_label, to_label, data)
+
+        n1_id = graph.nodes[n1].get(NetworkXGraphConstants.ID, n1)
+        n2_id = graph.nodes[n2].get(NetworkXGraphConstants.ID, n2)
+        yield _create_edge(n1_id, n2_id, from_label, to_label, data)
 
 
 def _create_node(nx_id: int, properties: Dict[str, Any]) -> str:
@@ -168,8 +171,8 @@ def _create_node(nx_id: int, properties: Dict[str, Any]) -> str:
 
 
 def _create_edge(
-    from_id: int,
-    to_id: int,
+    from_id: Union[int, str],
+    to_id: Union[int, str],
     from_label: Union[str, List[str]],
     to_label: Union[str, List[str]],
     properties: Dict[str, Any],
@@ -180,8 +183,10 @@ def _create_edge(
     properties_str = to_cypher_properties(properties)
     from_label_str = to_cypher_labels(from_label)
     to_label_str = to_cypher_labels(to_label)
+    from_id_str = to_cypher_value(from_id)
+    to_id_str = to_cypher_value(to_id)
 
-    return f"MATCH (n{from_label_str} {{id: {from_id}}}), (m{to_label_str} {{id: {to_id}}}) CREATE (n)-[{edge_type} {properties_str}]->(m);"
+    return f"MATCH (n{from_label_str} {{id: {from_id_str}}}), (m{to_label_str} {{id: {to_id_str}}}) CREATE (n)-[{edge_type} {properties_str}]->(m);"
 
 
 def _create_index(label: str, property: str = None):
