@@ -29,6 +29,24 @@ def test_nx_create_nodes():
     assert actual_cypher_queries == expected_cypher_queries
 
 
+def test_nx_create_nodes_with_string():
+    graph = nx.Graph()
+    graph.add_nodes_from(
+        [
+            (1, {"id": "id1"}),
+            (2, {"id": "id2"}),
+        ]
+    )
+    expected_cypher_queries = [
+        "CREATE ( {id: 'id1'});",
+        "CREATE ( {id: 'id2'});",
+    ]
+
+    actual_cypher_queries = list(nx_to_cypher(graph))
+
+    assert actual_cypher_queries == expected_cypher_queries
+
+
 def test_nx_create_nodes_with_properties():
     graph = nx.Graph()
     graph.add_nodes_from(
@@ -59,6 +77,29 @@ def test_nx_create_edges():
         "CREATE ( {id: 3});",
         "MATCH (n {id: 1}), (m {id: 2}) CREATE (n)-[:TO ]->(m);",
         "MATCH (n {id: 2}), (m {id: 3}) CREATE (n)-[:TO ]->(m);",
+    ]
+
+    actual_cypher_queries = list(nx_to_cypher(graph))
+
+    assert actual_cypher_queries == expected_cypher_queries
+
+
+def test_nx_create_edges_with_string_ids():
+    graph = nx.Graph()
+    graph.add_nodes_from(
+        [
+            (1, {"id": "id1"}),
+            (2, {"id": "id2"}),
+            (3, {"id": "id3"}),
+        ]
+    )
+    graph.add_edges_from([(1, 2), (2, 3)])
+    expected_cypher_queries = [
+        "CREATE ( {id: 'id1'});",
+        "CREATE ( {id: 'id2'});",
+        "CREATE ( {id: 'id3'});",
+        "MATCH (n {id: 'id1'}), (m {id: 'id2'}) CREATE (n)-[:TO ]->(m);",
+        "MATCH (n {id: 'id2'}), (m {id: 'id3'}) CREATE (n)-[:TO ]->(m);",
     ]
 
     actual_cypher_queries = list(nx_to_cypher(graph))
