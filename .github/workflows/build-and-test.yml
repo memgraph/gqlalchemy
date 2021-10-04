@@ -35,7 +35,7 @@ jobs:
   build_and_test_windows:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9']
+        python-version: [ '3.7' ,'3.8', '3.9']
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
