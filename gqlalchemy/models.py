@@ -126,11 +126,11 @@ class Relationship(UniqueGraphObject):
 
     @property
     def end_node(self) -> int:
-        return self._start_node
+        return self._end_node
 
     @property
     def start_node(self) -> int:
-        return self._end_node
+        return self._start_node
 
     @property
     def nodes(self) -> Tuple[int, int]:
