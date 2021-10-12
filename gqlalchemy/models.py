@@ -66,9 +66,9 @@ class GraphObject:
 
 
 class UniqueGraphObject(GraphObject):
-    def __init__(self, object_id: Any, properties: Dict[str, Any] = None):
+    def __init__(self, object_id: Any, properties: Dict[str, Any] = {}):
         self._id = object_id
-        self._properties = properties or dict()
+        self._properties = properties
 
     @property
     def id(self) -> Any:

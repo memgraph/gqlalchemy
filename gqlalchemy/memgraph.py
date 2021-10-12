@@ -39,17 +39,17 @@ class MemgraphConstants:
 class Memgraph:
     def __init__(
         self,
-        host: str = None,
-        port: int = None,
-        username: str = "",
-        password: str = "",
-        encrypted: bool = None,
+        host: str = MG_HOST,
+        port: int = MG_PORT,
+        username: str = MG_USERNAME,
+        password: str = MG_PASSWORD,
+        encrypted: bool = MG_ENCRYPTED,
     ):
-        self._host = host or MG_HOST
-        self._port = port or MG_PORT
-        self._username = username or MG_USERNAME
-        self._password = password or MG_PASSWORD
-        self._encrypted = encrypted if encrypted is not None else MG_ENCRYPTED
+        self._host = host
+        self._port = port
+        self._username = username
+        self._password = password
+        self._encrypted = encrypted
         self._cached_connection: Optional[Connection] = None
 
     def execute_and_fetch(self, query: str, connection: Connection = None) -> Iterator[Dict[str, Any]]:
