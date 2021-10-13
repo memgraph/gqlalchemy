@@ -19,6 +19,12 @@ GQLAlchemy is built on top of Memgraph's low-level client `pymgclient`
 
 ## Installation
 
+Before you install `gqlalchemy` make sure that you have `cmake` installed by running:
+```
+cmake --version
+```
+You can install `cmake` by following the [official instructions](https://cgold.readthedocs.io/en/latest/first-step/installation.html#).
+
 To install `gqlalchemy`, simply run the following command:
 ```
 pip install gqlalchemy
