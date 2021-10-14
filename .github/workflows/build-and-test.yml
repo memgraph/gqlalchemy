@@ -4,7 +4,7 @@ env:
   MG_VERSION: '1.5.0'
   POETRY_VERSION: '1.1.4'
 
-on: [push]
+on: [pull_request, workflow_dispatch]
 
 jobs:
   build_and_test_ubuntu:
