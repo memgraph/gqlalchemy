@@ -1,66 +1,71 @@
 name: Build and Test
 
 env:
-  MG_VERSION: '1.5.0'
-  POETRY_VERSION: '1.1.4'
+  MG_VERSION: "1.5.0"
+  POETRY_VERSION: "1.1.4"
 
-on: [pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build_and_test_ubuntu:
     strategy:
       matrix:
-        python-version: [ '3.7', '3.8', '3.9' ]
+        python-version: ["3.7", "3.8", "3.9"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.py-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Setup poetry
-      uses: abatilo/actions-poetry@v2.0.0
-      with:
-        poetry-version: ${{ env.POETRY_VERSION }}
-    - name: Run memgraph instance
-      run: |
-        docker run -d -p 7687:7687 memgraph/memgraph --telemetry-enabled=False
-    - name: Test project
-      run: |
-        poetry install
-        poetry run pytest -vvv -m "not slow"
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.py-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Run memgraph instance
+        run: |
+          docker run -d -p 7687:7687 memgraph/memgraph --telemetry-enabled=False
+      - name: Test project
+        run: |
+          poetry install
+          poetry run pytest -vvv -m "not slow"
 
   build_and_test_windows:
     strategy:
       matrix:
-        python-version: [ '3.7' ,'3.8', '3.9']
+        python-version: ["3.7", "3.8", "3.9"]
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.py-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - uses: Vampire/setup-wsl@v1
-      with:
-        distribution: Ubuntu-20.04
-    - name: Download, install and run Memgraph under WSL
-      shell: wsl-bash {0} # root shell
-      run: |
-        mkdir ~/memgraph
-        curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-community-1_amd64.deb --output ~/memgraph/memgraph-community.deb
-        dpkg -i ~/memgraph/memgraph-community.deb
-        nohup /usr/lib/memgraph/memgraph --bolt-port 7687 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-file='' &
-        sleep 1 # Wait for Memgraph a bit.
-    - name: Setup poetry
-      uses: abatilo/actions-poetry@v2.0.0
-      with:
-        poetry-version: ${{ env.POETRY_VERSION }}
-    - name: Test project
-      run: |
-        poetry install
-        poetry run pytest -vvv -m "not slow"
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.py-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: Vampire/setup-wsl@v1
+        with:
+          distribution: Ubuntu-20.04
+      - name: Download, install and run Memgraph under WSL
+        shell: wsl-bash {0} # root shell
+        run: |
+          mkdir ~/memgraph
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-community-1_amd64.deb --output ~/memgraph/memgraph-community.deb
+          dpkg -i ~/memgraph/memgraph-community.deb
+          nohup /usr/lib/memgraph/memgraph --bolt-port 7687 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-file='' &
+          sleep 1 # Wait for Memgraph a bit.
+      - name: Setup poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Test project
+        run: |
+          poetry install
+          poetry run pytest -vvv -m "not slow"
