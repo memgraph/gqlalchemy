@@ -35,7 +35,7 @@ pip install gqlalchemy
 The project uses [poetry](https://python-poetry.org/) to build the GQLAlchemy. To build and run tests execute the following commands:
 `poetry install`
 
-Before running tets make sure you have an active memgraph instance, then you can run:
+Before running tests make sure you have an active memgraph instance, then you can run:
 `poetry run pytest .`
 
 ## GQLAlchemy example
