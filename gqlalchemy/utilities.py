@@ -12,15 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
+
+from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 
-def to_cypher_value(value: Any) -> str:
+class NanValuesHandle(Enum):
+    THROW_EXCEPTION = 1
+    REMOVE_PROPERTY = 2
+
+
+class NetworkXCypherConfig:
+    nan_handler = NanValuesHandle.THROW_EXCEPTION
+
+
+def to_cypher_value(value: Any, config: NetworkXCypherConfig = NetworkXCypherConfig()) -> str:
     """Converts value to a valid openCypher type"""
     value_type = type(value)
 
     if value_type == str and value.lower() == "null":
         return value
+
+    if value_type == float and math.isnan(value):
+        if config.nan_handler == NanValuesHandle.THROW_EXCEPTION:
+            raise MathException("Nan values are not allowed!")
+
+        return "null"
 
     if value_type in [int, float, bool]:
         return str(value)
@@ -41,14 +59,16 @@ def to_cypher_value(value: Any) -> str:
     return f"'{value}'"
 
 
-def to_cypher_properties(properties: Optional[Dict[str, Any]] = None) -> str:
+def to_cypher_properties(
+    properties: Optional[Dict[str, Any]] = None, config: NetworkXCypherConfig = NetworkXCypherConfig()
+) -> str:
     """Converts properties to a openCypher key-value properties"""
     if not properties:
         return ""
 
     properties_str = []
     for key, value in properties.items():
-        value_str = to_cypher_value(value)
+        value_str = to_cypher_value(value, config)
         properties_str.append(f"{key}: {value_str}")
 
     return "{{{}}}".format(", ".join(properties_str))
@@ -61,3 +81,7 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
             return f":{labels}"
         return f":{':'.join(labels)}"
     return ""
+
+
+class MathException(Exception):
+    pass
