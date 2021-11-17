@@ -21,7 +21,7 @@ from gqlalchemy.utilities import (
     to_cypher_labels,
     to_cypher_properties,
     to_cypher_value,
-    MathException,
+    NanException,
 )
 
 
@@ -79,14 +79,14 @@ def test_nan_value_default_config_throw_exception():
     config = NetworkXCypherConfig()
     properties = {"prop1": math.nan}
 
-    with pytest.raises(MathException):
+    with pytest.raises(NanException):
         to_cypher_properties(properties, config)
 
 
 def test_nan_value_no_config_throw_exception():
     properties = {"prop1": math.nan}
 
-    with pytest.raises(MathException):
+    with pytest.raises(NanException):
         to_cypher_properties(properties)
 
 

@@ -36,7 +36,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = NetworkXCypherCon
 
     if value_type == float and math.isnan(value):
         if config.nan_handler == NanValuesHandle.THROW_EXCEPTION:
-            raise MathException("Nan values are not allowed!")
+            raise NanException("Nan values are not allowed!")
 
         return "null"
 
@@ -83,5 +83,5 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
     return ""
 
 
-class MathException(Exception):
+class NanException(Exception):
     pass
