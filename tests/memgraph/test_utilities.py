@@ -91,8 +91,7 @@ def test_nan_value_no_config_throw_exception():
 
 
 def test_nan_value_remove_handler_yields_null():
-    config = NetworkXCypherConfig()
-    config.nan_handler = NanValuesHandle.REMOVE_PROPERTY
+    config = NetworkXCypherConfig(nan_handler=NanValuesHandle.REMOVE_PROPERTY)
 
     properties = {"prop1": math.nan}
     expected_properies = "{prop1: null}"

@@ -32,12 +32,13 @@ class NetworkXGraphConstants:
     ID = "id"
 
 
-def nx_to_cypher(
-    graph: nx.Graph, create_index=False, config: NetworkXCypherConfig = NetworkXCypherConfig()
-) -> Iterator[str]:
+def nx_to_cypher(graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]:
     """Generates a Cypher queries for creating graph"""
 
-    builder = NetworkXCypherBuilder(create_index=create_index, config=config)
+    if config is None:
+        config = NetworkXCypherConfig()
+
+    builder = NetworkXCypherBuilder(config=config)
 
     yield from builder.yield_queries(graph)
 
@@ -49,14 +50,16 @@ def nx_graph_to_memgraph_parallel(
     username: str = "",
     password: str = "",
     encrypted: bool = False,
-    create_index=False,
-    config: NetworkXCypherConfig = NetworkXCypherConfig(),
+    config: NetworkXCypherConfig = None,
 ) -> None:
     """Generates a Cypher queries and inserts data into Memgraph in parallel"""
-    builder = NetworkXCypherBuilder(create_index=create_index, config=config)
+    if config is None:
+        config = NetworkXCypherConfig()
+
+    builder = NetworkXCypherBuilder(config=config)
     query_groups = builder.yield_query_groups(graph)
 
-    if not create_index:
+    if not config.create_index:
         _check_for_index_hint(
             host,
             port,
@@ -128,14 +131,16 @@ def _insert_queries(queries: List[str], host: str, port: int, username: str, pas
 
 
 class NetworkXCypherBuilder:
-    def __init__(self, create_index: bool, config: NetworkXCypherConfig):
-        self._create_index_prop = create_index
+    def __init__(self, config: NetworkXCypherConfig):
+        if config is None:
+            raise NoNetworkXConfigException("No NetworkX configuration provided!")
+
         self._config = config
 
     def yield_queries(self, graph: nx.Graph) -> Iterator[str]:
         """Generates a Cypher queries for creating graph"""
 
-        if self._create_index_prop:
+        if self._config.create_index:
             yield from self._nx_nodes_to_cypher_with_index(graph)
         else:
             yield from self._nx_nodes_to_cypher(graph)
@@ -146,7 +151,7 @@ class NetworkXCypherBuilder:
 
         query_groups = []
 
-        if self._create_index_prop:
+        if self._config.create_index:
             query_groups.append(self._nx_nodes_to_cypher_with_index(graph))
         else:
             query_groups.append(self._nx_nodes_to_cypher(graph))
@@ -217,3 +222,7 @@ class NetworkXCypherBuilder:
         """Returns Cypher query for index creation"""
         index = MemgraphIndex(label, property)
         return f"CREATE INDEX ON {index.to_cypher()}(id);"
+
+
+class NoNetworkXConfigException(Exception):
+    pass

@@ -24,11 +24,24 @@ class NanValuesHandle(Enum):
 
 
 class NetworkXCypherConfig:
-    nan_handler = NanValuesHandle.THROW_EXCEPTION
+    def __init__(self, create_index: bool = False, nan_handler: NanValuesHandle = NanValuesHandle.THROW_EXCEPTION):
+        self._create_index = create_index
+        self._nan_handler = nan_handler
+
+    @property
+    def create_index(self) -> bool:
+        return self._create_index
+
+    @property
+    def nan_handler(self) -> NanValuesHandle:
+        return self._nan_handler
 
 
-def to_cypher_value(value: Any, config: NetworkXCypherConfig = NetworkXCypherConfig()) -> str:
+def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid openCypher type"""
+    if config is None:
+        config = NetworkXCypherConfig()
+
     value_type = type(value)
 
     if value_type == str and value.lower() == "null":
@@ -59,10 +72,11 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = NetworkXCypherCon
     return f"'{value}'"
 
 
-def to_cypher_properties(
-    properties: Optional[Dict[str, Any]] = None, config: NetworkXCypherConfig = NetworkXCypherConfig()
-) -> str:
+def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=None) -> str:
     """Converts properties to a openCypher key-value properties"""
+    if config is None:
+        config = NetworkXCypherConfig()
+
     if not properties:
         return ""
 
