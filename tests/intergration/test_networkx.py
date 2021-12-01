@@ -19,6 +19,7 @@ import pytest
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex
 from gqlalchemy.transformations import nx_graph_to_memgraph_parallel, nx_to_cypher
+from gqlalchemy.utilities import NetworkXCypherConfig
 
 
 @pytest.fixture
@@ -79,7 +80,7 @@ def test_simple_index_nx_to_memgraph(memgraph: Memgraph):
         MemgraphIndex("L3", "id"),
     }
 
-    for query in nx_to_cypher(graph, True):
+    for query in nx_to_cypher(graph, NetworkXCypherConfig(create_index=True)):
         memgraph.execute(query)
     actual_indexes = set(memgraph.get_indexes())
 
@@ -129,7 +130,7 @@ def test_big_nx_to_memgraph_with_manual_index(memgraph: Memgraph, random_nx_grap
 @pytest.mark.timeout(60)
 @pytest.mark.slow
 def test_big_nx_to_memgraph(memgraph: Memgraph, random_nx_graph: nx.Graph):
-    for query in nx_to_cypher(random_nx_graph, create_index=True):
+    for query in nx_to_cypher(random_nx_graph, NetworkXCypherConfig(create_index=True)):
         memgraph.execute(query)
 
 

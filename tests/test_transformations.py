@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 import networkx as nx
-from gqlalchemy.transformations import nx_to_cypher
+from gqlalchemy.transformations import nx_to_cypher, NoNetworkXConfigException, NetworkXCypherBuilder
+from gqlalchemy.utilities import NetworkXCypherConfig
 
 
 def test_nx_create_nodes():
@@ -159,8 +162,13 @@ def test_nx_create_edge_and_node_with_index():
         "MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
     ]
 
-    actual_cypher_queries = list(nx_to_cypher(graph, True))
+    actual_cypher_queries = list(nx_to_cypher(graph, NetworkXCypherConfig(create_index=True)))
 
     assert actual_cypher_queries[0:3] == expected_cypher_queries[0:3]
     assert set(actual_cypher_queries[3:5]) == set(expected_cypher_queries[3:5])
     assert actual_cypher_queries[5:7] == expected_cypher_queries[5:7]
+
+
+def test_creating_builder_with_no_config_throws_exception():
+    with pytest.raises(NoNetworkXConfigException):
+        NetworkXCypherBuilder(None)

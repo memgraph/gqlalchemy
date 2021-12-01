@@ -13,7 +13,16 @@
 # limitations under the License.
 
 import pytest
-from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+import math
+
+from gqlalchemy.utilities import (
+    NanValuesHandle,
+    NetworkXCypherConfig,
+    to_cypher_labels,
+    to_cypher_properties,
+    to_cypher_value,
+    NanException,
+)
 
 
 @pytest.mark.parametrize(
@@ -64,3 +73,28 @@ def test_to_cypher_labels_multiple_label():
     actual_cypher_label = to_cypher_labels(labels)
 
     assert actual_cypher_label == expected_cypher_label
+
+
+def test_nan_value_default_config_throw_exception():
+    config = NetworkXCypherConfig()
+    properties = {"prop1": math.nan}
+
+    with pytest.raises(NanException):
+        to_cypher_properties(properties, config)
+
+
+def test_nan_value_no_config_throw_exception():
+    properties = {"prop1": math.nan}
+
+    with pytest.raises(NanException):
+        to_cypher_properties(properties)
+
+
+def test_nan_value_remove_handler_yields_null():
+    config = NetworkXCypherConfig(nan_handler=NanValuesHandle.REMOVE_PROPERTY)
+
+    properties = {"prop1": math.nan}
+    expected_properies = "{prop1: null}"
+
+    actual_properties = to_cypher_properties(properties, config)
+    assert actual_properties == expected_properies
