@@ -65,19 +65,44 @@ As we can see, the example above can be error-prone, because we do not have abst
 Now, rewrite the exact same query by using the functionality of gqlalchemys query builder..
 
 ```python
-
 from gqlalchemy import Match, Memgraph
 
 memgraph = Memgraph()
 
-results = Match().node("Node",variable="from")
-                 .to("Connection")
-                 .node("Node",variable="to")
+results = Match().node("Node",variable="from")\
+                 .to("Connection")\
+                 .node("Node",variable="to")\
                  .execute()
 
 for result in results:
     print(result['from'])
     print(result['to'])
+```
+
+An example using the Node and Relationship classes:
+```python
+from gqlalchemy import Memgraph, Node, Relationship, Match
+
+memgraph = Memgraph("127.0.0.1", 7687)
+
+memgraph.execute("CREATE (:Node {id: 1})-[:RELATED_TO {id: 1}]->(:Node {id: 2})")
+
+# the first argument should be set by Memgraph
+a = Node(1, ["Node"], {'id': 1})
+b = Node(2, ["Node"], {'id': 2})
+r = Relationship(1, "RELATED_TO", 1, 2, {'id': 1})
+
+result = list(
+    Match(memgraph.new_connection())
+    .node(variable="a", node=a)
+    .to(variable="r", relationship=r)
+    .node(variable="b", node=b)
+    .execute()
+)[0]
+
+print(result['a'])
+print(result['b'])
+print(result['r'])
 ```
 
 ## License
