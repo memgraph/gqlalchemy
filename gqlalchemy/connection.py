@@ -17,7 +17,7 @@ from typing import Any, Dict, Iterator
 
 import mgclient
 
-from .models import Node, Path, Relationship, GraphObject
+from .models import Node, Path, Relationship
 
 __all__ = ("Connection",)
 
