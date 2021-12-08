@@ -18,6 +18,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+from .models import Node, Relationship
 
 
 class MatchTypes:
@@ -159,13 +160,18 @@ class Match:
         self,
         labels: Union[str, List[str], None] = "",
         variable: Optional[str] = None,
+        node: Optional["Node"] = None,
         **kwargs,
     ) -> "Match":
-        labels_str = to_cypher_labels(labels)
-        properties_str = to_cypher_properties(kwargs)
-
         if not self._is_linking_valid_with_query(MatchTypes.NODE):
             raise InvalidMatchChainException()
+
+        if node is None:
+            labels_str = to_cypher_labels(labels)
+            properties_str = to_cypher_properties(kwargs)
+        else:
+            labels_str = to_cypher_labels(node.labels)
+            properties_str = to_cypher_properties(node.properties)
 
         self._query.append(NodePartialQuery(variable, labels_str, properties_str))
 
@@ -176,14 +182,18 @@ class Match:
         edge_label: Optional[str] = "",
         directed: Optional[bool] = True,
         variable: Optional[str] = None,
+        relationship: Optional["Relationship"] = None,
         **kwargs,
     ) -> "Match":
-
         if not self._is_linking_valid_with_query(MatchTypes.EDGE):
             raise InvalidMatchChainException()
 
-        labels_str = to_cypher_labels(edge_label)
-        properties_str = to_cypher_properties(kwargs)
+        if relationship is None:
+            labels_str = to_cypher_labels(edge_label)
+            properties_str = to_cypher_properties(kwargs)
+        else:
+            labels_str = to_cypher_labels(relationship.type)
+            properties_str = to_cypher_properties(relationship.properties)
 
         self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed)))
 

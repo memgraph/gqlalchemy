@@ -8,6 +8,7 @@ authors = [
     "Josip Mrden <josip.mrden@memgraph.com>",
     "Josip Matak <josip.matak@memgraph.com>",
     "Marko Budiselic <marko.budiselic@memgraph.com>",
+    "Mislav Vuletić <mislav.vuletic@memgraph.com>",
 ]
 license = "Apache-2.0"
 readme = "README.md"
