@@ -17,7 +17,7 @@ from typing import Any, Dict, Iterator
 
 import mgclient
 
-from .models import Node, Path, Relationship
+from .models import Node, Path, Relationship, GraphObject
 
 __all__ = ("Connection",)
 
@@ -107,16 +107,22 @@ class MemgraphConnection(Connection):
 def _convert_memgraph_value(value: Any) -> Any:
     """Converts Memgraph objects to custom Node/Relationship objects"""
     if isinstance(value, mgclient.Relationship):
-        return Relationship(
-            rel_id=value.id,
-            rel_type=value.type,
-            start_node=value.start_id,
-            end_node=value.end_id,
-            properties=value.properties,
-        )
+        return Relationship.parse_obj({
+            "type": value.type,
+            "rel_id": value.id,
+            "rel_type": value.type,
+            "start_node": value.start_id,
+            "end_node": value.end_id,
+            **value.properties,
+        })
 
     if isinstance(value, mgclient.Node):
-        return Node(node_id=value.id, labels=value.labels, properties=value.properties)
+        return Node.parse_obj({
+            "type": "".join(value.labels),
+            "node_id": value.id,
+            "labels": value.labels,
+            **value.properties,
+        })
 
     if isinstance(value, mgclient.Path):
         return Path(

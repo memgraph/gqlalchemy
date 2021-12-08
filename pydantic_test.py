@@ -16,16 +16,9 @@ class Person(Node, type="Person"):
 class Alice(Person, type="Alice"):
     haircut: Optional[str]
 
-# alice = Alice(name="alice", ssn=123)
-# print(alice)
-# db.execute("create (alice:Person {id: 7, name: 'alice'}) return alice limit 1")
-result = list(db.execute_and_fetch("match (a:Person) return a limit 1"))
-for node in result:
-    d = node['a'].properties
-    d["type"] = "Person"
-    print(Node.parse_raw(str(d).replace("'", '"')))
+# db.execute("create (:Person {id: 1, name: 'person'});")
+# db.execute("create (:Alice {id: 8, name: 'alice'});")
 
-# for node in result[0].values():
-#     print(node)
-#     a = Person.from_node(node)
-#     print(a)
+result = list(db.execute_and_fetch("match (a) return a"))
+for node in result:
+    print(node['a'])

@@ -81,7 +81,6 @@ class GraphObject(BaseModel):
         if sub is None:
             raise TypeError(f"Unsupport sub-type: {data_type}")
 
-        print(sub, 'hello')
         return sub(**data)
 
     @classmethod
@@ -114,7 +113,7 @@ class Node(UniqueGraphObject, BaseModel):
     def __str__(self) -> str:
         return "".join(
             (
-                "<Node",
+                f"<{type(self).__name__}",
                 f" id={self.id}",
                 f" labels={self.labels}",
                 f" properties={self.properties}",
@@ -156,7 +155,7 @@ class Relationship(UniqueGraphObject):
     def __str__(self) -> str:
         return "".join(
             (
-                "<Relationship",
+                f"<{type(self).__name__}",
                 f" id={self.id}",
                 f" nodes={self.nodes}",
                 f" type={self.type}",
@@ -182,7 +181,7 @@ class Path(GraphObject):
     def __str__(self) -> str:
         return "".join(
             (
-                "<Path",
+                f"<{type(self).__name__}",
                 f" nodes={self.nodes}",
                 f" relationships={self.relationships}" ">",
             )
