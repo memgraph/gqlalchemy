@@ -16,6 +16,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
 
+from pydantic import BaseModel
+
 
 @dataclass(frozen=True, eq=True)
 class MemgraphIndex:
@@ -57,7 +59,35 @@ class MemgraphConstraintExists(MemgraphConstraint):
         return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
 
 
-class GraphObject:
+class GraphObject(BaseModel):
+    _subtypes_ = dict()
+
+    def __init_subclass__(cls, type=None):
+        cls._subtypes_[type or cls.__name__.lower()] = cls
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls._convert_to_real_type_
+
+    @classmethod
+    def _convert_to_real_type_(cls, data):
+        data_type = data.get("type")
+
+        if data_type is None:
+            raise ValueError("Unsupported type.")
+
+        sub = cls._subtypes_.get(data_type)
+
+        if sub is None:
+            raise TypeError(f"Unsupport sub-type: {data_type}")
+
+        print(sub, 'hello')
+        return sub(**data)
+
+    @classmethod
+    def parse_obj(cls, obj):
+        return cls._convert_to_real_type_(obj)
+
     def __str__(self) -> str:
         return "<GraphObject>"
 
@@ -66,17 +96,8 @@ class GraphObject:
 
 
 class UniqueGraphObject(GraphObject):
-    def __init__(self, object_id: Any, properties: Dict[str, Any] = None):
-        self._id = object_id
-        self._properties = properties if properties is not None else {}
-
-    @property
-    def id(self) -> Any:
-        return self._id
-
-    @property
-    def properties(self) -> Dict[str, Any]:
-        return self._properties
+    id: Optional[Any]
+    properties: Optional[Dict[str, Any]]
 
     def __str__(self) -> str:
         return f"<GraphObject id={self.id} properties={self.properties}>"
@@ -85,14 +106,10 @@ class UniqueGraphObject(GraphObject):
         return str(self)
 
 
-class Node(UniqueGraphObject):
-    def __init__(self, node_id: Any, labels: Iterable[str] = None, properties: Dict[str, Any] = None):
-        super().__init__(node_id, properties)
-        self._labels = set(labels) if labels else set()
-
-    @property
-    def labels(self) -> Set[str]:
-        return self._labels
+class Node(UniqueGraphObject, BaseModel):
+    node_id: Optional[Any]
+    labels: Optional[Iterable[str]]
+    properties: Optional[Dict[str, Any]]
 
     def __str__(self) -> str:
         return "".join(

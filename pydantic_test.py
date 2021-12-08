@@ -2,31 +2,30 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
-class Node(BaseModel):
-    _id: int
-    @property
-    def labels(self) -> Set[str]:
-        return self._labels
+from gqlalchemy import Memgraph, Node
 
-class Relationship(BaseModel):
-    _id: int
-    @property
-    def type(self) -> str:
-        return self._type
+db = Memgraph()
 
-    @property
-    def end_node(self) -> int:
-        return self._end_node
+class Person(Node, type="Person"):
+    name: Optional[str]
+    ssn: Optional[int]
 
-    @property
-    def start_node(self) -> int:
-        return self._start_node
+    def from_node(node: Node):
+        return Person(**node.properties)
 
-    @property
-    def nodes(self) -> Tuple[int, int]:
-        return (self.start_node, self.end_node)
+class Alice(Person, type="Alice"):
+    haircut: Optional[str]
 
+# alice = Alice(name="alice", ssn=123)
+# print(alice)
+# db.execute("create (alice:Person {id: 7, name: 'alice'}) return alice limit 1")
+result = list(db.execute_and_fetch("match (a:Person) return a limit 1"))
+for node in result:
+    d = node['a'].properties
+    d["type"] = "Person"
+    print(Node.parse_raw(str(d).replace("'", '"')))
 
-external_data = {}
-node = Node(**external_data)
-print(node)
+# for node in result[0].values():
+#     print(node)
+#     a = Person.from_node(node)
+#     print(a)
