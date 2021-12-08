@@ -113,6 +113,7 @@ def _convert_memgraph_value(value: Any) -> Any:
             "rel_type": value.type,
             "start_node": value.start_id,
             "end_node": value.end_id,
+            "properties": value.properties,
             **value.properties,
         })
 
@@ -120,7 +121,8 @@ def _convert_memgraph_value(value: Any) -> Any:
         return Node.parse_obj({
             "type": "".join(value.labels),
             "node_id": value.id,
-            "labels": value.labels,
+            "labels": list(value.labels),
+            "properties": value.properties,
             **value.properties,
         })
 

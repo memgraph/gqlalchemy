@@ -107,7 +107,7 @@ class UniqueGraphObject(GraphObject):
 
 class Node(UniqueGraphObject, BaseModel):
     node_id: Optional[Any]
-    labels: Optional[Iterable[str]]
+    labels: Optional[Set[str]]
     properties: Optional[Dict[str, Any]]
 
     def __str__(self) -> str:

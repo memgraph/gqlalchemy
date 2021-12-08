@@ -16,8 +16,8 @@ class Person(Node, type="Person"):
 class Alice(Person, type="Alice"):
     haircut: Optional[str]
 
-# db.execute("create (:Person {id: 1, name: 'person'});")
-# db.execute("create (:Alice {id: 8, name: 'alice'});")
+db.execute("create (:Person {id: 1, name: 'person'});")
+db.execute("create (:Alice {id: 8, name: 'alice'});")
 
 result = list(db.execute_and_fetch("match (a) return a"))
 for node in result:
