@@ -16,4 +16,8 @@ from .memgraph import Memgraph  # noqa F401
 from .models import MemgraphConstraintExists, MemgraphConstraintUnique, Node, Path, Relationship  # noqa F401
 from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
 
+from .utilities import GQLAlchemyWarning
+import warnings
+
+warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]

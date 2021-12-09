@@ -18,6 +18,10 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 
+class GQLAlchemyWarning(Warning):
+    pass
+
+
 class NanValuesHandle(Enum):
     THROW_EXCEPTION = 1
     REMOVE_PROPERTY = 2

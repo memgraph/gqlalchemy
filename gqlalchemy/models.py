@@ -16,8 +16,9 @@ import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
-
 from pydantic import BaseModel, PrivateAttr
+
+from .utilities import GQLAlchemyWarning
 
 
 @dataclass(frozen=True, eq=True)
@@ -80,7 +81,7 @@ class GraphObject(BaseModel):
             warnings.warn(  # GQLAlchemy failed to find a subclass. #  )
                 f"GraphObject subclass '{data_type}' not found. "
                 f"'{cls.__name__}' will be used until you create a subclass.",
-                UserWarning,
+                GQLAlchemyWarning,
             )
             sub = cls
 
