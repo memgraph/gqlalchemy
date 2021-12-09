@@ -55,13 +55,13 @@ def test_simple_nx_to_memgraph(memgraph: Memgraph):
     actual_nodes = list(memgraph.execute_and_fetch("MATCH (n) RETURN n ORDER BY n.id"))
     assert len(actual_nodes) == 3
     for i, node in enumerate(actual_nodes):
-        assert node["n"].properties["id"] == i + 1
-        assert node["n"].labels == set()
+        assert node["n"]._properties["id"] == i + 1
+        assert node["n"]._labels == set()
 
     actual_edges = list(memgraph.execute_and_fetch("MATCH ()-[e]->() RETURN e"))
     assert len(actual_edges) == 2
     for i, edge in enumerate(actual_edges):
-        assert edge["e"].type == "TO"
+        assert edge["e"]._relationship_type == "TO"
 
 
 def test_simple_index_nx_to_memgraph(memgraph: Memgraph):
@@ -104,18 +104,18 @@ def test_nx_to_memgraph(memgraph: Memgraph):
     actual_nodes = list(memgraph.execute_and_fetch("MATCH (n) RETURN n ORDER BY n.id"))
     assert len(actual_nodes) == 3
     for i, node in enumerate(actual_nodes):
-        assert node["n"].properties["id"] == expected_nodes[i][0]
+        assert node["n"]._properties["id"] == expected_nodes[i][0]
         if isinstance(expected_nodes[i][1]["labels"], (list, tuple)):
-            assert node["n"].labels == set(expected_nodes[i][1]["labels"])
+            assert node["n"]._labels == set(expected_nodes[i][1]["labels"])
         else:
-            assert node["n"].labels == {expected_nodes[i][1]["labels"]}
-        assert node["n"].properties["num"] == expected_nodes[i][1]["num"]
+            assert node["n"]._labels == {expected_nodes[i][1]["labels"]}
+        assert node["n"]._properties["num"] == expected_nodes[i][1]["num"]
 
     actual_edges = list(memgraph.execute_and_fetch("MATCH ()-[e]->() RETURN e"))
     assert len(actual_edges) == 2
     for i, edge in enumerate(actual_edges):
-        assert edge["e"].type == expected_edges[i][2]["type"]
-        assert edge["e"].properties["num"] == expected_edges[i][2]["num"]
+        assert edge["e"]._type == expected_edges[i][2]["type"]
+        assert edge["e"]._properties["num"] == expected_edges[i][2]["num"]
 
 
 @pytest.mark.timeout(60)

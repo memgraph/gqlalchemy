@@ -170,8 +170,8 @@ class Match:
             labels_str = to_cypher_labels(labels)
             properties_str = to_cypher_properties(kwargs)
         else:
-            labels_str = to_cypher_labels(node.labels)
-            properties_str = to_cypher_properties(node.properties)
+            labels_str = to_cypher_labels(node._labels)
+            properties_str = to_cypher_properties(node._properties)
 
         self._query.append(NodePartialQuery(variable, labels_str, properties_str))
 
@@ -192,8 +192,8 @@ class Match:
             labels_str = to_cypher_labels(edge_label)
             properties_str = to_cypher_properties(kwargs)
         else:
-            labels_str = to_cypher_labels(relationship.type)
-            properties_str = to_cypher_properties(relationship.properties)
+            labels_str = to_cypher_labels(relationship._type)
+            properties_str = to_cypher_properties(relationship._properties)
 
         self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed)))
 

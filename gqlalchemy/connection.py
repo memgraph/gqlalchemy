@@ -107,29 +107,35 @@ class MemgraphConnection(Connection):
 def _convert_memgraph_value(value: Any) -> Any:
     """Converts Memgraph objects to custom Node/Relationship objects"""
     if isinstance(value, mgclient.Relationship):
-        return Relationship.parse_obj({
-            "type": value.type,
-            "rel_id": value.id,
-            "rel_type": value.type,
-            "start_node": value.start_id,
-            "end_node": value.end_id,
-            "properties": value.properties,
-            **value.properties,
-        })
+        return Relationship.parse_obj(
+            {
+                "type": value.type,
+                "_rel_id": value.id,
+                "_rel_type": value.type,
+                "_start_node_id": value.start_id,
+                "_end_node_id": value.end_id,
+                "_properties": value.properties,
+                **value.properties,
+            }
+        )
 
     if isinstance(value, mgclient.Node):
-        return Node.parse_obj({
-            "type": "".join(value.labels),
-            "node_id": value.id,
-            "labels": list(value.labels),
-            "properties": value.properties,
-            **value.properties,
-        })
+        return Node.parse_obj(
+            {
+                "type": "".join(value.labels),
+                "_node_id": value.id,
+                "_node_labels": list(value.labels),
+                "_properties": value.properties,
+                **value.properties,
+            }
+        )
 
     if isinstance(value, mgclient.Path):
-        return Path(
-            nodes=list([_convert_memgraph_value(node) for node in value.nodes]),
-            relationships=list([_convert_memgraph_value(rel) for rel in value.relationships]),
+        return Path.parse_obj(
+            {
+                "_nodes": list([_convert_memgraph_value(node) for node in value.nodes]),
+                "_relationships": list([_convert_memgraph_value(rel) for rel in value.relationships]),
+            }
         )
 
     return value
