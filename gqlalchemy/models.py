@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
@@ -73,17 +74,15 @@ class GraphObject(BaseModel):
     def _convert_to_real_type_(cls, data):
         data_type = data.get("type")
 
-        if data_type is None:
-            # if no type is provided assume object is a Path
-            # this could lead to an error because user might have
-            # called "parse_obj" and didn't read documentation properly
-            sub = Path
-        else:
-            sub = cls._subtypes_.get(data_type)
+        sub = cls if data_type is None else cls._subtypes_.get(data_type)
 
         if sub is None:
+            warnings.warn(  # GQLAlchemy failed to find a subclass. #  )
+                f"GraphObject subclass '{data_type}' not found. "
+                f"'{cls.__name__}' will be used until you create a subclass.",
+                UserWarning,
+            )
             sub = cls
-            # Should raise a warning that Object with this type isn't found
 
         return sub(**data)
 
@@ -158,7 +157,7 @@ class Relationship(UniqueGraphObject):
                 f"<{type(self).__name__}",
                 f" id={self._id}",
                 f" nodes={self._nodes}",
-                f" rel_type={self._relationship_type}",
+                f" relationship_type={self._relationship_type}",
                 f" properties={self._properties}",
                 ">",
             )
