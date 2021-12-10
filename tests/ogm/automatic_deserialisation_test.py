@@ -39,7 +39,8 @@ def test_automatic_deserialisation():
 
     result = list(db.execute_and_fetch("match (a)-[r]->(b) return a, r, b"))
     for node in result:
-        assert isinstance(a := node["a"], Alice)
+        a = node["a"]
+        assert isinstance(a, Alice)
         assert a.id == 8
         assert a.name == "alice"
         assert a._node_labels == {"Alice"}
@@ -47,7 +48,8 @@ def test_automatic_deserialisation():
         assert a._properties == {"id": 8, "name": "alice"}
         assert isinstance(a._id, int)
 
-        assert isinstance(r := node["r"], Friends)
+        r = node["r"]
+        assert isinstance(r, Friends)
         assert r._relationship_type == "FRIENDS"
         assert isinstance(r._relationship_id, int)
         assert isinstance(r._start_node_id, int)
@@ -55,7 +57,8 @@ def test_automatic_deserialisation():
         assert r._properties == {}
         assert isinstance(r._id, int)
 
-        assert isinstance(b := node["b"], Person)
+        b = node["b"]
+        assert isinstance(b, Person)
         assert b.id == 1
         assert b.name == "person"
         assert b._node_labels == {"Person"}
