@@ -65,7 +65,10 @@ class GraphObject(BaseModel):
     _subtypes_ = dict()
 
     def __init_subclass__(cls, type=None):
-        cls._subtypes_[type or cls.__name__.lower()] = cls
+        """Stores the subclass by type if type is specified, or by class name
+        when instantiating a subclass.
+        """
+        cls._subtypes_[type or cls.__name__] = cls
 
     @classmethod
     def __get_validators__(cls):
@@ -73,6 +76,10 @@ class GraphObject(BaseModel):
 
     @classmethod
     def _convert_to_real_type_(cls, data):
+        """Converts the GraphObject class into the appropriate subclass.
+        This is used when deserialising a json representation of the class,
+        or the object returned from the GraphDatabase.
+        """
         data_type = data.get("type")
 
         sub = cls if data_type is None else cls._subtypes_.get(data_type)
@@ -89,6 +96,9 @@ class GraphObject(BaseModel):
 
     @classmethod
     def parse_obj(cls, obj):
+        """Used to convert a dictionary object into the appropriate
+        GraphObject.
+        """
         return cls._convert_to_real_type_(obj)
 
     def __str__(self) -> str:
