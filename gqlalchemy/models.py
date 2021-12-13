@@ -194,3 +194,14 @@ class Path(GraphObject):
                 f" relationships={self._relationships}" ">",
             )
         )
+
+
+class Property:
+    def init(self, *args, **kwargs):
+        self.name = kwargs.pop("name", None)
+        self.index = kwargs.pop("index", None)
+        self.unique = kwargs.pop("unique", None)
+        self.onDisk = kwargs.pop("onDisk", None)
+
+        if name is None:
+            pass  # don't execute any cypher queries, let GraphObject handle it
