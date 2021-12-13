@@ -64,11 +64,11 @@ class MemgraphConstraintExists(MemgraphConstraint):
 class GraphObject(BaseModel):
     _subtypes_ = dict()
 
-    def __init_subclass__(cls, type=None):
+    def __init_subclass__(cls, _type=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
-        cls._subtypes_[type or cls.__name__] = cls
+        cls._subtypes_[_type or cls.__name__] = cls
 
     @classmethod
     def __get_validators__(cls):
@@ -80,7 +80,7 @@ class GraphObject(BaseModel):
         This is used when deserialising a json representation of the class,
         or the object returned from the GraphDatabase.
         """
-        data_type = data.get("type")
+        data_type = data.get("_type")
 
         sub = cls if data_type is None else cls._subtypes_.get(data_type)
 
@@ -183,12 +183,6 @@ class Path(GraphObject):
         super().__init__(**data)
         self._nodes = data.get("_nodes")
         self._relationships = data.get("_relationships")
-
-    def get_nodes(self) -> Iterable[Node]:
-        return self._nodes
-
-    def get_relationships(self) -> Iterable[Relationship]:
-        return self._relationships
 
     def __str__(self) -> str:
         return "".join(

@@ -14,23 +14,46 @@
 
 from typing import Optional
 from gqlalchemy import Memgraph, Node, Relationship, Path
+from gqlalchemy.models import GraphObject
 
 
-class Person(Node, type="Person"):
+class Person(Node):
     id: Optional[int]
     name: Optional[str]
 
 
-class Alice(Node, type="Alice"):
+class Alice(Node):
     id: Optional[int]
     name: Optional[str]
 
 
-class Friends(Relationship, type="FRIENDS"):
+class Friends(Relationship, _type="FRIENDS"):
     pass
 
 
-def test_automatic_deserialisation():
+def test_simple_json_deserialisation():
+    person_json = '{"_type":"Person", "id": 9, "name": "person"}'
+    person = GraphObject.parse_raw(person_json)
+    assert person == Person(id=9, name="person")
+
+
+def test_json_deserialisation():
+    person_json = '{"_type":"Person", "id": 9, "name": "person", "_node_labels": ["Person"], "_id": 1, "_node_id": 1}'
+    person_1 = GraphObject.parse_raw(person_json)
+    person_2 = Person(id=9, name="person")
+    person_2._id = 1
+    person_2._node_id = 1
+    person_2._node_labels = ["Person"]
+    print(vars(person_1))
+    print(vars(person_2))
+    assert person_1 == person_2
+
+
+def test_dictionary_deserialisation():
+    pass
+
+
+def test_automatic_deserialisation_from_database():
     db = Memgraph()
 
     db.execute("create (:Person {id: 1, name: 'person'});")

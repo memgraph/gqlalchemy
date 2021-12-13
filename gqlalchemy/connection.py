@@ -109,7 +109,7 @@ def _convert_memgraph_value(value: Any) -> Any:
     if isinstance(value, mgclient.Relationship):
         return Relationship.parse_obj(
             {
-                "type": value.type,
+                "_type": value.type,
                 "_id": value.id,
                 "_relationship_id": value.id,
                 "_relationship_type": value.type,
@@ -123,7 +123,7 @@ def _convert_memgraph_value(value: Any) -> Any:
     if isinstance(value, mgclient.Node):
         return Node.parse_obj(
             {
-                "type": "".join(value.labels),
+                "_type": "".join(value.labels),
                 "_id": value.id,
                 "_node_id": value.id,
                 "_node_labels": set(value.labels),
