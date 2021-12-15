@@ -12,11 +12,10 @@
 # limitations under the License.
 
 import warnings
-import datetime
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
-from pydantic import BaseModel, PrivateAttr, Extra, Field
+from pydantic import BaseModel, PrivateAttr, Extra
 
 from .utilities import GQLAlchemyWarning
 
@@ -61,12 +60,6 @@ class MemgraphConstraintExists(MemgraphConstraint):
         return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
 
 
-# class GraphObjectMeta(ABCMeta):
-#     @no_type_check  # noqa C901
-#     def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
-#         :
-
-
 class GraphObject(BaseModel):
     _subtypes_ = dict()
 
@@ -100,6 +93,7 @@ class GraphObject(BaseModel):
                 GQLAlchemyWarning,
             )
             sub = cls
+            data_type = cls.__name__
 
         return sub(**data)
 
@@ -124,6 +118,7 @@ class UniqueGraphObject(GraphObject):
     def __init__(self, **data):
         super().__init__(**data)
         self._id = data.get("_id")
+        self._type = data.get("_type")
 
     @property
     def _properties(self) -> Dict[str, Any]:
@@ -141,20 +136,52 @@ class Node(UniqueGraphObject):
 
     def __init__(self, **data):
         super().__init__(**data)
-        # self._node_labels = data.get("_node_labels")
-        self._node_labels = {"Person"}
-        print(self._node_labels)
+        self._type = data.get("_type", type(self).__name__)
+        self._node_labels = data.get("_node_labels", set(self._type.split(":")))
+        labels = ":".join(self._node_labels)
+        # TODO check if *_type* or *_node_labels* is in fields
         for field in self.__fields__:
-            try:
-                attrs = self.__fields__[field].field_info.extra
-                # if "index" in attrs:
-                #     field
-                if "unique" in attrs:
-                    db = attrs["db"]
-                    constraint = MemgraphConstraintExists(":".join(self._node_labels), field)
-                    db.create_constraint(constraint)
-            except Exception as e:
-                print(e)
+            attrs = self.__fields__[field].field_info.extra
+            type_ = self.__fields__[field].type_.__name__
+            db = None
+            if "db" in attrs:
+                db = attrs["db"]
+
+            if "index" in attrs:
+                if db is None:
+                    raise ValueError(
+                        "Can't have an index on a property without providing"
+                        " the database `db` object.\n"
+                        "Define your property as:\n"
+                        f" {field}: {type_} = Field(index=True, db=Memgraph())"
+                    )
+                index = MemgraphIndex(labels, field)
+                db.create_index(index)
+
+            if "exists" in attrs:
+                if db is None:
+                    raise ValueError(
+                        "Can't have an index on a property without providing"
+                        " the database `db` object.\n"
+                        "Define your property as:\n"
+                        f" {field}: type = Field(exists=True, db=Memgraph())"
+                    )
+                constraint = MemgraphConstraintExists(labels, field)
+                db.create_constraint(constraint)
+
+            if "unique" in attrs:
+                if db is None:
+                    raise ValueError(
+                        "Can't have an index on a property without providing"
+                        " the database `db` object.\n"
+                        "Define your property as:\n"
+                        f" {field}: type = Field(unique=True, db=Memgraph())"
+                    )
+                constraint = MemgraphConstraintUnique(labels, field)
+                db.create_constraint(constraint)
+
+            # if "on_disk" in attrs:
+            # if "use_in_db" in attrs:
 
     def __str__(self) -> str:
         return "".join(
@@ -213,12 +240,3 @@ class Path(GraphObject):
                 f" relationships={self._relationships}" ">",
             )
         )
-
-
-class Property():
-    def __init__(self, *args, **kwargs):
-        self.name = kwargs.pop("name", None)
-        self.index = kwargs.pop("index", False)
-        self.unique = kwargs.pop("unique", False)
-        self.on_disk = kwargs.pop("on_disk", False)
-        self.use_in_db = kwargs.pop("use_in_db", False)
