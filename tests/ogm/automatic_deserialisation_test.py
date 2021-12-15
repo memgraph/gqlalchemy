@@ -44,8 +44,6 @@ def test_json_deserialisation():
     person_2._id = 1
     person_2._node_id = 1
     person_2._node_labels = ["Person"]
-    print(vars(person_1))
-    print(vars(person_2))
     assert person_1 == person_2
 
 

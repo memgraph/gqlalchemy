@@ -18,16 +18,16 @@ from gqlalchemy import Memgraph, Node, Relationship
 
 
 def compare_nodes(actual: List[Node], expected: List[Node]):
-    actual.sort(key=lambda x: x._properties["id"])
-    expected.sort(key=lambda x: x._properties["id"])
+    actual.sort(key=lambda x: x.id)
+    expected.sort(key=lambda x: x.id)
 
     for index, actual_object in enumerate(actual):
         assert actual_object._properties == expected[index]._properties
 
 
 def compare_edges(actual: List[Relationship], expected: List[Relationship]):
-    actual.sort(key=lambda x: x._properties["id"])
-    expected.sort(key=lambda x: x._properties["id"])
+    actual.sort(key=lambda x: x.id)
+    expected.sort(key=lambda x: x.id)
 
     for index, actual_object in enumerate(actual):
         assert actual_object._properties == expected[index]._properties
@@ -42,18 +42,21 @@ def test_nodes_mapping(populated_memgraph: Memgraph):
     expected_nodes = [
         Node(
             _id=0,
-            _node_labels=["Node"],
-            _properties={"id": 0, "name": "name1"},
+            _node_labels={"Node"},
+            id=0,
+            name="name1",
         ),
         Node(
             _id=1,
-            _node_labels=["Node"],
-            _properties={"id": 1, "data": [1, 2, 3]},
+            _node_labels={"Node"},
+            id=1,
+            data=[1, 2, 3],
         ),
         Node(
             _id=2,
-            _node_labels=["Node"],
-            _properties={"id": 2, "data": {"a": 1, "b": "abc"}},
+            _node_labels={"Node"},
+            id=2,
+            data={"a": 1, "b": "abc"},
         ),
     ]
 
@@ -71,21 +74,24 @@ def test_edges_mapping(populated_memgraph: Memgraph):
             _relationship_type="Relation",
             _start_node_id=0,
             _end_node_id=1,
-            _properties={"id": 0, "name": "name1"},
+            id=0,
+            name="name1",
         ),
         Relationship(
             _id=1,
             _relationship_type="Relation",
             _start_node_id=1,
             _end_node_id=2,
-            _properties={"id": 1, "num": 100},
+            id=1,
+            num=100,
         ),
         Relationship(
             _id=2,
             _relationship_type="Relation",
             _start_node_id=2,
             _end_node_id=0,
-            _properties={"id": 2, "data": [1, 2, 3]},
+            id=2,
+            data=[1, 2, 3],
         ),
     ]
 
@@ -99,10 +105,10 @@ def test_edges_mapping(populated_memgraph: Memgraph):
 def test_path_mapping(populated_memgraph: Memgraph):
     query = "MATCH p = ({id: 0})-[*]->({id: 3}) RETURN p"
     expected_nodes = [
-        Node(_id=0, _node_labels=["Node"], _properties={"id": 0}),
-        Node(_id=1, _node_labels=["Node"], _properties={"id": 1}),
-        Node(_id=2, _node_labels=["Node"], _properties={"id": 2}),
-        Node(_id=2, _node_labels=["Node"], _properties={"id": 3}),
+        Node(_id=0, _node_labels={"Node"}, id=0),
+        Node(_id=1, _node_labels={"Node"}, id=1),
+        Node(_id=2, _node_labels={"Node"}, id=2),
+        Node(_id=2, _node_labels={"Node"}, id=3),
     ]
     expected_relationships = [
         Relationship(
@@ -110,21 +116,21 @@ def test_path_mapping(populated_memgraph: Memgraph):
             _relationship_type="Relation",
             _start_node_id=0,
             _end_node_id=1,
-            _properties={"id": 0},
+            id=0,
         ),
         Relationship(
             _id=1,
             _relationship_type="Relation",
             _start_node_id=1,
             _end_node_id=2,
-            _properties={"id": 1},
+            id=1,
         ),
         Relationship(
             _id=2,
             _relationship_type="Relation",
             _start_node_id=2,
             _end_node_id=3,
-            _properties={"id": 2},
+            id=2,
         ),
     ]
 

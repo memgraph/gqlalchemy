@@ -16,7 +16,7 @@ import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
-from pydantic import BaseModel, PrivateAttr
+from pydantic import BaseModel, PrivateAttr, Extra
 
 from .utilities import GQLAlchemyWarning
 
@@ -63,6 +63,9 @@ class MemgraphConstraintExists(MemgraphConstraint):
 
 class GraphObject(BaseModel):
     _subtypes_ = dict()
+
+    class Config:
+        extra = Extra.allow
 
     def __init_subclass__(cls, _type=None):
         """Stores the subclass by type if type is specified, or by class name
@@ -115,7 +118,10 @@ class UniqueGraphObject(GraphObject):
     def __init__(self, **data):
         super().__init__(**data)
         self._id = data.get("_id")
-        self._properties = data.get("_properties")
+
+    @property
+    def _properties(self) -> Dict[str, Any]:
+        return {k: v for k, v in dict(self).items() if not k.startswith("_")}
 
     def __str__(self) -> str:
         return f"<GraphObject id={self._id} properties={self._properties}>"
@@ -125,12 +131,10 @@ class UniqueGraphObject(GraphObject):
 
 
 class Node(UniqueGraphObject):
-    _node_id: Optional[Any] = PrivateAttr()
     _node_labels: Optional[Set[str]] = PrivateAttr()
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._node_id = data.get("_node_id")
         self._node_labels = data.get("_node_labels")
 
     def __str__(self) -> str:
@@ -146,14 +150,12 @@ class Node(UniqueGraphObject):
 
 
 class Relationship(UniqueGraphObject):
-    _relationship_id: Any = PrivateAttr()
     _relationship_type: str = PrivateAttr()
     _start_node_id: int = PrivateAttr()
     _end_node_id: int = PrivateAttr()
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._relationship_id = data.get("_relationship_id")
         self._relationship_type = data.get("_relationship_type")
         self._start_node_id = data.get("_start_node_id")
         self._end_node_id = data.get("_end_node_id")
