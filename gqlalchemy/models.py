@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
+from pydantic import BaseModel, PrivateAttr, Extra
+
+from .utilities import GQLAlchemyWarning
 
 
 @dataclass(frozen=True, eq=True)
@@ -57,7 +61,49 @@ class MemgraphConstraintExists(MemgraphConstraint):
         return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
 
 
-class GraphObject:
+class GraphObject(BaseModel):
+    _subtypes_ = dict()
+
+    class Config:
+        extra = Extra.allow
+
+    def __init_subclass__(cls, _type=None):
+        """Stores the subclass by type if type is specified, or by class name
+        when instantiating a subclass.
+        """
+        cls._subtypes_[_type or cls.__name__] = cls
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls._convert_to_real_type_
+
+    @classmethod
+    def _convert_to_real_type_(cls, data):
+        """Converts the GraphObject class into the appropriate subclass.
+        This is used when deserialising a json representation of the class,
+        or the object returned from the GraphDatabase.
+        """
+        data_type = data.get("_type")
+
+        sub = cls if data_type is None else cls._subtypes_.get(data_type)
+
+        if sub is None:
+            warnings.warn(  # GQLAlchemy failed to find a subclass. #  )
+                f"GraphObject subclass '{data_type}' not found. "
+                f"'{cls.__name__}' will be used until you create a subclass.",
+                GQLAlchemyWarning,
+            )
+            sub = cls
+
+        return sub(**data)
+
+    @classmethod
+    def parse_obj(cls, obj):
+        """Used to convert a dictionary object into the appropriate
+        GraphObject.
+        """
+        return cls._convert_to_real_type_(obj)
+
     def __str__(self) -> str:
         return "<GraphObject>"
 
@@ -66,107 +112,85 @@ class GraphObject:
 
 
 class UniqueGraphObject(GraphObject):
-    def __init__(self, object_id: Any, properties: Dict[str, Any] = None):
-        self._id = object_id
-        self._properties = properties if properties is not None else {}
+    _id: Optional[Any] = PrivateAttr()
+    _properties: Optional[Dict[str, Any]] = PrivateAttr()
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._id = data.get("_id")
 
     @property
-    def id(self) -> Any:
-        return self._id
-
-    @property
-    def properties(self) -> Dict[str, Any]:
-        return self._properties
+    def _properties(self) -> Dict[str, Any]:
+        return {k: v for k, v in dict(self).items() if not k.startswith("_")}
 
     def __str__(self) -> str:
-        return f"<GraphObject id={self.id} properties={self.properties}>"
+        return f"<GraphObject id={self._id} properties={self._properties}>"
 
     def __repr__(self) -> str:
         return str(self)
 
 
 class Node(UniqueGraphObject):
-    def __init__(self, node_id: Any, labels: Iterable[str] = None, properties: Dict[str, Any] = None):
-        super().__init__(node_id, properties)
-        self._labels = set(labels) if labels else set()
+    _node_labels: Optional[Set[str]] = PrivateAttr()
 
-    @property
-    def labels(self) -> Set[str]:
-        return self._labels
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._node_labels = data.get("_node_labels")
 
     def __str__(self) -> str:
         return "".join(
             (
-                "<Node",
-                f" id={self.id}",
-                f" labels={self.labels}",
-                f" properties={self.properties}",
+                f"<{type(self).__name__}",
+                f" id={self._id}",
+                f" labels={self._node_labels}",
+                f" properties={self._properties}",
                 ">",
             )
         )
 
 
 class Relationship(UniqueGraphObject):
-    def __init__(
-        self,
-        rel_id: Any,
-        rel_type: str,
-        start_node: int,
-        end_node: int,
-        properties: Dict[str, Any] = None,
-    ):
-        super().__init__(rel_id, properties)
-        self._type = rel_type
-        self._start_node = start_node
-        self._end_node = end_node
+    _relationship_type: str = PrivateAttr()
+    _start_node_id: int = PrivateAttr()
+    _end_node_id: int = PrivateAttr()
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._relationship_type = data.get("_relationship_type")
+        self._start_node_id = data.get("_start_node_id")
+        self._end_node_id = data.get("_end_node_id")
 
     @property
-    def type(self) -> str:
-        return self._type
-
-    @property
-    def end_node(self) -> int:
-        return self._end_node
-
-    @property
-    def start_node(self) -> int:
-        return self._start_node
-
-    @property
-    def nodes(self) -> Tuple[int, int]:
-        return (self.start_node, self.end_node)
+    def _nodes(self) -> Tuple[int, int]:
+        return (self._start_node_id, self._end_node_id)
 
     def __str__(self) -> str:
         return "".join(
             (
-                "<Relationship",
-                f" id={self.id}",
-                f" nodes={self.nodes}",
-                f" type={self.type}",
-                f" properties={self.properties}",
+                f"<{type(self).__name__}",
+                f" id={self._id}",
+                f" nodes={self._nodes}",
+                f" relationship_type={self._relationship_type}",
+                f" properties={self._properties}",
                 ">",
             )
         )
 
 
 class Path(GraphObject):
-    def __init__(self, nodes: Iterable[Node], relationships: Iterable[Relationship]):
-        self._nodes = nodes
-        self._relationships = relationships
+    _nodes: Iterable[Node] = PrivateAttr()
+    _relationships: Iterable[Relationship] = PrivateAttr()
 
-    @property
-    def nodes(self) -> Iterable[Node]:
-        return self._nodes
-
-    @property
-    def relationships(self) -> Iterable[Relationship]:
-        return self._relationships
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._nodes = data.get("_nodes")
+        self._relationships = data.get("_relationships")
 
     def __str__(self) -> str:
         return "".join(
             (
-                "<Path",
-                f" nodes={self.nodes}",
-                f" relationships={self.relationships}" ">",
+                f"<{type(self).__name__}",
+                f" nodes={self._nodes}",
+                f" relationships={self._relationships}" ">",
             )
         )

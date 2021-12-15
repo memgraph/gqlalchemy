@@ -107,21 +107,33 @@ class MemgraphConnection(Connection):
 def _convert_memgraph_value(value: Any) -> Any:
     """Converts Memgraph objects to custom Node/Relationship objects"""
     if isinstance(value, mgclient.Relationship):
-        return Relationship(
-            rel_id=value.id,
-            rel_type=value.type,
-            start_node=value.start_id,
-            end_node=value.end_id,
-            properties=value.properties,
+        return Relationship.parse_obj(
+            {
+                "_type": value.type,
+                "_id": value.id,
+                "_relationship_type": value.type,
+                "_start_node_id": value.start_id,
+                "_end_node_id": value.end_id,
+                **value.properties,
+            }
         )
 
     if isinstance(value, mgclient.Node):
-        return Node(node_id=value.id, labels=value.labels, properties=value.properties)
+        return Node.parse_obj(
+            {
+                "_type": "".join(value.labels),
+                "_id": value.id,
+                "_node_labels": set(value.labels),
+                **value.properties,
+            }
+        )
 
     if isinstance(value, mgclient.Path):
-        return Path(
-            nodes=list([_convert_memgraph_value(node) for node in value.nodes]),
-            relationships=list([_convert_memgraph_value(rel) for rel in value.relationships]),
+        return Path.parse_obj(
+            {
+                "_nodes": list([_convert_memgraph_value(node) for node in value.nodes]),
+                "_relationships": list([_convert_memgraph_value(rel) for rel in value.relationships]),
+            }
         )
 
     return value
