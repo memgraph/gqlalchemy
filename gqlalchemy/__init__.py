@@ -13,14 +13,14 @@
 # limitations under the License.
 
 from .memgraph import Memgraph  # noqa F401
-from .models import (
+from .models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     Node,
     Path,
     Relationship,
     MemgraphIndex,
-)  # noqa F401
+)
 from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
 
 from .utilities import GQLAlchemyWarning
