@@ -1,5 +1,4 @@
 # Copyright (c) 2016-2021 Memgraph Ltd. [https://memgraph.com]
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,10 +12,11 @@
 # limitations under the License.
 
 import warnings
-from abc import ABC, abstractmethod
+import datetime
+from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
-from pydantic import BaseModel, PrivateAttr, Extra
+from pydantic import BaseModel, PrivateAttr, Extra, Field
 
 from .utilities import GQLAlchemyWarning
 
@@ -59,6 +59,12 @@ class MemgraphConstraintExists(MemgraphConstraint):
 
     def to_cypher(self) -> str:
         return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
+
+
+# class GraphObjectMeta(ABCMeta):
+#     @no_type_check  # noqa C901
+#     def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
+#         :
 
 
 class GraphObject(BaseModel):
@@ -135,7 +141,20 @@ class Node(UniqueGraphObject):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._node_labels = data.get("_node_labels")
+        # self._node_labels = data.get("_node_labels")
+        self._node_labels = {"Person"}
+        print(self._node_labels)
+        for field in self.__fields__:
+            try:
+                attrs = self.__fields__[field].field_info.extra
+                # if "index" in attrs:
+                #     field
+                if "unique" in attrs:
+                    db = attrs["db"]
+                    constraint = MemgraphConstraintExists(":".join(self._node_labels), field)
+                    db.create_constraint(constraint)
+            except Exception as e:
+                print(e)
 
     def __str__(self) -> str:
         return "".join(
@@ -196,12 +215,10 @@ class Path(GraphObject):
         )
 
 
-class Property:
-    def init(self, *args, **kwargs):
+class Property():
+    def __init__(self, *args, **kwargs):
         self.name = kwargs.pop("name", None)
-        self.index = kwargs.pop("index", None)
-        self.unique = kwargs.pop("unique", None)
-        self.onDisk = kwargs.pop("onDisk", None)
-
-        if name is None:
-            pass  # don't execute any cypher queries, let GraphObject handle it
+        self.index = kwargs.pop("index", False)
+        self.unique = kwargs.pop("unique", False)
+        self.on_disk = kwargs.pop("on_disk", False)
+        self.use_in_db = kwargs.pop("use_in_db", False)
