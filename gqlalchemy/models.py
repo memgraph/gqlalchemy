@@ -131,18 +131,21 @@ class UniqueGraphObject(GraphObject):
         return str(self)
 
 
-class Node(UniqueGraphObject):
-    _node_labels: Optional[Set[str]] = PrivateAttr()
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        self._type = data.get("_type", type(self).__name__)
-        self._node_labels = data.get("_node_labels", set(self._type.split(":")))
-        labels = ":".join(self._node_labels)
+class MyMeta(BaseModel.__class__):
+    def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
+        """This creates the class `Node`. It also creates all subclasses
+        of `Node`. Whenever a class is defined as a subclass of `Node`,
+        `MyMeta.__new__` is called.
+        """
+        cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+        # TODO create a discussion about accessing labels through the class definition instead of through the object. E.g. `Person.labels` instead of `person = Person("Marko"); person._node_labels`.
+        cls._type = kwargs.get("_type", name)
+        cls._node_labels = kwargs.get("_node_labels", set(cls._type.split(":")))
+        labels = ":".join(cls._node_labels)
         # TODO check if *_type* or *_node_labels* is in fields
-        for field in self.__fields__:
-            attrs = self.__fields__[field].field_info.extra
-            type_ = self.__fields__[field].type_.__name__
+        for field in cls.__fields__:
+            attrs = cls.__fields__[field].field_info.extra
+            field_type = cls.__fields__[field].type_.__name__
             db = None
             if "db" in attrs:
                 db = attrs["db"]
@@ -153,7 +156,7 @@ class Node(UniqueGraphObject):
                         "Can't have an index on a property without providing"
                         " the database `db` object.\n"
                         "Define your property as:\n"
-                        f" {field}: {type_} = Field(index=True, db=Memgraph())"
+                        f" {field}: {field_type} = Field(index=True, db=Memgraph())"
                     )
                 index = MemgraphIndex(labels, field)
                 db.create_index(index)
@@ -182,6 +185,17 @@ class Node(UniqueGraphObject):
 
             # if "on_disk" in attrs:
             # if "use_in_db" in attrs:
+
+        return cls
+
+
+class Node(UniqueGraphObject, metaclass=MyMeta):
+    _node_labels: Optional[Set[str]] = PrivateAttr()
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._type = data.get("_type", type(self).__name__)
+        self._node_labels = data.get("_node_labels", set(self._type.split(":")))
 
     def __str__(self) -> str:
         return "".join(
