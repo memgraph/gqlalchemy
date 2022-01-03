@@ -15,7 +15,7 @@
 import sqlite3
 import contextlib
 
-from typing import List
+from typing import Optional, List
 
 
 class OnDiskPropertyDatabase:
@@ -80,13 +80,21 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
             "DO UPDATE SET property_value=excluded.property_value;"
         )
 
-    def load_node_property(self, node_id: int, property_name: str):
-        return self.execute_query(
+    def load_node_property(self, node_id: int, property_name: str) -> Optional[str]:
+        result = self.execute_query(
             "SELECT property_value "
             "FROM node_properties AS db "
             f"WHERE db.node_id = {node_id} "
             f"AND db.property_name = '{property_name}'"
         )
+
+        if len(result) == 0:
+            return None
+
+        # primary key is unique
+        assert len(result) == 1 and len(result[0]) == 1
+
+        return result[0][0]
 
     def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str):
         self.execute_query(
@@ -96,10 +104,18 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
             "DO UPDATE SET property_value=excluded.property_value;"
         )
 
-    def load_relationship_property(self, relationship_id: int, property_name: str):
-        return self.execute_query(
+    def load_relationship_property(self, relationship_id: int, property_name: str) -> Optional[str]:
+        result = self.execute_query(
             "SELECT property_value "
             "FROM relationship_properties AS db "
             f"WHERE db.relationship_id = {relationship_id} "
             f"AND db.property_name = '{property_name}'"
         )
+
+        if len(result) == 0:
+            return None
+
+        # primary key is unique
+        assert len(result) == 1 and len(result[0]) == 1
+
+        return result[0][0]

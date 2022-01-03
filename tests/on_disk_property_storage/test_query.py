@@ -34,10 +34,8 @@ def test_add_relationship_property(clear_db):
     property_name = "friendship_type"
     property_value = "best_friends"
     db.save_relationship_property(relationship_id, property_name, property_value)
-    result = db.load_relationship_property(relationship_id, property_name)
-    assert isinstance(result, list)
-    assert len(result) == 1
-    assert result[0][0] == property_value
+    result_value = db.load_relationship_property(relationship_id, property_name)
+    assert result_value == property_value
 
 
 def test_add_node_property(clear_db):
@@ -46,7 +44,5 @@ def test_add_node_property(clear_db):
     property_name = "person_name"
     property_value = "John"
     db.save_node_property(node_id, property_name, property_value)
-    result = db.load_node_property(node_id, property_name)
-    assert isinstance(result, list)
-    assert len(result) == 1
-    assert result[0][0] == property_value
+    result_value = db.load_node_property(node_id, property_name)
+    assert result_value == property_value
