@@ -31,8 +31,11 @@ class OnDiskPropertyDatabase:
     def load_relationship_property(self, relationship_id: int, property_name: str, property_value: str):
         pass
 
+    def drop_database(self):
+        pass
 
-class SqliteDatabase(OnDiskPropertyDatabase):
+
+class SQLitePropertyDatabase(OnDiskPropertyDatabase):
     def __init__(self, database_name: str = "on_disk_properties.db"):
         self.database_name = database_name
         self.create_node_property_table()
@@ -48,58 +51,55 @@ class SqliteDatabase(OnDiskPropertyDatabase):
     def create_node_property_table(self):
         self.execute_query(
             "CREATE TABLE IF NOT EXISTS node_properties ("
-            "node_id integer PRIMARY KEY,"
+            "node_id integer NOT NULL,"
             "property_name text NOT NULL,"
             "property_value text NOT NULL,"
+            "PRIMARY KEY (node_id, property_name)"
             ");"
         )
 
     def create_relationship_property_table(self):
         self.execute_query(
             "CREATE TABLE IF NOT EXISTS relationship_properties ("
-            "relationship_id integer PRIMARY KEY,"
+            "relationship_id integer NOT NULL,"
             "property_name text NOT NULL,"
             "property_value text NOT NULL,"
+            "PRIMARY KEY (relationship_id, property_name)"
             ");"
         )
 
+    def drop_database(self):
+        self.execute_query("DELETE FROM node_properties;")
+        self.execute_query("DELETE FROM relationship_properties;")
+
     def save_node_property(self, node_id: int, property_name: str, property_value: str):
         self.execute_query(
-            "MERGE INTO node_properties WITH (HOLDLOCK) "
-            f"USING node_properties ON (node_id = {node_id})"
-            " WHEN MATCHED THEN UPDATE"
-            f"  SET property_name = {property_name},"
-            "    property_value = {property_value}"
-            " WHEN NOT MATCHED THEN INSERT"
-            "  (node_id, property_name, property_value)"
-            f"  VALUES ({node_id}, {property_name}, {property_value})"
+            "INSERT INTO node_properties (node_id, property_name, property_value) "
+            f"VALUES({node_id}, '{property_name}', '{property_value}') "
+            "ON CONFLICT(node_id, property_name) "
+            "DO UPDATE SET property_value=excluded.property_value;"
         )
 
-    def load_node_property(self, node_id: int, property_name: str, property_value: str):
+    def load_node_property(self, node_id: int, property_name: str):
         return self.execute_query(
             "SELECT property_value "
             "FROM node_properties AS db "
             f"WHERE db.node_id = {node_id} "
-            " AND db.property_name = {property_name}"
+            f"AND db.property_name = '{property_name}'"
         )
 
     def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str):
         self.execute_query(
-            "MERGE INTO relationship_properties WITH (HOLDLOCK) "
-            f"USING relationship_properties "
-            "  ON (relationship_id = {relationship_id})"
-            " WHEN MATCHED THEN UPDATE"
-            f"  SET property_name = {property_name},"
-            "    property_value = {property_value}"
-            " WHEN NOT MATCHED THEN INSERT"
-            "  (relationship_id, property_name, property_value)"
-            f"  VALUES ({relationship_id}, {property_name}, {property_value})"
+            "INSERT INTO relationship_properties (relationship_id, property_name, property_value) "
+            f"VALUES({relationship_id}, '{property_name}', '{property_value}') "
+            "ON CONFLICT(relationship_id, property_name) "
+            "DO UPDATE SET property_value=excluded.property_value;"
         )
 
-    def load_relationship_property(self, relationship_id: int, property_name: str, property_value: str):
+    def load_relationship_property(self, relationship_id: int, property_name: str):
         return self.execute_query(
             "SELECT property_value "
             "FROM relationship_properties AS db "
             f"WHERE db.relationship_id = {relationship_id} "
-            f"AND db.property_name = {property_name}"
+            f"AND db.property_name = '{property_name}'"
         )

@@ -22,6 +22,7 @@ from .models import (  # noqa F401
     MemgraphIndex,
 )
 from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
+from .disk_storage import SQLitePropertyDatabase  # noqa F401
 
 from .utilities import GQLAlchemyWarning
 import warnings

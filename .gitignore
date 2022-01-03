@@ -1,3 +1,7 @@
+# temp files
+on_disk_properties.db
+tmp.py
+
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
 *.py[cod]
