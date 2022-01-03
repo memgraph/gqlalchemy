@@ -1,5 +1,4 @@
 # Copyright (c) 2016-2021 Memgraph Ltd. [https://memgraph.com]
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -94,6 +93,7 @@ class GraphObject(BaseModel):
                 GQLAlchemyWarning,
             )
             sub = cls
+            data_type = cls.__name__
 
         return sub(**data)
 
@@ -118,6 +118,7 @@ class UniqueGraphObject(GraphObject):
     def __init__(self, **data):
         super().__init__(**data)
         self._id = data.get("_id")
+        self._type = data.get("_type")
 
     @property
     def _properties(self) -> Dict[str, Any]:
@@ -130,12 +131,71 @@ class UniqueGraphObject(GraphObject):
         return str(self)
 
 
-class Node(UniqueGraphObject):
+class MyMeta(BaseModel.__class__):
+    def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
+        """This creates the class `Node`. It also creates all subclasses
+        of `Node`. Whenever a class is defined as a subclass of `Node`,
+        `MyMeta.__new__` is called.
+        """
+        cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+        # TODO create a discussion about accessing labels through the class definition instead of through the object. E.g. `Person.labels` instead of `person = Person("Marko"); person._node_labels`.
+        cls._type = kwargs.get("_type", name)
+        cls._node_labels = kwargs.get("_node_labels", set(cls._type.split(":")))
+        labels = ":".join(cls._node_labels)
+        # TODO check if *_type* or *_node_labels* is in fields
+        for field in cls.__fields__:
+            attrs = cls.__fields__[field].field_info.extra
+            field_type = cls.__fields__[field].type_.__name__
+            db = None
+            if "db" in attrs:
+                db = attrs["db"]
+
+            if "index" in attrs:
+                if db is None:
+                    raise ValueError(
+                        "Can't have an index on a property without providing"
+                        " the database `db` object.\n"
+                        "Define your property as:\n"
+                        f" {field}: {field_type} = Field(index=True, db=Memgraph())"
+                    )
+                index = MemgraphIndex(labels, field)
+                db.create_index(index)
+
+            if "exists" in attrs:
+                if db is None:
+                    raise ValueError(
+                        "Can't have an index on a property without providing"
+                        " the database `db` object.\n"
+                        "Define your property as:\n"
+                        f" {field}: type = Field(exists=True, db=Memgraph())"
+                    )
+                constraint = MemgraphConstraintExists(labels, field)
+                db.create_constraint(constraint)
+
+            if "unique" in attrs:
+                if db is None:
+                    raise ValueError(
+                        "Can't have an index on a property without providing"
+                        " the database `db` object.\n"
+                        "Define your property as:\n"
+                        f" {field}: type = Field(unique=True, db=Memgraph())"
+                    )
+                constraint = MemgraphConstraintUnique(labels, field)
+                db.create_constraint(constraint)
+
+            # if "on_disk" in attrs:
+            # if "use_in_db" in attrs:
+
+        return cls
+
+
+class Node(UniqueGraphObject, metaclass=MyMeta):
     _node_labels: Optional[Set[str]] = PrivateAttr()
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._node_labels = data.get("_node_labels")
+        self._type = data.get("_type", type(self).__name__)
+        self._node_labels = data.get("_node_labels", set(self._type.split(":")))
 
     def __str__(self) -> str:
         return "".join(
