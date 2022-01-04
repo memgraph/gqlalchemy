@@ -208,6 +208,16 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             )
         )
 
+    def save_node(self, db):
+        if self._id is not None:
+            db.merge_node_on_internal_id(self)
+        elif any(field.primary_key is not None for field in self.__fields__):
+            db.merge_node_on_primary_key(self)
+        elif any(field.changed_since_last_save for field in self.__fields__):
+            db.merge_node_on_unchanged_properties(self)
+        else:
+            db.create_node(self)
+
 
 class Relationship(UniqueGraphObject):
     _relationship_type: str = PrivateAttr()
