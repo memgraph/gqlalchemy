@@ -211,9 +211,25 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
         )
 
     def save_node(self, db):
+        label = ":".join(self._node_labels)
+        properties = {}
+        for field in self.__fields__:
+            value = getattr(self, field)
+            if field not in self._primary_keys and value is not None:
+                properties[field] = value
+
+        primary_keys = {}
+        for field in self._primary_keys:
+            value = getattr(self, field)
+            if value is not None:
+                primary_keys[field] = value
+
+        for field, value in properties.items():
+            if field
+
         if self._id is not None:
             result = db.execute_and_fetch(
-                f"MERGE (node: {':'.join(self._node_labels)})"
+                f"MERGE (node: {label})"
                 f" WHERE id(node) = {node._id}"
                 " RETURN node"
             )
@@ -224,7 +240,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
 
         elif self._primary_keys:
             result = db.execute_and_fetch(
-                f"MATCH (node: {':'.join(self._node_labels)})"
+                f"MATCH (node: {label})"
                 f" WHERE node.pk1 == 1 or node.pk2 == 2 or node.pk3 == 3"
                 " WITH count(node) AS count, node"
                 " IF count > 1: RETURN 'PRIMARY KEYS NOT UNIQUE'"
@@ -232,11 +248,9 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
                 " ELSE: CREATE"
             )
             print(result)
-        print(self.__fields__)
-        print(self._primary_keys)
         else:
             result = db.execute_and_fetch(
-                f"CREATE (node: {':'.join(self._node_labels)} {{{self._properties}}})"
+                f"CREATE (node: {label} {{{self._properties}}})"
             )
 
 

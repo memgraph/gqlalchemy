@@ -23,8 +23,9 @@ db = Memgraph()
 
 
 class Node(Node):
-    id: int = Field(exists=True, unique=True, index=True, db=db)
-    name: Optional[str]
+    # id: int = Field(exists=True, unique=True, index=True, db=db)
+    id: Optional[int] = Field()
+    name: Optional[str] = Field()
 
 
 @pytest.fixture
