@@ -17,6 +17,7 @@ from gqlalchemy import (
     Node,
 )
 from pydantic import Field
+import pytest
 
 db = Memgraph()
 
@@ -26,12 +27,18 @@ class Node(Node):
     name: Optional[str]
 
 
-def test_save_node(memgraph):
-    node = Node(id=1, name="First Node")
-    assert node._id is None
-    node.save_node()
-    assert node._id is not None
+@pytest.fixture
+def clear_db():
+    db = Memgraph()
+    db.drop_database()
+
+
+def test_save_node(memgraph, clear_db):
+    node1 = Node(id=1, name="First Node")
+    assert node1._id is None
+    node1.save_node(db)
+    assert node1._id is not None
     node2 = Node(id=1)
-    node2.load_node()
+    node2.load_node(db)
     assert node1._id == node2._id
     assert node1.name == node2.name
