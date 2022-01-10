@@ -235,33 +235,41 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             result = db.execute_and_fetch(
                 f"MERGE (node: {label})"
                 f" WHERE id(node) = {node._id}"
+                + "\n".join(cypher_set_properties_block) +
                 " RETURN node"
             )
-            # " SET property1 = 1
-            # " SET property2 = 2
-            # ...
-            print(result)
 
         elif self._primary_keys:
+            cypher_unique_fields_block = []
+            for field, value in primary_keys.items():
+                cypher_unique_fields_block.append(
+                    f"node.{field} = {repr(value)}"
+                )
             result = db.execute_and_fetch(
                 f"MATCH (node: {label})"
-                f" WHERE node.pk1 == 1 or node.pk2 == 2 or node.pk3 == 3"
-                " WITH count(node) AS count, node"
-                " IF count > 1: RETURN 'PRIMARY KEYS NOT UNIQUE'"
-                " ELSE IF count == 1: MERGE"
-                " ELSE: CREATE"
+                " WHERE"
+                + " OR ".join(cypher_unique_fields_block)
+                " RETURN node"
             )
-            print(result)
+            results = list(result)
+            if len(results) > 1:
+                raise GQLAlchemyError()
+            elif len(results) == 1:
+                # MERGE and update
+            else:
+                # CREATE
+
         else:
             result = db.execute_and_fetch(
                 f"CREATE (node:{label})"
                 + "\n".join(cypher_set_properties_block) +
                 "RETURN node"
             )
-            node = next(result)["node"]
-            for field in properties:
-                setattr(self, field, getattr(node, field))
-            self._id = node._id
+
+        node = next(result)["node"]
+        for field in properties:
+            setattr(self, field, getattr(node, field))
+        self._id = node._id
 
 
 class Relationship(UniqueGraphObject):

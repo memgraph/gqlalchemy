@@ -22,9 +22,13 @@ import pytest
 db = Memgraph()
 
 
-class Node(Node):
-    # id: int = Field(exists=True, unique=True, index=True, db=db)
+class SimpleNode(Node):
     id: Optional[int] = Field()
+    name: Optional[str] = Field()
+
+
+class NodeWithKey(Node):
+    id: int = Field(exists=True, unique=True, index=True, db=db)
     name: Optional[str] = Field()
 
 
@@ -35,11 +39,21 @@ def clear_db():
 
 
 def test_save_node(memgraph, clear_db):
-    node1 = Node(id=1, name="First Node")
+    node1 = SimpleNode(id=1, name="First Simple Node")
     assert node1._id is None
     node1.save_node(db)
     assert node1._id is not None
-    node2 = Node(id=1)
-    node2.load_node(db)
+    node2 = SimpleNode(id=1)
+    node2.save_node(db)
+    assert node1._id != node2._id
+
+
+def test_save_node2(memgraph, clear_db):
+    node1 = NodeWithKey(id=1, name="First NodeWithKey")
+    assert node1._id is None
+    node1.save_node(db)
+    assert node1._id is not None
+    node2 = NodeWithKey(id=1)
+    node2.save_node(db)
     assert node1._id == node2._id
     assert node1.name == node2.name
