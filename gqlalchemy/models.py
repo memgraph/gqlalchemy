@@ -215,7 +215,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
         properties = {}
         for field in self.__fields__:
             value = getattr(self, field)
-            if field not in self._primary_keys and value is not None:
+            if value is not None:
                 properties[field] = value
 
         primary_keys = {}
@@ -224,8 +224,12 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             if value is not None:
                 primary_keys[field] = value
 
+        cypher_set_properties_block = []
         for field, value in properties.items():
-            if field
+            if not self.__fields__[field].field_info.extra.get("on_disk", False):
+                cypher_set_properties_block.append(
+                    f" SET node.{field} = {repr(value)}"
+                )
 
         if self._id is not None:
             result = db.execute_and_fetch(
@@ -250,8 +254,14 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             print(result)
         else:
             result = db.execute_and_fetch(
-                f"CREATE (node: {label} {{{self._properties}}})"
+                f"CREATE (node:{label})"
+                + "\n".join(cypher_set_properties_block) +
+                "RETURN node"
             )
+            node = next(result)["node"]
+            for field in properties:
+                setattr(self, field, getattr(node, field))
+            self._id = node._id
 
 
 class Relationship(UniqueGraphObject):
