@@ -143,6 +143,7 @@ class MyMeta(BaseModel.__class__):
         cls._node_labels = kwargs.get("_node_labels", set(cls._type.split(":")))
         labels = ":".join(cls._node_labels)
         # TODO check if *_type* or *_node_labels* is in fields
+        cls._primary_keys = set()
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
@@ -180,6 +181,7 @@ class MyMeta(BaseModel.__class__):
                         "Define your property as:\n"
                         f" {field}: type = Field(unique=True, db=Memgraph())"
                     )
+                cls._primary_keys.add(field)
                 constraint = MemgraphConstraintUnique(labels, field)
                 db.create_constraint(constraint)
 
@@ -210,13 +212,32 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
 
     def save_node(self, db):
         if self._id is not None:
-            db.merge_node_on_internal_id(self)
-        elif any(field.primary_key is not None for field in self.__fields__):
-            db.merge_node_on_primary_key(self)
-        elif any(field.changed_since_last_save for field in self.__fields__):
-            db.merge_node_on_unchanged_properties(self)
+            result = db.execute_and_fetch(
+                f"MERGE (node: {':'.join(self._node_labels)})"
+                f" WHERE id(node) = {node._id}"
+                " RETURN node"
+            )
+            # " SET property1 = 1
+            # " SET property2 = 2
+            # ...
+            print(result)
+
+        elif self._primary_keys:
+            result = db.execute_and_fetch(
+                f"MATCH (node: {':'.join(self._node_labels)})"
+                f" WHERE node.pk1 == 1 or node.pk2 == 2 or node.pk3 == 3"
+                " WITH count(node) AS count, node"
+                " IF count > 1: RETURN 'PRIMARY KEYS NOT UNIQUE'"
+                " ELSE IF count == 1: MERGE"
+                " ELSE: CREATE"
+            )
+            print(result)
+        print(self.__fields__)
+        print(self._primary_keys)
         else:
-            db.create_node(self)
+            result = db.execute_and_fetch(
+                f"CREATE (node: {':'.join(self._node_labels)} {{{self._properties}}})"
+            )
 
 
 class Relationship(UniqueGraphObject):
