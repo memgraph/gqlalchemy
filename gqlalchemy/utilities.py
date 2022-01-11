@@ -22,6 +22,10 @@ class GQLAlchemyWarning(Warning):
     pass
 
 
+class GQLAlchemyError(Exception):
+    pass
+
+
 class NanValuesHandle(Enum):
     THROW_EXCEPTION = 1
     REMOVE_PROPERTY = 2

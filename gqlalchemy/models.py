@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
 from pydantic import BaseModel, PrivateAttr, Extra
 
-from .utilities import GQLAlchemyWarning
+from .utilities import GQLAlchemyWarning, GQLAlchemyError
 
 
 @dataclass(frozen=True, eq=True)
@@ -233,7 +233,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
 
         if self._id is not None:
             result = db.execute_and_fetch(
-                f"MERGE (node: {label})"
+                f"MATCH (node: {label})"
                 f" WHERE id(node) = {node._id}"
                 + "\n".join(cypher_set_properties_block) +
                 " RETURN node"
@@ -247,17 +247,27 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
                 )
             result = db.execute_and_fetch(
                 f"MATCH (node: {label})"
-                " WHERE"
-                + " OR ".join(cypher_unique_fields_block)
+                " WHERE "
+                + " OR ".join(cypher_unique_fields_block) +
                 " RETURN node"
             )
             results = list(result)
             if len(results) > 1:
                 raise GQLAlchemyError()
             elif len(results) == 1:
-                # MERGE and update
+                my_id = results[0]['node']._id
+                result = db.execute_and_fetch(
+                    f"MATCH (node: {label})"
+                    f" WHERE id(node) = {my_id}"
+                    + "\n".join(cypher_set_properties_block) +
+                    " RETURN node"
+                )
             else:
-                # CREATE
+                result = db.execute_and_fetch(
+                    f"CREATE (node:{label})"
+                    + "\n".join(cypher_set_properties_block) +
+                    "RETURN node"
+                )
 
         else:
             result = db.execute_and_fetch(
@@ -267,8 +277,9 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             )
 
         node = next(result)["node"]
-        for field in properties:
+        for field in self.__fields__:
             setattr(self, field, getattr(node, field))
+
         self._id = node._id
 
 
