@@ -48,7 +48,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
                     cursor.execute(query)
                     return cursor.fetchall()
 
-    def create_node_property_table(self):
+    def create_node_property_table(self) -> None:
         self.execute_query(
             "CREATE TABLE IF NOT EXISTS node_properties ("
             "node_id integer NOT NULL,"
