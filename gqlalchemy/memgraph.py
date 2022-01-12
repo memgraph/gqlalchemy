@@ -84,7 +84,12 @@ class Memgraph:
         """Returns a list of all database indexes (label and label-property types)"""
         indexes = []
         for result in self.execute_and_fetch("SHOW INDEX INFO"):
-            indexes.append(MemgraphIndex(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTY]))
+            indexes.append(
+                MemgraphIndex(
+                    result[MemgraphConstants.LABEL],
+                    result[MemgraphConstants.PROPERTY],
+                )
+            )
         return indexes
 
     def ensure_indexes(self, indexes: List[MemgraphIndex]) -> None:
@@ -106,23 +111,32 @@ class Memgraph:
         query = f"DROP CONSTRAINT ON {index.to_cypher()}"
         self.execute(query)
 
-    def get_constraints(self) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
+    def get_constraints(
+        self,
+    ) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
         """Returns a list of all database constraints (label and label-property types)"""
         constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]] = []
         for result in self.execute_and_fetch("SHOW CONSTRAINT INFO"):
             if result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.UNIQUE:
                 constraints.append(
                     MemgraphConstraintUnique(
-                        result[MemgraphConstants.LABEL], tuple(result[MemgraphConstants.PROPERTIES])
+                        result[MemgraphConstants.LABEL],
+                        tuple(result[MemgraphConstants.PROPERTIES]),
                     )
                 )
             elif result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.EXISTS:
                 constraints.append(
-                    MemgraphConstraintExists(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTIES])
+                    MemgraphConstraintExists(
+                        result[MemgraphConstants.LABEL],
+                        result[MemgraphConstants.PROPERTIES],
+                    )
                 )
         return constraints
 
-    def ensure_constraints(self, constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]) -> None:
+    def ensure_constraints(
+        self,
+        constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]],
+    ) -> None:
         """Ensures that database constraints match input constraints"""
         old_constraints = set(self.get_constraints())
         new_constraints = set(constraints)
@@ -277,7 +291,8 @@ class Memgraph:
             raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
 
     def save_relationship_with_start_node_id_and_end_node_id(
-            self, relationship: Relationship) -> Optional[Relationship]:
+        self, relationship: Relationship
+    ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {relationship._start_node_id} AND id(end_node) = {relationship._end_node_id}"
             + relationship._get_cypher_set_properties("relationship")
@@ -298,12 +313,12 @@ class Memgraph:
     def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
             f"MATCH (start_node)"
-            +" WHERE id(start_node) = {relationship._start_node_id}"
-            +" WITH start_node"
-            +" MATCH (end_node)"
-            +" WHERE id(end_node) = {relationship._end_node_id}"
-            +" WITH start_node, end_node"
-            +" CREATE (start_node)-[relationship:{relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + " WITH start_node"
+            + " MATCH (end_node)"
+            + f" WHERE id(end_node) = {relationship._end_node_id}"
+            + " WITH start_node, end_node"
+            + f" CREATE (start_node)-[relationship:{relationship._type}]->(end_node)"
             + relationship._get_cypher_set_properties("relationship")
             + "RETURN relationship"
         )
