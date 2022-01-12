@@ -132,9 +132,7 @@ class Memgraph:
             self.create_constraint(missing_constraint)
 
     def create_stream(self, stream):
-        print(stream)
         query = stream.to_cypher()
-        print(query)
         self.execute(query)
 
     def get_streams(self):

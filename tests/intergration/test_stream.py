@@ -12,13 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy import MemgraphKafkaStream, MemgraphPulsarStream
+from gqlalchemy import MemgraphKafkaStream
+
+
+def stream_exists(streams, stream_name):
+    return map(lambda s: s["name"] == stream_name, streams)
 
 
 def test_create_kafka_stream(memgraph):
     kafka_stream = MemgraphKafkaStream(name="stream1", topics=["topic"], transform="kafka_stream.transform")
 
-    memgraph.drop_stream(kafka_stream)
-    memgraph.create_stream(kafka_stream)
+    # NOTE: Memgraph doesn't have DROP STREAMS; query.
+    if stream_exists(memgraph.get_streams(), kafka_stream.name):
+        memgraph.drop_stream(kafka_stream)
 
-    assert any(map(lambda s: s["name"] == "stream1", memgraph.get_streams()))
+    memgraph.create_stream(kafka_stream)
+    assert stream_exists(memgraph.get_streams(), kafka_stream.name)
+
+
+# TODO(gitbuda): Add all streams tests.
