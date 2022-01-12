@@ -99,3 +99,12 @@ class TestMatch:
             query_builder.get_single(retrieve="n")
 
         mock.assert_called_with(expected_query)
+
+    def test_from(self):
+        query_builder = Match().node("L1", variable="n").from_("TO", variable="e").node("L2", variable="m")
+        expected_query = "MATCH (n:L1)<-[e:TO]-(m:L2) RETURN *"
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
