@@ -221,8 +221,8 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._type = data.get("_type", type(self).__name__)
-        self._node_labels = data.get("_node_labels", set(self._type.split(":")))
+        self._type = getattr(type(self), "_type", type(self).__name__)
+        self._node_labels = getattr(type(self), "_node_labels", set(self._type.split(":")))
 
     def __str__(self) -> str:
         return "".join(
