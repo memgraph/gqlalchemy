@@ -22,8 +22,6 @@ from .models import (
     MemgraphConstraintUnique,
     MemgraphIndex,
     MemgraphStream,
-    MemgraphKafkaStream,
-    MemgraphPulsarStream,
 )
 
 __all__ = ("Memgraph",)
@@ -131,17 +129,20 @@ class Memgraph:
         for missing_constraint in new_constraints.difference(old_constraints):
             self.create_constraint(missing_constraint)
 
-    def create_stream(self, stream):
+    def create_stream(self, stream: MemgraphStream) -> None:
+        """Create a stream"""
         query = stream.to_cypher()
         self.execute(query)
 
-    def get_streams(self):
+    def get_streams(self) -> List[str]:
+        """Returns a list of all streams"""
         streams = []
         for result in self.execute_and_fetch("SHOW STREAMS;"):
             streams.append(result)
         return streams
 
-    def drop_stream(self, stream: MemgraphStream):
+    def drop_stream(self, stream: MemgraphStream) -> None:
+        """Drop a stream"""
         query = f"DROP STREAM {stream.name};"
         self.execute(query)
 

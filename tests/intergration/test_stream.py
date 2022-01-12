@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from gqlalchemy import MemgraphKafkaStream
+import pytest
+from gqlalchemy import MemgraphKafkaStream, MemgraphPulsarStream
 
 
 def stream_exists(streams, stream_name):
@@ -20,14 +20,44 @@ def stream_exists(streams, stream_name):
 
 
 def test_create_kafka_stream(memgraph):
-    kafka_stream = MemgraphKafkaStream(name="stream1", topics=["topic"], transform="kafka_stream.transform")
+    kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
 
-    # NOTE: Memgraph doesn't have DROP STREAMS; query.
-    if stream_exists(memgraph.get_streams(), kafka_stream.name):
-        memgraph.drop_stream(kafka_stream)
-
-    memgraph.create_stream(kafka_stream)
-    assert stream_exists(memgraph.get_streams(), kafka_stream.name)
+    with pytest.raises(Exception) as e_info:
+        memgraph.create_stream(kafka_stream)
+    assert "Local: Broker transport failure" in str(e_info.value)
 
 
-# TODO(gitbuda): Add all streams tests.
+def test_drop_kafka_stream(memgraph):
+    kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
+
+    with pytest.raises(Exception) as e_info:
+        memgraph.create_stream(kafka_stream)
+    assert "Local: Broker transport failure" in str(e_info.value)
+
+
+def test_create_pulsar_stream(memgraph):
+    pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
+
+    with pytest.raises(Exception) as e_info:
+        memgraph.create_stream(pulsar_stream)
+    assert "Pulsar consumer test_stream : ConnectError" in str(e_info.value)
+
+
+def test_drop_pulsar_stream(memgraph):
+    pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
+
+    with pytest.raises(Exception) as e_info:
+        memgraph.create_stream(pulsar_stream)
+    assert "Pulsar consumer test_stream : ConnectError" in str(e_info.value)
+
+
+def test_kafka_stream_cypher():
+    kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
+    query = "CREATE KAFKA STREAM test_stream TOPICS topic TRANSFORM kafka_stream.transform "
+    assert kafka_stream.to_cypher() == query
+
+
+def test_pulsar_stream_cypher():
+    pulsar_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
+    query = "CREATE KAFKA STREAM test_stream TOPICS topic TRANSFORM pulsar_stream.transform "
+    assert pulsar_stream.to_cypher() == query

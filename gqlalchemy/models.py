@@ -89,7 +89,6 @@ class MemgraphKafkaStream(MemgraphStream):
             query += f"BATCH_SIZE {self.batch_size} "
         if self.bootstrap_servers is not None:
             query += f"BOOTSTRAP_SERVERS {self.bootstrap_servers} "
-        query += ";"
         return query
 
 
