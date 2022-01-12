@@ -182,7 +182,6 @@ class Memgraph:
 
         if variable_name not in result:
             raise GQLAlchemyError(f"Variable name {variable_name} not present in result.")
-
         return result[variable_name]
 
     def create_node(self, node: Node) -> Optional[Node]:
@@ -286,7 +285,7 @@ class Memgraph:
         if relationship._id is not None:
             self.save_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
-            self.create_relationship(relationship)
+            return self.create_relationship(relationship)
         else:
             raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
 
