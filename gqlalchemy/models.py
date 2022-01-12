@@ -297,7 +297,6 @@ class Relationship(UniqueGraphObject, metaclass=MyMeta):
 
     def save(self, db: "Memgraph") -> None:
         relationship = db.save_relationship(self)
-        print(relationship)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id

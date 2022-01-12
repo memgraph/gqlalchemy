@@ -81,7 +81,6 @@ def test_save_relationship2(memgraph, clear_db):
         _end_node_id=node2._id,
     )
     assert SimpleRelationship._type == relationship._type
-    print(SimpleRelationship._type)
     assert SimpleRelationship._type is not None
     relationship.save(memgraph)
     assert relationship._id is not None

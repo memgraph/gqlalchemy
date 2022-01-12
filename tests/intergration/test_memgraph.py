@@ -96,7 +96,6 @@ def test_edges_mapping(populated_memgraph: Memgraph):
     ]
 
     actual_edges = [r["e"] for r in populated_memgraph.execute_and_fetch(query)]
-    print(actual_edges)
 
     compare_edges(actual_edges, expected_edges)
 

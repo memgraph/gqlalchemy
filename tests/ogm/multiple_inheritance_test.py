@@ -15,5 +15,4 @@ class Streamer(Node, _node_labels={"User", "Streamer"}):
 def test_multiple_inheritance():
     user = User(name="Ivan").save(db)
     streamer = Streamer(id=7, name="Pero").save(db)
-    print(Node._subtypes_)
     assert False
