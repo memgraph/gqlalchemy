@@ -160,6 +160,8 @@ class MyMeta(BaseModel.__class__):
         # TODO create a discussion about accessing labels through the class definition instead of through the object. E.g. `Person.labels` instead of `person = Person("Marko"); person._node_labels`.
         cls._type = kwargs.get("_type", name)
         cls._node_labels = kwargs.get("_node_labels", set(cls._type.split(":")))
+        if len(cls._node_labels) > 1:
+            cls._type = ":".join(sorted(cls._node_labels))
         # TODO check if *_type* or *_node_labels* is in fields
         cls._primary_keys = set()
         for field in cls.__fields__:
