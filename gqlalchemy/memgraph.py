@@ -17,6 +17,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .models import MemgraphConstraint, MemgraphConstraintExists, MemgraphConstraintUnique, MemgraphIndex, Node
+from .utilities import GQLAlchemyError
 
 __all__ = ("Memgraph",)
 
@@ -145,112 +146,95 @@ class Memgraph:
         )
         return Connection.create(**args)
 
+    def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
+        return self.execute_and_fetch(
+            f"MATCH (node: {node._label})"
+            " WHERE "
+            + node._get_cypher_unique_fields_or_block() +
+            " RETURN node"
+        )
+
+    def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
+        result = next(query_result, None)
+        if result is None:
+            raise GQLAlchemyError("No result found. Result list is empty.")
+
+        if next(query_result, None) is not None:
+            raise GQLAlchemyError("One result expected, but more than one result found.")
+
+        if variable_name not in result:
+            raise GQLAlchemyError(f"Variable name {variable_name} not present in result.")
+
+        return result[variable_name]
+
+    def create_node(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(
+            f"CREATE (node:{node._label})"
+            + node._get_cypher_set_properties() +
+            "RETURN node"
+        )
+        return self.get_variable_assume_one(results, "node")
+
     def save_node(self, node: Node):
-        result = []
         if node._id is not None:
-            result = self._save_node_with_id(node)
+            return self._save_node_with_id(node)
 
         elif any(getattr(node, key) is not None for key in node._primary_keys):
-            matching_nodes = list(self._get_node_with_unique_fields(node))
+            matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
                 raise GQLAlchemyUniquenessConstraintError(
                     f"Uniqueness constraints match multiple nodes: {matching_nodes}"
                 )
             elif len(matching_nodes) == 1:
                 node._id = matching_nodes[0]['node']._id
-                result = self.save_node_with_id(node)
+                return self.save_node_with_id(node)
             else:
-                result = self.create_node(node)
+                return self.create_node(node)
         else:
-            result = self.create_node(node)
+            return self.create_node(node)
 
-        return result
-
-    def _get_node_with_unique_fields(self, node: Node) -> List[Node]:
-        return self.execute_and_fetch(
-            f"MATCH (node: {node._label})"
-            " WHERE "
-            + self._get_cypher_unique_fields_or_block(node) +
-            " RETURN node"
-        )
-
-    def save_node_with_id(self, node: Node) -> List[Node]:
-        return self.execute_and_fetch(
+    def save_node_with_id(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(
             f"MATCH (node: {node._label})"
             f" WHERE id(node) = {node._id}"
-            + self._get_cypher_set_properties(node) +
+            + node._get_cypher_set_properties() +
             " RETURN node"
         )
 
-    def _get_cypher_unique_fields_or_block(self, node: Node) -> str:
-        cypher_unique_fields = []
-        for field in node._primary_keys:
-            value = getattr(node, field)
-            if value is not None:
-                cypher_unique_fields.append(
-                    f"node.{field} = {repr(value)}"
-                )
+        return self.get_variable_assume_one(results, "node")
 
-        return " " + " OR ".join(cypher_unique_fields) + " "
-
-    def _get_cypher_fields_or_block(self, node: Node) -> str:
-        cypher_fields = []
-        for field in node.__fields__:
-            value = getattr(node, field)
-            if value is not None:
-                cypher_fields.append(
-                    f"node.{field} = {repr(value)}"
-                )
-
-        return " " + " OR ".join(cypher_fields) + " "
-
-    def _get_cypher_set_properties(self, node: Node) -> str:
-        cypher_set_properties = []
-        for field in node.__fields__:
-            attributes = node.__fields__[field].field_info.extra
-            value = getattr(node, field)
-            if value is not None and not attributes.get("on_disk", False):
-                cypher_set_properties.append(
-                    f" SET node.{field} = {repr(value)}"
-                )
-
-        return  " " + " ".join(cypher_set_properties) + " "
-
-    def create_node(self, node: Node) -> List[Node]:
-        return self.execute_and_fetch(
-            f"CREATE (node:{node._label})"
-            + self._get_cypher_set_properties(node) +
-            "RETURN node"
-        )
-
-    def load_node(self, node: Node) -> List[Node]:
-        result = []
+    def load_node(self, node: Node) -> Optional[Node]:
         if node._id is not None:
-            result = self.load_node_with_id(node)
+            return self.load_node_with_id(node)
         elif any(getattr(node, key) is not None for key in node._primary_keys):
-            matching_nodes = list(self._get_node_with_unique_fields(node))
+            matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
                 raise GQLAlchemyUniquenessConstraintError(
                     f"Uniqueness constraints match multiple nodes: {matching_nodes}"
                 )
-            elif len(results) == 1:
+            elif len(matching_nodes) == 1:
                 node._id = matching_nodes[0]['node']._id
-                result = self.load_node_with_id(node)
+                return self.load_node_with_id(node)
+            else:
+                raise GQLAlchemyError("No node found that matches properties.")
         else:
-            result = self.load_node_with_all_properties(node)
+            return self.load_node_with_all_properties(node)
 
-    def load_node_with_all_properties(self, node: Node) -> List[Node]:
-        return self.execute_and_fetch(
+    def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(
             f"MATCH (node: {node._label}"
             " WHERE "
             + _get_cypher_fields_or_block(node) +
             " RETURN node"
         )
+        return self.get_variable_assume_one(results, "node")
 
-    def load_node_with_id(self, node: Node) -> List[Node]:
-        return self.execute_and_fetch(
+    def load_node_with_id(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(
             f"MATCH (node: {node._label})"
             f" WHERE id(node) = {node._id}"
             + cypher_set_properties +
             " RETURN node"
         )
+
+        return self.get_variable_assume_one(results, "node")

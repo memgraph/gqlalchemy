@@ -41,19 +41,19 @@ def clear_db():
 def test_save_node(memgraph, clear_db):
     node1 = SimpleNode(id=1, name="First Simple Node")
     assert node1._id is None
-    node1.save_node(db)
+    node1.save(db)
     assert node1._id is not None
     node2 = SimpleNode(id=1)
-    node2.save_node(db)
+    node2.save(db)
     assert node1._id != node2._id
 
 
 def test_save_node2(memgraph, clear_db):
     node1 = NodeWithKey(id=1, name="First NodeWithKey")
     assert node1._id is None
-    node1.save_node(db)
+    node1.save(db)
     assert node1._id is not None
     node2 = NodeWithKey(id=1)
-    node2.save_node(db)
+    node2.save(db)
     assert node1._id == node2._id
     assert node1.name == node2.name
