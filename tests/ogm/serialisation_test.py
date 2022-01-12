@@ -12,10 +12,7 @@
 # limitations under the License.
 
 from typing import Optional
-from gqlalchemy import (
-    Memgraph,
-    Node,
-)
+from gqlalchemy import Memgraph, Node, Relationship
 from pydantic import Field
 import pytest
 
@@ -30,6 +27,10 @@ class SimpleNode(Node):
 class NodeWithKey(Node):
     id: int = Field(exists=True, unique=True, index=True, db=db)
     name: Optional[str] = Field()
+
+
+class SimpleRelationship(Relationship):
+    pass
 
 
 @pytest.fixture
@@ -57,3 +58,16 @@ def test_save_node2(memgraph, clear_db):
     node2.save(db)
     assert node1._id == node2._id
     assert node1.name == node2.name
+
+
+def test_save_relationship(memgraph, clear_db):
+    node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
+    node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
+    relationship = SimpleRelationship(
+        _start_node_id=node1._id,
+        _end_node_id=node2._id,
+    )
+    assert SimpleRelationship._type == relationship._type
+    assert SimpleRelationship._type is not None
+    relationship.save(memgraph)
+    assert relationship._id is not None

@@ -263,7 +263,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
         return self
 
 
-class Relationship(UniqueGraphObject):
+class Relationship(UniqueGraphObject, metaclass=MyMeta):
     _relationship_type: str = PrivateAttr()
     _start_node_id: int = PrivateAttr()
     _end_node_id: int = PrivateAttr()
@@ -273,6 +273,7 @@ class Relationship(UniqueGraphObject):
         self._relationship_type = data.get("_relationship_type")
         self._start_node_id = data.get("_start_node_id")
         self._end_node_id = data.get("_end_node_id")
+        self._type = data.get("_type", type(self).__name__)
 
     @property
     def _nodes(self) -> Tuple[int, int]:
@@ -292,6 +293,7 @@ class Relationship(UniqueGraphObject):
 
     def save(self, db: "Memgraph") -> None:
         relationship = db.save_relationship(self)
+        print(relationship)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id
