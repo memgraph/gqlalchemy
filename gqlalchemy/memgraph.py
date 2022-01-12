@@ -148,24 +148,21 @@ class Memgraph:
     def save_node(self, node: Node):
         result = []
         if node._id is not None:
-            result = self._save_node_with_id(node, cypher_set_properties)
+            result = self._save_node_with_id(node)
 
         elif any(getattr(node, key) is not None for key in node._primary_keys):
-            matching_nodes = self._get_node_with_unique_fields(
-                node,
-                cypher_set_properties,
-            )
+            matching_nodes = list(self._get_node_with_unique_fields(node))
             if len(matching_nodes) > 1:
                 raise GQLAlchemyUniquenessConstraintError(
                     f"Uniqueness constraints match multiple nodes: {matching_nodes}"
                 )
             elif len(results) == 1:
                 node._id = matching_nodes[0]['node']._id
-                result = self.save_node_with_id(node, cypher_set_properties)
+                result = self.save_node_with_id(node)
             else:
-                result = self.create_node(node, cypher_set_properties)
+                result = self.create_node(node)
         else:
-            result = self.create_node(node, cypher_set_properties)
+            result = self.create_node(node)
 
         return result
 
@@ -231,14 +228,14 @@ class Memgraph:
         if node._id is not None:
             result = self.load_node_with_id(node)
         elif any(getattr(node, key) is not None for key in node._primary_keys):
-            matching_nodes = self._get_node_with_unique_fields(node)
+            matching_nodes = list(self._get_node_with_unique_fields(node))
             if len(matching_nodes) > 1:
                 raise GQLAlchemyUniquenessConstraintError(
                     f"Uniqueness constraints match multiple nodes: {matching_nodes}"
                 )
             elif len(results) == 1:
                 node._id = matching_nodes[0]['node']._id
-                result= self.load_node_with_id(node, cypher_set_properties)
+                result = self.load_node_with_id(node)
         else:
             result = self.load_node_with_all_properties(node)
 
