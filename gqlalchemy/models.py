@@ -104,6 +104,25 @@ class GraphObject(BaseModel):
         """
         return cls._convert_to_real_type_(obj)
 
+    def _get_cypher_fields_or_block(self, variable_name: str) -> str:
+        cypher_fields = []
+        for field in self.__fields__:
+            value = getattr(self, field)
+            if value is not None:
+                cypher_fields.append(f"{variable_name}.{field} = {repr(value)}")
+
+        return " " + " OR ".join(cypher_fields) + " "
+
+    def _get_cypher_set_properties(self, variable_name: str) -> str:
+        cypher_set_properties = []
+        for field in self.__fields__:
+            attributes = self.__fields__[field].field_info.extra
+            value = getattr(self, field)
+            if value is not None and not attributes.get("on_disk", False):
+                cypher_set_properties.append(f" SET {variable_name}.{field} = {repr(value)}")
+
+        return " " + " ".join(cypher_set_properties) + " "
+
     def __str__(self) -> str:
         return "<GraphObject>"
 
@@ -216,49 +235,32 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             )
         )
 
-    def _get_cypher_unique_fields_or_block(self) -> str:
+    def _get_cypher_unique_fields_or_block(self, variable_name: str) -> str:
         cypher_unique_fields = []
         for field in self._primary_keys:
             value = getattr(self, field)
             if value is not None:
-                cypher_unique_fields.append(f"node.{field} = {repr(value)}")
+                cypher_unique_fields.append(f"{variable_name}.{field} = {repr(value)}")
 
         return " " + " OR ".join(cypher_unique_fields) + " "
 
-    def _get_cypher_fields_or_block(self) -> str:
-        cypher_fields = []
-        for field in self.__fields__:
-            value = getattr(self, field)
-            if value is not None:
-                cypher_fields.append(f"node.{field} = {repr(value)}")
-
-        return " " + " OR ".join(cypher_fields) + " "
-
-    def _get_cypher_set_properties(self) -> str:
-        cypher_set_properties = []
-        for field in self.__fields__:
-            attributes = self.__fields__[field].field_info.extra
-            value = getattr(self, field)
-            if value is not None and not attributes.get("on_disk", False):
-                cypher_set_properties.append(f" SET node.{field} = {repr(value)}")
-
-        return " " + " ".join(cypher_set_properties) + " "
-
     @property
-    def _label(self):
+    def _label(self) -> str:
         return ":".join(self._node_labels)
 
-    def save(self, db: "Memgraph"):
+    def save(self, db: "Memgraph") -> None:
         node = db.save_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
         self._id = node._id
+        return self
 
-    def load(self, db: "Memgraph"):
+    def load(self, db: "Memgraph") -> None:
         node = db.load_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
         self._id = node._id
+        return self
 
 
 class Relationship(UniqueGraphObject):
@@ -287,6 +289,20 @@ class Relationship(UniqueGraphObject):
                 ">",
             )
         )
+
+    def save(self, db: "Memgraph") -> None:
+        relationship = db.save_relationship(self)
+        for field in self.__fields__:
+            setattr(self, field, getattr(relationship, field))
+        self._id = relationship._id
+        return self
+
+    def load(self, db: "Memgraph") -> None:
+        relationship = db.load_relationship(self)
+        for field in self.__fields__:
+            setattr(self, field, getattr(relationship, field))
+        self._id = relationship._id
+        return self
 
 
 class Path(GraphObject):
