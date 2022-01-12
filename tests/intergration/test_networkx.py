@@ -62,7 +62,7 @@ def test_simple_nx_to_memgraph(memgraph: Memgraph):
     assert len(actual_edges) == 2
     for i, edge in enumerate(actual_edges):
         print(edge)
-        assert edge["e"]._relationship_type == "TO"
+        assert edge["e"]._type == "TO"
 
 
 def test_simple_index_nx_to_memgraph(memgraph: Memgraph):
@@ -95,7 +95,7 @@ def test_nx_to_memgraph(memgraph: Memgraph):
         (2, {"labels": "L1", "num": 123}),
         (3, {"labels": ["L1", "L2", "L3"], "num": 123}),
     ]
-    expected_edges = [(1, 2, {"type": "E1", "num": 3.14}), (1, 3, {"type": "E2", "num": 123})]
+    expected_edges = [(1, 2, {"type": "E1", "num": 3.14}), (1, 3, {"_type": "E2", "num": 123})]
     graph.add_nodes_from(expected_nodes)
     graph.add_edges_from(expected_edges)
 
@@ -115,7 +115,7 @@ def test_nx_to_memgraph(memgraph: Memgraph):
     actual_edges = list(memgraph.execute_and_fetch("MATCH ()-[e]->() RETURN e"))
     assert len(actual_edges) == 2
     for i, edge in enumerate(actual_edges):
-        assert edge["e"]._relationship_type == expected_edges[i][2]["type"]
+        assert edge["e"]._type == expected_edges[i][2]["type"]
         assert edge["e"]._properties["num"] == expected_edges[i][2]["num"]
 
 
