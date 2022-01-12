@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List
-
 import pytest
 from gqlalchemy import Memgraph, MemgraphTrigger
 from gqlalchemy.models import TriggerEventType, TriggerEventObject, TriggerExecutionPhase
@@ -36,5 +34,18 @@ def test_create_get_trigger(memgraph: Memgraph):
     )
 
     memgraph.create_trigger(trigger)
-    print(memgraph.get_triggers())
     assert any(map(lambda t: t["trigger name"] == "test_trigger", memgraph.get_triggers()))
+
+
+def test_drop_trigger(memgraph: Memgraph):
+    trigger = MemgraphTrigger(
+        name="test_trigger",
+        event_type=TriggerEventType.CREATE,
+        event_object=TriggerEventObject.ALL,
+        execution_phase=TriggerExecutionPhase.BEFORE,
+        statement="CREATE (:Node)",
+    )
+
+    memgraph.create_trigger(trigger)
+    memgraph.drop_trigger(trigger)
+    assert len(memgraph.get_triggers()) == 0
