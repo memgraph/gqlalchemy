@@ -70,6 +70,9 @@ class GraphObject(BaseModel):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
+        if _node_labels is not None:
+            _type = ":".join(sorted(_node_labels))
+
         cls._subtypes_[_type or cls.__name__] = cls
 
     @classmethod
@@ -161,12 +164,13 @@ class MyMeta(BaseModel.__class__):
         cls._type = kwargs.get("_type", name)
         cls._node_labels = kwargs.get("_node_labels", set(cls._type.split(":")))
         if len(cls._node_labels) > 1:
-            cls._type = ":".join(sorted(cls._node_labels))
         # TODO check if *_type* or *_node_labels* is in fields
+            cls._type = ":".join(sorted(cls._node_labels))
         cls._primary_keys = set()
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
+            label = None
             if attrs.get("label", None) is not None:
                 label = attrs["label"]
             elif len(cls._node_labels) == 1:

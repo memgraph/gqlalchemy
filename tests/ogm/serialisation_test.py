@@ -39,7 +39,7 @@ def clear_db():
     db.drop_database()
 
 
-def test_save_node(memgraph, clear_db):
+def test_save_node(clear_db):
     node1 = SimpleNode(id=1, name="First Simple Node")
     assert node1._id is None
     node1.save(db)
