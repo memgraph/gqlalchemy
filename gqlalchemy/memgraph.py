@@ -156,7 +156,7 @@ class Memgraph:
                 raise GQLAlchemyUniquenessConstraintError(
                     f"Uniqueness constraints match multiple nodes: {matching_nodes}"
                 )
-            elif len(results) == 1:
+            elif len(matching_nodes) == 1:
                 node._id = matching_nodes[0]['node']._id
                 result = self.save_node_with_id(node)
             else:
