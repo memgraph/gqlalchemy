@@ -123,6 +123,12 @@ class Memgraph:
         for missing_constraint in new_constraints.difference(old_constraints):
             self.create_constraint(missing_constraint)
 
+    def create_stream(self):
+        pass
+
+    def drop_stream(self):
+        pass
+
     def drop_database(self):
         """Drops database by removing all nodes and edges"""
         self.execute("MATCH (n) DETACH DELETE n")
