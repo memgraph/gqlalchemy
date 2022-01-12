@@ -28,6 +28,9 @@ class MatchTypes:
     WHERE = "WHERE"
     AND_WHERE = "AND_WHERE"
     OR_WHERE = "OR_WHERE"
+    CALL = "CALL"
+    UNWIND = "UNWIND"
+    RETURN = "RETURN"
 
 
 class MatchConstants:
@@ -78,6 +81,34 @@ class MatchPartialQuery(PartialQuery):
             return f" OPTIONAL MATCH "
 
         return f" MATCH "
+
+
+class CallPartialQuery(PartialQuery):
+    def __init__(self, procedure: str, arguments: Optional[str], results: Optional[str]):
+        super().__init__(MatchTypes.CALL)
+
+        self.procedure = procedure
+        self._arguments = arguments
+        self._results = results
+
+    @property
+    def arguments(self) -> str:
+        return self._arguments if self._arguments is not None else ""
+
+    @property
+    def results(self) -> str:
+        return self._results if self._results is not None else " *"
+
+    def construct_query(self) -> str:
+        return f" CALL {self.procedure}({self._arguments}) YIELD {self._results}"
+
+
+class UnwindPartialQuery(PartialQuery):
+    def __init__(self):
+        super().__init__(MatchTypes.UNWIND)
+
+    def construct_query(self) -> str:
+        return f" UNWIND "
 
 
 class WhereConditionPartialQuery(PartialQuery):
@@ -146,13 +177,30 @@ class EdgePartialQuery(PartialQuery):
         return relationship_query
 
 
-class Match:
+class ReturnPartialQuery(PartialQuery):
+    def __init__(self, results: str):
+        super().__init__(MatchTypes.RETURN)
+
+        self.results = results
+
+    def construct_query(self) -> str:
+        return f" RETURN {self.results} "
+
+
+class G:
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         self._query: List[Any] = []
         self._connection = connection if connection is not None else Memgraph()
 
-    def match(self, optional: bool = False) -> "Match":
+    def match(self, optional: bool = False) -> "G":
         self._query.append(MatchPartialQuery(optional))
+
+        return self
+
+    def call(
+        self, procedure: Optional[str] = None, arguments: Optional[str] = None, results: Optional[str] = None
+    ) -> "G":
+        self._query.append(CallPartialQuery(procedure, arguments, results))
 
         return self
 
@@ -162,7 +210,7 @@ class Match:
         variable: Optional[str] = None,
         node: Optional["Node"] = None,
         **kwargs,
-    ) -> "Match":
+    ) -> "G":
         if not self._is_linking_valid_with_query(MatchTypes.NODE):
             raise InvalidMatchChainException()
 
@@ -184,7 +232,7 @@ class Match:
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
         **kwargs,
-    ) -> "Match":
+    ) -> "G":
         if not self._is_linking_valid_with_query(MatchTypes.EDGE):
             raise InvalidMatchChainException()
 
@@ -199,7 +247,7 @@ class Match:
 
         return self
 
-    def where(self, property: str, operator: str, value: Any) -> "Match":
+    def where(self, property: str, operator: str, value: Any) -> "G":
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property, operator, value_cypher]))
@@ -207,7 +255,7 @@ class Match:
 
         return self
 
-    def and_where(self, property: str, operator: str, value: Any) -> "Match":
+    def and_where(self, property: str, operator: str, value: Any) -> "G":
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.AND, " ".join([property, operator, value_cypher]))
@@ -215,7 +263,7 @@ class Match:
 
         return self
 
-    def or_where(self, property: str, operator: str, value: Any) -> "Match":
+    def or_where(self, property: str, operator: str, value: Any) -> "G":
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.OR, " ".join([property, operator, value_cypher]))
@@ -223,10 +271,14 @@ class Match:
 
         return self
 
+    def return_(self, results: Optional[str] = " * ",) -> "G":
+        self._query.append(ReturnPartialQuery(results))
+
+        return self
+
     def get_single(self, retrieve: str) -> Any:
         query = self._construct_query()
 
-        query = f"{query} RETURN {retrieve}"
         result = next(self._connection.execute_and_fetch(query), None)
 
         if result:
@@ -235,15 +287,13 @@ class Match:
 
     def execute(self) -> Iterator[Dict[str, Any]]:
         query = self._construct_query()
-        query = f"{query} RETURN *"
-
         return self._connection.execute_and_fetch(query)
 
     def _construct_query(self) -> str:
-        query = ["MATCH "]
+        query = [""]
 
-        if not self._any_variables_matched():
-            raise NoVariablesMatchedException()
+        # if not self._any_variables_matched():
+        #    raise NoVariablesMatchedException()
 
         for partial_query in self._query:
             query.append(partial_query.construct_query())
