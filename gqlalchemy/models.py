@@ -210,77 +210,19 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             )
         )
 
+    @property
+    def _label(self):
+        return ":".join(self._node_labels)
+
     def save_node(self, db):
-        label = ":".join(self._node_labels)
-        properties = {}
-        for field in self.__fields__:
-            value = getattr(self, field)
-            if value is not None:
-                properties[field] = value
-
-        primary_keys = {}
-        for field in self._primary_keys:
-            value = getattr(self, field)
-            if value is not None:
-                primary_keys[field] = value
-
-        cypher_set_properties_block = []
-        for field, value in properties.items():
-            if not self.__fields__[field].field_info.extra.get("on_disk", False):
-                cypher_set_properties_block.append(
-                    f" SET node.{field} = {repr(value)}"
-                )
-
-        if self._id is not None:
-            result = db.execute_and_fetch(
-                f"MATCH (node: {label})"
-                f" WHERE id(node) = {node._id}"
-                + "\n".join(cypher_set_properties_block) +
-                " RETURN node"
-            )
-
-        elif self._primary_keys:
-            cypher_unique_fields_block = []
-            for field, value in primary_keys.items():
-                cypher_unique_fields_block.append(
-                    f"node.{field} = {repr(value)}"
-                )
-            result = db.execute_and_fetch(
-                f"MATCH (node: {label})"
-                " WHERE "
-                + " OR ".join(cypher_unique_fields_block) +
-                " RETURN node"
-            )
-            results = list(result)
-            if len(results) > 1:
-                raise GQLAlchemyError()
-            elif len(results) == 1:
-                my_id = results[0]['node']._id
-                result = db.execute_and_fetch(
-                    f"MATCH (node: {label})"
-                    f" WHERE id(node) = {my_id}"
-                    + "\n".join(cypher_set_properties_block) +
-                    " RETURN node"
-                )
-            else:
-                result = db.execute_and_fetch(
-                    f"CREATE (node:{label})"
-                    + "\n".join(cypher_set_properties_block) +
-                    "RETURN node"
-                )
-
-        else:
-            result = db.execute_and_fetch(
-                f"CREATE (node:{label})"
-                + "\n".join(cypher_set_properties_block) +
-                "RETURN node"
-            )
-
+        result = db.save_node(self)
         node = next(result)["node"]
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
-
         self._id = node._id
+
+    def load_node(self, db):
+        result = db.load_node(self)
 
 
 class Relationship(UniqueGraphObject):
