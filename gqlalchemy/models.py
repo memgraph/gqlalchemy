@@ -20,6 +20,23 @@ from pydantic import BaseModel, PrivateAttr, Extra
 from .utilities import GQLAlchemyWarning
 
 
+class TriggerEventType:
+    CREATE = "CREATE"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
+
+
+class TriggerEventObject:
+    ALL = ""
+    NODE = "()"
+    RELATIONSHIP = "-->"
+
+
+class TriggerExecutionPhase:
+    BEFORE = "BEFORE"
+    AFTER = "AFTER"
+
+
 @dataclass(frozen=True, eq=True)
 class MemgraphIndex:
     label: str
@@ -58,6 +75,22 @@ class MemgraphConstraintExists(MemgraphConstraint):
 
     def to_cypher(self) -> str:
         return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
+
+
+@dataclass(frozen=True, eq=True)
+class MemgraphTrigger:
+    name: str
+    event_type: TriggerEventType
+    event_object: TriggerEventObject
+    execution_phase: TriggerExecutionPhase
+    statement: str
+
+    def to_cypher(self) -> str:
+        query = f"CREATE TRIGGER {self.name} "
+        query += f"ON {self.event_object} {self.event_type} "
+        query += f"{self.execution_phase} COMMIT EXECUTE "
+        query += f"{self.statement}"
+        return query
 
 
 class GraphObject(BaseModel):
@@ -248,9 +281,5 @@ class Path(GraphObject):
 
     def __str__(self) -> str:
         return "".join(
-            (
-                f"<{type(self).__name__}",
-                f" nodes={self._nodes}",
-                f" relationships={self._relationships}" ">",
-            )
+            (f"<{type(self).__name__}", f" nodes={self._nodes}", f" relationships={self._relationships}" ">",)
         )

@@ -16,7 +16,13 @@ import os
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
-from .models import MemgraphConstraint, MemgraphConstraintExists, MemgraphConstraintUnique, MemgraphIndex
+from .models import (
+    MemgraphConstraint,
+    MemgraphConstraintExists,
+    MemgraphConstraintUnique,
+    MemgraphIndex,
+    MemgraphTrigger,
+)
 
 __all__ = ("Memgraph",)
 
@@ -126,6 +132,25 @@ class Memgraph:
     def drop_database(self):
         """Drops database by removing all nodes and edges"""
         self.execute("MATCH (n) DETACH DELETE n")
+
+    def create_trigger(self, trigger: MemgraphTrigger):
+        """Creates a trigger"""
+        print(trigger)
+        query = trigger.to_cypher()
+        print(query)
+        self.execute(query)
+
+    def get_triggers(self) -> List[str]:
+        """Creates a trigger"""
+        triggers = []
+        for result in self.execute_and_fetch("SHOW TRIGGERS;"):
+            triggers.append(result)
+        return triggers
+
+    def drop_trigger(self, trigger) -> None:
+        """Drop a trigger"""
+        query = f"DROP TRIGGER {trigger.name}"
+        self.execute(query)
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""

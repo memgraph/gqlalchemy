@@ -16,6 +16,7 @@ from .memgraph import Memgraph  # noqa F401
 from .models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
+    MemgraphTrigger,
     Node,
     Path,
     Relationship,
