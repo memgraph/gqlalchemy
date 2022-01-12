@@ -66,7 +66,7 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
-    def __init_subclass__(cls, _type=None):
+    def __init_subclass__(cls, _type=None, _node_labels=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
