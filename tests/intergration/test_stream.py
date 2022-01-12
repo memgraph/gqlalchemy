@@ -16,7 +16,7 @@ from gqlalchemy import MemgraphKafkaStream
 
 
 def stream_exists(streams, stream_name):
-    return map(lambda s: s["name"] == stream_name, streams)
+    return any(map(lambda s: s["name"] == stream_name, streams))
 
 
 def test_create_kafka_stream(memgraph):
