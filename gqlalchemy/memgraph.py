@@ -16,7 +16,15 @@ import os
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
-from .models import MemgraphConstraint, MemgraphConstraintExists, MemgraphConstraintUnique, MemgraphIndex
+from .models import (
+    MemgraphConstraint,
+    MemgraphConstraintExists,
+    MemgraphConstraintUnique,
+    MemgraphIndex,
+    MemgraphStream,
+    MemgraphKafkaStream,
+    MemgraphPulsarStream,
+)
 
 __all__ = ("Memgraph",)
 
@@ -123,11 +131,21 @@ class Memgraph:
         for missing_constraint in new_constraints.difference(old_constraints):
             self.create_constraint(missing_constraint)
 
-    def create_stream(self):
-        pass
+    def create_stream(self, stream):
+        print(stream)
+        query = stream.to_cypher()
+        print(query)
+        self.execute(query)
 
-    def drop_stream(self):
-        pass
+    def get_streams(self):
+        streams = []
+        for result in self.execute_and_fetch("SHOW STREAMS;"):
+            streams.append(result)
+        return streams
+
+    def drop_stream(self, stream: MemgraphStream):
+        query = f"DROP STREAM {stream.name};"
+        self.execute(query)
 
     def drop_database(self):
         """Drops database by removing all nodes and edges"""

@@ -12,21 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .memgraph import Memgraph  # noqa F401
-from .models import (  # noqa F401
-    MemgraphConstraintExists,
-    MemgraphConstraintUnique,
-    MemgraphKafkaStream,
-    MemgraphPulsarStream,
-    Node,
-    Path,
-    Relationship,
-    MemgraphIndex,
-)
-from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
+from gqlalchemy import MemgraphKafkaStream, MemgraphPulsarStream
 
-from .utilities import GQLAlchemyWarning
-import warnings
 
-warnings.filterwarnings("once", category=GQLAlchemyWarning)
-__all__ = ["Memgraph"]
+def test_create_kafka_stream(memgraph):
+    kafka_stream = MemgraphKafkaStream(name="stream1", topics=["topic"], transform="kafka_stream.transform")
+
+    memgraph.drop_stream(kafka_stream)
+    memgraph.create_stream(kafka_stream)
+
+    assert any(map(lambda s: s["name"] == "stream1", memgraph.get_streams()))
