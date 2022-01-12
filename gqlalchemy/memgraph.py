@@ -17,7 +17,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .models import MemgraphConstraint, MemgraphConstraintExists, MemgraphConstraintUnique, MemgraphIndex, Node
-from .utilities import GQLAlchemyError
+from .utilities import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
 
 __all__ = ("Memgraph",)
 
@@ -148,10 +148,7 @@ class Memgraph:
 
     def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
         return self.execute_and_fetch(
-            f"MATCH (node: {node._label})"
-            " WHERE "
-            + node._get_cypher_unique_fields_or_block() +
-            " RETURN node"
+            f"MATCH (node: {node._label})" " WHERE " + node._get_cypher_unique_fields_or_block() + " RETURN node"
         )
 
     def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
@@ -169,9 +166,7 @@ class Memgraph:
 
     def create_node(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"CREATE (node:{node._label})"
-            + node._get_cypher_set_properties() +
-            "RETURN node"
+            f"CREATE (node:{node._label})" + node._get_cypher_set_properties() + "RETURN node"
         )
         return self.get_variable_assume_one(results, "node")
 
@@ -186,7 +181,7 @@ class Memgraph:
                     f"Uniqueness constraints match multiple nodes: {matching_nodes}"
                 )
             elif len(matching_nodes) == 1:
-                node._id = matching_nodes[0]['node']._id
+                node._id = matching_nodes[0]["node"]._id
                 return self.save_node_with_id(node)
             else:
                 return self.create_node(node)
@@ -196,9 +191,7 @@ class Memgraph:
     def save_node_with_id(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label})"
-            f" WHERE id(node) = {node._id}"
-            + node._get_cypher_set_properties() +
-            " RETURN node"
+            f" WHERE id(node) = {node._id}" + node._get_cypher_set_properties() + " RETURN node"
         )
 
         return self.get_variable_assume_one(results, "node")
@@ -213,7 +206,7 @@ class Memgraph:
                     f"Uniqueness constraints match multiple nodes: {matching_nodes}"
                 )
             elif len(matching_nodes) == 1:
-                node._id = matching_nodes[0]['node']._id
+                node._id = matching_nodes[0]["node"]._id
                 return self.load_node_with_id(node)
             else:
                 raise GQLAlchemyError("No node found that matches properties.")
@@ -222,19 +215,13 @@ class Memgraph:
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"MATCH (node: {node._label}"
-            " WHERE "
-            + _get_cypher_fields_or_block(node) +
-            " RETURN node"
+            f"MATCH (node: {node._label}" " WHERE " + node._get_cypher_fields_or_block() + " RETURN node"
         )
         return self.get_variable_assume_one(results, "node")
 
     def load_node_with_id(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"MATCH (node: {node._label})"
-            f" WHERE id(node) = {node._id}"
-            + cypher_set_properties +
-            " RETURN node"
+            f"MATCH (node: {node._label})" f" WHERE id(node) = {node._id}" + node._get_cypher_set_properties() + " RETURN node"
         )
 
         return self.get_variable_assume_one(results, "node")

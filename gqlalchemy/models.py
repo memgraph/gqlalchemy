@@ -141,12 +141,18 @@ class MyMeta(BaseModel.__class__):
         # TODO create a discussion about accessing labels through the class definition instead of through the object. E.g. `Person.labels` instead of `person = Person("Marko"); person._node_labels`.
         cls._type = kwargs.get("_type", name)
         cls._node_labels = kwargs.get("_node_labels", set(cls._type.split(":")))
-        labels = ":".join(cls._node_labels)
         # TODO check if *_type* or *_node_labels* is in fields
         cls._primary_keys = set()
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
+            if attrs.get("label", None) is not None:
+                label = attrs["label"]
+            elif len(cls._node_labels) == 1:
+                label = next(iter(cls._node_labels))
+            else:
+                GQLAlchemyError("MultipleLabelConstraintError")
+
             db = None
             if "db" in attrs:
                 db = attrs["db"]
@@ -159,7 +165,7 @@ class MyMeta(BaseModel.__class__):
                         "Define your property as:\n"
                         f" {field}: {field_type} = Field(index=True, db=Memgraph())"
                     )
-                index = MemgraphIndex(labels, field)
+                index = MemgraphIndex(label, field)
                 db.create_index(index)
 
             if "exists" in attrs:
@@ -170,7 +176,7 @@ class MyMeta(BaseModel.__class__):
                         "Define your property as:\n"
                         f" {field}: type = Field(exists=True, db=Memgraph())"
                     )
-                constraint = MemgraphConstraintExists(labels, field)
+                constraint = MemgraphConstraintExists(label, field)
                 db.create_constraint(constraint)
 
             if "unique" in attrs:
@@ -182,7 +188,7 @@ class MyMeta(BaseModel.__class__):
                         f" {field}: type = Field(unique=True, db=Memgraph())"
                     )
                 cls._primary_keys.add(field)
-                constraint = MemgraphConstraintUnique(labels, field)
+                constraint = MemgraphConstraintUnique(label, field)
                 db.create_constraint(constraint)
 
             # if "on_disk" in attrs:
@@ -215,9 +221,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
         for field in self._primary_keys:
             value = getattr(self, field)
             if value is not None:
-                cypher_unique_fields.append(
-                    f"node.{field} = {repr(value)}"
-                )
+                cypher_unique_fields.append(f"node.{field} = {repr(value)}")
 
         return " " + " OR ".join(cypher_unique_fields) + " "
 
@@ -226,9 +230,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
         for field in self.__fields__:
             value = getattr(self, field)
             if value is not None:
-                cypher_fields.append(
-                    f"node.{field} = {repr(value)}"
-                )
+                cypher_fields.append(f"node.{field} = {repr(value)}")
 
         return " " + " OR ".join(cypher_fields) + " "
 
@@ -238,27 +240,26 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
             attributes = self.__fields__[field].field_info.extra
             value = getattr(self, field)
             if value is not None and not attributes.get("on_disk", False):
-                cypher_set_properties.append(
-                    f" SET node.{field} = {repr(value)}"
-                )
+                cypher_set_properties.append(f" SET node.{field} = {repr(value)}")
 
-        return  " " + " ".join(cypher_set_properties) + " "
+        return " " + " ".join(cypher_set_properties) + " "
 
     @property
     def _label(self):
         return ":".join(self._node_labels)
 
-    def save(self, db: 'Memgraph'):
+    def save(self, db: "Memgraph"):
         node = db.save_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
         self._id = node._id
 
-    def load(self, db: 'Memgraph'):
+    def load(self, db: "Memgraph"):
         node = db.load_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
         self._id = node._id
+
 
 class Relationship(UniqueGraphObject):
     _relationship_type: str = PrivateAttr()

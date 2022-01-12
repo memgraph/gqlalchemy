@@ -26,6 +26,10 @@ class GQLAlchemyError(Exception):
     pass
 
 
+class GQLAlchemyUniquenessConstraintError(GQLAlchemyError):
+    pass
+
+
 class NanValuesHandle(Enum):
     THROW_EXCEPTION = 1
     REMOVE_PROPERTY = 2
