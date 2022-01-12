@@ -49,3 +49,15 @@ def test_drop_trigger(memgraph: Memgraph):
     memgraph.create_trigger(trigger)
     memgraph.drop_trigger(trigger)
     assert len(memgraph.get_triggers()) == 0
+
+
+def test_trigger_cypher():
+    trigger = MemgraphTrigger(
+        name="test_trigger",
+        event_type=TriggerEventType.CREATE,
+        event_object=TriggerEventObject.ALL,
+        execution_phase=TriggerExecutionPhase.BEFORE,
+        statement="CREATE (:Node)",
+    )
+    query = "CREATE TRIGGER test_trigger ON  CREATE BEFORE COMMIT EXECUTE CREATE (:Node)"
+    assert trigger.to_cypher() == query
