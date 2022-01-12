@@ -272,9 +272,9 @@ class Memgraph:
         if relationship._id is not None:
             self.save_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
-            self.save_relationship_with_start_node_id_and_end_node_id(relationship)
-        else:
             self.create_relationship(relationship)
+        else:
+            raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
 
     def save_relationship_with_start_node_id_and_end_node_id(
             self, relationship: Relationship) -> Optional[Relationship]:
@@ -297,9 +297,11 @@ class Memgraph:
 
     def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]-()"
-            f" WHERE id(relationship) = {relationship._id}"
+            f"MATCH (start_node) WHERE id(start_node) = {relationship._start_node_id} WITH start_node MATCH (end_node) WHERE id(end_node) = {relationship._end_node_id}
+            WITH start_node, end_node
+            CREATE (start_node)-[relationship:{relationship._type}]->(end_node)  AND "
             + relationship._get_cypher_set_properties("relationship")
-            + " RETURN node"
+            + "RETURN relationship"
         )
+
         return self.get_variable_assume_one(results, "relationship")
