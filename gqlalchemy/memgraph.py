@@ -16,7 +16,14 @@ import os
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
-from .models import MemgraphConstraint, MemgraphConstraintExists, MemgraphConstraintUnique, MemgraphIndex, Node, Relationship
+from .models import (
+    MemgraphConstraint,
+    MemgraphConstraintExists,
+    MemgraphConstraintUnique,
+    MemgraphIndex,
+    Node,
+    Relationship,
+)
 from .utilities import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
 
 __all__ = ("Memgraph",)
@@ -220,19 +227,17 @@ class Memgraph:
         return self.get_variable_assume_one(results, "node")
 
     def load_node_with_id(self, node: Node) -> Optional[Node]:
-        results = self.execute_and_fetch(
-            f"MATCH (node: {node._label}) WHERE id(node) = {node._id} RETURN node"
-        )
+        results = self.execute_and_fetch(f"MATCH (node: {node._label}) WHERE id(node) = {node._id} RETURN node")
 
         return self.get_variable_assume_one(results, "node")
 
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         if relationship._id is not None:
-            return load_relationship_with_id(Relationship)
+            return self.load_relationship_with_id(Relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
             return self.load_relationship_with_start_node_id_and_end_node_id(relationship)
         else:
-            return load_relationship_with_all_properties(Relationship)
+            return self.load_relationship_with_all_properties(Relationship)
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
@@ -240,13 +245,17 @@ class Memgraph:
         )
         return self.get_variable_assume_one(results, "relationship")
 
-    def load_relationship_with_start_node_id_and_end_node_id(self, relationship: Relationship) -> Optional[Relationship]:
+    def load_relationship_with_start_node_id_and_end_node_id(
+        self, relationship: Relationship
+    ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {start_node._id} AND id(end_node) = {end_node._id} RETURN relationship"
+            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {relationship._start_node_id} AND id(end_node) = {relationship._end_node_id} RETURN relationship"
         )
         return self.get_variable_assume_one(results, "relationship")
 
-    def load_relationship_with_start_node_and_end_node(self, relationship: Relationship, start_node: Node, end_node: Node) -> Optional[Relationship]:
+    def load_relationship_with_start_node_and_end_node(
+        self, relationship: Relationship, start_node: Node, end_node: Node
+    ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
             f"MATCH (start_node: {start_node._label})-[relationship:{relationship._type}]->(end_node: {end_node._label}) WHERE id(start_node) = {start_node._id} AND id(end_node) = {end_node._id} RETURN relationship"
         )
@@ -263,20 +272,25 @@ class Memgraph:
         if relationship._id is not None:
             self.save_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
-            raise GQLAlchemyError("Matching edges based on start and end nodes not implemented yet.")
+            self.save_relationship_with_start_node_id_and_end_node_id(relationship)
         else:
             self.create_relationship(relationship)
 
-    def save_relationship_with_start_node_id_and_end_node_id(self, relationship: Relationship) -> Optional[Relationship]:
+    def save_relationship_with_start_node_id_and_end_node_id(
+            self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {start_node._id} AND id(end_node) = {end_node._id}" + relationship._get_cypher_set_properties("relationship") + "RETURN relationship"
+            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {relationship._start_node_id} AND id(end_node) = {relationship._end_node_id}"
+            + relationship._get_cypher_set_properties("relationship")
+            + "RETURN relationship"
         )
         return self.get_variable_assume_one(results, "relationship")
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
             f"MATCH ()-[relationship: {relationship._type}]-()"
-            f" WHERE id(relationship) = {relationship._id}" + relationship._get_cypher_set_properties("relationship") + " RETURN node"
+            f" WHERE id(relationship) = {relationship._id}"
+            + relationship._get_cypher_set_properties("relationship")
+            + " RETURN node"
         )
 
         return self.get_variable_assume_one(results, "relationship")
@@ -284,5 +298,8 @@ class Memgraph:
     def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
             f"MATCH ()-[relationship: {relationship._type}]-()"
-            f" WHERE id(relationship) = {relationship._id}" + relationship._get_cypher_set_properties("relationship") + " RETURN node"
+            f" WHERE id(relationship) = {relationship._id}"
+            + relationship._get_cypher_set_properties("relationship")
+            + " RETURN node"
         )
+        return self.get_variable_assume_one(results, "relationship")
