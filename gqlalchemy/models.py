@@ -246,7 +246,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
 
     @property
     def _label(self) -> str:
-        return ":".join(self._node_labels)
+        return ":".join(sorted(self._node_labels))
 
     def save(self, db: "Memgraph") -> None:
         node = db.save_node(self)
