@@ -29,7 +29,6 @@ class MatchTypes:
     AND_WHERE = "AND_WHERE"
     OR_WHERE = "OR_WHERE"
     CALL = "CALL"
-    UNWIND = "UNWIND"
     RETURN = "RETURN"
 
 
@@ -101,14 +100,6 @@ class CallPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         return f" CALL {self.procedure}({self._arguments}) YIELD {self._results}"
-
-
-class UnwindPartialQuery(PartialQuery):
-    def __init__(self):
-        super().__init__(MatchTypes.UNWIND)
-
-    def construct_query(self) -> str:
-        return f" UNWIND "
 
 
 class WhereConditionPartialQuery(PartialQuery):
