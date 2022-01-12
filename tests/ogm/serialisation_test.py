@@ -29,7 +29,7 @@ class NodeWithKey(Node):
     name: Optional[str] = Field()
 
 
-class SimpleRelationship(Relationship):
+class SimpleRelationship(Relationship, _type="SIMPLE_RELATIONSHIP"):
     pass
 
 
@@ -71,3 +71,19 @@ def test_save_relationship(memgraph, clear_db):
     assert SimpleRelationship._type is not None
     relationship.save(memgraph)
     assert relationship._id is not None
+
+
+def test_save_relationship2(memgraph, clear_db):
+    node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
+    node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
+    relationship = SimpleRelationship(
+        _start_node_id=node1._id,
+        _end_node_id=node2._id,
+    )
+    assert SimpleRelationship._type == relationship._type
+    print(SimpleRelationship._type)
+    assert SimpleRelationship._type is not None
+    relationship.save(memgraph)
+    assert relationship._id is not None
+    relationship2 = db.load_relationship(relationship)
+    assert relationship2._id == relationship._id

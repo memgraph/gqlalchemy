@@ -207,8 +207,8 @@ class MyMeta(BaseModel.__class__):
                         f" {field}: type = Field(unique=True, db=Memgraph())"
                     )
                 cls._primary_keys.add(field)
-                constraint = MemgraphConstraintUnique(label, field)
                 db.create_constraint(constraint)
+                constraint = MemgraphConstraintUnique(label, field)
 
             # if "on_disk" in attrs:
             # if "use_in_db" in attrs:
@@ -221,7 +221,7 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._type = data.get("_type", type(self).__name__)
+        self._type = getattr(type(self), "_type", type(self).__name__)
         self._node_labels = data.get("_node_labels", set(self._type.split(":")))
 
     def __str__(self) -> str:
@@ -270,10 +270,9 @@ class Relationship(UniqueGraphObject, metaclass=MyMeta):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._relationship_type = data.get("_relationship_type")
         self._start_node_id = data.get("_start_node_id")
         self._end_node_id = data.get("_end_node_id")
-        self._type = data.get("_type", type(self).__name__)
+        self._type = getattr(type(self), "_type", type(self).__name__)
 
     @property
     def _nodes(self) -> Tuple[int, int]:
@@ -285,7 +284,7 @@ class Relationship(UniqueGraphObject, metaclass=MyMeta):
                 f"<{type(self).__name__}",
                 f" id={self._id}",
                 f" nodes={self._nodes}",
-                f" relationship_type={self._relationship_type}",
+                f" _type={self._type}",
                 f" properties={self._properties}",
                 ">",
             )

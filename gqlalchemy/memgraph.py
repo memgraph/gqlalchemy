@@ -176,8 +176,7 @@ class Memgraph:
         result = next(query_result, None)
         if result is None:
             raise GQLAlchemyError("No result found. Result list is empty.")
-
-        if next(query_result, None) is not None:
+        elif next(query_result, None) is not None:
             raise GQLAlchemyError("One result expected, but more than one result found.")
 
         if variable_name not in result:
@@ -246,7 +245,7 @@ class Memgraph:
 
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         if relationship._id is not None:
-            return self.load_relationship_with_id(Relationship)
+            return self.load_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
             return self.load_relationship_with_start_node_id_and_end_node_id(relationship)
         else:
@@ -254,7 +253,7 @@ class Memgraph:
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]-() WHERE id(relationship) = {relationship._id} RETURN relationship"
+            f"MATCH ()-[relationship: {relationship._type}]->() WHERE id(relationship) = {relationship._id} RETURN relationship"
         )
         return self.get_variable_assume_one(results, "relationship")
 
@@ -277,7 +276,7 @@ class Memgraph:
     def load_relationship_with_all_properties(self, relationship: Relationship) -> Optional[Relationship]:
         where_block = relationship._get_cypher_fields_or_block("relationship")
         results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]-() WHERE {where_block} RETURN relationship"
+            f"MATCH ()-[relationship: {relationship._type}]->() WHERE {where_block} RETURN relationship"
         )
         return self.get_variable_assume_one(results, "relationship")
 
@@ -301,7 +300,7 @@ class Memgraph:
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]-()"
+            f"MATCH ()-[relationship: {relationship._type}]->()"
             f" WHERE id(relationship) = {relationship._id}"
             + relationship._get_cypher_set_properties("relationship")
             + " RETURN node"

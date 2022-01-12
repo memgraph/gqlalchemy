@@ -111,7 +111,6 @@ def _convert_memgraph_value(value: Any) -> Any:
             {
                 "_type": value.type,
                 "_id": value.id,
-                "_relationship_type": value.type,
                 "_start_node_id": value.start_id,
                 "_end_node_id": value.end_id,
                 **value.properties,
