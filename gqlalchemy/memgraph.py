@@ -297,9 +297,7 @@ class Memgraph:
 
     def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH (start_node) WHERE id(start_node) = {relationship._start_node_id} WITH start_node MATCH (end_node) WHERE id(end_node) = {relationship._end_node_id}
-            WITH start_node, end_node
-            CREATE (start_node)-[relationship:{relationship._type}]->(end_node)  AND "
+            f"MATCH (start_node) WHERE id(start_node) = {relationship._start_node_id} WITH start_node MATCH (end_node) WHERE id(end_node) = {relationship._end_node_id} WITH start_node, end_node CREATE (start_node)-[relationship:{relationship._type}]->(end_node)  AND "
             + relationship._get_cypher_set_properties("relationship")
             + "RETURN relationship"
         )
