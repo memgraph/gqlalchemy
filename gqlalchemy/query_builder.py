@@ -21,7 +21,7 @@ from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 
 
-class MatchTypes:
+class GTypes:
     NODE = "NODE"
     EDGE = "EDGE"
     MATCH = "MATCH"
@@ -31,6 +31,10 @@ class MatchTypes:
     CALL = "CALL"
     RETURN = "RETURN"
     YIELD = "YIELD"
+    WITH = "WITH"
+    UNWIND = "UNWIND"
+    ORDER_BY = "ORDER_BY"
+    LIMIT = "LIMIT"
 
 
 class MatchConstants:
@@ -72,7 +76,7 @@ class PartialQuery(ABC):
 
 class MatchPartialQuery(PartialQuery):
     def __init__(self, optional: bool):
-        super().__init__(MatchTypes.MATCH)
+        super().__init__(GTypes.MATCH)
 
         self.optional = optional
 
@@ -85,7 +89,7 @@ class MatchPartialQuery(PartialQuery):
 
 class CallPartialQuery(PartialQuery):
     def __init__(self, procedure: str, arguments: Optional[List[str]]):
-        super().__init__(MatchTypes.CALL)
+        super().__init__(GTypes.CALL)
 
         self.procedure = procedure
         self._arguments = arguments
@@ -100,7 +104,7 @@ class CallPartialQuery(PartialQuery):
 
 class WhereConditionPartialQuery(PartialQuery):
     def __init__(self, keyword: str, query: str):
-        super().__init__(MatchTypes.WHERE)
+        super().__init__(GTypes.WHERE)
 
         self.keyword = keyword
         self.query = query
@@ -111,7 +115,7 @@ class WhereConditionPartialQuery(PartialQuery):
 
 class NodePartialQuery(PartialQuery):
     def __init__(self, variable: Optional[str], labels: Optional[str], properties: Optional[str]):
-        super().__init__(MatchTypes.NODE)
+        super().__init__(GTypes.NODE)
 
         self._variable = variable
         self._labels = labels
@@ -135,7 +139,7 @@ class NodePartialQuery(PartialQuery):
 
 class EdgePartialQuery(PartialQuery):
     def __init__(self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool):
-        super().__init__(MatchTypes.EDGE)
+        super().__init__(GTypes.EDGE)
 
         self.directed = directed
         self._variable = variable
@@ -164,6 +168,18 @@ class EdgePartialQuery(PartialQuery):
         return relationship_query
 
 
+class UnwindPartialQuery(PartialQuery):
+    def __init__(self, argument: Optional[tuple[str]]):
+        super().__init__(GTypes.UNWIND)
+
+        self.argument = argument
+
+    def construct_query(self) -> str:
+        if not self.argument:
+            return f" UNWIND "
+        return f" UNWIND {self.argument[0]} AS {self.argument[1]} "
+
+
 def dict_to_alias_statement(alias_dict: Dict[str, str]) -> str:
     alias_statement = ""
     dict_item_count = len(alias_dict)
@@ -172,15 +188,30 @@ def dict_to_alias_statement(alias_dict: Dict[str, str]) -> str:
             alias_statement += result + " AS " + alias_dict[result]
         else:
             alias_statement += result
-        print(i)
         if i < dict_item_count - 1:
             alias_statement += ", "
     return alias_statement
 
 
+class WithPartialQuery(PartialQuery):
+    def __init__(self, results: Optional[Dict[str, str]]):
+        super().__init__(GTypes.WITH)
+
+        self._results = results
+
+    @property
+    def results(self) -> str:
+        return self._results if self._results is not None else ""
+
+    def construct_query(self) -> str:
+        if len(self.results) == 0:
+            return f" WITH * "
+        return f" WITH {dict_to_alias_statement(self.results)} "
+
+
 class YieldPartialQuery(PartialQuery):
     def __init__(self, results: Optional[Dict[str, str]]):
-        super().__init__(MatchTypes.YIELD)
+        super().__init__(GTypes.YIELD)
 
         self._results = results
 
@@ -196,7 +227,7 @@ class YieldPartialQuery(PartialQuery):
 
 class ReturnPartialQuery(PartialQuery):
     def __init__(self, results: Optional[Dict[str, str]]):
-        super().__init__(MatchTypes.RETURN)
+        super().__init__(GTypes.RETURN)
 
         self._results = results
 
@@ -208,6 +239,27 @@ class ReturnPartialQuery(PartialQuery):
         if len(self.results) == 0:
             return f" RETURN * "
         return f" RETURN {dict_to_alias_statement(self.results)} "
+
+
+class OrderByPartialQuery(PartialQuery):
+    def __init__(self, argument: str, desc: Optional[bool]):
+        super().__init__(GTypes.ORDER_BY)
+
+        self.argument = argument
+        self.desc = desc
+
+    def construct_query(self) -> str:
+        return f" ORDER BY {self.argument} {'DESC' if self.desc else ''} "
+
+
+class LimitPartialQuery(PartialQuery):
+    def __init__(self, limit: int):
+        super().__init__(GTypes.LIMIT)
+
+        self.limit = limit
+
+    def construct_query(self) -> str:
+        return f" LIMIT {self.limit} "
 
 
 class G:
@@ -232,7 +284,7 @@ class G:
         node: Optional["Node"] = None,
         **kwargs,
     ) -> "G":
-        if not self._is_linking_valid_with_query(MatchTypes.NODE):
+        if not self._is_linking_valid_with_query(GTypes.NODE):
             raise InvalidMatchChainException()
 
         if node is None:
@@ -254,7 +306,7 @@ class G:
         relationship: Optional["Relationship"] = None,
         **kwargs,
     ) -> "G":
-        if not self._is_linking_valid_with_query(MatchTypes.EDGE):
+        if not self._is_linking_valid_with_query(GTypes.EDGE):
             raise InvalidMatchChainException()
 
         if relationship is None:
@@ -292,13 +344,33 @@ class G:
 
         return self
 
-    def yield_(self, results: Optional[Dict[str, str]] = {},) -> "G":
+    def unwind(self, argument: Optional[tuple[str]] = ()) -> "G":
+        self._query.append(UnwindPartialQuery(argument))
+
+        return self
+
+    def with_(self, results: Optional[Dict[str, str]] = {}) -> "G":
+        self._query.append(WithPartialQuery(results))
+
+        return self
+
+    def yield_(self, results: Optional[Dict[str, str]] = {}) -> "G":
         self._query.append(YieldPartialQuery(results))
 
         return self
 
-    def return_(self, results: Optional[Dict[str, str]] = {},) -> "G":
+    def return_(self, results: Optional[Dict[str, str]] = {}) -> "G":
         self._query.append(ReturnPartialQuery(results))
+
+        return self
+
+    def orderby(self, argument: str, sort: Optional[bool] = False) -> "G":
+        self._query.append(OrderByPartialQuery(argument, sort))
+
+        return self
+
+    def limit(self, limit: int) -> "G":
+        self._query.append(LimitPartialQuery(limit))
 
         return self
 
@@ -329,7 +401,7 @@ class G:
         return joined_query
 
     def _any_variables_matched(self) -> bool:
-        return any(q.type in [MatchTypes.EDGE, MatchTypes.NODE] and q.variable not in [None, ""] for q in self._query)
+        return any(q.type in [GTypes.EDGE, GTypes.NODE] and q.variable not in [None, ""] for q in self._query)
 
     def _is_linking_valid_with_query(self, match_type: str):
         return len(self._query) == 0 or self._query[-1].type != match_type

@@ -99,7 +99,7 @@ class TestMatch:
 
         mock.assert_called_with(expected_query)
 
-    def test_return_all(self):
+    def test_return_empty(self):
         query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_()
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN * "
 
@@ -186,6 +186,69 @@ class TestMatch:
             .return_({"node": "", "betweenness": ""})
         )
         expected_query = " CALL nxalg.betweenness_centrality(20, True) YIELD * RETURN node, betweenness "
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_unwind_empty(self):
+        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").unwind()
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) UNWIND "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_unwind(self):
+        query_builder = G().unwind(argument=["[1, 2, 3, null]", "x"]).return_({"x": "", "'val'": "y"})
+        expected_query = " UNWIND [1, 2, 3, null] AS x RETURN x, 'val' AS y "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_with_empty(self):
+        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").with_()
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WITH * "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_with(self):
+        query_builder = G().match().node(variable="n").with_({"n": ""})
+        expected_query = " MATCH (n) WITH n "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_orderby(self):
+        query_builder = G().match().node(variable="n").orderby("n.id")
+        expected_query = " MATCH (n) ORDER BY n.id "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_orderby_desc(self):
+        query_builder = G().match().node(variable="n").orderby("n.id", True)
+        expected_query = " MATCH (n) ORDER BY n.id DESC "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_limit(self):
+        query_builder = G().match().node(variable="n").limit(3)
+        expected_query = " MATCH (n) LIMIT 3 "
+
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 
