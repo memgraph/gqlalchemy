@@ -91,7 +91,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_get_single(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_("n")
+        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"n": ""})
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN n "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=iter([{"n": None}])) as mock:
@@ -99,12 +99,93 @@ class TestMatch:
 
         mock.assert_called_with(expected_query)
 
-    def test_call_procedure(self):
+    def test_return_all(self):
+        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_()
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN * "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_return_alias(self):
+        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "first"})
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_return_alias_same_as_variable(self):
+        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "L1"})
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_return_alias_empty(self):
+        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": ""})
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_call_procedure_pagerank(self):
         query_builder = (
-            G().call(procedure="pagerank.get", arguments="argument", results="node, rank").return_("node, rank")
+            G()
+            .call(procedure="pagerank.get", arguments=[""])
+            .yield_({"node": "", "rank": ""})
+            .return_({"node": "node", "rank": "rank"})
         )
-        expected_query = " CALL pagerank.get(argument) YIELD node, rank RETURN node, rank "
-        print(query_builder._construct_query())
+        expected_query = " CALL pagerank.get() YIELD node, rank RETURN node, rank "
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_call_procedure_node2vec(self):
+        query_builder = G().call(
+            procedure="node2vec_online.get_embeddings",
+            arguments=[
+                "False",
+                "2.0",
+                "0.5",
+                "4",
+                "5",
+                "100",
+                "0.025",
+                "5",
+                "1",
+                "1",
+                "1",
+                "0.0001",
+                "1",
+                "0",
+                "5",
+                "5",
+            ],
+        )
+        expected_query = (
+            " CALL node2vec_online.get_embeddings(False, 2.0, 0.5, 4, 5, 100, 0.025, 5, 1, 1, 1, 0.0001, 1, 0, 5, 5) "
+        )
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_call_procedure_nxalg_betweenness_centrality(self):
+        query_builder = (
+            G()
+            .call(procedure="nxalg.betweenness_centrality", arguments=["20", "True"])
+            .yield_()
+            .return_({"node": "", "betweenness": ""})
+        )
+        expected_query = " CALL nxalg.betweenness_centrality(20, True) YIELD * RETURN node, betweenness "
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 

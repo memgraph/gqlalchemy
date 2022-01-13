@@ -30,6 +30,7 @@ class MatchTypes:
     OR_WHERE = "OR_WHERE"
     CALL = "CALL"
     RETURN = "RETURN"
+    YIELD = "YIELD"
 
 
 class MatchConstants:
@@ -83,23 +84,18 @@ class MatchPartialQuery(PartialQuery):
 
 
 class CallPartialQuery(PartialQuery):
-    def __init__(self, procedure: str, arguments: Optional[str], results: Optional[str]):
+    def __init__(self, procedure: str, arguments: Optional[List[str]]):
         super().__init__(MatchTypes.CALL)
 
         self.procedure = procedure
         self._arguments = arguments
-        self._results = results
 
     @property
     def arguments(self) -> str:
         return self._arguments if self._arguments is not None else ""
 
-    @property
-    def results(self) -> str:
-        return self._results if self._results is not None else " *"
-
     def construct_query(self) -> str:
-        return f" CALL {self.procedure}({self._arguments}) YIELD {self._results}"
+        return f" CALL {self.procedure}({''.join( argument + ', ' for argument in self.arguments[:-1]) + self.arguments[-1]}) "
 
 
 class WhereConditionPartialQuery(PartialQuery):
@@ -168,14 +164,50 @@ class EdgePartialQuery(PartialQuery):
         return relationship_query
 
 
-class ReturnPartialQuery(PartialQuery):
-    def __init__(self, results: str):
-        super().__init__(MatchTypes.RETURN)
+def dict_to_alias_statement(alias_dict: Dict[str, str]) -> str:
+    alias_statement = ""
+    dict_item_count = len(alias_dict)
+    for i, result in enumerate(alias_dict):
+        if alias_dict[result] != "" and alias_dict[result] != result:
+            alias_statement += result + " AS " + alias_dict[result]
+        else:
+            alias_statement += result
+        print(i)
+        if i < dict_item_count - 1:
+            alias_statement += ", "
+    return alias_statement
 
-        self.results = results
+
+class YieldPartialQuery(PartialQuery):
+    def __init__(self, results: Optional[Dict[str, str]]):
+        super().__init__(MatchTypes.YIELD)
+
+        self._results = results
+
+    @property
+    def results(self) -> str:
+        return self._results if self._results is not None else ""
 
     def construct_query(self) -> str:
-        return f" RETURN {self.results} "
+        if len(self.results) == 0:
+            return f" YIELD * "
+        return f" YIELD {dict_to_alias_statement(self.results)} "
+
+
+class ReturnPartialQuery(PartialQuery):
+    def __init__(self, results: Optional[Dict[str, str]]):
+        super().__init__(MatchTypes.RETURN)
+
+        self._results = results
+
+    @property
+    def results(self) -> str:
+        return self._results if self._results is not None else ""
+
+    def construct_query(self) -> str:
+        if len(self.results) == 0:
+            return f" RETURN * "
+        return f" RETURN {dict_to_alias_statement(self.results)} "
 
 
 class G:
@@ -188,10 +220,8 @@ class G:
 
         return self
 
-    def call(
-        self, procedure: Optional[str] = None, arguments: Optional[str] = None, results: Optional[str] = None
-    ) -> "G":
-        self._query.append(CallPartialQuery(procedure, arguments, results))
+    def call(self, procedure: str, arguments: Optional[str] = None) -> "G":
+        self._query.append(CallPartialQuery(procedure, arguments))
 
         return self
 
@@ -262,7 +292,12 @@ class G:
 
         return self
 
-    def return_(self, results: Optional[str] = " * ",) -> "G":
+    def yield_(self, results: Optional[Dict[str, str]] = {},) -> "G":
+        self._query.append(YieldPartialQuery(results))
+
+        return self
+
+    def return_(self, results: Optional[Dict[str, str]] = {},) -> "G":
         self._query.append(ReturnPartialQuery(results))
 
         return self
