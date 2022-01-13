@@ -344,7 +344,7 @@ class G:
 
         return self
 
-    def unwind(self, argument: Optional[tuple[str, str]] = ()) -> "G":
+    def unwind(self, argument: Optional[Tuple[str, str]] = ()) -> "G":
         self._query.append(UnwindPartialQuery(argument))
 
         return self
