@@ -14,7 +14,7 @@
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union, Tuple
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
@@ -169,7 +169,7 @@ class EdgePartialQuery(PartialQuery):
 
 
 class UnwindPartialQuery(PartialQuery):
-    def __init__(self, argument: Optional[tuple[str]]):
+    def __init__(self, argument: Optional[Tuple[str, str]]):
         super().__init__(GTypes.UNWIND)
 
         self.argument = argument
@@ -344,7 +344,7 @@ class G:
 
         return self
 
-    def unwind(self, argument: Optional[tuple[str]] = ()) -> "G":
+    def unwind(self, argument: Optional[tuple[str, str]] = ()) -> "G":
         self._query.append(UnwindPartialQuery(argument))
 
         return self
