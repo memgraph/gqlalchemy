@@ -24,7 +24,7 @@ from .models import (
     Node,
     Relationship,
 )
-from .utilities import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
+from .exceptions import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
 
 __all__ = ("Memgraph",)
 
@@ -193,7 +193,10 @@ class Memgraph:
         if node._id is not None:
             return self._save_node_with_id(node)
 
-        elif any(getattr(node, key) is not None for key in node._primary_keys):
+        elif any(
+            "unique" in node.__fields__[key].field_info.extra and getattr(node, key) is not None
+            for key in node.__fields__
+        ):
             matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
                 raise GQLAlchemyUniquenessConstraintError(
@@ -218,7 +221,11 @@ class Memgraph:
     def load_node(self, node: Node) -> Optional[Node]:
         if node._id is not None:
             return self.load_node_with_id(node)
-        elif any(getattr(node, key) is not None for key in node._primary_keys):
+
+        elif any(
+            "unique" in node.__fields__[key].field_info.extra and getattr(node, key) is not None
+            for key in node.__fields__
+        ):
             matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
                 raise GQLAlchemyUniquenessConstraintError(

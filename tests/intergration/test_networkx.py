@@ -56,7 +56,7 @@ def test_simple_nx_to_memgraph(memgraph: Memgraph):
     assert len(actual_nodes) == 3
     for i, node in enumerate(actual_nodes):
         assert node["n"]._properties["id"] == i + 1
-        assert node["n"]._node_labels == set()
+        assert node["n"]._labels == set()
 
     actual_edges = list(memgraph.execute_and_fetch("MATCH ()-[e]->() RETURN e"))
     assert len(actual_edges) == 2
@@ -106,9 +106,9 @@ def test_nx_to_memgraph(memgraph: Memgraph):
     for i, node in enumerate(actual_nodes):
         assert node["n"]._properties["id"] == expected_nodes[i][0]
         if isinstance(expected_nodes[i][1]["labels"], (list, tuple)):
-            assert node["n"]._node_labels == set(expected_nodes[i][1]["labels"])
+            assert node["n"]._labels == set(expected_nodes[i][1]["labels"])
         else:
-            assert node["n"]._node_labels == {expected_nodes[i][1]["labels"]}
+            assert node["n"]._labels == {expected_nodes[i][1]["labels"]}
         assert node["n"]._properties["num"] == expected_nodes[i][1]["num"]
 
     actual_edges = list(memgraph.execute_and_fetch("MATCH ()-[e]->() RETURN e"))

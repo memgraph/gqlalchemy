@@ -13,11 +13,15 @@
 
 import warnings
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
 from pydantic import BaseModel, PrivateAttr, Extra
 
-from .utilities import GQLAlchemyWarning, GQLAlchemyError
+from .exceptions import (
+    GQLAlchemySubclassNotFoundWarning,
+    GQLAlchemyDatabaseMissingInFieldError,
+)
 
 
 @dataclass(frozen=True, eq=True)
@@ -66,14 +70,16 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
-    def __init_subclass__(cls, _type=None, _node_labels=None):
+    def __init_subclass__(cls, type=None, label=None, labels=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
-        if _node_labels is not None:
-            _type = ":".join(sorted(_node_labels))
-
-        cls._subtypes_[_type or cls.__name__] = cls
+        if type is not None:  # Relationship
+            cls._subtypes_[type] = cls
+        elif label is not None:  # Node
+            cls._subtypes_[label] = cls
+        else:
+            cls._subtypes_[cls.__name__] = cls
 
     @classmethod
     def __get_validators__(cls):
@@ -85,18 +91,24 @@ class GraphObject(BaseModel):
         This is used when deserialising a json representation of the class,
         or the object returned from the GraphDatabase.
         """
-        data_type = data.get("_type")
+        sub = None
+        if "_type" in data:  # Relationship
+            sub = cls._subtypes_.get(data.get("_type"))
 
-        sub = cls if data_type is None else cls._subtypes_.get(data_type)
+        if "_labels" in data:  # Node
+            # Find class that has the most super classes
+            labels = data["_labels"]
+            classes = [cls._subtypes_[label] for label in labels if label in cls._subtypes_]
+            counter = defaultdict(int)
+            for class1 in classes:
+                counter[class1] += sum(issubclass(class1, class2) for class2 in classes)
+            if counter:
+                sub = max(counter, key=counter.get)
 
         if sub is None:
-            warnings.warn(  # GQLAlchemy failed to find a subclass. #  )
-                f"GraphObject subclass '{data_type}' not found. "
-                f"'{cls.__name__}' will be used until you create a subclass.",
-                GQLAlchemyWarning,
-            )
+            types = data.get("_type", data.get("_labels"))
+            warnings.warn(GQLAlchemySubclassNotFoundWarning(types, cls))
             sub = cls
-            data_type = cls.__name__
 
         return sub(**data)
 
@@ -153,89 +165,66 @@ class UniqueGraphObject(GraphObject):
         return str(self)
 
 
-class MyMeta(BaseModel.__class__):
+class NodeMetaclass(BaseModel.__class__):
     def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
         """This creates the class `Node`. It also creates all subclasses
         of `Node`. Whenever a class is defined as a subclass of `Node`,
         `MyMeta.__new__` is called.
         """
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
-        # TODO create a discussion about accessing labels through the class definition instead of through the object. E.g. `Person.labels` instead of `person = Person("Marko"); person._node_labels`.
-        cls._type = kwargs.get("_type", name)
-        cls._node_labels = kwargs.get("_node_labels", set(cls._type.split(":")))
-        if len(cls._node_labels) > 1:
-        # TODO check if *_type* or *_node_labels* is in fields
-            cls._type = ":".join(sorted(cls._node_labels))
-        cls._primary_keys = set()
+        cls.label = kwargs.get("label", name)
+        if name == "Node":
+            pass
+        elif "labels" in kwargs:  # overrides superclass labels
+            cls.labels = kwargs["labels"]
+        elif hasattr(cls, "labels"):
+            cls.labels.add(cls.label)
+        else:
+            cls.labels = {cls.label}
+
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
-            label = None
-            if attrs.get("label", None) is not None:
-                label = attrs["label"]
-            elif len(cls._node_labels) == 1:
-                label = next(iter(cls._node_labels))
-            else:
-                GQLAlchemyError("MultipleLabelConstraintError")
 
-            db = None
-            if "db" in attrs:
-                db = attrs["db"]
+            label = attrs.get("label", cls.label)
+            db = attrs.get("db", None)
+            for constraint in ["index", "unique", "exists"]:
+                if constraint in attrs and db is None:
+                    raise GQLAlchemyDatabaseMissingInFieldError(
+                        constraint=constraint,
+                        field=field,
+                        field_type=field_type,
+                    )
 
             if "index" in attrs:
-                if db is None:
-                    raise ValueError(
-                        "Can't have an index on a property without providing"
-                        " the database `db` object.\n"
-                        "Define your property as:\n"
-                        f" {field}: {field_type} = Field(index=True, db=Memgraph())"
-                    )
                 index = MemgraphIndex(label, field)
                 db.create_index(index)
 
             if "exists" in attrs:
-                if db is None:
-                    raise ValueError(
-                        "Can't have an index on a property without providing"
-                        " the database `db` object.\n"
-                        "Define your property as:\n"
-                        f" {field}: type = Field(exists=True, db=Memgraph())"
-                    )
                 constraint = MemgraphConstraintExists(label, field)
                 db.create_constraint(constraint)
 
             if "unique" in attrs:
-                if db is None:
-                    raise ValueError(
-                        "Can't have an index on a property without providing"
-                        " the database `db` object.\n"
-                        "Define your property as:\n"
-                        f" {field}: type = Field(unique=True, db=Memgraph())"
-                    )
-                cls._primary_keys.add(field)
                 constraint = MemgraphConstraintUnique(label, field)
                 db.create_constraint(constraint)
-
-            # if "on_disk" in attrs:
-            # if "use_in_db" in attrs:
 
         return cls
 
 
-class Node(UniqueGraphObject, metaclass=MyMeta):
-    _node_labels: Optional[Set[str]] = PrivateAttr()
+class Node(UniqueGraphObject, metaclass=NodeMetaclass):
+    _labels: Set[str] = PrivateAttr()
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._type = getattr(type(self), "_type", type(self).__name__)
-        self._node_labels = getattr(type(self), "_node_labels", set(self._type.split(":")))
+        self._labels = data.get("_labels", getattr(type(self), "labels", {"Node"}))
 
     def __str__(self) -> str:
         return "".join(
             (
                 f"<{type(self).__name__}",
                 f" id={self._id}",
-                f" labels={self._node_labels}",
+                f" label={self._label}",
+                f" labels={self._labels}",
                 f" properties={self._properties}",
                 ">",
             )
@@ -243,25 +232,27 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
 
     def _get_cypher_unique_fields_or_block(self, variable_name: str) -> str:
         cypher_unique_fields = []
-        for field in self._primary_keys:
-            value = getattr(self, field)
-            if value is not None:
-                cypher_unique_fields.append(f"{variable_name}.{field} = {repr(value)}")
+        for field in self.__fields__:
+            attrs = self.__fields__[field].field_info.extra
+            if "unique" in attrs:
+                value = getattr(self, field)
+                if value is not None:
+                    cypher_unique_fields.append(f"{variable_name}.{field} = {repr(value)}")
 
         return " " + " OR ".join(cypher_unique_fields) + " "
 
     @property
     def _label(self) -> str:
-        return ":".join(sorted(self._node_labels))
+        return ":".join(sorted(self._labels))
 
-    def save(self, db: "Memgraph") -> None:
+    def save(self, db: "Memgraph") -> None:  # noqa F821
         node = db.save_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
         self._id = node._id
         return self
 
-    def load(self, db: "Memgraph") -> None:
+    def load(self, db: "Memgraph") -> None:  # noqa F821
         node = db.load_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
@@ -269,15 +260,29 @@ class Node(UniqueGraphObject, metaclass=MyMeta):
         return self
 
 
-class Relationship(UniqueGraphObject, metaclass=MyMeta):
+class RelationshipMetaclass(BaseModel.__class__):
+    def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
+        """This creates the class `Relationship`. It also creates all
+        subclasses of `Relationship`. Whenever a class is defined as a
+        subclass of `Relationship`, `self.__new__` is called.
+        """
+        cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+        if name != "Relationship":
+            cls.type = kwargs.get("type", name)
+
+        return cls
+
+
+class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
     _end_node_id: int = PrivateAttr()
     _start_node_id: int = PrivateAttr()
+    _type: str = PrivateAttr()
 
     def __init__(self, **data):
         super().__init__(**data)
         self._start_node_id = data.get("_start_node_id")
         self._end_node_id = data.get("_end_node_id")
-        self._type = getattr(type(self), "_type", type(self).__name__)
+        self._type = data.get("_type", getattr(type(self), "type", "Relationship"))
 
     @property
     def _nodes(self) -> Tuple[int, int]:
@@ -288,21 +293,23 @@ class Relationship(UniqueGraphObject, metaclass=MyMeta):
             (
                 f"<{type(self).__name__}",
                 f" id={self._id}",
+                f" start_node_id={self._start_node_id}",
+                f" end_node_id={self._end_node_id}",
                 f" nodes={self._nodes}",
-                f" _type={self._type}",
+                f" type={self._type}",
                 f" properties={self._properties}",
                 ">",
             )
         )
 
-    def save(self, db: "Memgraph") -> None:
+    def save(self, db: "Memgraph") -> None:  # noqa F821
         relationship = db.save_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id
         return self
 
-    def load(self, db: "Memgraph") -> None:
+    def load(self, db: "Memgraph") -> None:  # noqa F821
         relationship = db.load_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))

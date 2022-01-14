@@ -120,9 +120,8 @@ def _convert_memgraph_value(value: Any) -> Any:
     if isinstance(value, mgclient.Node):
         return Node.parse_obj(
             {
-                "_type": ":".join(sorted(value.labels)),
                 "_id": value.id,
-                "_node_labels": set(value.labels),
+                "_labels": set(value.labels),
                 **value.properties,
             }
         )
