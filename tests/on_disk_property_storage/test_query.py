@@ -46,3 +46,25 @@ def test_add_node_property(clear_db):
     db.save_node_property(node_id, property_name, property_value)
     result_value = db.load_node_property(node_id, property_name)
     assert result_value == property_value
+
+
+def test_delete_node_property(clear_db):
+    db = SQLitePropertyDatabase()
+    node_id = 1
+    property_name = "person_name"
+    property_value = "John"
+    db.save_node_property(node_id, property_name, property_value)
+    db.delete_node_property(node_id, property_name)
+    result_value = db.load_node_property(node_id, property_name)
+    assert result_value is None
+
+
+def test_delete_relationship_property(clear_db):
+    db = SQLitePropertyDatabase()
+    relationship_id = 2
+    property_name = "friendship_type"
+    property_value = "best_friends"
+    db.save_relationship_property(relationship_id, property_name, property_value)
+    db.delete_relationship_property(relationship_id, property_name)
+    result_value = db.load_relationship_property(relationship_id, property_name)
+    assert result_value is None

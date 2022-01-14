@@ -105,7 +105,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
 
         return result[0][0]
 
-    def delete_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
+    def delete_node_property(self, node_id: int, property_name: str) -> None:
         self.execute_query(
             "DELETE "
             "FROM node_properties AS db "
@@ -137,7 +137,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
 
         return result[0][0]
 
-    def delete_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
+    def delete_relationship_property(self, relationship_id: int, property_name: str) -> None:
         self.execute_query(
             "DELETE "
             "FROM relationship_properties AS db "
