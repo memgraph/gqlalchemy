@@ -17,19 +17,15 @@ import pytest
 from gqlalchemy import SQLitePropertyDatabase
 
 
+db = SQLitePropertyDatabase("./tests/on_disk_storage.db")
+
+
 @pytest.fixture
 def clear_db():
-    db = SQLitePropertyDatabase()
     db.drop_database()
 
 
-def test_create_db():
-    db = SQLitePropertyDatabase()
-    assert db is not None
-
-
 def test_add_relationship_property(clear_db):
-    db = SQLitePropertyDatabase()
     relationship_id = 2
     property_name = "friendship_type"
     property_value = "best_friends"
@@ -39,7 +35,6 @@ def test_add_relationship_property(clear_db):
 
 
 def test_add_node_property(clear_db):
-    db = SQLitePropertyDatabase()
     node_id = 1
     property_name = "person_name"
     property_value = "John"
@@ -49,7 +44,6 @@ def test_add_node_property(clear_db):
 
 
 def test_delete_node_property(clear_db):
-    db = SQLitePropertyDatabase()
     node_id = 1
     property_name = "person_name"
     property_value = "John"
@@ -60,7 +54,6 @@ def test_delete_node_property(clear_db):
 
 
 def test_delete_relationship_property(clear_db):
-    db = SQLitePropertyDatabase()
     relationship_id = 2
     property_name = "friendship_type"
     property_value = "best_friends"

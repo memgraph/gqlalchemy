@@ -45,8 +45,8 @@ class OnDiskPropertyDatabase(ABC):
 
 
 class SQLitePropertyDatabase(OnDiskPropertyDatabase):
-    def __init__(self, database_name: str = "on_disk_properties.db"):
-        self.database_name = database_name
+    def __init__(self, database_path: str):
+        self.database_name = database_path
         self.create_node_property_table()
         self.create_relationship_property_table()
 

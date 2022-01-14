@@ -1,5 +1,5 @@
 # temp files
-on_disk_properties.db
+tests/on_disk_storage.db
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
