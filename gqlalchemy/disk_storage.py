@@ -32,7 +32,9 @@ class OnDiskPropertyDatabase(ABC):
     def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
         pass
 
-    def load_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> Opitional[str]:
+    def load_relationship_property(
+        self, relationship_id: int, property_name: str, property_value: str
+    ) -> Optional[str]:
         pass
 
     def delete_relationship_property(self, node_id: int, property_name: str, property_value: str) -> None:
@@ -135,8 +137,8 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
 
         return result[0][0]
 
-    def delete_relationship_property(self, node_id: int, property_name: str, property_value: str) -> None:
-        result = self.execute_query(
+    def delete_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
+        self.execute_query(
             "DELETE "
             "FROM relationship_properties AS db "
             f"WHERE db.relationship_id = {relationship_id} "
