@@ -241,6 +241,13 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
 
         return " " + " OR ".join(cypher_unique_fields) + " "
 
+    def has_unique_fields(self) -> bool:
+        for field in self.__fields__:
+            if "unique" in self.__fields__[field].field_info.extra:
+                if getattr(self, field) is not None:
+                    return True
+        return False
+
     @property
     def _label(self) -> str:
         return ":".join(sorted(self._labels))

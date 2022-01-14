@@ -169,7 +169,7 @@ class Memgraph:
 
     def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
         return self.execute_and_fetch(
-            f"MATCH (node: {node._label})" " WHERE " + node._get_cypher_unique_fields_or_block("node") + " RETURN node"
+            f"MATCH (node: {node._label}) WHERE {node._get_cypher_unique_fields_or_block('node')} RETURN node"
         )
 
     def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
@@ -178,25 +178,21 @@ class Memgraph:
             raise GQLAlchemyError("No result found. Result list is empty.")
         elif next(query_result, None) is not None:
             raise GQLAlchemyError("One result expected, but more than one result found.")
-
-        if variable_name not in result:
+        elif variable_name not in result:
             raise GQLAlchemyError(f"Variable name {variable_name} not present in result.")
+
         return result[variable_name]
 
     def create_node(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"CREATE (node:{node._label})" + node._get_cypher_set_properties("node") + "RETURN node"
+            f"CREATE (node:{node._label}) {node._get_cypher_set_properties('node')} RETURN node"
         )
         return self.get_variable_assume_one(results, "node")
 
     def save_node(self, node: Node):
         if node._id is not None:
             return self._save_node_with_id(node)
-
-        elif any(
-            "unique" in node.__fields__[key].field_info.extra and getattr(node, key) is not None
-            for key in node.__fields__
-        ):
+        elif node.has_unique_fields():
             matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
                 raise GQLAlchemyUniquenessConstraintError(
@@ -212,8 +208,7 @@ class Memgraph:
 
     def save_node_with_id(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"MATCH (node: {node._label})"
-            f" WHERE id(node) = {node._id}" + node._get_cypher_set_properties("node") + " RETURN node"
+            f"MATCH (node: {node._label}) WHERE id(node) = {node._id} {node._get_cypher_set_properties('node')} RETURN node"
         )
 
         return self.get_variable_assume_one(results, "node")
@@ -221,27 +216,18 @@ class Memgraph:
     def load_node(self, node: Node) -> Optional[Node]:
         if node._id is not None:
             return self.load_node_with_id(node)
-
-        elif any(
-            "unique" in node.__fields__[key].field_info.extra and getattr(node, key) is not None
-            for key in node.__fields__
-        ):
-            matching_nodes = list(self._get_nodes_with_unique_fields(node))
-            if len(matching_nodes) > 1:
-                raise GQLAlchemyUniquenessConstraintError(
-                    f"Uniqueness constraints match multiple nodes: {matching_nodes}"
-                )
-            elif len(matching_nodes) == 1:
-                node._id = matching_nodes[0]["node"]._id
-                return self.load_node_with_id(node)
-            else:
-                raise GQLAlchemyError("No node found that matches properties.")
+        elif node.has_unique_fields():
+            matching_node = self.get_variable_assume_one(
+                query_result=self._get_nodes_with_unique_fields, variable_name="node"
+            )
+            node._id = matching_node._id
+            self.load_node_with_id(node)
         else:
             return self.load_node_with_all_properties(node)
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"MATCH (node: {node._label}" " WHERE " + node._get_cypher_fields_or_block("node") + " RETURN node"
+            f"MATCH (node: {node._label} WHERE {node._get_cypher_fields_or_block('node')} RETURN node"
         )
         return self.get_variable_assume_one(results, "node")
 
@@ -299,18 +285,13 @@ class Memgraph:
         self, relationship: Relationship
     ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {relationship._start_node_id} AND id(end_node) = {relationship._end_node_id}"
-            + relationship._get_cypher_set_properties("relationship")
-            + "RETURN relationship"
+            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {relationship._start_node_id} AND id(end_node) = {relationship._end_node_id} {relationship._get_cypher_set_properties('relationship')} RETURN relationship"
         )
         return self.get_variable_assume_one(results, "relationship")
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]->()"
-            f" WHERE id(relationship) = {relationship._id}"
-            + relationship._get_cypher_set_properties("relationship")
-            + " RETURN node"
+            f"MATCH ()-[relationship: {relationship._type}]->() WHERE id(relationship) = {relationship._id} {relationship._get_cypher_set_properties('relationship')} RETURN node"
         )
 
         return self.get_variable_assume_one(results, "relationship")
