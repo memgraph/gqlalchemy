@@ -15,23 +15,30 @@
 import sqlite3
 import contextlib
 
+from abc import ABC
 from typing import Optional, List
 
 
-class OnDiskPropertyDatabase:
-    def save_node_property(self, node_id: int, property_name: str, property_value: str):
+class OnDiskPropertyDatabase(ABC):
+    def save_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
         pass
 
-    def load_node_property(self, node_id: int, property_name: str, property_value: str):
+    def load_node_property(self, node_id: int, property_name: str, property_value: str) -> Optional[str]:
         pass
 
-    def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str):
+    def delete_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
         pass
 
-    def load_relationship_property(self, relationship_id: int, property_name: str, property_value: str):
+    def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
         pass
 
-    def drop_database(self):
+    def load_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> Opitional[str]:
+        pass
+
+    def delete_relationship_property(self, node_id: int, property_name: str, property_value: str) -> None:
+        pass
+
+    def drop_database(self) -> None:
         pass
 
 
@@ -41,7 +48,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         self.create_node_property_table()
         self.create_relationship_property_table()
 
-    def execute_query(self, query) -> List[str]:
+    def execute_query(self, query: str) -> List[str]:
         with contextlib.closing(sqlite3.connect(self.database_name)) as conn:
             with conn:  # autocommit changes
                 with contextlib.closing(conn.cursor()) as cursor:
@@ -58,7 +65,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
             ");"
         )
 
-    def create_relationship_property_table(self):
+    def create_relationship_property_table(self) -> None:
         self.execute_query(
             "CREATE TABLE IF NOT EXISTS relationship_properties ("
             "relationship_id integer NOT NULL,"
@@ -68,11 +75,11 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
             ");"
         )
 
-    def drop_database(self):
+    def drop_database(self) -> None:
         self.execute_query("DELETE FROM node_properties;")
         self.execute_query("DELETE FROM relationship_properties;")
 
-    def save_node_property(self, node_id: int, property_name: str, property_value: str):
+    def save_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
         self.execute_query(
             "INSERT INTO node_properties (node_id, property_name, property_value) "
             f"VALUES({node_id}, '{property_name}', '{property_value}') "
@@ -96,7 +103,15 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
 
         return result[0][0]
 
-    def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str):
+    def delete_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
+        self.execute_query(
+            "DELETE "
+            "FROM node_properties AS db "
+            f"WHERE db.node_id = {node_id} "
+            f"AND db.property_name = '{property_name}'"
+        )
+
+    def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
         self.execute_query(
             "INSERT INTO relationship_properties (relationship_id, property_name, property_value) "
             f"VALUES({relationship_id}, '{property_name}', '{property_value}') "
@@ -119,3 +134,11 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         assert len(result) == 1 and len(result[0]) == 1
 
         return result[0][0]
+
+    def delete_relationship_property(self, node_id: int, property_name: str, property_value: str) -> None:
+        result = self.execute_query(
+            "DELETE "
+            "FROM relationship_properties AS db "
+            f"WHERE db.relationship_id = {relationship_id} "
+            f"AND db.property_name = '{property_name}'"
+        )
