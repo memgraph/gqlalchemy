@@ -14,7 +14,7 @@
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Union, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
