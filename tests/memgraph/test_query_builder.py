@@ -232,6 +232,42 @@ class TestMatch:
 
         mock.assert_called_with(expected_query)
 
+    def test_union(self):
+        query_builder = (
+            QueryBuilder()
+            .match()
+            .node(variable="n1", labels="Node1")
+            .return_({"n1": ""})
+            .union(include_duplicates=False)
+            .match()
+            .node(variable="n2", labels="Node2")
+            .return_({"n2": ""})
+        )
+        expected_query = " MATCH (n1:Node1) RETURN n1 UNION MATCH (n2:Node2) RETURN n2 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_union_all(self):
+        query_builder = (
+            QueryBuilder()
+            .match()
+            .node(variable="n1", labels="Node1")
+            .return_({"n1": ""})
+            .union()
+            .match()
+            .node(variable="n2", labels="Node2")
+            .return_({"n2": ""})
+        )
+        expected_query = " MATCH (n1:Node1) RETURN n1 UNION ALL MATCH (n2:Node2) RETURN n2 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
     def test_delete(self):
         query_builder = QueryBuilder().match().node(variable="n1", labels="Node1").delete({"n1"})
         expected_query = " MATCH (n1:Node1) DELETE n1 "

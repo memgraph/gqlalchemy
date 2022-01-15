@@ -38,6 +38,7 @@ class DeclarativeBaseTypes:
     SKIP = "SKIP"
     DELETE = "DELETE"
     REMOVE = "REMOVE"
+    UNION = "UNION"
 
 
 class MatchConstants:
@@ -202,6 +203,16 @@ class WithPartialQuery(PartialQuery):
         if len(self.results) == 0:
             return f" WITH * "
         return f" WITH {dict_to_alias_statement(self.results)} "
+
+
+class UnionPartialQuery(PartialQuery):
+    def __init__(self, include_duplicates: bool):
+        super().__init__(DeclarativeBaseTypes.UNION)
+
+        self.include_duplicates = include_duplicates
+
+    def construct_query(self) -> str:
+        return f" UNION{f' ALL' if self.include_duplicates else ''} "
 
 
 class DeletePartialQuery(PartialQuery):
@@ -385,6 +396,11 @@ class DeclarativeBase(ABC):
 
     def with_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         self._query.append(WithPartialQuery(results))
+
+        return self
+
+    def union(self, include_duplicates: Optional[bool] = True) -> "DeclarativeBase":
+        self._query.append(UnionPartialQuery(include_duplicates))
 
         return self
 
