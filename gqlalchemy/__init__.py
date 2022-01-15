@@ -21,7 +21,14 @@ from .models import (  # noqa F401
     Relationship,
     MemgraphIndex,
 )
-from .query_builder import InvalidMatchChainException, G, NoVariablesMatchedException  # noqa F401
+from .query_builder import (
+    InvalidMatchChainException,
+    NoVariablesMatchedException,
+    QueryBuilder,
+    Match,
+    Call,
+    Unwind,
+)  # noqa F401
 
 from .utilities import GQLAlchemyWarning
 import warnings

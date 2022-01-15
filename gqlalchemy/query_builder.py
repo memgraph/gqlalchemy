@@ -21,7 +21,7 @@ from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 
 
-class GTypes:
+class DeclarativeBaseTypes:
     NODE = "NODE"
     EDGE = "EDGE"
     MATCH = "MATCH"
@@ -35,6 +35,9 @@ class GTypes:
     UNWIND = "UNWIND"
     ORDER_BY = "ORDER_BY"
     LIMIT = "LIMIT"
+    SKIP = "SKIP"
+    DELETE = "DELETE"
+    REMOVE = "REMOVE"
 
 
 class MatchConstants:
@@ -76,7 +79,7 @@ class PartialQuery(ABC):
 
 class MatchPartialQuery(PartialQuery):
     def __init__(self, optional: bool):
-        super().__init__(GTypes.MATCH)
+        super().__init__(DeclarativeBaseTypes.MATCH)
 
         self.optional = optional
 
@@ -88,8 +91,8 @@ class MatchPartialQuery(PartialQuery):
 
 
 class CallPartialQuery(PartialQuery):
-    def __init__(self, procedure: str, arguments: Optional[List[str]]):
-        super().__init__(GTypes.CALL)
+    def __init__(self, procedure: str, arguments: List[str]):
+        super().__init__(DeclarativeBaseTypes.CALL)
 
         self.procedure = procedure
         self._arguments = arguments
@@ -99,12 +102,12 @@ class CallPartialQuery(PartialQuery):
         return self._arguments if self._arguments is not None else ""
 
     def construct_query(self) -> str:
-        return f" CALL {self.procedure}({''.join( argument + ', ' for argument in self.arguments[:-1]) + self.arguments[-1]}) "
+        return f" CALL {self.procedure}({', '.join(self.arguments)}) "
 
 
 class WhereConditionPartialQuery(PartialQuery):
     def __init__(self, keyword: str, query: str):
-        super().__init__(GTypes.WHERE)
+        super().__init__(DeclarativeBaseTypes.WHERE)
 
         self.keyword = keyword
         self.query = query
@@ -114,8 +117,8 @@ class WhereConditionPartialQuery(PartialQuery):
 
 
 class NodePartialQuery(PartialQuery):
-    def __init__(self, variable: Optional[str], labels: Optional[str], properties: Optional[str]):
-        super().__init__(GTypes.NODE)
+    def __init__(self, variable: str, labels: str, properties: str):
+        super().__init__(DeclarativeBaseTypes.NODE)
 
         self._variable = variable
         self._labels = labels
@@ -138,8 +141,8 @@ class NodePartialQuery(PartialQuery):
 
 
 class EdgePartialQuery(PartialQuery):
-    def __init__(self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool):
-        super().__init__(GTypes.EDGE)
+    def __init__(self, variable: str, labels: str, properties: str, directed: bool):
+        super().__init__(DeclarativeBaseTypes.EDGE)
 
         self.directed = directed
         self._variable = variable
@@ -169,33 +172,25 @@ class EdgePartialQuery(PartialQuery):
 
 
 class UnwindPartialQuery(PartialQuery):
-    def __init__(self, argument: Optional[Tuple[str, str]]):
-        super().__init__(GTypes.UNWIND)
+    def __init__(self, list_expression: str, variable: str):
+        super().__init__(DeclarativeBaseTypes.UNWIND)
 
-        self.argument = argument
+        self.list_expression = list_expression
+        self.variable = variable
 
     def construct_query(self) -> str:
-        if not self.argument:
-            return f" UNWIND "
-        return f" UNWIND {self.argument[0]} AS {self.argument[1]} "
+        return f" UNWIND {self.list_expression} AS {self.variable} "
 
 
 def dict_to_alias_statement(alias_dict: Dict[str, str]) -> str:
-    alias_statement = ""
-    dict_item_count = len(alias_dict)
-    for i, result in enumerate(alias_dict):
-        if alias_dict[result] != "" and alias_dict[result] != result:
-            alias_statement += result + " AS " + alias_dict[result]
-        else:
-            alias_statement += result
-        if i < dict_item_count - 1:
-            alias_statement += ", "
-    return alias_statement
+    return ", ".join(
+        f"{key} AS {value}" if value != "" and key != value else f"{key}" for (key, value) in alias_dict.items()
+    )
 
 
 class WithPartialQuery(PartialQuery):
-    def __init__(self, results: Optional[Dict[str, str]]):
-        super().__init__(GTypes.WITH)
+    def __init__(self, results: Dict[str, str]):
+        super().__init__(DeclarativeBaseTypes.WITH)
 
         self._results = results
 
@@ -209,9 +204,38 @@ class WithPartialQuery(PartialQuery):
         return f" WITH {dict_to_alias_statement(self.results)} "
 
 
+class DeletePartialQuery(PartialQuery):
+    def __init__(self, variable_expressions: List[str], detach: bool):
+        super().__init__(DeclarativeBaseTypes.DELETE)
+
+        self._variable_expressions = variable_expressions
+        self.detach = detach
+
+    @property
+    def variable_expressions(self) -> str:
+        return self._variable_expressions if self._variable_expressions is not None else ""
+
+    def construct_query(self) -> str:
+        return f" {'DETACH' if self.detach else ''} DELETE {', '.join(self.variable_expressions)} "
+
+
+class RemovePartialQuery(PartialQuery):
+    def __init__(self, items: List[str]):
+        super().__init__(DeclarativeBaseTypes.REMOVE)
+
+        self._items = items
+
+    @property
+    def items(self) -> str:
+        return self._items if self._items is not None else ""
+
+    def construct_query(self) -> str:
+        return f" REMOVE {', '.join(self.items)} "
+
+
 class YieldPartialQuery(PartialQuery):
-    def __init__(self, results: Optional[Dict[str, str]]):
-        super().__init__(GTypes.YIELD)
+    def __init__(self, results: Dict[str, str]):
+        super().__init__(DeclarativeBaseTypes.YIELD)
 
         self._results = results
 
@@ -226,8 +250,8 @@ class YieldPartialQuery(PartialQuery):
 
 
 class ReturnPartialQuery(PartialQuery):
-    def __init__(self, results: Optional[Dict[str, str]]):
-        super().__init__(GTypes.RETURN)
+    def __init__(self, results: Dict[str, str]):
+        super().__init__(DeclarativeBaseTypes.RETURN)
 
         self._results = results
 
@@ -242,37 +266,47 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, argument: str, desc: Optional[bool]):
-        super().__init__(GTypes.ORDER_BY)
+    def __init__(self, properties: str, desc: bool):
+        super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
-        self.argument = argument
+        self.properties = properties
         self.desc = desc
 
     def construct_query(self) -> str:
-        return f" ORDER BY {self.argument} {'DESC' if self.desc else ''} "
+        return f" ORDER BY {self.properties}{' DESC' if self.desc else ''} "
 
 
 class LimitPartialQuery(PartialQuery):
-    def __init__(self, limit: int):
-        super().__init__(GTypes.LIMIT)
+    def __init__(self, integer_expression: str):
+        super().__init__(DeclarativeBaseTypes.LIMIT)
 
-        self.limit = limit
+        self.integer_expression = integer_expression
 
     def construct_query(self) -> str:
-        return f" LIMIT {self.limit} "
+        return f" LIMIT {self.integer_expression} "
 
 
-class G:
+class SkipPartialQuery(PartialQuery):
+    def __init__(self, integer_expression: str):
+        super().__init__(DeclarativeBaseTypes.SKIP)
+
+        self.integer_expression = integer_expression
+
+    def construct_query(self) -> str:
+        return f" SKIP {self.integer_expression} "
+
+
+class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         self._query: List[Any] = []
         self._connection = connection if connection is not None else Memgraph()
 
-    def match(self, optional: bool = False) -> "G":
+    def match(self, optional: bool = False) -> "DeclarativeBase":
         self._query.append(MatchPartialQuery(optional))
 
         return self
 
-    def call(self, procedure: str, arguments: Optional[str] = None) -> "G":
+    def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
         self._query.append(CallPartialQuery(procedure, arguments))
 
         return self
@@ -283,8 +317,8 @@ class G:
         variable: Optional[str] = None,
         node: Optional["Node"] = None,
         **kwargs,
-    ) -> "G":
-        if not self._is_linking_valid_with_query(GTypes.NODE):
+    ) -> "DeclarativeBase":
+        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.NODE):
             raise InvalidMatchChainException()
 
         if node is None:
@@ -305,8 +339,8 @@ class G:
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
         **kwargs,
-    ) -> "G":
-        if not self._is_linking_valid_with_query(GTypes.EDGE):
+    ) -> "DeclarativeBase":
+        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
             raise InvalidMatchChainException()
 
         if relationship is None:
@@ -320,7 +354,7 @@ class G:
 
         return self
 
-    def where(self, property: str, operator: str, value: Any) -> "G":
+    def where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property, operator, value_cypher]))
@@ -328,7 +362,7 @@ class G:
 
         return self
 
-    def and_where(self, property: str, operator: str, value: Any) -> "G":
+    def and_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.AND, " ".join([property, operator, value_cypher]))
@@ -336,7 +370,7 @@ class G:
 
         return self
 
-    def or_where(self, property: str, operator: str, value: Any) -> "G":
+    def or_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.OR, " ".join([property, operator, value_cypher]))
@@ -344,33 +378,48 @@ class G:
 
         return self
 
-    def unwind(self, argument: Optional[Tuple[str, str]] = ()) -> "G":
-        self._query.append(UnwindPartialQuery(argument))
+    def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
+        self._query.append(UnwindPartialQuery(list_expression, variable))
 
         return self
 
-    def with_(self, results: Optional[Dict[str, str]] = {}) -> "G":
+    def with_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         self._query.append(WithPartialQuery(results))
 
         return self
 
-    def yield_(self, results: Optional[Dict[str, str]] = {}) -> "G":
+    def delete(self, variable_expressions: List[str], detach: Optional[bool] = False) -> "DeclarativeBase":
+        self._query.append(DeletePartialQuery(variable_expressions, detach))
+
+        return self
+
+    def remove(self, items: List[str]) -> "DeclarativeBase":
+        self._query.append(RemovePartialQuery(items))
+
+        return self
+
+    def yield_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         self._query.append(YieldPartialQuery(results))
 
         return self
 
-    def return_(self, results: Optional[Dict[str, str]] = {}) -> "G":
+    def return_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         self._query.append(ReturnPartialQuery(results))
 
         return self
 
-    def orderby(self, argument: str, sort: Optional[bool] = False) -> "G":
-        self._query.append(OrderByPartialQuery(argument, sort))
+    def orderby(self, properties: str, sort: Optional[bool] = False) -> "DeclarativeBase":
+        self._query.append(OrderByPartialQuery(properties, sort))
 
         return self
 
-    def limit(self, limit: int) -> "G":
-        self._query.append(LimitPartialQuery(limit))
+    def limit(self, integer_expression: str) -> "DeclarativeBase":
+        self._query.append(LimitPartialQuery(integer_expression))
+
+        return self
+
+    def skip(self, integer_expression: str) -> "DeclarativeBase":
+        self._query.append(SkipPartialQuery(integer_expression))
 
         return self
 
@@ -401,7 +450,35 @@ class G:
         return joined_query
 
     def _any_variables_matched(self) -> bool:
-        return any(q.type in [GTypes.EDGE, GTypes.NODE] and q.variable not in [None, ""] for q in self._query)
+        return any(
+            q.type in [DeclarativeBaseTypes.EDGE, DeclarativeBaseTypes.NODE] and q.variable not in [None, ""]
+            for q in self._query
+        )
 
     def _is_linking_valid_with_query(self, match_type: str):
         return len(self._query) == 0 or self._query[-1].type != match_type
+
+
+class QueryBuilder(DeclarativeBase):
+    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+
+
+class Match(DeclarativeBase):
+    def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+        self._query.append(MatchPartialQuery(optional))
+
+
+class Call(DeclarativeBase):
+    def __init__(
+        self, procedure: str, arguments: Optional[str] = None, connection: Optional[Union[Connection, Memgraph]] = None
+    ):
+        super().__init__(connection)
+        self._query.append(CallPartialQuery(procedure, arguments))
+
+
+class Unwind(DeclarativeBase):
+    def __init__(self, list_expression: str, variable: str, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+        self._query.append(UnwindPartialQuery(list_expression, variable))

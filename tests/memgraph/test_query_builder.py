@@ -15,18 +15,18 @@
 from unittest.mock import patch
 
 import pytest
-from gqlalchemy import InvalidMatchChainException, G
+from gqlalchemy import InvalidMatchChainException, QueryBuilder, Match, Call, Unwind
 from gqlalchemy.memgraph import Memgraph
 
 
 def test_invalid_match_chain_throws_exception():
     with pytest.raises(InvalidMatchChainException):
-        G().node(":Label", "n").node(":Label", "m").return_()
+        QueryBuilder().node(":Label", "n").node(":Label", "m").return_()
 
 
 class TestMatch:
     def test_simple_match(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2").return_()
+        query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2").return_()
         expected_query = " MATCH (n:L1)-[:TO]->(:L2) RETURN * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -35,7 +35,9 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_simple_match_with_variables(self):
-        query_builder = G().match().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+        query_builder = (
+            QueryBuilder().match().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+        )
         expected_query = " MATCH (n:L1)-[e:TO]->(m:L2) RETURN * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -44,7 +46,9 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_simple_with_multiple_labels(self):
-        query_builder = G().match().node(["L1", "L2", "L3"], variable="n").to("TO").node("L2", variable="m").return_()
+        query_builder = (
+            QueryBuilder().match().node(["L1", "L2", "L3"], variable="n").to("TO").node("L2", variable="m").return_()
+        )
         expected_query = " MATCH (n:L1:L2:L3)-[:TO]->(m:L2) RETURN * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -54,7 +58,7 @@ class TestMatch:
 
     def test_multiple_matches(self):
         query_builder = (
-            G()
+            QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
@@ -74,7 +78,7 @@ class TestMatch:
 
     def test_where(self):
         query_builder = (
-            G()
+            QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
@@ -91,7 +95,9 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_get_single(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"n": ""})
+        query_builder = (
+            QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"n": ""})
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN n "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=iter([{"n": None}])) as mock:
@@ -100,7 +106,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_return_empty(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_()
+        query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_()
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -109,7 +115,9 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_return_alias(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "first"})
+        query_builder = (
+            QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "first"})
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -118,7 +126,9 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_return_alias_same_as_variable(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "L1"})
+        query_builder = (
+            QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "L1"})
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -127,7 +137,9 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_return_alias_empty(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": ""})
+        query_builder = (
+            QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": ""})
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -137,7 +149,7 @@ class TestMatch:
 
     def test_call_procedure_pagerank(self):
         query_builder = (
-            G()
+            QueryBuilder()
             .call(procedure="pagerank.get", arguments=[""])
             .yield_({"node": "", "rank": ""})
             .return_({"node": "node", "rank": "rank"})
@@ -149,7 +161,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_call_procedure_node2vec(self):
-        query_builder = G().call(
+        query_builder = QueryBuilder().call(
             procedure="node2vec_online.get_embeddings",
             arguments=[
                 "False",
@@ -180,7 +192,7 @@ class TestMatch:
 
     def test_call_procedure_nxalg_betweenness_centrality(self):
         query_builder = (
-            G()
+            QueryBuilder()
             .call(procedure="nxalg.betweenness_centrality", arguments=["20", "True"])
             .yield_()
             .return_({"node": "", "betweenness": ""})
@@ -191,17 +203,10 @@ class TestMatch:
 
         mock.assert_called_with(expected_query)
 
-    def test_unwind_empty(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").unwind()
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) UNWIND "
-
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
-
-        mock.assert_called_with(expected_query)
-
     def test_unwind(self):
-        query_builder = G().unwind(argument=["[1, 2, 3, null]", "x"]).return_({"x": "", "'val'": "y"})
+        query_builder = (
+            QueryBuilder().unwind(list_expression="[1, 2, 3, null]", variable="x").return_({"x": "", "'val'": "y"})
+        )
         expected_query = " UNWIND [1, 2, 3, null] AS x RETURN x, 'val' AS y "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -210,7 +215,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_with_empty(self):
-        query_builder = G().match().node("L1", variable="n").to("TO").node("L2", variable="m").with_()
+        query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").with_()
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WITH * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -219,7 +224,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_with(self):
-        query_builder = G().match().node(variable="n").with_({"n": ""})
+        query_builder = QueryBuilder().match().node(variable="n").with_({"n": ""})
         expected_query = " MATCH (n) WITH n "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -227,8 +232,62 @@ class TestMatch:
 
         mock.assert_called_with(expected_query)
 
+    def test_delete(self):
+        query_builder = QueryBuilder().match().node(variable="n1", labels="Node1").delete({"n1"})
+        expected_query = " MATCH (n1:Node1) DELETE n1 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_delete_detach(self):
+        query_builder = (
+            QueryBuilder()
+            .match()
+            .node(variable="n1", labels="Node1")
+            .to(edge_label="EDGE")
+            .node(variable="n2", labels="Node2")
+            .delete(["n1", "n2"], True)
+        )
+        expected_query = " MATCH (n1:Node1)-[:EDGE]->(n2:Node2) DETACH DELETE n1, n2 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_remove_property(self):
+        query_builder = QueryBuilder().match().node(variable="n", labels="Node").remove({"n.name"})
+        expected_query = " MATCH (n:Node) REMOVE n.name "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_remove_label(self):
+        query_builder = QueryBuilder().match().node(variable="n", labels=["Node1", "Node2"]).remove({"n:Node2"})
+        expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_remove_property_and_label(self):
+        query_builder = (
+            QueryBuilder().match().node(variable="n", labels=["Node1", "Node2"]).remove(["n:Node2", "n.name"])
+        )
+        expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2, n.name "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
     def test_orderby(self):
-        query_builder = G().match().node(variable="n").orderby("n.id")
+        query_builder = QueryBuilder().match().node(variable="n").orderby("n.id")
         expected_query = " MATCH (n) ORDER BY n.id "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -237,7 +296,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_orderby_desc(self):
-        query_builder = G().match().node(variable="n").orderby("n.id", True)
+        query_builder = QueryBuilder().match().node(variable="n").orderby("n.id", True)
         expected_query = " MATCH (n) ORDER BY n.id DESC "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -246,8 +305,44 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_limit(self):
-        query_builder = G().match().node(variable="n").limit(3)
+        query_builder = QueryBuilder().match().node(variable="n").limit("3")
         expected_query = " MATCH (n) LIMIT 3 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_skip(self):
+        query_builder = QueryBuilder().match().node(variable="n").return_({"n": ""}).skip("1")
+        expected_query = " MATCH (n) RETURN n SKIP 1 "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_base_class_match(self):
+        query_builder = Match().node(variable="n").return_({"n": ""})
+        expected_query = " MATCH (n) RETURN n "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_base_class_call(self):
+        query_builder = Call("pagerank.get").yield_().return_()
+        expected_query = " CALL pagerank.get() YIELD * RETURN * "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_base_class_unwind(self):
+        query_builder = Unwind("[1, 2, 3]", "x").return_({"x": "x"})
+        expected_query = " UNWIND [1, 2, 3] AS x RETURN x "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
