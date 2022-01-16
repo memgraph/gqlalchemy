@@ -220,8 +220,7 @@ class Memgraph:
             matching_node = self.get_variable_assume_one(
                 query_result=self._get_nodes_with_unique_fields, variable_name="node"
             )
-            node._id = matching_node._id
-            self.load_node_with_id(node)
+            return matching_node
         else:
             return self.load_node_with_all_properties(node)
 
