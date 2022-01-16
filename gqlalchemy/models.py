@@ -316,7 +316,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
         self._id = relationship._id
         return self
 
-    def load(self, db: "Memgraph") -> None:  # noqa F821
+    def load(self, db: "Memgraph") -> Relationship:  # noqa F821
         relationship = db.load_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
