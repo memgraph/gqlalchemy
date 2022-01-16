@@ -223,7 +223,6 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
             (
                 f"<{type(self).__name__}",
                 f" id={self._id}",
-                f" label={self._label}",
                 f" labels={self._labels}",
                 f" properties={self._properties}",
                 ">",
