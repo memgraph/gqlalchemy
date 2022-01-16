@@ -251,14 +251,14 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
     def _label(self) -> str:
         return ":".join(sorted(self._labels))
 
-    def save(self, db: "Memgraph") -> Node:  # noqa F821
+    def save(self, db: "Memgraph") -> "Node":  # noqa F821
         node = db.save_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
         self._id = node._id
         return self
 
-    def load(self, db: "Memgraph") -> Node:  # noqa F821
+    def load(self, db: "Memgraph") -> "Node":  # noqa F821
         node = db.load_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
@@ -308,14 +308,14 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
             )
         )
 
-    def save(self, db: "Memgraph") -> Relationship:  # noqa F821
+    def save(self, db: "Memgraph") -> "Relationship":  # noqa F821
         relationship = db.save_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id
         return self
 
-    def load(self, db: "Memgraph") -> Relationship:  # noqa F821
+    def load(self, db: "Memgraph") -> "Relationship":  # noqa F821
         relationship = db.load_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
