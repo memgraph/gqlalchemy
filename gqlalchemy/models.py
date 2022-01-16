@@ -309,7 +309,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
             )
         )
 
-    def save(self, db: "Memgraph") -> None:  # noqa F821
+    def save(self, db: "Memgraph") -> Relationship:  # noqa F821
         relationship = db.save_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
