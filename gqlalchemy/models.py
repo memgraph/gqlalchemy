@@ -259,7 +259,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         self._id = node._id
         return self
 
-    def load(self, db: "Memgraph") -> None:  # noqa F821
+    def load(self, db: "Memgraph") -> Node:  # noqa F821
         node = db.load_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
