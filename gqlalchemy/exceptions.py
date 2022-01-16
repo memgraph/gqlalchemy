@@ -1,7 +1,7 @@
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
 Define your property as:
-  {field}: {field_type} = Field({constraint}=True, db=GraphDatabase())
+  {field}: {field_type} = Field({constraint}=True, db=Memgraph())
 """
 
 SUBCLASS_NOT_FOUND_WARNING = """
