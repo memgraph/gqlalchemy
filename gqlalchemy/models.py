@@ -252,7 +252,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
     def _label(self) -> str:
         return ":".join(sorted(self._labels))
 
-    def save(self, db: "Memgraph") -> None:  # noqa F821
+    def save(self, db: "Memgraph") -> Node:  # noqa F821
         node = db.save_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
