@@ -109,9 +109,9 @@ print(result['r'])
 
 ## Development (how to build)
 ```
-poetry run pytest . -k "not slow"
-poetry run black .
 poetry run flake8 .
+poetry run black .
+poetry run pytest . -k "not slow"
 ```
 ## License
 
