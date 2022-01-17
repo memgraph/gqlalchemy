@@ -80,15 +80,16 @@ class MemgraphKafkaStream(MemgraphStream):
 
     def to_cypher(self) -> str:
         topics = ",".join(self.topics)
-        query = f"CREATE KAFKA STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform} "
+        query = f"CREATE KAFKA STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
         if self.consumer_group is not None:
-            query += f"CONSUMER_GROUP {self.consumer_group} "
+            query += f" CONSUMER_GROUP {self.consumer_group}"
         if self.batch_interval is not None:
-            query += f"BATCH_INTERVAL {self.batch_interval} "
+            query += f" BATCH_INTERVAL {self.batch_interval}"
         if self.batch_size is not None:
-            query += f"BATCH_SIZE {self.batch_size} "
+            query += f" BATCH_SIZE {self.batch_size}"
         if self.bootstrap_servers is not None:
-            query += f"BOOTSTRAP_SERVERS {self.bootstrap_servers} "
+            query += f" BOOTSTRAP_SERVERS {self.bootstrap_servers}"
+        query += ";"
         return query
 
 
@@ -100,13 +101,13 @@ class MemgraphPulsarStream(MemgraphStream):
 
     def to_cypher(self) -> str:
         topics = ",".join(self.topics)
-        query = f"CREATE PULSAR STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform} "
+        query = f"CREATE PULSAR STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
         if self.batch_interval is not None:
-            query += f"BATCH_INTERVAL {self.batch_interval} "
+            query += f" BATCH_INTERVAL {self.batch_interval}"
         if self.batch_size is not None:
-            query += f"BATCH_SIZE {self.batch_size} "
+            query += f" BATCH_SIZE {self.batch_size}"
         if self.service_url is not None:
-            query += f"SERVICE_URL {self.service_url} "
+            query += f" SERVICE_URL {self.service_url}"
         query += ";"
         return query
 
