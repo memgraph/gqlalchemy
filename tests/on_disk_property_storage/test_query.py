@@ -15,6 +15,7 @@
 import pytest
 
 from gqlalchemy import SQLitePropertyDatabase, Memgraph, Node, Field
+from typing import Optional
 
 
 db = SQLitePropertyDatabase("./tests/on_disk_storage.db")
@@ -68,7 +69,11 @@ memgraph = Memgraph()
 
 class User(Node):
     id: int = Field(index=True, db=memgraph)
-    huge_string: str = Field(on_disk=True, on_disk_db=db)
+    huge_string: Optional[str] = Field(on_disk=True, on_disk_db=db)
+
+
+# class Streamer(User):
+#     pass
 
 
 def test_add_node_with_on_disk_property(clear_db):
