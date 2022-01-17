@@ -277,14 +277,13 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, properties: str, desc: bool):
+    def __init__(self, properties: str):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
         self.properties = properties
-        self.desc = desc
 
     def construct_query(self) -> str:
-        return f" ORDER BY {self.properties}{' DESC' if self.desc else ''} "
+        return f" ORDER BY {self.properties} "
 
 
 class LimitPartialQuery(PartialQuery):
@@ -424,8 +423,8 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def order_by(self, properties: str, sort: Optional[bool] = False) -> "DeclarativeBase":
-        self._query.append(OrderByPartialQuery(properties, sort))
+    def order_by(self, properties: str) -> "DeclarativeBase":
+        self._query.append(OrderByPartialQuery(properties))
 
         return self
 
@@ -498,3 +497,11 @@ class Unwind(DeclarativeBase):
     def __init__(self, list_expression: str, variable: str, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
         self._query.append(UnwindPartialQuery(list_expression, variable))
+
+
+class With(DeclarativeBase):
+    def __init__(
+        self, results: Optional[Dict[str, str]] = {}, connection: Optional[Union[Connection, Memgraph]] = None
+    ):
+        super().__init__(connection)
+        self._query.append(WithPartialQuery(results))

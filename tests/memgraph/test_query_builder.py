@@ -15,7 +15,7 @@
 from unittest.mock import patch
 
 import pytest
-from gqlalchemy import InvalidMatchChainException, QueryBuilder, match, call, unwind
+from gqlalchemy import InvalidMatchChainException, QueryBuilder, match, call, unwind, with_
 from gqlalchemy.memgraph import Memgraph
 
 
@@ -332,7 +332,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_orderby_desc(self):
-        query_builder = QueryBuilder().match().node(variable="n").order_by("n.id", True)
+        query_builder = QueryBuilder().match().node(variable="n").order_by("n.id DESC")
         expected_query = " MATCH (n) ORDER BY n.id DESC "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -379,6 +379,15 @@ class TestMatch:
     def test_base_class_unwind(self):
         query_builder = unwind("[1, 2, 3]", "x").return_({"x": "x"})
         expected_query = " UNWIND [1, 2, 3] AS x RETURN x "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_base_class_with(self):
+        query_builder = with_({"10": "n"}).return_({"n": ""})
+        expected_query = " WITH 10 AS n RETURN n "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()

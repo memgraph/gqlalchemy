@@ -28,6 +28,7 @@ from .query_builder import (  # noqa F401
     Match,
     Call,
     Unwind,
+    With,
 )
 
 from .utilities import GQLAlchemyWarning
@@ -39,3 +40,4 @@ __all__ = ["Memgraph"]
 match = Match
 call = Call
 unwind = Unwind
+with_ = With
