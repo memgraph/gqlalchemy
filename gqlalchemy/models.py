@@ -243,7 +243,8 @@ class NodeMetaclass(BaseModel.__class__):
                 constraint = MemgraphConstraintUnique(label, field)
                 db.create_constraint(constraint)
 
-            del attrs["db"]
+            if attrs and "db" in attrs:
+                del attrs["db"]
         return cls
 
 
