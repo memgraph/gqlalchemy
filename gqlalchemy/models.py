@@ -119,7 +119,7 @@ class GraphObject(BaseModel):
         """
         return cls._convert_to_real_type_(obj)
 
-    def _get_cypher_fields_or_block(self, variable_name: str) -> str:
+    def _get_cypher_field_assignment_block(self, variable_name: str, operator: str) -> str:
         cypher_fields = []
         for field in self.__fields__:
             value = getattr(self, field)
@@ -127,6 +127,12 @@ class GraphObject(BaseModel):
                 cypher_fields.append(f"{variable_name}.{field} = {repr(value)}")
 
         return " " + " OR ".join(cypher_fields) + " "
+
+    def _get_cypher_fields_or_block(self, variable_name: str) -> str:
+        return self._get_cypher_field_assignment_block(variable_name, " OR ")
+
+    def _get_cypher_fields_and_block(self, variable_name: str) -> str:
+        return self._get_cypher_field_assignment_block(variable_name, " AND ")
 
     def _get_cypher_set_properties(self, variable_name: str) -> str:
         cypher_set_properties = []

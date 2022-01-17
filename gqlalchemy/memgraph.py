@@ -226,7 +226,7 @@ class Memgraph:
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"MATCH (node: {node._label} WHERE {node._get_cypher_fields_or_block('node')} RETURN node;"
+            f"MATCH (node: {node._label} WHERE {node._get_cypher_fields_and_block('node')} RETURN node;"
         )
         return self.get_variable_assume_one(results, "node")
 
@@ -266,7 +266,7 @@ class Memgraph:
         return self.get_variable_assume_one(results, "relationship")
 
     def load_relationship_with_all_properties(self, relationship: Relationship) -> Optional[Relationship]:
-        where_block = relationship._get_cypher_fields_or_block("relationship")
+        where_block = relationship._get_cypher_fields_and_block("relationship")
         results = self.execute_and_fetch(
             f"MATCH ()-[relationship: {relationship._type}]->() WHERE {where_block} RETURN relationship;"
         )
