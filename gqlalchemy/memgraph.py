@@ -16,7 +16,15 @@ import os
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
-from .models import MemgraphConstraint, MemgraphConstraintExists, MemgraphConstraintUnique, MemgraphIndex
+from .models import (
+    MemgraphConstraint,
+    MemgraphConstraintExists,
+    MemgraphConstraintUnique,
+    MemgraphIndex,
+    Node,
+    Relationship,
+)
+from .exceptions import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
 
 __all__ = ("Memgraph",)
 
@@ -64,19 +72,24 @@ class Memgraph:
 
     def create_index(self, index: MemgraphIndex) -> None:
         """Creates an index (label or label-property type) in the database"""
-        query = f"CREATE INDEX ON {index.to_cypher()}"
+        query = f"CREATE INDEX ON {index.to_cypher()};"
         self.execute(query)
 
     def drop_index(self, index: MemgraphIndex) -> None:
         """Drops an index (label or label-property type) in the database"""
-        query = f"DROP INDEX ON {index.to_cypher()}"
+        query = f"DROP INDEX ON {index.to_cypher()};"
         self.execute(query)
 
     def get_indexes(self) -> List[MemgraphIndex]:
         """Returns a list of all database indexes (label and label-property types)"""
         indexes = []
-        for result in self.execute_and_fetch("SHOW INDEX INFO"):
-            indexes.append(MemgraphIndex(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTY]))
+        for result in self.execute_and_fetch("SHOW INDEX INFO;"):
+            indexes.append(
+                MemgraphIndex(
+                    result[MemgraphConstants.LABEL],
+                    result[MemgraphConstants.PROPERTY],
+                )
+            )
         return indexes
 
     def ensure_indexes(self, indexes: List[MemgraphIndex]) -> None:
@@ -90,31 +103,40 @@ class Memgraph:
 
     def create_constraint(self, index: MemgraphConstraint) -> None:
         """Creates a constraint (label or label-property type) in the database"""
-        query = f"CREATE CONSTRAINT ON {index.to_cypher()}"
+        query = f"CREATE CONSTRAINT ON {index.to_cypher()};"
         self.execute(query)
 
     def drop_constraint(self, index: MemgraphConstraint) -> None:
         """Drops a constraint (label or label-property type) in the database"""
-        query = f"DROP CONSTRAINT ON {index.to_cypher()}"
+        query = f"DROP CONSTRAINT ON {index.to_cypher()};"
         self.execute(query)
 
-    def get_constraints(self) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
+    def get_constraints(
+        self,
+    ) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
         """Returns a list of all database constraints (label and label-property types)"""
         constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]] = []
-        for result in self.execute_and_fetch("SHOW CONSTRAINT INFO"):
+        for result in self.execute_and_fetch("SHOW CONSTRAINT INFO;"):
             if result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.UNIQUE:
                 constraints.append(
                     MemgraphConstraintUnique(
-                        result[MemgraphConstants.LABEL], tuple(result[MemgraphConstants.PROPERTIES])
+                        result[MemgraphConstants.LABEL],
+                        tuple(result[MemgraphConstants.PROPERTIES]),
                     )
                 )
             elif result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.EXISTS:
                 constraints.append(
-                    MemgraphConstraintExists(result[MemgraphConstants.LABEL], result[MemgraphConstants.PROPERTIES])
+                    MemgraphConstraintExists(
+                        result[MemgraphConstants.LABEL],
+                        result[MemgraphConstants.PROPERTIES],
+                    )
                 )
         return constraints
 
-    def ensure_constraints(self, constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]) -> None:
+    def ensure_constraints(
+        self,
+        constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]],
+    ) -> None:
         """Ensures that database constraints match input constraints"""
         old_constraints = set(self.get_constraints())
         new_constraints = set(constraints)
@@ -125,7 +147,7 @@ class Memgraph:
 
     def drop_database(self):
         """Drops database by removing all nodes and edges"""
-        self.execute("MATCH (n) DETACH DELETE n")
+        self.execute("MATCH (n) DETACH DELETE n;")
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
@@ -144,3 +166,150 @@ class Memgraph:
             encrypted=self._encrypted,
         )
         return Connection.create(**args)
+
+    def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
+        return self.execute_and_fetch(
+            f"MATCH (node: {node._label})"
+            + f" WHERE {node._get_cypher_unique_fields_or_block('node')}"
+            + " RETURN node;"
+        )
+
+    def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
+        result = next(query_result, None)
+        if result is None:
+            raise GQLAlchemyError("No result found. Result list is empty.")
+        elif next(query_result, None) is not None:
+            raise GQLAlchemyError("One result expected, but more than one result found.")
+        elif variable_name not in result:
+            raise GQLAlchemyError(f"Variable name {variable_name} not present in result.")
+
+        return result[variable_name]
+
+    def create_node(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(
+            f"CREATE (node:{node._label}) {node._get_cypher_set_properties('node')} RETURN node;"
+        )
+        return self.get_variable_assume_one(results, "node")
+
+    def save_node(self, node: Node):
+        if node._id is not None:
+            return self._save_node_with_id(node)
+        elif node.has_unique_fields():
+            matching_nodes = list(self._get_nodes_with_unique_fields(node))
+            if len(matching_nodes) > 1:
+                raise GQLAlchemyUniquenessConstraintError(
+                    f"Uniqueness constraints match multiple nodes: {matching_nodes}"
+                )
+            elif len(matching_nodes) == 1:
+                node._id = matching_nodes[0]["node"]._id
+                return self.save_node_with_id(node)
+            else:
+                return self.create_node(node)
+        else:
+            return self.create_node(node)
+
+    def save_node_with_id(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(
+            f"MATCH (node: {node._label})"
+            + f" WHERE id(node) = {node._id}"
+            + f" {node._get_cypher_set_properties('node')}"
+            + " RETURN node;"
+        )
+
+        return self.get_variable_assume_one(results, "node")
+
+    def load_node(self, node: Node) -> Optional[Node]:
+        if node._id is not None:
+            return self.load_node_with_id(node)
+        elif node.has_unique_fields():
+            matching_node = self.get_variable_assume_one(
+                query_result=self._get_nodes_with_unique_fields, variable_name="node"
+            )
+            return matching_node
+        else:
+            return self.load_node_with_all_properties(node)
+
+    def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(
+            f"MATCH (node: {node._label}) WHERE {node._get_cypher_fields_and_block('node')} RETURN node;"
+        )
+        return self.get_variable_assume_one(results, "node")
+
+    def load_node_with_id(self, node: Node) -> Optional[Node]:
+        results = self.execute_and_fetch(f"MATCH (node: {node._label}) WHERE id(node) = {node._id} RETURN node;")
+
+        return self.get_variable_assume_one(results, "node")
+
+    def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
+        if relationship._id is not None:
+            return self.load_relationship_with_id(relationship)
+        elif relationship._start_node_id is not None and relationship._end_node_id is not None:
+            return self.load_relationship_with_start_node_id_and_end_node_id(relationship)
+        else:
+            raise GQLAlchemyError("Can't load a relationship without a start_node_id and end_node_id.")
+
+    def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
+        results = self.execute_and_fetch(
+            f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + f" AND id(relationship) = {relationship._id}"
+            + " RETURN relationship;"
+        )
+        return self.get_variable_assume_one(results, "relationship")
+
+    def load_relationship_with_start_node_id_and_end_node_id(
+        self, relationship: Relationship
+    ) -> Optional[Relationship]:
+        results = self.execute_and_fetch(
+            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + f" AND {relationship._get_cypher_fields_and_block()}"
+            + " RETURN relationship;"
+        )
+        return self.get_variable_assume_one(results, "relationship")
+
+    def load_relationship_with_start_node_and_end_node(
+        self, relationship: Relationship, start_node: Node, end_node: Node
+    ) -> Optional[Relationship]:
+        results = self.execute_and_fetch(
+            f"MATCH (start_node: {start_node._label})-[relationship:{relationship._type}]->(end_node: {end_node._label})"
+            + f" WHERE id(start_node) = {start_node._id}"
+            + f" AND id(end_node) = {end_node._id}"
+            + f" AND {relationship._get_cypher_fields_and_block()}"
+            + " RETURN relationship;"
+        )
+        return self.get_variable_assume_one(results, "relationship")
+
+    def save_relationship(self, relationship: Relationship) -> Optional[Relationship]:
+        if relationship._id is not None:
+            self.save_relationship_with_id(relationship)
+        elif relationship._start_node_id is not None and relationship._end_node_id is not None:
+            return self.create_relationship(relationship)
+        else:
+            raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
+
+    def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
+        results = self.execute_and_fetch(
+            f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + f" AND id(relationship) = {relationship._id}"
+            + relationship._get_cypher_set_properties("relationship")
+            + " RETURN node;"
+        )
+
+        return self.get_variable_assume_one(results, "relationship")
+
+    def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
+        results = self.execute_and_fetch(
+            "MATCH (start_node), (end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + f" CREATE (start_node)-[relationship:{relationship._type}]->(end_node)"
+            + relationship._get_cypher_set_properties("relationship")
+            + "RETURN relationship"
+        )
+
+        return self.get_variable_assume_one(results, "relationship")
