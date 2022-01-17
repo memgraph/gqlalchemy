@@ -169,7 +169,9 @@ class Memgraph:
 
     def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
         return self.execute_and_fetch(
-            f"MATCH (node: {node._label}) WHERE {node._get_cypher_unique_fields_or_block('node')} RETURN node;"
+            f"MATCH (node: {node._label})"
+            + f" WHERE {node._get_cypher_unique_fields_or_block('node')}"
+            + " RETURN node;"
         )
 
     def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
@@ -208,7 +210,10 @@ class Memgraph:
 
     def save_node_with_id(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"MATCH (node: {node._label}) WHERE id(node) = {node._id} {node._get_cypher_set_properties('node')} RETURN node;"
+            f"MATCH (node: {node._label})"
+            + f" WHERE id(node) = {node._id}"
+            + f" {node._get_cypher_set_properties('node')}"
+            + " RETURN node;"
         )
 
         return self.get_variable_assume_one(results, "node")
@@ -226,7 +231,7 @@ class Memgraph:
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
-            f"MATCH (node: {node._label} WHERE {node._get_cypher_fields_and_block('node')} RETURN node;"
+            f"MATCH (node: {node._label}) WHERE {node._get_cypher_fields_and_block('node')} RETURN node;"
         )
         return self.get_variable_assume_one(results, "node")
 
@@ -245,7 +250,11 @@ class Memgraph:
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]->() WHERE id(relationship) = {relationship._id} RETURN relationship;"
+            f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + f" AND id(relationship) = {relationship._id}"
+            + " RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
 
@@ -253,7 +262,11 @@ class Memgraph:
         self, relationship: Relationship
     ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {relationship._start_node_id} AND id(end_node) = {relationship._end_node_id} RETURN relationship;"
+            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + f" AND {relationship._get_cypher_fields_and_block()}"
+            + " RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
 
@@ -261,7 +274,11 @@ class Memgraph:
         self, relationship: Relationship, start_node: Node, end_node: Node
     ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH (start_node: {start_node._label})-[relationship:{relationship._type}]->(end_node: {end_node._label}) WHERE id(start_node) = {start_node._id} AND id(end_node) = {end_node._id} RETURN relationship;"
+            f"MATCH (start_node: {start_node._label})-[relationship:{relationship._type}]->(end_node: {end_node._label})"
+            + f" WHERE id(start_node) = {start_node._id}"
+            + f" AND id(end_node) = {end_node._id}"
+            + f" AND {relationship._get_cypher_fields_and_block()}"
+            + " RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
 
@@ -277,13 +294,22 @@ class Memgraph:
         self, relationship: Relationship
     ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node) WHERE id(start_node) = {relationship._start_node_id} AND id(end_node) = {relationship._end_node_id} {relationship._get_cypher_set_properties('relationship')} RETURN relationship;"
+            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + relationship._get_cypher_set_properties("relationship")
+            + " RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]->() WHERE id(relationship) = {relationship._id} {relationship._get_cypher_set_properties('relationship')} RETURN node;"
+            f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
+            + f" WHERE id(start_node) = {relationship._start_node_id}"
+            + f" AND id(end_node) = {relationship._end_node_id}"
+            + f" AND id(relationship) = {relationship._id}"
+            + relationship._get_cypher_set_properties("relationship")
+            + " RETURN node;"
         )
 
         return self.get_variable_assume_one(results, "relationship")
