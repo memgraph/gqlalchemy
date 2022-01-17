@@ -12,6 +12,8 @@
 # limitations under the License.
 
 import warnings
+import datetime
+
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
@@ -19,6 +21,7 @@ from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
 from pydantic import BaseModel, PrivateAttr, Extra
 
 from .exceptions import (
+    GQLAlchemyError,
     GQLAlchemySubclassNotFoundWarning,
     GQLAlchemyDatabaseMissingInFieldError,
 )
@@ -119,14 +122,40 @@ class GraphObject(BaseModel):
         """
         return cls._convert_to_real_type_(obj)
 
+    def escape_value(
+        self, value: Union[None, bool, int, float, str, list, dict, datetime.datetime], in_list_or_dict=False
+    ) -> str:
+        if value is None:
+            "Null"
+        elif isinstance(value, bool):
+            return repr(value)
+        elif isinstance(value, int):
+            return repr(value)
+        elif isinstance(value, float):
+            return repr(value)
+        elif isinstance(value, str):
+            return repr(value)
+        elif isinstance(value, list):
+            return "[" + ", ".join(self.escape_value(val, True) for val in value) + "]"
+        elif isinstance(value, dict):
+            return "{" + ", ".join(f"{val}: {self.escape_value(val, True)}" for key, val in value.items()) + "}"
+        elif isinstance(value, datetime.datetime):
+            return value.isoformat()
+        else:
+            raise GQLAlchemyError(
+                f"Unsupported value data type: {type(value)}."
+                + " Memgraph supports the following data types:"
+                + " None, bool, int, float, str, list, dict, datetime.datetime."
+            )
+
     def _get_cypher_field_assignment_block(self, variable_name: str, operator: str) -> str:
         cypher_fields = []
         for field in self.__fields__:
             value = getattr(self, field)
             if value is not None:
-                cypher_fields.append(f"{variable_name}.{field} = {repr(value)}")
+                cypher_fields.append(f"{variable_name}.{field} = {self.escape_value(value)}")
 
-        return " " + " OR ".join(cypher_fields) + " "
+        return " " + operator.join(cypher_fields) + " "
 
     def _get_cypher_fields_or_block(self, variable_name: str) -> str:
         return self._get_cypher_field_assignment_block(variable_name, " OR ")
