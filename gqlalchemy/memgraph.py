@@ -149,7 +149,7 @@ class Memgraph:
 
     def drop_trigger(self, trigger) -> None:
         """Drop a trigger"""
-        query = f"DROP TRIGGER {trigger.name}"
+        query = f"DROP TRIGGER {trigger.name};"
         self.execute(query)
 
     def _get_cached_connection(self) -> Connection:

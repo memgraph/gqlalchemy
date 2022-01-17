@@ -89,7 +89,7 @@ class MemgraphTrigger:
         query = f"CREATE TRIGGER {self.name} "
         query += f"ON {self.event_object} {self.event_type} "
         query += f"{self.execution_phase} COMMIT EXECUTE "
-        query += f"{self.statement}"
+        query += f"{self.statement};"
         return query
 
 
@@ -281,5 +281,9 @@ class Path(GraphObject):
 
     def __str__(self) -> str:
         return "".join(
-            (f"<{type(self).__name__}", f" nodes={self._nodes}", f" relationships={self._relationships}" ">",)
+            (
+                f"<{type(self).__name__}",
+                f" nodes={self._nodes}",
+                f" relationships={self._relationships}" ">",
+            )
         )

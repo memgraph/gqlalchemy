@@ -20,7 +20,7 @@ from gqlalchemy.models import TriggerEventType, TriggerEventObject, TriggerExecu
 def cleanup_trigger():
     yield
     memgraph = Memgraph()
-    memgraph.execute(f"DROP TRIGGER test_trigger")
+    memgraph.execute(f"DROP TRIGGER test_trigger;")
 
 
 @pytest.mark.usefixtures("cleanup_trigger")
@@ -59,5 +59,5 @@ def test_trigger_cypher():
         execution_phase=TriggerExecutionPhase.BEFORE,
         statement="CREATE (:Node)",
     )
-    query = "CREATE TRIGGER test_trigger ON  CREATE BEFORE COMMIT EXECUTE CREATE (:Node)"
+    query = "CREATE TRIGGER test_trigger ON  CREATE BEFORE COMMIT EXECUTE CREATE (:Node);"
     assert trigger.to_cypher() == query
