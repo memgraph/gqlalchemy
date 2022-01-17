@@ -323,7 +323,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_orderby(self):
-        query_builder = QueryBuilder().match().node(variable="n").orderby("n.id")
+        query_builder = QueryBuilder().match().node(variable="n").order_by("n.id")
         expected_query = " MATCH (n) ORDER BY n.id "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -332,7 +332,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_orderby_desc(self):
-        query_builder = QueryBuilder().match().node(variable="n").orderby("n.id", True)
+        query_builder = QueryBuilder().match().node(variable="n").order_by("n.id", True)
         expected_query = " MATCH (n) ORDER BY n.id DESC "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:

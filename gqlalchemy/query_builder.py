@@ -424,7 +424,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def orderby(self, properties: str, sort: Optional[bool] = False) -> "DeclarativeBase":
+    def order_by(self, properties: str, sort: Optional[bool] = False) -> "DeclarativeBase":
         self._query.append(OrderByPartialQuery(properties, sort))
 
         return self
