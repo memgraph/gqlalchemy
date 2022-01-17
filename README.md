@@ -107,6 +107,12 @@ print(result['b'])
 print(result['r'])
 ```
 
+## Development (how to build)
+```
+poetry run flake8 .
+poetry run black .
+poetry run pytest . -k "not slow"
+```
 ## License
 
 Copyright (c) 2016-2021 [Memgraph Ltd.](https://memgraph.com)

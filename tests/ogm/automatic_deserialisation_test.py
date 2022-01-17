@@ -71,7 +71,7 @@ def test_automatic_deserialisation_from_database():
 
         r = node["r"]
         assert isinstance(r, Friends)
-        assert r._relationship_type == "FRIENDS"
+        assert r._type == "FRIENDS"
         assert isinstance(r._relationship_id, int)
         assert isinstance(r._start_node_id, int)
         assert isinstance(r._end_node_id, int)

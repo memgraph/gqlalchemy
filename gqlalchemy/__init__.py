@@ -24,7 +24,8 @@ from .models import (  # noqa F401
 )
 from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
 
-from .utilities import GQLAlchemyWarning
+from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
+from pydantic import Field  # noqa F401
 import warnings
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
