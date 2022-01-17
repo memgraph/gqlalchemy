@@ -14,7 +14,7 @@
 
 import pytest
 
-from gqlalchemy import SQLitePropertyDatabase
+from gqlalchemy import SQLitePropertyDatabase, Memgraph, Node, Field
 
 
 db = SQLitePropertyDatabase("./tests/on_disk_storage.db")
@@ -61,3 +61,16 @@ def test_delete_relationship_property(clear_db):
     db.delete_relationship_property(relationship_id, property_name)
     result_value = db.load_relationship_property(relationship_id, property_name)
     assert result_value is None
+
+
+memgraph = Memgraph()
+
+
+class User(Node):
+    id: int = Field(index=True, db=memgraph)
+    huge_string: str = Field(on_disk=True, on_disk_db=db)
+
+
+def test_add_node_with_on_disk_property(clear_db):
+    user = User(id=12, huge_string="qwertyuiopasdfghjklzxcvbnm")
+    memgraph.save_node(user)
