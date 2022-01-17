@@ -9,7 +9,7 @@ class User(Node):
     name: Optional[str] = Field(index=True, unique=True, db=db)
 
 
-class Streamer(Node, _node_labels={"User", "Streamer"}):
+class Streamer(User):
     id: Optional[str] = Field(index=True, unique=True, db=db)
     name: Optional[str] = Field(index=True, unique=True, db=db, label="User")
 
@@ -21,5 +21,7 @@ class Speaks(Relationship, type="SPEAKS"):
 def test_multiple_inheritance():
     user = User(name="Ivan").save(db)
     streamer = Streamer(id=7, name="Pero").save(db)
-    assert user.name is not None
-    assert streamer.id is not None
+    assert User.labels == {"User"}
+    assert Streamer.labels == {"Streamer", "User"}
+    assert user._labels == {"User"}
+    assert streamer._labels == {"Streamer", "User"}

@@ -213,7 +213,7 @@ class NodeMetaclass(BaseModel.__class__):
         elif "labels" in kwargs:  # overrides superclass labels
             cls.labels = kwargs["labels"]
         elif hasattr(cls, "labels"):
-            cls.labels.add(cls.label)
+            cls.labels = cls.labels | {cls.label}
         else:
             cls.labels = {cls.label}
 
@@ -243,6 +243,7 @@ class NodeMetaclass(BaseModel.__class__):
                 constraint = MemgraphConstraintUnique(label, field)
                 db.create_constraint(constraint)
 
+            del attrs["db"]
         return cls
 
 
