@@ -150,7 +150,7 @@ class TestMatch:
     def test_call_procedure_pagerank(self):
         query_builder = (
             QueryBuilder()
-            .call(procedure="pagerank.get", arguments=[""])
+            .call(procedure="pagerank.get")
             .yield_({"node": "", "rank": ""})
             .return_({"node": "node", "rank": "rank"})
         )
@@ -161,30 +161,8 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_call_procedure_node2vec(self):
-        query_builder = QueryBuilder().call(
-            procedure="node2vec_online.get_embeddings",
-            arguments=[
-                "False",
-                "2.0",
-                "0.5",
-                "4",
-                "5",
-                "100",
-                "0.025",
-                "5",
-                "1",
-                "1",
-                "1",
-                "0.0001",
-                "1",
-                "0",
-                "5",
-                "5",
-            ],
-        )
-        expected_query = (
-            " CALL node2vec_online.get_embeddings(False, 2.0, 0.5, 4, 5, 100, 0.025, 5, 1, 1, 1, 0.0001, 1, 0, 5, 5) "
-        )
+        query_builder = QueryBuilder().call(procedure="node2vec_online.get_embeddings", arguments="False, 2.0, 0.5")
+        expected_query = " CALL node2vec_online.get_embeddings(False, 2.0, 0.5) "
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 
@@ -193,7 +171,7 @@ class TestMatch:
     def test_call_procedure_nxalg_betweenness_centrality(self):
         query_builder = (
             QueryBuilder()
-            .call(procedure="nxalg.betweenness_centrality", arguments=["20", "True"])
+            .call(procedure="nxalg.betweenness_centrality", arguments="20, True")
             .yield_()
             .return_({"node": "", "betweenness": ""})
         )

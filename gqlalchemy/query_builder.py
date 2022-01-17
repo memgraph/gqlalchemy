@@ -92,18 +92,14 @@ class MatchPartialQuery(PartialQuery):
 
 
 class CallPartialQuery(PartialQuery):
-    def __init__(self, procedure: str, arguments: List[str]):
+    def __init__(self, procedure: str, arguments: str):
         super().__init__(DeclarativeBaseTypes.CALL)
 
         self.procedure = procedure
-        self._arguments = arguments
-
-    @property
-    def arguments(self) -> str:
-        return self._arguments if self._arguments is not None else ""
+        self.arguments = arguments
 
     def construct_query(self) -> str:
-        return f" CALL {self.procedure}({', '.join(self.arguments)}) "
+        return f" CALL {self.procedure}({self.arguments if self.arguments else ''}) "
 
 
 class WhereConditionPartialQuery(PartialQuery):
