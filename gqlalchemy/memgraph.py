@@ -290,18 +290,6 @@ class Memgraph:
         else:
             raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
 
-    def save_relationship_with_start_node_id_and_end_node_id(
-        self, relationship: Relationship
-    ) -> Optional[Relationship]:
-        results = self.execute_and_fetch(
-            f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node)"
-            + f" WHERE id(start_node) = {relationship._start_node_id}"
-            + f" AND id(end_node) = {relationship._end_node_id}"
-            + relationship._get_cypher_set_properties("relationship")
-            + " RETURN relationship;"
-        )
-        return self.get_variable_assume_one(results, "relationship")
-
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
