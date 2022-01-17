@@ -15,7 +15,7 @@
 from unittest.mock import patch
 
 import pytest
-from gqlalchemy import InvalidMatchChainException, QueryBuilder, Match, Call, Unwind
+from gqlalchemy import InvalidMatchChainException, QueryBuilder, match, call, unwind
 from gqlalchemy.memgraph import Memgraph
 
 
@@ -359,7 +359,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_base_class_match(self):
-        query_builder = Match().node(variable="n").return_({"n": ""})
+        query_builder = match().node(variable="n").return_({"n": ""})
         expected_query = " MATCH (n) RETURN n "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -368,7 +368,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_base_class_call(self):
-        query_builder = Call("pagerank.get").yield_().return_()
+        query_builder = call("pagerank.get").yield_().return_()
         expected_query = " CALL pagerank.get() YIELD * RETURN * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -377,7 +377,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_base_class_unwind(self):
-        query_builder = Unwind("[1, 2, 3]", "x").return_({"x": "x"})
+        query_builder = unwind("[1, 2, 3]", "x").return_({"x": "x"})
         expected_query = " UNWIND [1, 2, 3] AS x RETURN x "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:

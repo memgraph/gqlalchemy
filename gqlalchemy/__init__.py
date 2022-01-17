@@ -35,3 +35,7 @@ import warnings
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]
+
+match = Match
+call = Call
+unwind = Unwind
