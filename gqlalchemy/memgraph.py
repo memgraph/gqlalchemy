@@ -241,7 +241,7 @@ class Memgraph:
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
             return self.load_relationship_with_start_node_id_and_end_node_id(relationship)
         else:
-            return self.load_relationship_with_all_properties(Relationship)
+            raise GQLAlchemyError("Can't load a relationship without a start_node_id and end_node_id.")
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
@@ -262,13 +262,6 @@ class Memgraph:
     ) -> Optional[Relationship]:
         results = self.execute_and_fetch(
             f"MATCH (start_node: {start_node._label})-[relationship:{relationship._type}]->(end_node: {end_node._label}) WHERE id(start_node) = {start_node._id} AND id(end_node) = {end_node._id} RETURN relationship;"
-        )
-        return self.get_variable_assume_one(results, "relationship")
-
-    def load_relationship_with_all_properties(self, relationship: Relationship) -> Optional[Relationship]:
-        where_block = relationship._get_cypher_fields_and_block("relationship")
-        results = self.execute_and_fetch(
-            f"MATCH ()-[relationship: {relationship._type}]->() WHERE {where_block} RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
 
