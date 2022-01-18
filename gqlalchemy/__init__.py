@@ -24,7 +24,17 @@ from .models import (  # noqa F401
     Path,
     Relationship,
 )
-from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
+from .query_builder import (  # noqa F401
+    Call,
+    Create,
+    InvalidMatchChainException,
+    Match,
+    Merge,
+    NoVariablesMatchedException,
+    QueryBuilder,
+    Unwind,
+    With,
+)
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import Field  # noqa F401
@@ -32,3 +42,10 @@ import warnings
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]
+
+call = Call
+create = Create
+match = Match
+merge = Merge
+unwind = Unwind
+with_ = With
