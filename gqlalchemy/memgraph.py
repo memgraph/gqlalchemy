@@ -153,9 +153,7 @@ class Memgraph:
 
     def create_trigger(self, trigger: MemgraphTrigger):
         """Creates a trigger"""
-        print(trigger)
         query = trigger.to_cypher()
-        print(query)
         self.execute(query)
 
     def get_triggers(self) -> List[str]:
