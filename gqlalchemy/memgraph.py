@@ -158,10 +158,7 @@ class Memgraph:
 
     def get_triggers(self) -> List[str]:
         """Creates a trigger"""
-        triggers = []
-        for result in self.execute_and_fetch("SHOW TRIGGERS;"):
-            triggers.append(result)
-        return triggers
+        return list(self.execute_and_fetch("SHOW TRIGGERS;"))
 
     def drop_trigger(self, trigger) -> None:
         """Drop a trigger"""
