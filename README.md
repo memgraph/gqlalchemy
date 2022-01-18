@@ -10,7 +10,7 @@
 </p>
 
 
-[![release](https://progress-bar.dev/10/?width=800&title=release%201.1&color=f0ad4e)](https://github.com/memgraph/gqlalchemy/milestone/1)
+[![release](https://progress-bar.dev/90/?width=800&title=release%201.1&color=f0ad4e)](https://github.com/memgraph/gqlalchemy/milestone/1)
 
 GQLAlchemy is a library developed to assist in writing and running queries on Memgraph. GQLAlchemy supports high-level connection to Memgraph as well as modular query builder.
 
@@ -67,11 +67,11 @@ As we can see, the example above can be error-prone, because we do not have abst
 Now, rewrite the exact same query by using the functionality of gqlalchemys query builder..
 
 ```python
-from gqlalchemy import Match, Memgraph
+from gqlalchemy import match, Memgraph
 
 memgraph = Memgraph()
 
-results = Match().node("Node",variable="from")\
+results = match().node("Node",variable="from")\
                  .to("Connection")\
                  .node("Node",variable="to")\
                  .execute()
@@ -83,7 +83,7 @@ for result in results:
 
 An example using the Node and Relationship classes:
 ```python
-from gqlalchemy import Memgraph, Node, Relationship, Match
+from gqlalchemy import Memgraph, Node, Relationship, match
 
 memgraph = Memgraph("127.0.0.1", 7687)
 
@@ -95,7 +95,7 @@ b = Node(2, ["Node"], {'id': 2})
 r = Relationship(1, "RELATED_TO", 1, 2, {'id': 1})
 
 result = list(
-    Match(memgraph.new_connection())
+    match(memgraph.new_connection())
     .node(variable="a", node=a)
     .to(variable="r", relationship=r)
     .node(variable="b", node=b)
@@ -115,7 +115,7 @@ poetry run pytest . -k "not slow"
 ```
 ## License
 
-Copyright (c) 2016-2021 [Memgraph Ltd.](https://memgraph.com)
+Copyright (c) 2016-2022 [Memgraph Ltd.](https://memgraph.com)
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 this file except in compliance with the License. You may obtain a copy of the

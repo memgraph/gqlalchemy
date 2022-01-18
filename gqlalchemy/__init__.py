@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,13 +16,26 @@ from .memgraph import Memgraph  # noqa F401
 from .models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
+    MemgraphIndex,
+    MemgraphKafkaStream,
+    MemgraphPulsarStream,
+    MemgraphTrigger,
     Node,
     Path,
     Relationship,
-    MemgraphIndex,
 )
-from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
 from .disk_storage import SQLitePropertyDatabase  # noqa F401
+from .query_builder import (  # noqa F401
+    Call,
+    Create,
+    InvalidMatchChainException,
+    Match,
+    Merge,
+    NoVariablesMatchedException,
+    QueryBuilder,
+    Unwind,
+    With,
+)
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import Field  # noqa F401
@@ -30,3 +43,10 @@ import warnings
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]
+
+call = Call
+create = Create
+match = Match
+merge = Merge
+unwind = Unwind
+with_ = With

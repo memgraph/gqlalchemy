@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,12 @@ from .models import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
+    MemgraphStream,
+    MemgraphTrigger,
     Node,
     Relationship,
 )
+
 from .exceptions import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
 
 __all__ = ("Memgraph",)
@@ -145,9 +148,40 @@ class Memgraph:
         for missing_constraint in new_constraints.difference(old_constraints):
             self.create_constraint(missing_constraint)
 
+    def create_stream(self, stream: MemgraphStream) -> None:
+        """Create a stream"""
+        query = stream.to_cypher()
+        self.execute(query)
+
+    def get_streams(self) -> List[str]:
+        """Returns a list of all streams"""
+        streams = []
+        for result in self.execute_and_fetch("SHOW STREAMS;"):
+            streams.append(result)
+        return streams
+
+    def drop_stream(self, stream: MemgraphStream) -> None:
+        """Drop a stream"""
+        query = f"DROP STREAM {stream.name};"
+        self.execute(query)
+
     def drop_database(self):
         """Drops database by removing all nodes and edges"""
         self.execute("MATCH (n) DETACH DELETE n;")
+
+    def create_trigger(self, trigger: MemgraphTrigger):
+        """Creates a trigger"""
+        query = trigger.to_cypher()
+        self.execute(query)
+
+    def get_triggers(self) -> List[str]:
+        """Creates a trigger"""
+        return list(self.execute_and_fetch("SHOW TRIGGERS;"))
+
+    def drop_trigger(self, trigger) -> None:
+        """Drop a trigger"""
+        query = f"DROP TRIGGER {trigger.name};"
+        self.execute(query)
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
@@ -223,7 +257,7 @@ class Memgraph:
             return self.load_node_with_id(node)
         elif node.has_unique_fields():
             matching_node = self.get_variable_assume_one(
-                query_result=self._get_nodes_with_unique_fields, variable_name="node"
+                query_result=self._get_nodes_with_unique_fields(node), variable_name="node"
             )
             return matching_node
         else:
