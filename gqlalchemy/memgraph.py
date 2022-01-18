@@ -257,7 +257,7 @@ class Memgraph:
             return self.load_node_with_id(node)
         elif node.has_unique_fields():
             matching_node = self.get_variable_assume_one(
-                query_result=self._get_nodes_with_unique_fields, variable_name="node"
+                query_result=self._get_nodes_with_unique_fields(node), variable_name="node"
             )
             return matching_node
         else:
