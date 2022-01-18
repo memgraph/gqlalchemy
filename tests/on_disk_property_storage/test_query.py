@@ -14,15 +14,27 @@
 
 import pytest
 
-from gqlalchemy import SQLitePropertyDatabase, Memgraph, Node, Field
+from gqlalchemy import SQLitePropertyDatabase, Memgraph, Node, Field, Relationship
 from typing import Optional
 
 
 db = SQLitePropertyDatabase("./tests/on_disk_storage.db")
+memgraph = Memgraph()
+memgraph.add_on_disk_storage(db)
+
+
+class User(Node):
+    id: int = Field(unique=True, index=True, db=memgraph)
+    huge_string: Optional[str] = Field(on_disk=True)
+
+
+class FriendTo(Relationship, type="FRIEND_TO"):
+    huge_string: Optional[str] = Field(on_disk=True)
 
 
 @pytest.fixture
 def clear_db():
+    memgraph.drop_database()
     db.drop_database()
 
 
@@ -64,18 +76,26 @@ def test_delete_relationship_property(clear_db):
     assert result_value is None
 
 
-memgraph = Memgraph()
-
-
-class User(Node):
-    id: int = Field(index=True, db=memgraph)
-    huge_string: Optional[str] = Field(on_disk=True, on_disk_db=db)
-
-
-# class Streamer(User):
-#     pass
-
-
-def test_add_node_with_on_disk_property(clear_db):
-    user = User(id=12, huge_string="qwertyuiopasdfghjklzxcvbnm")
+def test_add_node_with_an_on_disk_property(clear_db):
+    secret = "qwertyuiopasdfghjklzxcvbnm"
+    user = User(id=12, huge_string=secret)
     memgraph.save_node(user)
+    user_2 = User(id=12).load(memgraph)
+    assert user_2.huge_string == secret
+
+
+def test_add_relationship_with_an_on_disk_property(clear_db):
+    secret = "qwertyuiopasdfghjklzxcvbnm"
+    user_1 = User(id=12).save(memgraph)
+    user_2 = User(id=11).save(memgraph)
+    friend = FriendTo(
+        _start_node_id=user_1._id,
+        _end_node_id=user_2._id,
+        huge_string=secret,
+    ).save(memgraph)
+    friend_2 = FriendTo(
+        _start_node_id=user_1._id,
+        _end_node_id=user_2._id,
+    ).load(memgraph)
+    assert friend.huge_string == secret
+    assert friend.huge_string == friend_2.huge_string

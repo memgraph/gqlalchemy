@@ -240,7 +240,7 @@ class GraphObject(BaseModel):
             value = getattr(self, field)
             if value is not None:
                 cypher_fields.append(f"{variable_name}.{field} = {self.escape_value(value)}")
-
+        print(cypher_fields)
         return " " + operator.join(cypher_fields) + " "
 
     def _get_cypher_fields_or_block(self, variable_name: str) -> str:
