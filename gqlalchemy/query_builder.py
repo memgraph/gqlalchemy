@@ -328,6 +328,16 @@ class SkipPartialQuery(PartialQuery):
         return f" SKIP {self.integer_expression} "
 
 
+class AddStringPartialQuery(PartialQuery):
+    def __init__(self, custom_string: str):
+        super().__init__(DeclarativeBaseTypes.SKIP)
+
+        self.custom_string = custom_string
+
+    def construct_query(self) -> str:
+        return f"{self.custom_string}"
+
+
 class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         self._query: List[Any] = []
@@ -489,6 +499,11 @@ class DeclarativeBase(ABC):
 
     def skip(self, integer_expression: str) -> "DeclarativeBase":
         self._query.append(SkipPartialQuery(integer_expression))
+
+        return self
+
+    def add_string(self, custom_string: str) -> "DeclarativeBase":
+        self._query.append(AddStringPartialQuery(custom_string))
 
         return self
 
