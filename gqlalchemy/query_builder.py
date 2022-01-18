@@ -156,13 +156,16 @@ class NodePartialQuery(PartialQuery):
 
 
 class EdgePartialQuery(PartialQuery):
-    def __init__(self, variable: str, labels: str, properties: str, directed: bool):
+    def __init__(
+        self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool, from_: bool
+    ):
         super().__init__(DeclarativeBaseTypes.EDGE)
 
         self.directed = directed
         self._variable = variable
         self._labels = labels
         self._properties = properties
+        self._from = from_
 
     @property
     def variable(self) -> str:
@@ -178,10 +181,15 @@ class EdgePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         relationship_query = f"{self.variable}{self.labels}{self.properties}"
-        if self.directed:
-            relationship_query = f"-[{relationship_query}]->"
-        else:
+
+        if not self.directed:
             relationship_query = f"-[{relationship_query}]-"
+            return relationship_query
+
+        if self._from:
+            relationship_query = f"<-[{relationship_query}]-"
+        else:
+            relationship_query = f"-[{relationship_query}]->"
 
         return relationship_query
 
@@ -215,7 +223,7 @@ class WithPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         if len(self.results) == 0:
-            return f" WITH * "
+            return " WITH * "
         return f" WITH {dict_to_alias_statement(self.results)} "
 
 
@@ -270,7 +278,7 @@ class YieldPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         if len(self.results) == 0:
-            return f" YIELD * "
+            return " YIELD * "
         return f" YIELD {dict_to_alias_statement(self.results)} "
 
 
@@ -286,7 +294,7 @@ class ReturnPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         if len(self.results) == 0:
-            return f" RETURN * "
+            return " RETURN * "
         return f" RETURN {dict_to_alias_statement(self.results)} "
 
 
@@ -384,7 +392,29 @@ class DeclarativeBase(ABC):
             labels_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed)))
+        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), False))
+
+        return self
+
+    def from_(
+        self,
+        edge_label: Optional[str] = "",
+        directed: Optional[bool] = True,
+        variable: Optional[str] = None,
+        relationship: Optional["Relationship"] = None,
+        **kwargs,
+    ) -> "Match":
+        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
+            raise InvalidMatchChainException()
+
+        if relationship is None:
+            labels_str = to_cypher_labels(edge_label)
+            properties_str = to_cypher_properties(kwargs)
+        else:
+            labels_str = to_cypher_labels(relationship._type)
+            properties_str = to_cypher_properties(relationship._properties)
+
+        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), True))
 
         return self
 
@@ -501,6 +531,12 @@ class DeclarativeBase(ABC):
 class QueryBuilder(DeclarativeBase):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
+
+
+class Create(DeclarativeBase):
+    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+        self._query.append(CreatePartialQuery())
 
 
 class Match(DeclarativeBase):
