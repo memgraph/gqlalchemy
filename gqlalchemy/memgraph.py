@@ -21,6 +21,7 @@ from .models import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
+    MemgraphStream,
     MemgraphTrigger,
     Node,
     Relationship,
@@ -146,6 +147,23 @@ class Memgraph:
             self.drop_constraint(obsolete_constraints)
         for missing_constraint in new_constraints.difference(old_constraints):
             self.create_constraint(missing_constraint)
+
+    def create_stream(self, stream: MemgraphStream) -> None:
+        """Create a stream"""
+        query = stream.to_cypher()
+        self.execute(query)
+
+    def get_streams(self) -> List[str]:
+        """Returns a list of all streams"""
+        streams = []
+        for result in self.execute_and_fetch("SHOW STREAMS;"):
+            streams.append(result)
+        return streams
+
+    def drop_stream(self, stream: MemgraphStream) -> None:
+        """Drop a stream"""
+        query = f"DROP STREAM {stream.name};"
+        self.execute(query)
 
     def drop_database(self):
         """Drops database by removing all nodes and edges"""

@@ -17,7 +17,7 @@ import datetime
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Iterable, Optional, Set, Tuple, Union
 from pydantic import BaseModel, PrivateAttr, Extra
 
 from .exceptions import (
@@ -82,6 +82,58 @@ class MemgraphConstraintExists(MemgraphConstraint):
 
     def to_cypher(self) -> str:
         return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
+
+
+@dataclass(frozen=True, eq=True)
+class MemgraphStream(ABC):
+    name: str
+    topics: List[str]
+    transform: str
+
+    @abstractmethod
+    def to_cypher(self) -> str:
+        pass
+
+
+@dataclass(frozen=True, eq=True)
+class MemgraphKafkaStream(MemgraphStream):
+    consumer_group: str = None
+    batch_interval: str = None
+    batch_size: str = None
+    bootstrap_servers: str = None
+
+    def to_cypher(self) -> str:
+        topics = ",".join(self.topics)
+        query = f"CREATE KAFKA STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
+        if self.consumer_group is not None:
+            query += f" CONSUMER_GROUP {self.consumer_group}"
+        if self.batch_interval is not None:
+            query += f" BATCH_INTERVAL {self.batch_interval}"
+        if self.batch_size is not None:
+            query += f" BATCH_SIZE {self.batch_size}"
+        if self.bootstrap_servers is not None:
+            query += f" BOOTSTRAP_SERVERS {self.bootstrap_servers}"
+        query += ";"
+        return query
+
+
+@dataclass(frozen=True, eq=True)
+class MemgraphPulsarStream(MemgraphStream):
+    batch_interval: str = None
+    batch_size: str = None
+    service_url: str = None
+
+    def to_cypher(self) -> str:
+        topics = ",".join(self.topics)
+        query = f"CREATE PULSAR STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
+        if self.batch_interval is not None:
+            query += f" BATCH_INTERVAL {self.batch_interval}"
+        if self.batch_size is not None:
+            query += f" BATCH_SIZE {self.batch_size}"
+        if self.service_url is not None:
+            query += f" SERVICE_URL {self.service_url}"
+        query += ";"
+        return query
 
 
 @dataclass(frozen=True, eq=True)

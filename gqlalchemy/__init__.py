@@ -16,11 +16,13 @@ from .memgraph import Memgraph  # noqa F401
 from .models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
+    MemgraphIndex,
+    MemgraphKafkaStream,
+    MemgraphPulsarStream,
     MemgraphTrigger,
     Node,
     Path,
     Relationship,
-    MemgraphIndex,
 )
 from .query_builder import InvalidMatchChainException, Match, NoVariablesMatchedException  # noqa F401
 
