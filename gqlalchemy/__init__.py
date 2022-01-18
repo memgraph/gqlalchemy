@@ -19,6 +19,7 @@ from .models import (  # noqa F401
     MemgraphIndex,
     MemgraphKafkaStream,
     MemgraphPulsarStream,
+    MemgraphTrigger,
     Node,
     Path,
     Relationship,

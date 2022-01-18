@@ -27,6 +27,23 @@ from .exceptions import (
 )
 
 
+class TriggerEventType:
+    CREATE = "CREATE"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
+
+
+class TriggerEventObject:
+    ALL = ""
+    NODE = "()"
+    RELATIONSHIP = "-->"
+
+
+class TriggerExecutionPhase:
+    BEFORE = "BEFORE"
+    AFTER = "AFTER"
+
+
 @dataclass(frozen=True, eq=True)
 class MemgraphIndex:
     label: str
@@ -116,6 +133,21 @@ class MemgraphPulsarStream(MemgraphStream):
         if self.service_url is not None:
             query += f" SERVICE_URL {self.service_url}"
         query += ";"
+        return query
+
+class MemgraphTrigger:
+    name: str
+    event_type: TriggerEventType
+    event_object: TriggerEventObject
+    execution_phase: TriggerExecutionPhase
+    statement: str
+
+    def to_cypher(self) -> str:
+        query = f"CREATE TRIGGER {self.name} "
+        # when self.event_object is TriggerEventObject.ALL there is a double space
+        query += f"ON {self.event_object} {self.event_type} "
+        query += f"{self.execution_phase} COMMIT EXECUTE "
+        query += f"{self.statement};"
         return query
 
 
