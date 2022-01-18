@@ -116,13 +116,16 @@ class NodePartialQuery(PartialQuery):
 
 
 class EdgePartialQuery(PartialQuery):
-    def __init__(self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool):
+    def __init__(
+        self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool, from_: bool
+    ):
         super().__init__(MatchTypes.EDGE)
 
         self.directed = directed
         self._variable = variable
         self._labels = labels
         self._properties = properties
+        self._from = from_
 
     @property
     def variable(self) -> str:
@@ -138,10 +141,15 @@ class EdgePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         relationship_query = f"{self.variable}{self.labels}{self.properties}"
-        if self.directed:
-            relationship_query = f"-[{relationship_query}]->"
-        else:
+
+        if not self.directed:
             relationship_query = f"-[{relationship_query}]-"
+            return relationship_query
+
+        if self._from:
+            relationship_query = f"<-[{relationship_query}]-"
+        else:
+            relationship_query = f"-[{relationship_query}]->"
 
         return relationship_query
 
@@ -195,7 +203,29 @@ class Match:
             labels_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed)))
+        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), False))
+
+        return self
+
+    def from_(
+        self,
+        edge_label: Optional[str] = "",
+        directed: Optional[bool] = True,
+        variable: Optional[str] = None,
+        relationship: Optional["Relationship"] = None,
+        **kwargs,
+    ) -> "Match":
+        if not self._is_linking_valid_with_query(MatchTypes.EDGE):
+            raise InvalidMatchChainException()
+
+        if relationship is None:
+            labels_str = to_cypher_labels(edge_label)
+            properties_str = to_cypher_properties(kwargs)
+        else:
+            labels_str = to_cypher_labels(relationship._type)
+            properties_str = to_cypher_properties(relationship._properties)
+
+        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), True))
 
         return self
 
