@@ -16,17 +16,19 @@ from .memgraph import Memgraph  # noqa F401
 from .models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
+    MemgraphIndex,
     Node,
     Path,
     Relationship,
-    MemgraphIndex,
 )
 from .query_builder import (  # noqa F401
+    Call,
+    Create,
     InvalidMatchChainException,
+    Match,
+    Merge,
     NoVariablesMatchedException,
     QueryBuilder,
-    Match,
-    Call,
     Unwind,
     With,
 )
@@ -38,7 +40,9 @@ import warnings
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]
 
-match = Match
 call = Call
+create = Create
+match = Match
+merge = Merge
 unwind = Unwind
 with_ = With

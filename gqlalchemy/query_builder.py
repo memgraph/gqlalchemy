@@ -22,23 +22,25 @@ from .models import Node, Relationship
 
 
 class DeclarativeBaseTypes:
-    NODE = "NODE"
-    EDGE = "EDGE"
-    MATCH = "MATCH"
-    WHERE = "WHERE"
     AND_WHERE = "AND_WHERE"
-    OR_WHERE = "OR_WHERE"
     CALL = "CALL"
-    RETURN = "RETURN"
-    YIELD = "YIELD"
-    WITH = "WITH"
-    UNWIND = "UNWIND"
-    ORDER_BY = "ORDER_BY"
-    LIMIT = "LIMIT"
-    SKIP = "SKIP"
+    CREATE = "CREATE"
     DELETE = "DELETE"
+    EDGE = "EDGE"
+    LIMIT = "LIMIT"
+    MATCH = "MATCH"
+    MERGE = "MERGE"
+    NODE = "NODE"
+    ORDER_BY = "ORDER_BY"
+    OR_WHERE = "OR_WHERE"
     REMOVE = "REMOVE"
+    RETURN = "RETURN"
+    SKIP = "SKIP"
     UNION = "UNION"
+    UNWIND = "UNWIND"
+    WHERE = "WHERE"
+    WITH = "WITH"
+    YIELD = "YIELD"
 
 
 class MatchConstants:
@@ -59,13 +61,13 @@ class WhereConditionConstants:
 
 class NoVariablesMatchedException(Exception):
     def __init__(self):
-        message = f"No variables have been matched in the query"
+        message = "No variables have been matched in the query"
         super().__init__(message)
 
 
 class InvalidMatchChainException(Exception):
     def __init__(self):
-        message = f"Invalid match query when linking!"
+        message = "Invalid match query when linking!"
         super().__init__(message)
 
 
@@ -86,9 +88,25 @@ class MatchPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         if self.optional:
-            return f" OPTIONAL MATCH "
+            return " OPTIONAL MATCH "
 
-        return f" MATCH "
+        return " MATCH "
+
+
+class MergePartialQuery(PartialQuery):
+    def __init__(self):
+        super().__init__(DeclarativeBaseTypes.MERGE)
+
+    def construct_query(self) -> str:
+        return " MERGE "
+
+
+class CreatePartialQuery(PartialQuery):
+    def __init__(self):
+        super().__init__(DeclarativeBaseTypes.CREATE)
+
+    def construct_query(self) -> str:
+        return " CREATE "
 
 
 class CallPartialQuery(PartialQuery):
@@ -312,6 +330,16 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def merge(self) -> "DeclarativeBase":
+        self._query.append(MergePartialQuery())
+
+        return self
+
+    def create(self) -> "DeclarativeBase":
+        self._query.append(CreatePartialQuery())
+
+        return self
+
     def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
         self._query.append(CallPartialQuery(procedure, arguments))
 
@@ -479,6 +507,12 @@ class Match(DeclarativeBase):
     def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
         self._query.append(MatchPartialQuery(optional))
+
+
+class Merge(DeclarativeBase):
+    def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+        self._query.append(MergePartialQuery(optional))
 
 
 class Call(DeclarativeBase):
