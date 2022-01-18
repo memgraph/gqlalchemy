@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pytest
-from gqlalchemy import MemgraphKafkaStream, MemgraphPulsarStream
+from gqlalchemy import MemgraphKafkaStream, MemgraphPulsarStream, Memgraph
 
 
 def stream_exists(stream: str, memgraph: Memgraph) -> bool:
