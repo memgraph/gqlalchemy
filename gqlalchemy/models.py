@@ -135,6 +135,8 @@ class MemgraphPulsarStream(MemgraphStream):
         query += ";"
         return query
 
+
+@dataclass(frozen=True, eq=True)
 class MemgraphTrigger:
     name: str
     event_type: TriggerEventType
