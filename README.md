@@ -115,7 +115,7 @@ poetry run pytest . -k "not slow"
 ```
 ## License
 
-Copyright (c) 2016-2021 [Memgraph Ltd.](https://memgraph.com)
+Copyright (c) 2016-2022 [Memgraph Ltd.](https://memgraph.com)
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 this file except in compliance with the License. You may obtain a copy of the
