@@ -21,9 +21,11 @@ from .models import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
+    MemgraphTrigger,
     Node,
     Relationship,
 )
+
 from .exceptions import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
 
 __all__ = ("Memgraph",)
@@ -148,6 +150,20 @@ class Memgraph:
     def drop_database(self):
         """Drops database by removing all nodes and edges"""
         self.execute("MATCH (n) DETACH DELETE n;")
+
+    def create_trigger(self, trigger: MemgraphTrigger):
+        """Creates a trigger"""
+        query = trigger.to_cypher()
+        self.execute(query)
+
+    def get_triggers(self) -> List[str]:
+        """Creates a trigger"""
+        return list(self.execute_and_fetch("SHOW TRIGGERS;"))
+
+    def drop_trigger(self, trigger) -> None:
+        """Drop a trigger"""
+        query = f"DROP TRIGGER {trigger.name};"
+        self.execute(query)
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
