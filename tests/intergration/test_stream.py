@@ -15,8 +15,8 @@ import pytest
 from gqlalchemy import MemgraphKafkaStream, MemgraphPulsarStream
 
 
-def stream_exists(streams, stream_name):
-    return any(map(lambda s: s["name"] == stream_name, streams))
+def stream_exists(stream: str, memgraph: Memgraph) -> bool:
+    return stream in memgraph.get_streams()
 
 
 def test_create_kafka_stream(memgraph):
