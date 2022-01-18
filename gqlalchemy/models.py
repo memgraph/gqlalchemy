@@ -94,6 +94,7 @@ class MemgraphTrigger:
 
     def to_cypher(self) -> str:
         query = f"CREATE TRIGGER {self.name} "
+        # when self.event_object is TriggerEventObject.ALL there is a double space
         query += f"ON {self.event_object} {self.event_type} "
         query += f"{self.execution_phase} COMMIT EXECUTE "
         query += f"{self.statement};"
