@@ -20,7 +20,7 @@ from gqlalchemy.models import TriggerEventType, TriggerEventObject, TriggerExecu
 def cleanup_trigger():
     yield
     memgraph = Memgraph()
-    memgraph.execute(f"DROP TRIGGER test_trigger;")
+    memgraph.execute("DROP TRIGGER test_trigger;")
 
 
 @pytest.mark.usefixtures("cleanup_trigger")
