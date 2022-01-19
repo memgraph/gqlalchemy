@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import os
+import sqlite3
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
+from .disk_storage import OnDiskPropertyDatabase
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -27,7 +29,11 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 
 __all__ = ("Memgraph",)
 
@@ -62,6 +68,7 @@ class Memgraph:
         self._password = password
         self._encrypted = encrypted
         self._cached_connection: Optional[Connection] = None
+        self._on_disk_db = None
 
     def execute_and_fetch(self, query: str, connection: Connection = None) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
@@ -201,6 +208,12 @@ class Memgraph:
         )
         return Connection.create(**args)
 
+    def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase):
+        self.on_disk_db = on_disk_db
+
+    def remove_on_disk_storage(self):
+        self.on_disk_db = None
+
     def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
         return self.execute_and_fetch(
             f"MATCH (node: {node._label})"
@@ -226,8 +239,9 @@ class Memgraph:
         return self.get_variable_assume_one(results, "node")
 
     def save_node(self, node: Node):
+        result = None
         if node._id is not None:
-            return self._save_node_with_id(node)
+            result = self._save_node_with_id(node)
         elif node.has_unique_fields():
             matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
@@ -236,11 +250,25 @@ class Memgraph:
                 )
             elif len(matching_nodes) == 1:
                 node._id = matching_nodes[0]["node"]._id
-                return self.save_node_with_id(node)
+                result = self.save_node_with_id(node)
             else:
-                return self.create_node(node)
+                result = self.create_node(node)
         else:
-            return self.create_node(node)
+            result = self.create_node(node)
+
+        result = self._save_node_properties_on_disk(node, result)
+        return result
+
+    def _save_node_properties_on_disk(self, node: Node, result: Node) -> Node:
+        for field in node.__fields__:
+            value = getattr(node, field, None)
+            if value is not None and "on_disk" in node.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
+                self.on_disk_db.save_node_property(result._id, field, value)
+                setattr(result, field, value)
+
+        return result
 
     def save_node_with_id(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
@@ -254,14 +282,31 @@ class Memgraph:
 
     def load_node(self, node: Node) -> Optional[Node]:
         if node._id is not None:
-            return self.load_node_with_id(node)
+            result = self.load_node_with_id(node)
         elif node.has_unique_fields():
             matching_node = self.get_variable_assume_one(
                 query_result=self._get_nodes_with_unique_fields(node), variable_name="node"
             )
-            return matching_node
+            result = matching_node
         else:
-            return self.load_node_with_all_properties(node)
+            result = self.load_node_with_all_properties(node)
+
+        result = self._load_node_properties_on_disk(result)
+        return result
+
+    def _load_node_properties_on_disk(self, result: Node) -> Node:
+        for field in result.__fields__:
+            value = getattr(result, field, None)
+            if "on_disk" in result.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
+                try:
+                    new_value = self.on_disk_db.load_node_property(result._id, field)
+                except sqlite3.OperationalError:
+                    new_value = value
+                setattr(result, field, new_value)
+
+        return result
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
         results = self.execute_and_fetch(
@@ -276,11 +321,27 @@ class Memgraph:
 
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         if relationship._id is not None:
-            return self.load_relationship_with_id(relationship)
+            result = self.load_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
-            return self.load_relationship_with_start_node_id_and_end_node_id(relationship)
+            result = self.load_relationship_with_start_node_id_and_end_node_id(relationship)
         else:
             raise GQLAlchemyError("Can't load a relationship without a start_node_id and end_node_id.")
+        result = self._load_relationship_properties_on_disk(result)
+        return result
+
+    def _load_relationship_properties_on_disk(self, result: Relationship) -> Relationship:
+        for field in result.__fields__:
+            value = getattr(result, field, None)
+            if "on_disk" in result.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
+                try:
+                    new_value = self.on_disk_db.load_relationship_property(result._id, field)
+                except sqlite3.OperationalError:
+                    new_value = value
+                setattr(result, field, new_value)
+
+        return result
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(
@@ -295,11 +356,14 @@ class Memgraph:
     def load_relationship_with_start_node_id_and_end_node_id(
         self, relationship: Relationship
     ) -> Optional[Relationship]:
+        and_block = relationship._get_cypher_fields_and_block("relationship")
+        if and_block.strip():
+            and_block = " AND " + and_block
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
             + f" AND id(end_node) = {relationship._end_node_id}"
-            + f" AND {relationship._get_cypher_fields_and_block()}"
+            + and_block
             + " RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
@@ -318,11 +382,25 @@ class Memgraph:
 
     def save_relationship(self, relationship: Relationship) -> Optional[Relationship]:
         if relationship._id is not None:
-            self.save_relationship_with_id(relationship)
+            result = self.save_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
-            return self.create_relationship(relationship)
+            result = self.create_relationship(relationship)
         else:
             raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
+
+        result = self._save_relationship_properties_on_disk(relationship, result)
+        return result
+
+    def _save_relationship_properties_on_disk(self, relationship: Relationship, result: Relationship) -> Relationship:
+        for field in relationship.__fields__:
+            value = getattr(relationship, field, None)
+            if value is not None and "on_disk" in relationship.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
+                self.on_disk_db.save_relationship_property(result._id, field, value)
+                setattr(result, field, value)
+
+        return result
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
         results = self.execute_and_fetch(

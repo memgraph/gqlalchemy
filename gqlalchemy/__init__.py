@@ -24,6 +24,7 @@ from .models import (  # noqa F401
     Path,
     Relationship,
 )
+from .disk_storage import SQLitePropertyDatabase  # noqa F401
 from .query_builder import (  # noqa F401
     Call,
     Create,
