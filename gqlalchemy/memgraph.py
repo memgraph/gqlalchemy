@@ -29,7 +29,11 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import GQLAlchemyError, GQLAlchemyUniquenessConstraintError
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 
 __all__ = ("Memgraph",)
 
@@ -260,13 +264,7 @@ class Memgraph:
             value = getattr(node, field, None)
             if value is not None and "on_disk" in node.__fields__[field].field_info.extra:
                 if self.on_disk_db is None:
-                    raise GQLAlchemyError(
-                        "Error: Saving a node with an on_disk property without specifying an on disk database."
-                        + "\nAdd an on_disk_db like this:"
-                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
-                        + "\ndb = Memgraph()"
-                        + "\nSQLOnDiskStorage(db)"
-                    )
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 self.on_disk_db.save_node_property(result._id, field, value)
                 setattr(result, field, value)
 
@@ -301,14 +299,7 @@ class Memgraph:
             value = getattr(result, field, None)
             if "on_disk" in result.__fields__[field].field_info.extra:
                 if self.on_disk_db is None:
-                    raise GQLAlchemyError(
-                        "Error: Loading a node with an on_disk property without specifying an on disk database."
-                        + "\nAdd an on_disk_db like this:"
-                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
-                        + "\ndb = Memgraph()"
-                        + "\nSQLOnDiskStorage(db)"
-                    )
-                    continue
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 try:
                     new_value = self.on_disk_db.load_node_property(result._id, field)
                 except sqlite3.OperationalError:
@@ -343,13 +334,7 @@ class Memgraph:
             value = getattr(result, field, None)
             if "on_disk" in result.__fields__[field].field_info.extra:
                 if self.on_disk_db is None:
-                    raise GQLAlchemyError(
-                        "Error: Loading a relationship with an on_disk property without specifying an on disk database."
-                        + "\nAdd an on_disk_db like this:"
-                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
-                        + "\ndb = Memgraph()"
-                        + "\nSQLOnDiskStorage(db)"
-                    )
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 try:
                     new_value = self.on_disk_db.load_relationship_property(result._id, field)
                 except sqlite3.OperationalError:
@@ -411,13 +396,7 @@ class Memgraph:
             value = getattr(relationship, field, None)
             if value is not None and "on_disk" in relationship.__fields__[field].field_info.extra:
                 if self.on_disk_db is None:
-                    raise GQLAlchemyError(
-                        "Error: Saving a relationship with an on_disk property without specifying an on disk database."
-                        + "\nAdd an on_disk_db like this:"
-                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
-                        + "\ndb = Memgraph()"
-                        + "\nSQLOnDiskStorage(db)"
-                    )
+                    raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 self.on_disk_db.save_relationship_property(result._id, field, value)
                 setattr(result, field, value)
 
