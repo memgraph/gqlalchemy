@@ -252,13 +252,24 @@ class Memgraph:
         else:
             result = self.create_node(node)
 
-        if self.on_disk_db:
-            for field in node.__fields__:
-                value = getattr(node, field, None)
-                if value is not None:
-                    if "on_disk" in node.__fields__[field].field_info.extra:
-                        self.on_disk_db.save_node_property(result._id, field, value)
-                        setattr(result, field, value)
+        result = self._save_node_properties_on_disk(node, result)
+        return result
+
+    def _save_node_properties_on_disk(self, node: Node, result: Node) -> Node:
+        for field in node.__fields__:
+            value = getattr(node, field, None)
+            if value is not None and "on_disk" in node.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyError(
+                        "Error: Saving a node with an on_disk property without specifying an on disk database."
+                        + "\nAdd an on_disk_db like this:"
+                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
+                        + "\ndb = Memgraph()"
+                        + "\nSQLOnDiskStorage(db)"
+                    )
+                self.on_disk_db.save_node_property(result._id, field, value)
+                setattr(result, field, value)
+
         return result
 
     def save_node_with_id(self, node: Node) -> Optional[Node]:
@@ -282,15 +293,27 @@ class Memgraph:
         else:
             result = self.load_node_with_all_properties(node)
 
-        if self.on_disk_db:
-            for field in result.__fields__:
-                value = getattr(result, field, None)
-                if "on_disk" in result.__fields__[field].field_info.extra:
-                    try:
-                        new_value = self.on_disk_db.load_node_property(result._id, field)
-                    except sqlite3.OperationalError:
-                        new_value = value
-                    setattr(result, field, new_value)
+        result = self._load_node_properties_on_disk(result)
+        return result
+
+    def _load_node_properties_on_disk(self, result: Node) -> Node:
+        for field in result.__fields__:
+            value = getattr(result, field, None)
+            if "on_disk" in result.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyError(
+                        "Error: Loading a node with an on_disk property without specifying an on disk database."
+                        + "\nAdd an on_disk_db like this:"
+                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
+                        + "\ndb = Memgraph()"
+                        + "\nSQLOnDiskStorage(db)"
+                    )
+                    continue
+                try:
+                    new_value = self.on_disk_db.load_node_property(result._id, field)
+                except sqlite3.OperationalError:
+                    new_value = value
+                setattr(result, field, new_value)
 
         return result
 
@@ -312,16 +335,26 @@ class Memgraph:
             result = self.load_relationship_with_start_node_id_and_end_node_id(relationship)
         else:
             raise GQLAlchemyError("Can't load a relationship without a start_node_id and end_node_id.")
+        result = self._load_relationship_properties_on_disk(result)
+        return result
 
-        if self.on_disk_db:
-            for field in result.__fields__:
-                value = getattr(result, field, None)
-                if "on_disk" in result.__fields__[field].field_info.extra:
-                    try:
-                        new_value = self.on_disk_db.load_relationship_property(result._id, field)
-                    except sqlite3.OperationalError:
-                        new_value = value
-                    setattr(result, field, new_value)
+    def _load_relationship_properties_on_disk(self, result: Relationship) -> Relationship:
+        for field in result.__fields__:
+            value = getattr(result, field, None)
+            if "on_disk" in result.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyError(
+                        "Error: Loading a relationship with an on_disk property without specifying an on disk database."
+                        + "\nAdd an on_disk_db like this:"
+                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
+                        + "\ndb = Memgraph()"
+                        + "\nSQLOnDiskStorage(db)"
+                    )
+                try:
+                    new_value = self.on_disk_db.load_relationship_property(result._id, field)
+                except sqlite3.OperationalError:
+                    new_value = value
+                setattr(result, field, new_value)
 
         return result
 
@@ -370,13 +403,23 @@ class Memgraph:
         else:
             raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
 
-        if self.on_disk_db:
-            for field in relationship.__fields__:
-                value = getattr(relationship, field, None)
-                if value is not None:
-                    if "on_disk" in relationship.__fields__[field].field_info.extra:
-                        self.on_disk_db.save_relationship_property(result._id, field, value)
-                        setattr(result, field, value)
+        result = self._save_relationship_properties_on_disk(relationship, result)
+        return result
+
+    def _save_relationship_properties_on_disk(self, relationship: Relationship, result: Relationship) -> Relationship:
+        for field in relationship.__fields__:
+            value = getattr(relationship, field, None)
+            if value is not None and "on_disk" in relationship.__fields__[field].field_info.extra:
+                if self.on_disk_db is None:
+                    raise GQLAlchemyError(
+                        "Error: Saving a relationship with an on_disk property without specifying an on disk database."
+                        + "\nAdd an on_disk_db like this:"
+                        + "\nfrom gqlalchemy import Memgraph, SQLOnDiskStorage"
+                        + "\ndb = Memgraph()"
+                        + "\nSQLOnDiskStorage(db)"
+                    )
+                self.on_disk_db.save_relationship_property(result._id, field, value)
+                setattr(result, field, value)
 
         return result
 
