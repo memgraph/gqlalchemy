@@ -32,6 +32,11 @@ jobs:
       - name: Run memgraph instance
         run: |
           docker run -d -p 7687:7687 memgraph/memgraph --telemetry-enabled=False
+      - name: Run data-streams instance
+        run: |
+          git clone https://github.com/memgraph/data-streams.git
+          cd data-streams
+          python start.py --dataset movielens --platform kafka pulsar
       - name: Test project
         run: |
           poetry install

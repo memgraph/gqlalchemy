@@ -35,6 +35,7 @@ from .query_builder import (  # noqa F401
     Unwind,
     With,
 )
+from .stream import KafkaConsumer, PulsarConsumer  # noqa F401
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import Field  # noqa F401
