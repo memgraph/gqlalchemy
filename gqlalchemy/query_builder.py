@@ -329,13 +329,13 @@ class SkipPartialQuery(PartialQuery):
 
 
 class AddStringPartialQuery(PartialQuery):
-    def __init__(self, custom_string: str):
+    def __init__(self, custom_cypher: str):
         super().__init__(DeclarativeBaseTypes.SKIP)
 
-        self.custom_string = custom_string
+        self.custom_cypher = custom_cypher
 
     def construct_query(self) -> str:
-        return f"{self.custom_string}"
+        return f"{self.custom_cypher}"
 
 
 class DeclarativeBase(ABC):
@@ -502,8 +502,8 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def add_string(self, custom_string: str) -> "DeclarativeBase":
-        self._query.append(AddStringPartialQuery(custom_string))
+    def add_custom_cypher(self, custom_cypher: str) -> "DeclarativeBase":
+        self._query.append(AddStringPartialQuery(custom_cypher))
 
         return self
 

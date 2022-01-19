@@ -442,7 +442,9 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_add_string_partial(self):
-        query_builder = match().node("Node1", variable="n").to("TO", variable="e").add_string("(m:L2) ").return_()
+        query_builder = (
+            match().node("Node1", variable="n").to("TO", variable="e").add_custom_cypher("(m:L2) ").return_()
+        )
         expected_query = " MATCH (n:Node1)-[e:TO]->(m:L2) RETURN * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -451,7 +453,7 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_add_string_complete(self):
-        query_builder = QueryBuilder().add_string("MATCH (n) RETURN n")
+        query_builder = QueryBuilder().add_custom_cypher("MATCH (n) RETURN n")
         expected_query = "MATCH (n) RETURN n"
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
