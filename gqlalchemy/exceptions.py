@@ -17,7 +17,7 @@ Add an on_disk_db like this:
 from gqlalchemy import Memgraph, SQLitePropertyDatabase
 
 db = Memgraph()
-SQLitePropertyDatabase(db)
+SQLitePropertyDatabase("path-to-sqlite-db", db)
 """
 
 

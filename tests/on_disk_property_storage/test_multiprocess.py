@@ -22,8 +22,7 @@ from gqlalchemy import Memgraph, Node, Field, SQLitePropertyDatabase
 
 
 db = Memgraph()
-on_disk_db = SQLitePropertyDatabase("./tests/on_disk_storage.db")
-db.add_on_disk_storage(on_disk_db)
+SQLitePropertyDatabase("./tests/on_disk_storage.db", db)
 
 
 class User(Node):
@@ -62,8 +61,7 @@ def _run_n_queries(n: int):
 
 def _create_n_user_objects(n: int) -> None:
     db = Memgraph()
-    on_disk_db = SQLitePropertyDatabase("./tests/on_disk_storage.db")
-    db.add_on_disk_storage(on_disk_db)
+    SQLitePropertyDatabase("./tests/on_disk_storage.db", db)
     huge_string = "I LOVE MEMGRAPH" * 1000
     for _ in range(n):
         id_ = random.randint(1, 2 * n)

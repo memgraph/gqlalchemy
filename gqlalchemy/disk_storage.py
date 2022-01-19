@@ -45,10 +45,12 @@ class OnDiskPropertyDatabase(ABC):
 
 
 class SQLitePropertyDatabase(OnDiskPropertyDatabase):
-    def __init__(self, database_path: str):
+    def __init__(self, database_path: str, memgraph: "Memgraph" = None):  # noqa F821
         self.database_name = database_path
         self.create_node_property_table()
         self.create_relationship_property_table()
+        if memgraph is not None:
+            memgraph.add_on_disk_storage(self)
 
     def execute_query(self, query: str) -> List[str]:
         with contextlib.closing(sqlite3.connect(self.database_name)) as conn:

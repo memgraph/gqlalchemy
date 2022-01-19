@@ -18,9 +18,8 @@ from gqlalchemy import SQLitePropertyDatabase, Memgraph, Node, Field, Relationsh
 from typing import Optional
 
 
-db = SQLitePropertyDatabase("./tests/on_disk_storage.db")
 memgraph = Memgraph()
-memgraph.add_on_disk_storage(db)
+db = SQLitePropertyDatabase("./tests/on_disk_storage.db", memgraph)
 
 
 class User(Node):
@@ -34,6 +33,8 @@ class FriendTo(Relationship, type="FRIEND_TO"):
 
 @pytest.fixture
 def clear_db():
+    memgraph = Memgraph()
+    db = SQLitePropertyDatabase("./tests/on_disk_storage.db", memgraph)
     memgraph.drop_database()
     db.drop_database()
 
