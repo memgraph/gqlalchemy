@@ -208,7 +208,7 @@ class Memgraph:
         )
         return Connection.create(**args)
 
-    def add_on_disk_storage(self, on_disk_db: OnDiskPropertyDatabase):
+    def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase):
         self.on_disk_db = on_disk_db
 
     def remove_on_disk_storage(self):

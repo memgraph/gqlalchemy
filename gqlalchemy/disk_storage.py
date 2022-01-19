@@ -50,7 +50,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         self.create_node_property_table()
         self.create_relationship_property_table()
         if memgraph is not None:
-            memgraph.add_on_disk_storage(self)
+            memgraph.init_disk_storage(self)
 
     def execute_query(self, query: str) -> List[str]:
         with contextlib.closing(sqlite3.connect(self.database_name)) as conn:
