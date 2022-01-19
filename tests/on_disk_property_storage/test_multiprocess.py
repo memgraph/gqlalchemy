@@ -56,14 +56,8 @@ def test_run_100000_queries(clear_db):
 def _run_n_queries(n: int):
     number_of_processes = mp.cpu_count() // 2 + 1
     chunk_size = n // number_of_processes
-    processes = []
-    for i in range(number_of_processes):
-        processes.append(mp.Process(target=_create_n_user_objects, args=(chunk_size,)))
-
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
+    with mp.Pool(processes=number_of_processes) as pool:
+        pool.map(_create_n_user_objects, [chunk_size] * number_of_processes)
 
 
 def _create_n_user_objects(n: int) -> None:
