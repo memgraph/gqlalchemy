@@ -15,6 +15,7 @@
 import multiprocessing as mp
 from typing import Optional
 
+import mgclient
 import pytest
 import random
 
@@ -65,7 +66,13 @@ def _create_n_user_objects(n: int) -> None:
     huge_string = "I LOVE MEMGRAPH" * 1000
     for _ in range(n):
         id_ = random.randint(1, 2 * n)
-        user1 = User(id=id_, huge_string=huge_string).save(db)
-        assert user1.huge_string == huge_string
-        user2 = User(id=id_).load(db)
-        assert user2.huge_string == huge_string
+        try:
+            user1 = User(id=id_, huge_string=huge_string).save(db)
+            assert user1.huge_string == huge_string
+        except mgclient.DatabaseError:  # Memgraph collision happened
+            continue
+        try:
+            user2 = User(id=id_).load(db)
+            assert user2.huge_string == huge_string
+        except mgclient.DatabaseError:  # Memgraph collision happened
+            continue
