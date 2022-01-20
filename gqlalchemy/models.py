@@ -103,6 +103,7 @@ class MemgraphKafkaStream(MemgraphStream):
     bootstrap_servers: str = None
 
     def to_cypher(self) -> str:
+        """Converts Kafka stream to a cypher clause."""
         topics = ",".join(self.topics)
         query = f"CREATE KAFKA STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
         if self.consumer_group is not None:
@@ -124,6 +125,7 @@ class MemgraphPulsarStream(MemgraphStream):
     service_url: str = None
 
     def to_cypher(self) -> str:
+        """Converts Pulsar stream to a cypher clause."""
         topics = ",".join(self.topics)
         query = f"CREATE PULSAR STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
         if self.batch_interval is not None:
@@ -145,6 +147,7 @@ class MemgraphTrigger:
     statement: str
 
     def to_cypher(self) -> str:
+        """Converts a Trigger to a cypher clause."""
         query = f"CREATE TRIGGER {self.name} "
         # when self.event_object is TriggerEventObject.ALL there is a double space
         query += f"ON {self.event_object} {self.event_type} "
@@ -235,6 +238,16 @@ class GraphObject(BaseModel):
             )
 
     def _get_cypher_field_assignment_block(self, variable_name: str, operator: str) -> str:
+        """Creates a cypher field assignment block joined using the `operator`
+        argument.
+        Example:
+            self = {"name": "John", "age": 34}
+            variable_name = "user"
+            operator = " AND "
+
+            returns:
+                "user.name = 'John' AND user.age = 34"
+        """
         cypher_fields = []
         for field in self.__fields__:
             value = getattr(self, field)
@@ -244,12 +257,19 @@ class GraphObject(BaseModel):
         return " " + operator.join(cypher_fields) + " "
 
     def _get_cypher_fields_or_block(self, variable_name: str) -> str:
+        """Returns a cypher field assignment block separated by an OR
+        statement.
+        """
         return self._get_cypher_field_assignment_block(variable_name, " OR ")
 
     def _get_cypher_fields_and_block(self, variable_name: str) -> str:
+        """Returns a cypher field assignment block separated by an AND
+        statement.
+        """
         return self._get_cypher_field_assignment_block(variable_name, " AND ")
 
     def _get_cypher_set_properties(self, variable_name: str) -> str:
+        """Returns a cypher set properties block."""
         cypher_set_properties = []
         for field in self.__fields__:
             attributes = self.__fields__[field].field_info.extra
@@ -353,6 +373,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         )
 
     def _get_cypher_unique_fields_or_block(self, variable_name: str) -> str:
+        """Get's a cypher assignment block using the unique fields."""
         cypher_unique_fields = []
         for field in self.__fields__:
             attrs = self.__fields__[field].field_info.extra
@@ -364,6 +385,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         return " " + " OR ".join(cypher_unique_fields) + " "
 
     def has_unique_fields(self) -> bool:
+        """Returns True if the Node has any unique fields"""
         for field in self.__fields__:
             if "unique" in self.__fields__[field].field_info.extra:
                 if getattr(self, field) is not None:
@@ -375,6 +397,14 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         return ":".join(sorted(self._labels))
 
     def save(self, db: "Memgraph") -> "Node":  # noqa F821
+        """Saves node to Memgraph.
+        If the node._id is not None it fetches the node with the same id from
+        Memgraph and updates it's fields.
+        If the node has unique fields it fetches the nodes with the same unique
+        fields from Memgraph and updates it's fields.
+        Otherwise it creates a new node with the same properties.
+        Null properties are ignored.
+        """
         node = db.save_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
@@ -382,6 +412,15 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         return self
 
     def load(self, db: "Memgraph") -> "Node":  # noqa F821
+        """Loads a node from Memgraph.
+        If the node._id is not None it fetches the node from Memgraph with that
+        internal id.
+        If the node has unique fields it fetches the node from Memgraph with
+        those unique fields set.
+        Otherwise it tries to find any node in Memgraph that has all properties
+        set to exactly the same values.
+        If no node is found or no properties are set it raises a GQLAlchemyError.
+        """
         node = db.load_node(self)
         for field in self.__fields__:
             setattr(self, field, getattr(node, field))
@@ -432,6 +471,13 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
         )
 
     def save(self, db: "Memgraph") -> "Relationship":  # noqa F821
+        """Saves a relationship to Memgraph.
+        If relationship._id is not None it finds the relationship in Memgraph
+        and updates it's properties with the values in `relationship`.
+        If relationship._id is None, it creates a new relationship.
+        If you want to set a relationship._id instead of creating a new
+        relationship, use `load_relationship` first.
+        """
         relationship = db.save_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))
@@ -439,6 +485,15 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
         return self
 
     def load(self, db: "Memgraph") -> "Relationship":  # noqa F821
+        """Returns a relationship loaded from Memgraph.
+        If the relationship._id is not None it fetches the relationship from
+        Memgraph that has the same internal id.
+        Otherwise it returns the relationship whose relationship._start_node_id
+        and relationship._end_node_id and all relationship properties that
+        are not None match the relationship in Memgraph.
+        If there is no relationship like that in Memgraph, or if there are
+        multiple relationships like that in Memgraph, throws GQLAlchemyError.
+        """
         relationship = db.load_relationship(self)
         for field in self.__fields__:
             setattr(self, field, getattr(relationship, field))

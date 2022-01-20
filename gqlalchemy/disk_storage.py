@@ -21,45 +21,54 @@ from typing import Optional, List
 
 class OnDiskPropertyDatabase(ABC):
     def save_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
+        """Saves a node property to an on disk database."""
         pass
 
     def load_node_property(self, node_id: int, property_name: str, property_value: str) -> Optional[str]:
+        """Loads a node property from an on disk database."""
         pass
 
     def delete_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
+        """Deletes a node property from an on disk database."""
         pass
 
     def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
+        """Saves a relationship property to an on disk database."""
         pass
 
     def load_relationship_property(
         self, relationship_id: int, property_name: str, property_value: str
     ) -> Optional[str]:
+        """Loads a relationship property from an on disk database."""
         pass
 
     def delete_relationship_property(self, node_id: int, property_name: str, property_value: str) -> None:
+        """Deletes a node property from an on disk database."""
         pass
 
     def drop_database(self) -> None:
+        """Deletes all entries from the on disk database."""
         pass
 
 
 class SQLitePropertyDatabase(OnDiskPropertyDatabase):
     def __init__(self, database_path: str, memgraph: "Memgraph" = None):  # noqa F821
         self.database_name = database_path
-        self.create_node_property_table()
-        self.create_relationship_property_table()
+        self._create_node_property_table()
+        self._create_relationship_property_table()
         if memgraph is not None:
             memgraph.init_disk_storage(self)
 
     def execute_query(self, query: str) -> List[str]:
+        """Executes an SQL query on the on disk property database."""
         with contextlib.closing(sqlite3.connect(self.database_name)) as conn:
             with conn:  # autocommit changes
                 with contextlib.closing(conn.cursor()) as cursor:
                     cursor.execute(query)
                     return cursor.fetchall()
 
-    def create_node_property_table(self) -> None:
+    def _create_node_property_table(self) -> None:
+        """Creates a node property sql table."""
         self.execute_query(
             "CREATE TABLE IF NOT EXISTS node_properties ("
             "node_id integer NOT NULL,"
@@ -69,7 +78,8 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
             ");"
         )
 
-    def create_relationship_property_table(self) -> None:
+    def _create_relationship_property_table(self) -> None:
+        """Creates a relationship property sql table."""
         self.execute_query(
             "CREATE TABLE IF NOT EXISTS relationship_properties ("
             "relationship_id integer NOT NULL,"
@@ -80,10 +90,12 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         )
 
     def drop_database(self) -> None:
+        """Deletes all properties in the database."""
         self.execute_query("DELETE FROM node_properties;")
         self.execute_query("DELETE FROM relationship_properties;")
 
     def save_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
+        """Saves a node property to an on disk database."""
         self.execute_query(
             "INSERT INTO node_properties (node_id, property_name, property_value) "
             f"VALUES({node_id}, '{property_name}', '{property_value}') "
@@ -92,6 +104,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         )
 
     def load_node_property(self, node_id: int, property_name: str) -> Optional[str]:
+        """Loads a node property from an on disk database."""
         result = self.execute_query(
             "SELECT property_value "
             "FROM node_properties AS db "
@@ -108,6 +121,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         return result[0][0]
 
     def delete_node_property(self, node_id: int, property_name: str) -> None:
+        """Deletes a node property from an on disk database."""
         self.execute_query(
             "DELETE "
             "FROM node_properties AS db "
@@ -116,6 +130,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         )
 
     def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
+        """Saves a relationship property to an on disk database."""
         self.execute_query(
             "INSERT INTO relationship_properties (relationship_id, property_name, property_value) "
             f"VALUES({relationship_id}, '{property_name}', '{property_value}') "
@@ -124,6 +139,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         )
 
     def load_relationship_property(self, relationship_id: int, property_name: str) -> Optional[str]:
+        """Loads a relationship property from an on disk database."""
         result = self.execute_query(
             "SELECT property_value "
             "FROM relationship_properties AS db "
@@ -140,6 +156,7 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         return result[0][0]
 
     def delete_relationship_property(self, relationship_id: int, property_name: str) -> None:
+        """Deletes a node property from an on disk database."""
         self.execute_query(
             "DELETE "
             "FROM relationship_properties AS db "
