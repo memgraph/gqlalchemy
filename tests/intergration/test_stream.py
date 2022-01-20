@@ -27,14 +27,6 @@ def test_create_kafka_stream(memgraph):
     assert "Local: Broker transport failure" in str(e_info.value)
 
 
-def test_drop_kafka_stream(memgraph):
-    kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
-
-    with pytest.raises(Exception) as e_info:
-        memgraph.create_stream(kafka_stream)
-    assert "Local: Broker transport failure" in str(e_info.value)
-
-
 def test_create_pulsar_stream(memgraph):
     pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
 
@@ -51,16 +43,32 @@ def test_drop_pulsar_stream(memgraph):
     assert "Pulsar consumer test_stream : ConnectError" in str(e_info.value)
 
 
-def test_kafka_stream_cypher():
+def test_create_kafka_stream_cypher():
     kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
     query = "CREATE KAFKA STREAM test_stream TOPICS topic TRANSFORM kafka_stream.transform;"
     assert kafka_stream.to_cypher() == query
 
 
-def test_pulsar_stream_cypher():
+def test_create_pulsar_stream_cypher():
     pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
     query = "CREATE PULSAR STREAM test_stream TOPICS topic TRANSFORM pulsar_stream.transform;"
     assert pulsar_stream.to_cypher() == query
+
+
+def test_start_kafka_stream(memgraph):
+    kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
+
+    with pytest.raises(Exception) as e_info:
+        memgraph.start_stream(kafka_stream)
+    assert "Couldn't find stream 'test_stream'" in str(e_info.value)
+
+
+def test_start_pulsar_stream(memgraph):
+    pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
+
+    with pytest.raises(Exception) as e_info:
+        memgraph.start_stream(pulsar_stream)
+    assert "Couldn't find stream 'test_stream'" in str(e_info.value)
 
 
 def test_kafka_stream_extended_cypher():
