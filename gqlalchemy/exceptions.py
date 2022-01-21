@@ -53,7 +53,7 @@ class GQLAlchemyUniquenessConstraintError(GQLAlchemyError):
 
 
 class GQLAlchemyDatabaseMissingInFieldError(GQLAlchemyError):
-    def __init__(self, constraint, field, field_type):
+    def __init__(self, constraint: str, field: str, field_type: str):
         super().__init__()
         self.message = DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE.format(
             constraint=constraint,

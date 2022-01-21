@@ -176,7 +176,7 @@ class Memgraph:
         """Drops database by removing all nodes and edges"""
         self.execute("MATCH (n) DETACH DELETE n;")
 
-    def create_trigger(self, trigger: MemgraphTrigger):
+    def create_trigger(self, trigger: MemgraphTrigger) -> None:
         """Creates a trigger"""
         query = trigger.to_cypher()
         self.execute(query)
@@ -208,14 +208,14 @@ class Memgraph:
         )
         return Connection.create(**args)
 
-    def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase):
+    def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase) -> None:
         """Adds and OnDiskPropertyDatabase to Memgraph so that any property
         that has a Field(on_disk=True) can be stored to and loaded from
         an OnDiskPropertyDatabase.
         """
         self.on_disk_db = on_disk_db
 
-    def remove_on_disk_storage(self):
+    def remove_on_disk_storage(self) -> None:
         """Removes the OnDiskPropertyDatabase from Memgraph"""
         self.on_disk_db = None
 
@@ -251,7 +251,7 @@ class Memgraph:
         )
         return self.get_variable_assume_one(results, "node")
 
-    def save_node(self, node: Node):
+    def save_node(self, node: Node) -> Node:
         """Saves node to Memgraph.
         If the node._id is not None it fetches the node with the same id from
         Memgraph and updates it's fields.
