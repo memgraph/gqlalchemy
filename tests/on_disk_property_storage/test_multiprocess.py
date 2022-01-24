@@ -75,6 +75,8 @@ def _create_n_user_objects(n: int) -> None:
         except GQLAlchemyError as e:
             print("Error when saving a node.")
             print(traceback.format_exc())
+            print(list(db.execute_and_fetch("match (a) return a;")))
+            print(list(db.execute_and_fetch("show constraint info;")))
             raise e
         try:
             user2 = User(id=id_).load(db)
@@ -84,4 +86,6 @@ def _create_n_user_objects(n: int) -> None:
         except GQLAlchemyError as e:
             print("Error in loading a node.")
             print(traceback.format_exc())
+            print(list(db.execute_and_fetch("match (a) return a;")))
+            print(list(db.execute_and_fetch("show constraint info;")))
             raise e
