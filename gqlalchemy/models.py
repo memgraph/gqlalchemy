@@ -329,18 +329,23 @@ class NodeMetaclass(BaseModel.__class__):
 
             label = attrs.get("label", cls.label)
             db = attrs.get("db", None)
+            skip_constraints = False
             for constraint in ["index", "unique", "exists"]:
                 if constraint in attrs and db is None:
                     if any(
                         field in base.__fields__ and constraint in base.__fields__[field].field_info.extra
                         for base in bases
                     ):
+                        skip_constraints = True
                         continue
                     raise GQLAlchemyDatabaseMissingInFieldError(
                         constraint=constraint,
                         field=field,
                         field_type=field_type,
                     )
+
+            if skip_constraints:
+                continue
 
             if "index" in attrs:
                 index = MemgraphIndex(label, field)
