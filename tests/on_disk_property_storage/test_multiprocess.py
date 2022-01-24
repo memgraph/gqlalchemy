@@ -15,11 +15,12 @@
 import multiprocessing as mp
 from typing import Optional
 
+import traceback
 import mgclient
 import pytest
 import random
 
-from gqlalchemy import Memgraph, Node, Field, SQLitePropertyDatabase
+from gqlalchemy import Memgraph, Node, Field, SQLitePropertyDatabase, GQLAlchemyError
 
 
 db = Memgraph()
@@ -71,8 +72,16 @@ def _create_n_user_objects(n: int) -> None:
             assert user1.huge_string == huge_string
         except mgclient.DatabaseError:  # Memgraph collision happened
             continue
+        except GQLAlchemyError as e:
+            print("Error when saving a node.")
+            print(traceback.format_exc())
+            raise e
         try:
             user2 = User(id=id_).load(db)
             assert user2.huge_string == huge_string
         except mgclient.DatabaseError:  # Memgraph collision happened
             continue
+        except GQLAlchemyError as e:
+            print("Error in loading a node.")
+            print(traceback.format_exc())
+            raise e
