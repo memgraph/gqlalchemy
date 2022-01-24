@@ -331,6 +331,11 @@ class NodeMetaclass(BaseModel.__class__):
             db = attrs.get("db", None)
             for constraint in ["index", "unique", "exists"]:
                 if constraint in attrs and db is None:
+                    if any(
+                        field in base.__fields__ and constraint in base.__fields__[field].field_info.extra
+                        for base in bases
+                    ):
+                        continue
                     raise GQLAlchemyDatabaseMissingInFieldError(
                         constraint=constraint,
                         field=field,
