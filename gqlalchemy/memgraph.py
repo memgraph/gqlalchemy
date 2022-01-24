@@ -228,10 +228,13 @@ class Memgraph:
 
     def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
         result = next(query_result, None)
+        next_result = next(query_result, None)
         if result is None:
             raise GQLAlchemyError("No result found. Result list is empty.")
-        elif next(query_result, None) is not None:
-            raise GQLAlchemyError("One result expected, but more than one result found.")
+        elif next_result is not None:
+            raise GQLAlchemyError(
+                f"One result expected, but more than one result found. First result: {result}, second result: {next_result}"
+            )
         elif variable_name not in result:
             raise GQLAlchemyError(f"Variable name {variable_name} not present in result.")
 
