@@ -312,6 +312,16 @@ class NodeMetaclass(BaseModel.__class__):
         of `Node`. Whenever a class is defined as a subclass of `Node`,
         `MyMeta.__new__` is called.
         """
+        def field_in_superclass(field, constraint):
+            nonlocal bases
+            for base in bases:
+                if field in base.__fields__:
+                    attrs = base.__fields__[field].field_info.extra
+                    if constraint in attrs:
+                        return base
+
+            return None
+
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         cls.label = kwargs.get("label", name)
         if name == "Node":
@@ -332,12 +342,11 @@ class NodeMetaclass(BaseModel.__class__):
             skip_constraints = False
             for constraint in ["index", "unique", "exists"]:
                 if constraint in attrs and db is None:
-                    if any(
-                        field in base.__fields__ and constraint in base.__fields__[field].field_info.extra
-                        for base in bases
-                    ):
+                    base = field_in_superclass(field, constraint)
+                    if base is not None:
+                        cls.__fields__[field].field_info.extra = base.__fields__[field].field_info.extra
                         skip_constraints = True
-                        continue
+                        break
                     raise GQLAlchemyDatabaseMissingInFieldError(
                         constraint=constraint,
                         field=field,
