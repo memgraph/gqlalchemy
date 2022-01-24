@@ -1,4 +1,4 @@
-from gqlalchemy import Memgraph, Node, Relationship, Field
+from gqlalchemy import Memgraph, Node, Field
 from typing import Optional
 
 
@@ -25,3 +25,4 @@ def test_multiple_inheritance():
     assert Stream.labels == {"Streamer", "User"}
     assert user._labels == {"User"}
     assert streamer._labels == {"Streamer", "User"}
+    assert "name" in Stream.__fields__

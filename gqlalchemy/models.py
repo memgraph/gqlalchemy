@@ -312,6 +312,7 @@ class NodeMetaclass(BaseModel.__class__):
         of `Node`. Whenever a class is defined as a subclass of `Node`,
         `MyMeta.__new__` is called.
         """
+
         def field_in_superclass(field, constraint):
             nonlocal bases
             for base in bases:
