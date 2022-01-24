@@ -160,6 +160,11 @@ class Memgraph:
         query = stream.to_cypher()
         self.execute(query)
 
+    def start_stream(self, stream: MemgraphStream) -> None:
+        """Start a stream"""
+        query = f"START STREAM {stream.name};"
+        self.execute(query)
+
     def get_streams(self) -> List[str]:
         """Returns a list of all streams"""
         streams = []
