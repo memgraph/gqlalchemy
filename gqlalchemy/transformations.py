@@ -61,7 +61,11 @@ def nx_graph_to_memgraph_parallel(
 
     if not config.create_index:
         _check_for_index_hint(
-            host, port, username, password, encrypted,
+            host,
+            port,
+            username,
+            password,
+            encrypted,
         )
 
     for query_group in query_groups:
@@ -79,7 +83,17 @@ def _start_parallel_execution(
     for i in range(num_of_processes):
         process_queries = queries[i * chunk_size : chunk_size * (i + 1)]
         processes.append(
-            mp.Process(target=_insert_queries, args=(process_queries, host, port, username, password, encrypted,),)
+            mp.Process(
+                target=_insert_queries,
+                args=(
+                    process_queries,
+                    host,
+                    port,
+                    username,
+                    password,
+                    encrypted,
+                ),
+            )
         )
     for p in processes:
         p.start()
@@ -88,7 +102,11 @@ def _start_parallel_execution(
 
 
 def _check_for_index_hint(
-    host: str = "127.0.0.1", port: int = 7687, username: str = "", password: str = "", encrypted: bool = False,
+    host: str = "127.0.0.1",
+    port: int = 7687,
+    username: str = "",
+    password: str = "",
+    encrypted: bool = False,
 ):
     """Check if the there are indexes, if not show warnings."""
     memgraph = Memgraph(host, port, username, password, encrypted)
