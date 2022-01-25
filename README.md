@@ -113,6 +113,12 @@ poetry run flake8 .
 poetry run black .
 poetry run pytest . -k "not slow"
 ```
+
+## Rendering the documentation
+```
+pip3 install python-markdown
+python-markdown
+```
 ## License
 
 Copyright (c) 2016-2022 [Memgraph Ltd.](https://memgraph.com)

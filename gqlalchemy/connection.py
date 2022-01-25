@@ -93,6 +93,7 @@ class MemgraphConnection(Connection):
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
     def _create_connection(self) -> Connection:
+        """Creates and returns a connection with Memgraph."""
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE
         return mgclient.connect(
             host=self.host,

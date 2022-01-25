@@ -181,7 +181,7 @@ class Memgraph:
         """Drops database by removing all nodes and edges"""
         self.execute("MATCH (n) DETACH DELETE n;")
 
-    def create_trigger(self, trigger: MemgraphTrigger):
+    def create_trigger(self, trigger: MemgraphTrigger) -> None:
         """Creates a trigger"""
         query = trigger.to_cypher()
         self.execute(query)
@@ -213,13 +213,21 @@ class Memgraph:
         )
         return Connection.create(**args)
 
-    def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase):
+    def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase) -> None:
+        """Adds and OnDiskPropertyDatabase to Memgraph so that any property
+        that has a Field(on_disk=True) can be stored to and loaded from
+        an OnDiskPropertyDatabase.
+        """
         self.on_disk_db = on_disk_db
 
-    def remove_on_disk_storage(self):
+    def remove_on_disk_storage(self) -> None:
+        """Removes the OnDiskPropertyDatabase from Memgraph"""
         self.on_disk_db = None
 
     def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
+        """Get's all nodes from Memgraph that have any of the unique fields
+        set to the values in the `node` object.
+        """
         return self.execute_and_fetch(
             f"MATCH (node: {node._label})"
             + f" WHERE {node._get_cypher_unique_fields_or_block('node')}"
@@ -227,6 +235,10 @@ class Memgraph:
         )
 
     def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
+        """Returns a single result from the query_result (usually gotten from
+        the execute_and_fetch function).
+        If there is more than one result, raises a GQLAlchemyError.
+        """
         result = next(query_result, None)
         next_result = next(query_result, None)
         if result is None:
@@ -241,12 +253,21 @@ class Memgraph:
         return result[variable_name]
 
     def create_node(self, node: Node) -> Optional[Node]:
+        """Creates a node in Memgraph from the `node` object."""
         results = self.execute_and_fetch(
             f"CREATE (node:{node._label}) {node._get_cypher_set_properties('node')} RETURN node;"
         )
         return self.get_variable_assume_one(results, "node")
 
-    def save_node(self, node: Node):
+    def save_node(self, node: Node) -> Node:
+        """Saves node to Memgraph.
+        If the node._id is not None it fetches the node with the same id from
+        Memgraph and updates it's fields.
+        If the node has unique fields it fetches the nodes with the same unique
+        fields from Memgraph and updates it's fields.
+        Otherwise it creates a new node with the same properties.
+        Null properties are ignored.
+        """
         result = None
         if node._id is not None:
             result = self._save_node_with_id(node)
@@ -268,6 +289,9 @@ class Memgraph:
         return result
 
     def _save_node_properties_on_disk(self, node: Node, result: Node) -> Node:
+        """Saves all on_disk properties to the on disk database attached to
+        Memgraph.
+        """
         for field in node.__fields__:
             value = getattr(node, field, None)
             if value is not None and "on_disk" in node.__fields__[field].field_info.extra:
@@ -279,6 +303,7 @@ class Memgraph:
         return result
 
     def save_node_with_id(self, node: Node) -> Optional[Node]:
+        """Saves a node in Memgraph using the internal Memgraph id."""
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label})"
             + f" WHERE id(node) = {node._id}"
@@ -289,6 +314,15 @@ class Memgraph:
         return self.get_variable_assume_one(results, "node")
 
     def load_node(self, node: Node) -> Optional[Node]:
+        """Loads a node from Memgraph.
+        If the node._id is not None it fetches the node from Memgraph with that
+        internal id.
+        If the node has unique fields it fetches the node from Memgraph with
+        those unique fields set.
+        Otherwise it tries to find any node in Memgraph that has all properties
+        set to exactly the same values.
+        If no node is found or no properties are set it raises a GQLAlchemyError.
+        """
         if node._id is not None:
             result = self.load_node_with_id(node)
         elif node.has_unique_fields():
@@ -303,6 +337,7 @@ class Memgraph:
         return result
 
     def _load_node_properties_on_disk(self, result: Node) -> Node:
+        """Loads all on_disk properties from the on disk database."""
         for field in result.__fields__:
             value = getattr(result, field, None)
             if "on_disk" in result.__fields__[field].field_info.extra:
@@ -317,17 +352,28 @@ class Memgraph:
         return result
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
+        """Loads a node from Memgraph with all equal property values."""
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label}) WHERE {node._get_cypher_fields_and_block('node')} RETURN node;"
         )
         return self.get_variable_assume_one(results, "node")
 
     def load_node_with_id(self, node: Node) -> Optional[Node]:
+        """Loads a node with the same internal Memgraph id."""
         results = self.execute_and_fetch(f"MATCH (node: {node._label}) WHERE id(node) = {node._id} RETURN node;")
 
         return self.get_variable_assume_one(results, "node")
 
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
+        """Returns a relationship loaded from Memgraph.
+        If the relationship._id is not None it fetches the relationship from
+        Memgraph that has the same internal id.
+        Otherwise it returns the relationship whose relationship._start_node_id
+        and relationship._end_node_id and all relationship properties that
+        are not None match the relationship in Memgraph.
+        If there is no relationship like that in Memgraph, or if there are
+        multiple relationships like that in Memgraph, throws GQLAlchemyError.
+        """
         if relationship._id is not None:
             result = self.load_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
@@ -338,6 +384,12 @@ class Memgraph:
         return result
 
     def _load_relationship_properties_on_disk(self, result: Relationship) -> Relationship:
+        """Returns the relationship with all on_disk properties loaded from
+        the OnDiskPropertyDatabase.
+        If there is no OnDiskPropertyDatabase set with
+        Memgraph().init_disk_storage() throws a
+        GQLAlchemyOnDiskPropertyDatabaseNotDefinedError.
+        """
         for field in result.__fields__:
             value = getattr(result, field, None)
             if "on_disk" in result.__fields__[field].field_info.extra:
@@ -352,6 +404,7 @@ class Memgraph:
         return result
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
+        """Loads a relationship from Memgraph using the internal id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -364,6 +417,9 @@ class Memgraph:
     def load_relationship_with_start_node_id_and_end_node_id(
         self, relationship: Relationship
     ) -> Optional[Relationship]:
+        """Loads a relationship from Memgraph using start node and end node id
+        for which all properties of the relationship that are not None match.
+        """
         and_block = relationship._get_cypher_fields_and_block("relationship")
         if and_block.strip():
             and_block = " AND " + and_block
@@ -376,19 +432,14 @@ class Memgraph:
         )
         return self.get_variable_assume_one(results, "relationship")
 
-    def load_relationship_with_start_node_and_end_node(
-        self, relationship: Relationship, start_node: Node, end_node: Node
-    ) -> Optional[Relationship]:
-        results = self.execute_and_fetch(
-            f"MATCH (start_node: {start_node._label})-[relationship:{relationship._type}]->(end_node: {end_node._label})"
-            + f" WHERE id(start_node) = {start_node._id}"
-            + f" AND id(end_node) = {end_node._id}"
-            + f" AND {relationship._get_cypher_fields_and_block()}"
-            + " RETURN relationship;"
-        )
-        return self.get_variable_assume_one(results, "relationship")
-
     def save_relationship(self, relationship: Relationship) -> Optional[Relationship]:
+        """Saves a relationship to Memgraph.
+        If relationship._id is not None it finds the relationship in Memgraph
+        and updates it's properties with the values in `relationship`.
+        If relationship._id is None, it creates a new relationship.
+        If you want to set a relationship._id instead of creating a new
+        relationship, use `load_relationship` first.
+        """
         if relationship._id is not None:
             result = self.save_relationship_with_id(relationship)
         elif relationship._start_node_id is not None and relationship._end_node_id is not None:
@@ -400,6 +451,10 @@ class Memgraph:
         return result
 
     def _save_relationship_properties_on_disk(self, relationship: Relationship, result: Relationship) -> Relationship:
+        """Saves on_disk relationship propeties on the OnDiskPropertyDatabase
+        added with Memgraph().init_disk_storage(db). If OnDiskPropertyDatabase
+        is not defined raises GQLAlchemyOnDiskPropertyDatabaseNotDefinedError.
+        """
         for field in relationship.__fields__:
             value = getattr(relationship, field, None)
             if value is not None and "on_disk" in relationship.__fields__[field].field_info.extra:
@@ -411,6 +466,7 @@ class Memgraph:
         return result
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
+        """Saves a relationship in Memgraph using the relationship._id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -423,6 +479,7 @@ class Memgraph:
         return self.get_variable_assume_one(results, "relationship")
 
     def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
+        """Creates a new relationship in Memgraph."""
         results = self.execute_and_fetch(
             "MATCH (start_node), (end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
