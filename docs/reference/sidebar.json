@@ -6,6 +6,7 @@
         "reference/gqlalchemy/disk_storage",
         "reference/gqlalchemy/memgraph",
         "reference/gqlalchemy/models",
+        "reference/gqlalchemy/query_builder",
         "reference/gqlalchemy/transformations",
         "reference/gqlalchemy/utilities"
       ],

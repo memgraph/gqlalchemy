@@ -229,7 +229,7 @@ class WithPartialQuery(PartialQuery):
         return self._results if self._results is not None else ""
 
     def construct_query(self) -> str:
-        """Creates a WITH statement cypher partial query."""
+        """Creates a WITH statement Cypher partial query."""
         if len(self.results) == 0:
             return " WITH * "
         return f" WITH {dict_to_alias_statement(self.results)} "
@@ -242,7 +242,7 @@ class UnionPartialQuery(PartialQuery):
         self.include_duplicates = include_duplicates
 
     def construct_query(self) -> str:
-        """Creates a UNION statement cypher partial query."""
+        """Creates a UNION statement Cypher partial query."""
         return f" UNION{f' ALL' if self.include_duplicates else ''} "
 
 
@@ -258,7 +258,7 @@ class DeletePartialQuery(PartialQuery):
         return self._variable_expressions if self._variable_expressions is not None else ""
 
     def construct_query(self) -> str:
-        """Creates a DELETE statement cypher partial query."""
+        """Creates a DELETE statement Cypher partial query."""
         return f" {'DETACH' if self.detach else ''} DELETE {', '.join(self.variable_expressions)} "
 
 
@@ -273,7 +273,7 @@ class RemovePartialQuery(PartialQuery):
         return self._items if self._items is not None else ""
 
     def construct_query(self) -> str:
-        """Creates a REMOVE statement cypher partial query."""
+        """Creates a REMOVE statement Cypher partial query."""
         return f" REMOVE {', '.join(self.items)} "
 
 
@@ -288,7 +288,7 @@ class YieldPartialQuery(PartialQuery):
         return self._results if self._results is not None else ""
 
     def construct_query(self) -> str:
-        """Creates a YIELD statement cypher partial query."""
+        """Creates a YIELD statement Cypher partial query."""
         if len(self.results) == 0:
             return " YIELD * "
         return f" YIELD {dict_to_alias_statement(self.results)} "
@@ -305,7 +305,7 @@ class ReturnPartialQuery(PartialQuery):
         return self._results if self._results is not None else ""
 
     def construct_query(self) -> str:
-        """Creates a RETURN statement cypher partial query."""
+        """Creates a RETURN statement Cypher partial query."""
         if len(self.results) == 0:
             return " RETURN * "
         return f" RETURN {dict_to_alias_statement(self.results)} "
@@ -318,7 +318,7 @@ class OrderByPartialQuery(PartialQuery):
         self.properties = properties
 
     def construct_query(self) -> str:
-        """Creates a ORDER BY statement cypher partial query."""
+        """Creates a ORDER BY statement Cypher partial query."""
         return f" ORDER BY {self.properties} "
 
 
@@ -329,7 +329,7 @@ class LimitPartialQuery(PartialQuery):
         self.integer_expression = integer_expression
 
     def construct_query(self) -> str:
-        """Creates a LIMIT statement cypher partial query."""
+        """Creates a LIMIT statement Cypher partial query."""
         return f" LIMIT {self.integer_expression} "
 
 
@@ -340,7 +340,7 @@ class SkipPartialQuery(PartialQuery):
         self.integer_expression = integer_expression
 
     def construct_query(self) -> str:
-        """Creates a SKIP statement cypher partial query."""
+        """Creates a SKIP statement Cypher partial query."""
         return f" SKIP {self.integer_expression} "
 
 
@@ -360,25 +360,25 @@ class DeclarativeBase(ABC):
         self._connection = connection if connection is not None else Memgraph()
 
     def match(self, optional: bool = False) -> "DeclarativeBase":
-        """Creates a MATCH statement cypher partial query."""
+        """Creates a MATCH statement Cypher partial query."""
         self._query.append(MatchPartialQuery(optional))
 
         return self
 
     def merge(self) -> "DeclarativeBase":
-        """Creates a MERGE statement cypher partial query."""
+        """Creates a MERGE statement Cypher partial query."""
         self._query.append(MergePartialQuery())
 
         return self
 
     def create(self) -> "DeclarativeBase":
-        """Creates a CREATE statement cypher partial query."""
+        """Creates a CREATE statement Cypher partial query."""
         self._query.append(CreatePartialQuery())
 
         return self
 
     def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
-        """Creates a CALL statement cypher partial query."""
+        """Creates a CALL statement Cypher partial query."""
         self._query.append(CallPartialQuery(procedure, arguments))
 
         return self
@@ -390,7 +390,7 @@ class DeclarativeBase(ABC):
         node: Optional["Node"] = None,
         **kwargs,
     ) -> "DeclarativeBase":
-        """Creates a node cypher partial query."""
+        """Creates a node Cypher partial query."""
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.NODE):
             raise InvalidMatchChainException()
 
@@ -413,7 +413,7 @@ class DeclarativeBase(ABC):
         relationship: Optional["Relationship"] = None,
         **kwargs,
     ) -> "DeclarativeBase":
-        """Creates a relationship cypher partial query with a '->' sign."""
+        """Creates a relationship Cypher partial query with a '->' sign."""
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
             raise InvalidMatchChainException()
 
@@ -436,7 +436,7 @@ class DeclarativeBase(ABC):
         relationship: Optional["Relationship"] = None,
         **kwargs,
     ) -> "Match":
-        """Creates a relationship cypher partial query with a '<-' sign."""
+        """Creates a relationship Cypher partial query with a '<-' sign."""
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
             raise InvalidMatchChainException()
 
@@ -452,7 +452,7 @@ class DeclarativeBase(ABC):
         return self
 
     def where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a WHERE statement cypher partial query."""
+        """Creates a WHERE statement Cypher partial query."""
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property, operator, value_cypher]))
@@ -461,7 +461,7 @@ class DeclarativeBase(ABC):
         return self
 
     def and_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a AND (expression) statement cypher partial query."""
+        """Creates a AND (expression) statement Cypher partial query."""
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.AND, " ".join([property, operator, value_cypher]))
@@ -470,7 +470,7 @@ class DeclarativeBase(ABC):
         return self
 
     def or_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a OR (expression) statement cypher partial query."""
+        """Creates a OR (expression) statement Cypher partial query."""
         value_cypher = to_cypher_value(value)
         self._query.append(
             WhereConditionPartialQuery(WhereConditionConstants.OR, " ".join([property, operator, value_cypher]))
@@ -479,61 +479,61 @@ class DeclarativeBase(ABC):
         return self
 
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
-        """Creates a UNWIND statement cypher partial query."""
+        """Creates a UNWIND statement Cypher partial query."""
         self._query.append(UnwindPartialQuery(list_expression, variable))
 
         return self
 
     def with_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
-        """Creates a WITH statement cypher partial query."""
+        """Creates a WITH statement Cypher partial query."""
         self._query.append(WithPartialQuery(results))
 
         return self
 
     def union(self, include_duplicates: Optional[bool] = True) -> "DeclarativeBase":
-        """Creates a UNION statement cypher partial query."""
+        """Creates a UNION statement Cypher partial query."""
         self._query.append(UnionPartialQuery(include_duplicates))
 
         return self
 
     def delete(self, variable_expressions: List[str], detach: Optional[bool] = False) -> "DeclarativeBase":
-        """Creates a DELETE statement cypher partial query."""
+        """Creates a DELETE statement Cypher partial query."""
         self._query.append(DeletePartialQuery(variable_expressions, detach))
 
         return self
 
     def remove(self, items: List[str]) -> "DeclarativeBase":
-        """Creates a REMOVE statement cypher partial query."""
+        """Creates a REMOVE statement Cypher partial query."""
         self._query.append(RemovePartialQuery(items))
 
         return self
 
     def yield_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
-        """Creates a YIELD statement cypher partial query."""
+        """Creates a YIELD statement Cypher partial query."""
         self._query.append(YieldPartialQuery(results))
 
         return self
 
     def return_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
-        """Creates a RETURN statement cypher partial query."""
+        """Creates a RETURN statement Cypher partial query."""
         self._query.append(ReturnPartialQuery(results))
 
         return self
 
     def order_by(self, properties: str) -> "DeclarativeBase":
-        """Creates a ORDER BY statement cypher partial query."""
+        """Creates a ORDER BY statement Cypher partial query."""
         self._query.append(OrderByPartialQuery(properties))
 
         return self
 
     def limit(self, integer_expression: str) -> "DeclarativeBase":
-        """Creates a LIMIT statement cypher partial query."""
+        """Creates a LIMIT statement Cypher partial query."""
         self._query.append(LimitPartialQuery(integer_expression))
 
         return self
 
     def skip(self, integer_expression: str) -> "DeclarativeBase":
-        """Creates a SKIP statement cypher partial query."""
+        """Creates a SKIP statement Cypher partial query."""
         self._query.append(SkipPartialQuery(integer_expression))
 
         return self
@@ -554,12 +554,12 @@ class DeclarativeBase(ABC):
         return result
 
     def execute(self) -> Iterator[Dict[str, Any]]:
-        """Executes the cypher query."""
+        """Executes the Cypher query."""
         query = self._construct_query()
         return self._connection.execute_and_fetch(query)
 
     def _construct_query(self) -> str:
-        """Constructs the (partial) cypher query so it can be executed."""
+        """Constructs the (partial) Cypher query so it can be executed."""
         query = [""]
 
         # if not self._any_variables_matched():
