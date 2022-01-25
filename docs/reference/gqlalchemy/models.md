@@ -112,7 +112,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass)
 def has_unique_fields() -> bool
 ```
 
-Returns True if the Node has any unique fields
+Returns True if the Node has any unique fields.
 
 #### save
 

@@ -38,7 +38,7 @@ class NetworkXCypherConfig:
 
 
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
-    """Converts value to a valid openCypher type"""
+    """Converts value to a valid Cypher type."""
     if config is None:
         config = NetworkXCypherConfig()
 
@@ -73,7 +73,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
 
 def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=None) -> str:
-    """Converts properties to a openCypher key-value properties"""
+    """Converts properties to a Cypher key-value properties."""
     if config is None:
         config = NetworkXCypherConfig()
 
@@ -89,7 +89,7 @@ def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=Non
 
 
 def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
-    """Converts labels to a openCypher label definition"""
+    """Converts labels to a Cypher label definition."""
     if labels:
         if isinstance(labels, str):
             return f":{labels}"
