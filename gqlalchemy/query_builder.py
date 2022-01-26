@@ -154,7 +154,7 @@ class NodePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a node partial query."""
-        return f"({self.variable}{self.labels}{self.properties})"
+        return f"({self.variable}{self.labels}{' ' + self.properties if self.properties else ''})"
 
 
 class EdgePartialQuery(PartialQuery):
@@ -587,9 +587,9 @@ class Match(DeclarativeBase):
 
 
 class Merge(DeclarativeBase):
-    def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
-        self._query.append(MergePartialQuery(optional))
+        self._query.append(MergePartialQuery())
 
 
 class Call(DeclarativeBase):
