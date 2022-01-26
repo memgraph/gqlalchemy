@@ -42,6 +42,7 @@ MG_PORT = int(os.getenv("MG_PORT", "7687"))
 MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
+MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
 
 class MemgraphConstants:
@@ -61,12 +62,14 @@ class Memgraph:
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
     ):
         self._host = host
         self._port = port
         self._username = username
         self._password = password
         self._encrypted = encrypted
+        self._client_name = client_name
         self._cached_connection: Optional[Connection] = None
         self._on_disk_db = None
 
@@ -210,6 +213,7 @@ class Memgraph:
             username=self._username,
             password=self._password,
             encrypted=self._encrypted,
+            client_name=self._client_name,
         )
         return Connection.create(**args)
 
