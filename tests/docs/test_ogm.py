@@ -4,11 +4,16 @@ from typing import Optional
 db = Memgraph()
 
 
-class UserTmp(Node):
+class UserSave(Node):
+    id: str = Field(index=True, exist=True, unique=True, db=db)
+    username: str = Field(index=True, exist=True, unique=True, db=db)
+
+
+class UserMap(Node):
     id: str = Field(index=True, exist=True, unique=True, db=db)
 
 
-class Streamer(UserTmp):
+class Streamer(UserMap):
     id: str = Field(index=True, exist=True, unique=True, db=db)
     username: Optional[str] = Field(index=True, exist=True, unique=True, db=db)
     url: Optional[str] = Field()
@@ -18,13 +23,21 @@ class Streamer(UserTmp):
     description: Optional[str] = Field()
 
 
+class Language(Node):
+    name: str = Field(unique=True, db=db)
+
+
 class ChatsWith(Relationship, type="CHATS_WITH"):
     lastChatted: Optional[str] = Field()
 
 
+class Speaks(Relationship, type="SPEAKS"):
+    pass
+
+
 class TestMapNodesAndRelationships:
     def test_node_mapping(self):
-        streamer = Streamer(  # noqa F401
+        streamer = Streamer(
             id="7",
             username="Ivan",
             url="myurl.com",
@@ -36,23 +49,13 @@ class TestMapNodesAndRelationships:
 
         result = next(match().node("Streamer", variable="s").where("s.id", "=", "7").return_().execute())["s"]
 
-        assert result.id == "7"
-        assert result.username == "Ivan"
-        assert result.url == "myurl.com"
-        assert result.followers == 888
-        assert result.createdAt == "2022-26-01"
-        assert result.totalViewCount == 6666
-        assert result.description == "Hi, I am streamer!"
-
-        loaded_streamer = result.load(db=db)
-
-        assert loaded_streamer.id == "7"
-        assert loaded_streamer.username == "Ivan"
-        assert loaded_streamer.url == "myurl.com"
-        assert loaded_streamer.followers == 888
-        assert loaded_streamer.createdAt == "2022-26-01"
-        assert loaded_streamer.totalViewCount == 6666
-        assert loaded_streamer.description == "Hi, I am streamer!"
+        assert result.id == streamer.id
+        assert result.username == streamer.username
+        assert result.url == streamer.url
+        assert result.followers == streamer.followers
+        assert result.createdAt == streamer.createdAt
+        assert result.totalViewCount == streamer.totalViewCount
+        assert result.description == streamer.description
 
     def test_relationship_mapping(self):
         streamer_1 = Streamer(
@@ -84,9 +87,45 @@ class TestMapNodesAndRelationships:
         assert result.lastChatted == chats_with.lastChatted
         assert result._type == chats_with._type
 
-        loaded_chats_with = chats_with.load(db=db)
 
-        assert loaded_chats_with._start_node_id == streamer_1._id
-        assert loaded_chats_with._end_node_id == streamer_2._id
-        assert loaded_chats_with.lastChatted == "2021-04-25"
-        assert loaded_chats_with._type == "CHATS_WITH"
+class TestSaveNodesAndRelationships:
+    def test_node_saving_1(self):
+        user = UserSave(id="3", username="John").save(db)
+        language = Language(name="en").save(db)
+
+        result = next(match().node("UserSave", variable="u").where("u.id", "=", "3").return_().execute())["u"]
+
+        assert result.id == user.id
+        assert result.username == user.username
+
+        result_2 = next(match().node("Language", variable="l").return_().execute())["l"]
+
+        assert result_2._labels == language._labels
+
+    def test_node_saving_2(self):
+        user = UserSave(id="4", username="James")
+        language = Language(name="hr")
+
+        db.save_node(user)
+        db.save_node(language)
+
+        result = next(match().node("UserSave", variable="u").where("u.id", "=", "4").return_().execute())["u"]
+
+        assert result.id == user.id
+        assert result.username == user.username
+
+        result_2 = next(match().node("Language", variable="l").return_().execute())["l"]
+
+        assert result_2._labels == language._labels
+
+    def test_relationship_1(self):
+        user = UserSave(id="55", username="Jimmy").save(db)
+        language = Language(name="ko").save(db)
+
+        speaks_rel = Speaks(_start_node_id=user._id, _end_node_id=language._id).save(db)
+
+        result = next(match().node().to("SPEAKS", variable="s").node().return_().execute())["s"]
+
+        assert result._start_node_id == user._id
+        assert result._end_node_id == language._id
+        assert result._type == speaks_rel._type
