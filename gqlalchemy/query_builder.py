@@ -344,6 +344,16 @@ class SkipPartialQuery(PartialQuery):
         return f" SKIP {self.integer_expression} "
 
 
+class AddStringPartialQuery(PartialQuery):
+    def __init__(self, custom_cypher: str):
+        super().__init__(DeclarativeBaseTypes.SKIP)
+
+        self.custom_cypher = custom_cypher
+
+    def construct_query(self) -> str:
+        return f"{self.custom_cypher}"
+
+
 class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         self._query: List[Any] = []
@@ -525,6 +535,11 @@ class DeclarativeBase(ABC):
     def skip(self, integer_expression: str) -> "DeclarativeBase":
         """Creates a SKIP statement Cypher partial query."""
         self._query.append(SkipPartialQuery(integer_expression))
+
+        return self
+
+    def add_custom_cypher(self, custom_cypher: str) -> "DeclarativeBase":
+        self._query.append(AddStringPartialQuery(custom_cypher))
 
         return self
 
