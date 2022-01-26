@@ -23,6 +23,19 @@ class Streamer(UserMap):
     description: Optional[str] = Field()
 
 
+class StreamerLoad(Node):
+    id: str = Field(index=True, unique=True, db=db)
+    name: Optional[str] = Field(index=True, exists=True, unique=True, db=db)
+
+
+class Team(Node):
+    name: str = Field(unique=True, db=db)
+
+
+class IsPartOf(Relationship, type="IS_PART_OF"):
+    date: Optional[str] = Field()
+
+
 class Language(Node):
     name: str = Field(unique=True, db=db)
 
@@ -32,6 +45,10 @@ class ChatsWith(Relationship, type="CHATS_WITH"):
 
 
 class Speaks(Relationship, type="SPEAKS"):
+    pass
+
+
+class SpeaksTemp(Relationship, type="SPEAKSTEMP"):
     pass
 
 
@@ -118,7 +135,7 @@ class TestSaveNodesAndRelationships:
 
         assert result_2._labels == language._labels
 
-    def test_relationship_1(self):
+    def test_relationship_saving_1(self):
         user = UserSave(id="55", username="Jimmy").save(db)
         language = Language(name="ko").save(db)
 
@@ -129,3 +146,52 @@ class TestSaveNodesAndRelationships:
         assert result._start_node_id == user._id
         assert result._end_node_id == language._id
         assert result._type == speaks_rel._type
+
+    def test_relationship_saving_2(self):
+        user = UserSave(id="35", username="Jessica").save(db)
+        language = Language(name="de").save(db)
+
+        speaks_rel = SpeaksTemp(_start_node_id=user._id, _end_node_id=language._id)
+        db.save_relationship(speaks_rel)
+
+        result = next(match().node().to("SPEAKSTEMP", variable="s").node().return_().execute())["s"]
+
+        assert result._start_node_id == user._id
+        assert result._end_node_id == language._id
+        assert result._type == speaks_rel._type
+
+
+class TestLoadNodesAndRelationships:
+    def test_node_load(self):
+        streamer = StreamerLoad(name="Jack", id="54").save(db)
+        team = Team(name="Warriors").save(db)
+
+        loaded_streamer = StreamerLoad(id="54").load(db=db)
+        loaded_team = Team(name="Warriors").load(db=db)
+
+        assert streamer.name == loaded_streamer.name
+        assert streamer.id == loaded_streamer.id
+        assert streamer._labels == {"StreamerLoad"}
+        assert streamer._labels == loaded_streamer._labels
+        assert team.name == loaded_team.name
+        assert team._labels == {"Team"}
+        assert team._labels == loaded_team._labels
+
+        is_part_of = IsPartOf(_start_node_id=loaded_streamer._id, _end_node_id=loaded_team._id, date="2021-04-26").save(
+            db
+        )
+
+        result = next(match().node().to("IS_PART_OF", variable="i").node().return_().execute())["i"]
+
+        assert result._start_node_id == streamer._id
+        assert result._end_node_id == team._id
+        assert result._type == is_part_of._type
+
+    def test_relationship_load(self):
+        streamer = StreamerLoad(name="Hayley", id="36").save(db)
+        team = Team(name="Lakers").save(db)
+        is_part_of = IsPartOf(_start_node_id=streamer._id, _end_node_id=team._id, date="2021-04-20").save(db)
+        loaded_is_part_of = IsPartOf(_start_node_id=streamer._id, _end_node_id=team._id).load(db)
+
+        assert loaded_is_part_of._type == "IS_PART_OF"
+        assert loaded_is_part_of._type == is_part_of._type
