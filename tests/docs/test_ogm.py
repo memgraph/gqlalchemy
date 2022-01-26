@@ -43,7 +43,6 @@ class TestMapNodesAndRelationships:
         assert result.followers == 888
         assert result.createdAt == "2022-26-01"
         assert result.totalViewCount == 6666
-        assert result.description == "Hi, I am streamer!"
 
         loaded_streamer = result.load(db=db)
 
@@ -53,4 +52,3 @@ class TestMapNodesAndRelationships:
         assert loaded_streamer.followers == 888
         assert loaded_streamer.createdAt == "2022-26-01"
         assert loaded_streamer.totalViewCount == 6666
-        assert loaded_streamer.description == "Hi, I am streamer!"
