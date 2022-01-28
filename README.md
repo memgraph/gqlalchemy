@@ -9,9 +9,6 @@
     <a href="https://github.com/memgraph/gqlalchemy/stargazers" alt="Stargazers"><img src="https://img.shields.io/github/stars/memgraph/gqlalchemy?style=social" /></a>
 </p>
 
-
-[![release](https://progress-bar.dev/90/?width=800&title=release%201.1&color=f0ad4e)](https://github.com/memgraph/gqlalchemy/milestone/1)
-
 GQLAlchemy is a library developed to assist in writing and running queries on Memgraph. GQLAlchemy supports high-level connection to Memgraph as well as modular query builder.
 
 GQLAlchemy is built on top of Memgraph's low-level client `pymgclient`
