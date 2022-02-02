@@ -84,30 +84,40 @@ for result in results:
     print(result["to"])
 ```
 
-An example using the Node and Relationship classes:
+An example using the `Node` and `Relationship` classes:
+
 ```python
-from gqlalchemy import Memgraph, Node, Relationship, match
+from gqlalchemy import Memgraph, Node, Relationship, match, Field
 
 memgraph = Memgraph("127.0.0.1", 7687)
 
-memgraph.execute("CREATE (:Node {id: 1})-[:RELATED_TO {id: 1}]->(:Node {id: 2})")
 
-# the first argument should be set by Memgraph
-a = Node(1, ["Node"], {'id': 1})
-b = Node(2, ["Node"], {'id': 2})
-r = Relationship(1, "RELATED_TO", 1, 2, {'id': 1})
+class User(Node):
+    id: int = Field(index=True, exist=True, unique=True, db=memgraph)
+
+
+class Follows(Relationship, type="FOLLOWS"):
+    pass
+
+
+u1 = User(id=1).save(memgraph)
+u2 = User(id=2).save(memgraph)
+r = Follows(_start_node_id=u1._id, _end_node_id=u2._id).save(memgraph)
 
 result = list(
     match(memgraph.new_connection())
-    .node(variable="a", node=a)
-    .to(variable="r", relationship=r)
-    .node(variable="b", node=b)
+    .node(variable="a")
+    .to(variable="r")
+    .node(variable="b")
+    .where("a.id", "=", u1.id)
+    .or_where("b.id", "=", u2.id)
+    .return_()
     .execute()
 )[0]
 
-print(result['a'])
-print(result['b'])
-print(result['r'])
+print(result["a"])
+print(result["b"])
+print(result["r"])
 ```
 
 ## Development (how to build)
