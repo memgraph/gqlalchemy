@@ -70,14 +70,18 @@ from gqlalchemy import match, Memgraph
 
 memgraph = Memgraph()
 
-results = match().node("Node",variable="from")\
-                 .to("Connection")\
-                 .node("Node",variable="to")\
-                 .execute()
+results = (
+    match()
+    .node("Node", variable="from")
+    .to("Connection")
+    .node("Node", variable="to")
+    .return_()
+    .execute()
+)
 
 for result in results:
-    print(result['from'])
-    print(result['to'])
+    print(result["from"])
+    print(result["to"])
 ```
 
 An example using the Node and Relationship classes:
