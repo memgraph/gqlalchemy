@@ -154,7 +154,8 @@ class NodePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a node partial query."""
-        return f"({self.variable}{self.labels}{self.properties})"
+        result = f"{self.variable}{self.labels} {self.properties}".strip()
+        return f"({result})"
 
 
 class EdgePartialQuery(PartialQuery):
@@ -418,13 +419,13 @@ class DeclarativeBase(ABC):
             raise InvalidMatchChainException()
 
         if relationship is None:
-            labels_str = to_cypher_labels(edge_label)
+            type_str = to_cypher_labels(edge_label)
             properties_str = to_cypher_properties(kwargs)
         else:
-            labels_str = to_cypher_labels(relationship._type)
+            type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), False))
+        self._query.append(EdgePartialQuery(variable, type_str, properties_str, bool(directed), False))
 
         return self
 
