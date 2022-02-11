@@ -28,6 +28,7 @@ class DeclarativeBaseTypes:
     DELETE = "DELETE"
     EDGE = "EDGE"
     LIMIT = "LIMIT"
+    LOAD_CSV = "LOAD_CSV"
     MATCH = "MATCH"
     MERGE = "MERGE"
     NODE = "NODE"
@@ -41,6 +42,7 @@ class DeclarativeBaseTypes:
     WHERE = "WHERE"
     WITH = "WITH"
     YIELD = "YIELD"
+    XOR_WHERE = "XOR_WHERE"
 
 
 class MatchConstants:
@@ -57,6 +59,7 @@ class WhereConditionConstants:
     WHERE = "WHERE"
     AND = "AND"
     OR = "OR"
+    XOR = "XOR"
 
 
 class NoVariablesMatchedException(Exception):
@@ -78,6 +81,20 @@ class PartialQuery(ABC):
     @abstractmethod
     def construct_query(self) -> str:
         pass
+
+
+class LoadCsvPartialQuery(PartialQuery):
+    def __init__(self, path: str, header: bool, row: str):
+        super().__init__(DeclarativeBaseTypes.LOAD_CSV)
+        self.path = path
+        self.header = header
+        self.row = row
+
+    def construct_query(self) -> str:
+        if self.header:
+            return f" LOAD CSV FROM '{self.path}' WITH HEADER AS {self.row} "
+        else:
+            return f" LOAD CSV FROM '{self.path}' NO HEADER AS {self.row} "
 
 
 class MatchPartialQuery(PartialQuery):
@@ -478,6 +495,15 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def xor_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
+        """Creates a XOR (expression) statement Cypher partial query."""
+        value_cypher = to_cypher_value(value)
+        self._query.append(
+            WhereConditionPartialQuery(WhereConditionConstants.XOR, " ".join([property, operator, value_cypher]))
+        )
+
+        return self
+
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
         """Creates a UNWIND statement Cypher partial query."""
         self._query.append(UnwindPartialQuery(list_expression, variable))
@@ -543,6 +569,11 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def load_csv(self, path: str, header: bool, row: str):
+        self._query.append(LoadCsvPartialQuery(path, header, row))
+
+        return self
+
     def get_single(self, retrieve: str) -> Any:
         """Returns a single result with a `retrieve` variable name."""
         query = self._construct_query()
@@ -602,9 +633,9 @@ class Match(DeclarativeBase):
 
 
 class Merge(DeclarativeBase):
-    def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
-        self._query.append(MergePartialQuery(optional))
+        self._query.append(MergePartialQuery())
 
 
 class Call(DeclarativeBase):

@@ -154,6 +154,20 @@ class TestMatch:
 
         mock.assert_called_with(expected_query)
 
+    def test_load_csv_with_header(self):
+        query_builder = QueryBuilder().load_csv("path/to/my/file.csv", True, "row").return_()
+        expected_query = " LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN * "
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+        mock.assert_called_with(expected_query)
+
+    def test_load_csv_no_header(self):
+        query_builder = QueryBuilder().load_csv("path/to/my/file.csv", False, "row").return_()
+        expected_query = " LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN * "
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+        mock.assert_called_with(expected_query)
+
     def test_where(self):
         query_builder = (
             QueryBuilder()
