@@ -15,7 +15,7 @@
 from unittest.mock import patch
 
 import pytest
-from gqlalchemy import InvalidMatchChainException, QueryBuilder, match, call, unwind, with_
+from gqlalchemy import InvalidMatchChainException, QueryBuilder, match, call, unwind, with_, merge
 from gqlalchemy.memgraph import Memgraph
 
 
@@ -44,6 +44,15 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_simple_merge(self):
+        query_builder = merge().node("L1", variable="n").to("TO").node("L2")
+        expected_query = " MERGE (n:L1)-[:TO]->(:L2)"
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_base_merge(self):
         query_builder = QueryBuilder().merge().node("L1", variable="n").to("TO").node("L2").return_()
         expected_query = " MERGE (n:L1)-[:TO]->(:L2) RETURN * "
 
@@ -75,6 +84,15 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_simple_merge_with_variables(self):
+        query_builder = merge().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+        expected_query = " MERGE (n:L1)-[e:TO]->(m:L2) RETURN * "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_base_merge_with_variables(self):
         query_builder = (
             QueryBuilder().merge().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
         )
