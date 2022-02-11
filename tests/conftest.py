@@ -28,6 +28,16 @@ def memgraph() -> Memgraph:
     memgraph.ensure_indexes([])
     memgraph.ensure_constraints([])
     memgraph.drop_database()
+    yield memgraph
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+
+
+@pytest.fixture
+def memgraph_without_dropping_constraints() -> Memgraph:
+    memgraph = Memgraph()
+    memgraph.ensure_indexes([])
+    memgraph.drop_database()
     return memgraph
 
 
