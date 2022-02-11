@@ -13,6 +13,20 @@
 # limitations under the License.
 
 from gqlalchemy.models import MemgraphIndex
+from gqlalchemy import Memgraph, Field, Node
+
+db = Memgraph()
+
+
+class Example(Node):
+    first_name: str = Field(index=True, db=db)
+    last_name: str = Field(index=False, db=db)
+
+
+def test_index_attr(memgraph_without_dropping_constraints):
+    actual_index = memgraph_without_dropping_constraints.get_indexes()
+
+    assert set(actual_index) == {MemgraphIndex("Example", "first_name")}
 
 
 def test_no_index(memgraph):
