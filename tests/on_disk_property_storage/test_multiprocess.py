@@ -61,6 +61,14 @@ def _run_n_queries(n: int):
         pool.map(_create_n_user_objects, [chunk_size] * number_of_processes)
 
 
+@pytest.fixture
+def cleanup_class():
+    yield
+    global User
+    del User  # noqa F821
+
+
+@pytest.mark.usefixtures("cleanup_class")
 def _create_n_user_objects(n: int) -> None:
     db = Memgraph()
     SQLitePropertyDatabase("./tests/on_disk_storage.db", db)

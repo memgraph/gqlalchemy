@@ -1,3 +1,4 @@
+import pytest
 from gqlalchemy import Memgraph, Node, Relationship, Field
 from typing import Optional
 
@@ -18,6 +19,13 @@ class Speaks(Relationship, type="SPEAKS"):
     pass
 
 
+@pytest.fixture
+def cleanup_class():
+    yield
+    del User  # noqa F821
+
+
+@pytest.mark.usefixtures("cleanup_class")
 def test_multiple_inheritance():
     user = User(name="Ivan").save(db)
     streamer = Streamer(id=7, name="Pero").save(db)
