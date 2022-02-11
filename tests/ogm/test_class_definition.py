@@ -1,3 +1,4 @@
+import pytest
 from gqlalchemy import Memgraph, Node, Field
 from typing import Optional
 
@@ -14,9 +15,16 @@ class Stream(User):
     followers: Optional[int] = Field()
 
 
-def test_multiple_inheritance():
-    user = User(name="Kate").save(db)
-    streamer = Stream(id=7, name="Ivan", followers=172).save(db)
+@pytest.fixture
+def cleanup_class():
+    yield
+    del User  # noqa F821
+
+
+@pytest.mark.usefixtures("cleanup_class")
+def test_multiple_inheritance(memgraph):
+    user = User(name="Kate").save(memgraph)
+    streamer = Stream(id=7, name="Ivan", followers=172).save(memgraph)
     assert "name" in Stream.__fields__
     assert user.name == "Kate"
     assert streamer.name == "Ivan"

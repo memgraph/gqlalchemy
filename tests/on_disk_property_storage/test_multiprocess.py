@@ -40,6 +40,7 @@ def clear_db():
     on_disk_db.drop_database()
 
 
+@pytest.mark.slow
 def test_run_1000_queries(clear_db):
     _run_n_queries(1000)
 
@@ -61,6 +62,14 @@ def _run_n_queries(n: int):
         pool.map(_create_n_user_objects, [chunk_size] * number_of_processes)
 
 
+@pytest.fixture
+def cleanup_class():
+    yield
+    global User
+    del User  # noqa F821
+
+
+@pytest.mark.usefixtures("cleanup_class")
 def _create_n_user_objects(n: int) -> None:
     db = Memgraph()
     SQLitePropertyDatabase("./tests/on_disk_storage.db", db)

@@ -27,7 +27,7 @@ class Alice(Node):
     name: Optional[str]
 
 
-class Friends(Relationship, _type="FRIENDS"):
+class Friends(Relationship, type="FRIENDS"):
     pass
 
 
