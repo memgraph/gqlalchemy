@@ -40,6 +40,7 @@ def clear_db():
     on_disk_db.drop_database()
 
 
+@pytest.mark.slow
 def test_run_1000_queries(clear_db):
     _run_n_queries(1000)
 
