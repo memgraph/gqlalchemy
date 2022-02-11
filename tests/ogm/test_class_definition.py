@@ -1,36 +1,23 @@
-import pytest
-from gqlalchemy import Memgraph, Node, Field
+from gqlalchemy import Node, Field
 from typing import Optional
 
 
-db = Memgraph()
+def test_multiple_inheritance(memgraph):
+    class User(Node):
+        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
 
+    class Streamer(User):
+        id: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        followers: Optional[int] = Field()
 
-class User(Node):
-    name: str = Field(index=True, exists=True, unique=True, db=db)
-
-
-class Stream(User):
-    id: str = Field(index=True, exists=True, unique=True, db=db)
-    followers: Optional[int] = Field()
-
-
-@pytest.fixture
-def cleanup_class():
-    yield
-    del User  # noqa F821
-
-
-@pytest.mark.usefixtures("cleanup_class")
-def test_multiple_inheritance():
-    user = User(name="Kate").save(db)
-    streamer = Stream(id=7, name="Ivan", followers=172).save(db)
-    assert "name" in Stream.__fields__
+    user = User(name="Kate").save(memgraph)
+    streamer = Streamer(id=7, name="Ivan", followers=172).save(memgraph)
+    assert "name" in Streamer.__fields__
     assert user.name == "Kate"
     assert streamer.name == "Ivan"
     assert streamer.followers == 172
     assert User.labels == {"User"}
-    assert Stream.labels == {"Streamer", "User"}
+    assert Streamer.labels == {"Streamer", "User"}
     assert user._labels == {"User"}
     assert streamer._labels == {"Streamer", "User"}
-    assert "name" in Stream.__fields__
+    assert "name" in Streamer.__fields__
