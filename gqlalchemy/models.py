@@ -315,7 +315,7 @@ class UniqueGraphObject(GraphObject):
 
     @property
     def _properties(self) -> Dict[str, Any]:
-        return {k: v for k, v in dict(self).items() if not k.startswith("_")}
+        return {k: v for k, v in dict(self).items() if not k.startswith("_") and k != "labels"}
 
     def __str__(self) -> str:
         return f"<GraphObject id={self._id} properties={self._properties}>"

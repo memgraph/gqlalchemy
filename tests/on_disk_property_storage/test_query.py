@@ -77,14 +77,19 @@ def test_delete_relationship_property(clear_db):
     assert result_value is None
 
 
-@pytest.fixture
-def cleanup_class():
-    yield
-    global User
-    del User  # noqa F821
+def test_add_node_with_an_on_disk_property():
+    class User(Node):
+        id: int = Field(unique=True, index=True, db=memgraph)
+        huge_string: Optional[str] = Field(on_disk=True)
+
+    secret = "qwertyuiopasdfghjklzxcvbnm"
+    user = User(id=12, huge_string=secret)
+    memgraph.save_node(user)
+    user_2 = User(id=12).load(memgraph)
+    assert user_2.huge_string == secret
 
 
-class TestOnDiskProperties:
+def test_add_relationship_with_an_on_disk_property():
     class User(Node):
         id: int = Field(unique=True, index=True, db=memgraph)
         huge_string: Optional[str] = Field(on_disk=True)
@@ -92,25 +97,17 @@ class TestOnDiskProperties:
     class FriendTo(Relationship, type="FRIEND_TO"):
         huge_string: Optional[str] = Field(on_disk=True)
 
-    def test_add_node_with_an_on_disk_property(clear_db):
-        secret = "qwertyuiopasdfghjklzxcvbnm"
-        user = User(id=12, huge_string=secret)
-        clear_db.save_node(user)
-        user_2 = User(id=12).load(clear_db)
-        assert user_2.huge_string == secret
-
-    def test_add_relationship_with_an_on_disk_property(clear_db):
-        secret = "qwertyuiopasdfghjklzxcvbnm"
-        user_1 = User(id=12).save(clear_db)
-        user_2 = User(id=11).save(clear_db)
-        friend = FriendTo(
-            _start_node_id=user_1._id,
-            _end_node_id=user_2._id,
-            huge_string=secret,
-        ).save(clear_db)
-        friend_2 = FriendTo(
-            _start_node_id=user_1._id,
-            _end_node_id=user_2._id,
-        ).load(clear_db)
-        assert friend.huge_string == secret
-        assert friend.huge_string == friend_2.huge_string
+    secret = "qwertyuiopasdfghjklzxcvbnm"
+    user_1 = User(id=12).save(memgraph)
+    user_2 = User(id=11).save(memgraph)
+    friend = FriendTo(
+        _start_node_id=user_1._id,
+        _end_node_id=user_2._id,
+        huge_string=secret,
+    ).save(memgraph)
+    friend_2 = FriendTo(
+        _start_node_id=user_1._id,
+        _end_node_id=user_2._id,
+    ).load(memgraph)
+    assert friend.huge_string == secret
+    assert friend.huge_string == friend_2.huge_string

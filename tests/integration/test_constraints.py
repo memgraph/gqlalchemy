@@ -58,7 +58,9 @@ def test_unique_attr(memgraph_without_dropping_constraints):
         MemgraphConstraintUnique("Person", ("nationality",)),
     }
     actual_unique_constraints = memgraph_without_dropping_constraints.get_unique_constraints()
-
+    print(actual_unique_constraints)
+    print("\n")
+    print(unique_constraints)
     assert set(actual_unique_constraints) == unique_constraints
 
 
