@@ -12,7 +12,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy import MemgraphConstraintExists, MemgraphConstraintUnique
+from gqlalchemy import MemgraphConstraintExists, MemgraphConstraintUnique, Memgraph
+
+from gqlalchemy import Node, Field
+
+db = Memgraph()
+
+
+class Person(Node):
+    first_name: str = Field(index=True, db=db)
+    year: int = Field(exists=True, db=db)
+    person_age: int = Field(unique=True, db=db)
+    hair: str = Field(index=True, exists=True, db=db)
+    eyes: str = Field(index=True, unique=True, db=db)
+    gender: str = Field(exists=True, unique=True, db=db)
+    height: int = Field(index=True, unique=True, db=db)
+    weight: int = Field(index=True, unique=True, exists=True, db=db)
+    nationality: str = Field(index=False, exists=True, unique=True, db=db)
+    state: str = Field(index=True, exists=False, unique=False, db=db)
+
+
+def test_exists_constraints(memgraph_without_dropping_constraints):
+    exists_constraints = [
+        MemgraphConstraintExists("Person", "year"),
+        MemgraphConstraintExists("Person", "gender"),
+        MemgraphConstraintExists("Person", "hair"),
+        MemgraphConstraintExists("Person", "gender"),
+        MemgraphConstraintExists("Person", "weight"),
+        MemgraphConstraintExists("Person", "nationality"),
+    ]
+    actual_exists_constraints = memgraph_without_dropping_constraints.get_exists_constraints()
+
+    assert set(actual_exists_constraints) == set(exists_constraints)
+
+
+def test_unique_constraints(memgraph_without_dropping_constraints):
+    unique_constraints = [
+        MemgraphConstraintUnique("Person", ("person_age",)),
+        MemgraphConstraintUnique("Person", ("eyes",)),
+        MemgraphConstraintUnique("Person", ("gender",)),
+        MemgraphConstraintUnique("Person", ("height",)),
+        MemgraphConstraintUnique("Person", ("weight",)),
+        MemgraphConstraintUnique("Person", ("nationality",)),
+    ]
+    actual_unique_constraints = memgraph_without_dropping_constraints.get_unique_constraints()
+
+    print("ACTUAL CONSTRAINTS \n")
+    print(actual_unique_constraints)
+    print("\n UNIQUE CONSTRAINTS \n")
+    print(unique_constraints)
+
+    assert set(actual_unique_constraints) == set(unique_constraints)
 
 
 def test_create_constraint_exist(memgraph):
