@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator
+from typing import Any, Dict, Iterator, Optional
 
 import mgclient
 
@@ -30,12 +30,14 @@ class Connection(ABC):
         username: str,
         password: str,
         encrypted: bool,
+        client_name: Optional[str] = None,
     ):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
         self.encrypted = encrypted
+        self.client_name = client_name
 
     @abstractmethod
     def execute(self, query: str) -> None:
@@ -66,9 +68,10 @@ class MemgraphConnection(Connection):
         username: str,
         password: str,
         encrypted: bool,
+        client_name: Optional[str] = None,
         lazy: bool = True,
     ):
-        super().__init__(host, port, username, password, encrypted)
+        super().__init__(host, port, username, password, encrypted, client_name=client_name)
         self.lazy = lazy
         self._connection = self._create_connection()
 
@@ -93,6 +96,7 @@ class MemgraphConnection(Connection):
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
     def _create_connection(self) -> Connection:
+        """Creates and returns a connection with Memgraph."""
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE
         return mgclient.connect(
             host=self.host,
@@ -101,6 +105,7 @@ class MemgraphConnection(Connection):
             password=self.password,
             sslmode=sslmode,
             lazy=self.lazy,
+            client_name=self.client_name,
         )
 
 

@@ -6,22 +6,22 @@
     <a href="https://github.com/memgraph/gqlalchemy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/memgraph/gqlalchemy" /></a>
     <a href="https://pypi.org/project/gqlalchemy"><img src="https://img.shields.io/pypi/v/gqlalchemy" /></a>
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+    <a href="https://memgraph.com/docs/gqlalchemy" alt="Documentation"><img src="https://img.shields.io/badge/documentation-GQLAlchemy-orange" /></a>
     <a href="https://github.com/memgraph/gqlalchemy/stargazers" alt="Stargazers"><img src="https://img.shields.io/github/stars/memgraph/gqlalchemy?style=social" /></a>
 </p>
 
+**GQLAlchemy** is a fully open-source Python library and **Object Graph Mapper** (OGM) - a link between graph database objects and Python objects.
 
-[![release](https://progress-bar.dev/90/?width=800&title=release%201.1&color=f0ad4e)](https://github.com/memgraph/gqlalchemy/milestone/1)
+An Object Graph Mapper or OGM provides a developer-friendly workflow that allows for writing object-oriented notation to communicate with graph databases. Instead of writing Cypher queries, you will be able to write object-oriented code, which the OGM will automatically translate into Cypher queries.
 
-GQLAlchemy is a library developed to assist in writing and running queries on Memgraph. GQLAlchemy supports high-level connection to Memgraph as well as modular query builder.
-
-GQLAlchemy is built on top of Memgraph's low-level client `pymgclient`
-([pypi](https://pypi.org/project/pymgclient/) /
-[documentation](https://memgraph.github.io/pymgclient/) /
+GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
+([PyPI](https://pypi.org/project/pymgclient/) /
+[Documentation](https://memgraph.github.io/pymgclient/) /
 [GitHub](https://github.com/memgraph/pymgclient)).
 
 ## Installation
 
-Before you install `gqlalchemy` make sure that you have `cmake` installed by running:
+Before you install `gqlalchemy`, make sure that you have `cmake` installed by running:
 ```
 cmake --version
 ```
@@ -34,16 +34,15 @@ pip install gqlalchemy
 
 ## Build & Test
 
-The project uses [poetry](https://python-poetry.org/) to build the GQLAlchemy. To build and run tests execute the following commands:
+The project uses [Poetry](https://python-poetry.org/) to build the GQLAlchemy Python library. To build and run tests, execute the following command:
 `poetry install`
 
-Before running tests make sure you have an active memgraph instance, then you can run:
+Before starting the tests, make sure you have an active Memgraph instance running. Execute the following command:
 `poetry run pytest .`
 
 ## GQLAlchemy example
 
-
-When working with the `gqlalchemy`, Python developer can connect to database and execute `MATCH` cypher query with following syntax:
+When working with the `gqlalchemy`, a Python developer can connect to the database and execute a `MATCH` Cypher query using the following syntax:
 
 ```python
 from gqlalchemy import Memgraph
@@ -64,47 +63,61 @@ for result in results:
 
 As we can see, the example above can be error-prone, because we do not have abstractions for creating a database connection and `MATCH` query.
 
-Now, rewrite the exact same query by using the functionality of gqlalchemys query builder..
+Now, rewrite the exact same query by using the functionality of GQLAlchemy's query builder:
 
 ```python
 from gqlalchemy import match, Memgraph
 
 memgraph = Memgraph()
 
-results = match().node("Node",variable="from")\
-                 .to("Connection")\
-                 .node("Node",variable="to")\
-                 .execute()
+results = (
+    match()
+    .node("Node", variable="from")
+    .to("Connection")
+    .node("Node", variable="to")
+    .return_()
+    .execute()
+)
 
 for result in results:
-    print(result['from'])
-    print(result['to'])
+    print(result["from"])
+    print(result["to"])
 ```
 
-An example using the Node and Relationship classes:
+An example using the `Node` and `Relationship` classes:
+
 ```python
-from gqlalchemy import Memgraph, Node, Relationship, match
+from gqlalchemy import Memgraph, Node, Relationship, match, Field
 
 memgraph = Memgraph("127.0.0.1", 7687)
 
-memgraph.execute("CREATE (:Node {id: 1})-[:RELATED_TO {id: 1}]->(:Node {id: 2})")
 
-# the first argument should be set by Memgraph
-a = Node(1, ["Node"], {'id': 1})
-b = Node(2, ["Node"], {'id': 2})
-r = Relationship(1, "RELATED_TO", 1, 2, {'id': 1})
+class User(Node):
+    id: int = Field(index=True, exist=True, unique=True, db=memgraph)
+
+
+class Follows(Relationship, type="FOLLOWS"):
+    pass
+
+
+u1 = User(id=1).save(memgraph)
+u2 = User(id=2).save(memgraph)
+r = Follows(_start_node_id=u1._id, _end_node_id=u2._id).save(memgraph)
 
 result = list(
     match(memgraph.new_connection())
-    .node(variable="a", node=a)
-    .to(variable="r", relationship=r)
-    .node(variable="b", node=b)
+    .node(variable="a")
+    .to(variable="r")
+    .node(variable="b")
+    .where("a.id", "=", u1.id)
+    .or_where("b.id", "=", u2.id)
+    .return_()
     .execute()
 )[0]
 
-print(result['a'])
-print(result['b'])
-print(result['r'])
+print(result["a"])
+print(result["b"])
+print(result["r"])
 ```
 
 ## Development (how to build)
@@ -113,6 +126,17 @@ poetry run flake8 .
 poetry run black .
 poetry run pytest . -k "not slow"
 ```
+
+## Documentation
+
+The GQLAlchemy documentation is available on [memgraph.com/docs/gqlalchemy](https://memgraph.com/docs/gqlalchemy/).
+
+The documentation can be generated by executing:
+```
+pip3 install python-markdown
+python-markdown
+```
+
 ## License
 
 Copyright (c) 2016-2022 [Memgraph Ltd.](https://memgraph.com)

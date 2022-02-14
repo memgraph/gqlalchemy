@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "items": [
+        "reference/gqlalchemy/connection",
+        "reference/gqlalchemy/disk_storage",
+        "reference/gqlalchemy/memgraph",
+        "reference/gqlalchemy/models",
+        "reference/gqlalchemy/query_builder",
+        "reference/gqlalchemy/transformations",
+        "reference/gqlalchemy/utilities"
+      ],
+      "label": "gqlalchemy",
+      "type": "category"
+    }
+  ],
+  "label": "Reference",
+  "type": "category"
+}

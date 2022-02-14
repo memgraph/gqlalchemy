@@ -9,10 +9,12 @@ on:
     branches:
       - main
   pull_request:
+    types: [opened, synchronize, reopened, review_requested, ready_for_review]
   workflow_dispatch:
 
 jobs:
   build_and_test_ubuntu:
+    if: github.event.pull_request.draft == false
     strategy:
       matrix:
         python-version: ["3.7", "3.8", "3.9"]
@@ -38,6 +40,7 @@ jobs:
           poetry run pytest -vvv -m "not slow"
 
   build_and_test_windows:
+    if: github.event.pull_request.draft == false
     strategy:
       matrix:
         python-version: ["3.8", "3.9"]

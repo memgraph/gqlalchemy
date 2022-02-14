@@ -33,7 +33,7 @@ class NetworkXGraphConstants:
 
 
 def nx_to_cypher(graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]:
-    """Generates a Cypher queries for creating graph"""
+    """Generates a Cypher queries for creating graph."""
 
     if config is None:
         config = NetworkXCypherConfig()
@@ -52,7 +52,7 @@ def nx_graph_to_memgraph_parallel(
     encrypted: bool = False,
     config: NetworkXCypherConfig = None,
 ) -> None:
-    """Generates a Cypher queries and inserts data into Memgraph in parallel"""
+    """Generates a Cypher queries and inserts data into Memgraph in parallel."""
     if config is None:
         config = NetworkXCypherConfig()
 
@@ -108,7 +108,7 @@ def _check_for_index_hint(
     password: str = "",
     encrypted: bool = False,
 ):
-    """Check if the there are indexes, if not show warnings"""
+    """Check if the there are indexes, if not show warnings."""
     memgraph = Memgraph(host, port, username, password, encrypted)
     indexes = memgraph.get_indexes()
     if len(indexes) == 0:
@@ -118,7 +118,7 @@ def _check_for_index_hint(
 
 
 def _insert_queries(queries: List[str], host: str, port: int, username: str, password: str, encrypted: bool) -> None:
-    """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries"""
+    """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries."""
     memgraph = Memgraph(host, port, username, password, encrypted)
     while len(queries) > 0:
         try:
@@ -138,7 +138,7 @@ class NetworkXCypherBuilder:
         self._config = config
 
     def yield_queries(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating graph"""
+        """Generates a Cypher queries for creating graph."""
 
         if self._config.create_index:
             yield from self._nx_nodes_to_cypher_with_index(graph)
@@ -147,7 +147,7 @@ class NetworkXCypherBuilder:
         yield from self._nx_edges_to_cypher(graph)
 
     def yield_query_groups(self, graph: nx.Graph) -> List[Iterator[str]]:
-        """Generates a Cypher queries for creating graph by query groups"""
+        """Generates a Cypher queries for creating graph by query groups."""
 
         query_groups = []
 
@@ -161,12 +161,12 @@ class NetworkXCypherBuilder:
         return query_groups
 
     def _nx_nodes_to_cypher(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating nodes"""
+        """Generates a Cypher queries for creating nodes."""
         for nx_id, data in graph.nodes(data=True):
             yield self._create_node(nx_id, data)
 
     def _nx_nodes_to_cypher_with_index(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating nodes and indexes"""
+        """Generates a Cypher queries for creating nodes and indexes."""
         labels = set()
         for nx_id, data in graph.nodes(data=True):
             node_labels = data.get(NetworkXGraphConstants.LABELS, None)
@@ -180,7 +180,7 @@ class NetworkXCypherBuilder:
             yield self._create_index(label)
 
     def _nx_edges_to_cypher(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating edges"""
+        """Generates a Cypher queries for creating edges."""
         for n1, n2, data in graph.edges(data=True):
             from_label = graph.nodes[n1].get(NetworkXGraphConstants.LABELS, "")
             to_label = graph.nodes[n2].get(NetworkXGraphConstants.LABELS, "")
@@ -190,7 +190,7 @@ class NetworkXCypherBuilder:
             yield self._create_edge(n1_id, n2_id, from_label, to_label, data)
 
     def _create_node(self, nx_id: int, properties: Dict[str, Any]) -> str:
-        """Returns Cypher query for node creation"""
+        """Returns Cypher query for node creation."""
         if "id" not in properties:
             properties["id"] = nx_id
         labels_str = to_cypher_labels(properties.get(NetworkXGraphConstants.LABELS, ""))
@@ -219,7 +219,7 @@ class NetworkXCypherBuilder:
         return f"MATCH (n{from_label_str} {{id: {from_id_str}}}), (m{to_label_str} {{id: {to_id_str}}}) CREATE (n)-[{edge_type} {properties_str}]->(m);"
 
     def _create_index(self, label: str, property: str = None):
-        """Returns Cypher query for index creation"""
+        """Returns Cypher query for index creation."""
         index = MemgraphIndex(label, property)
         return f"CREATE INDEX ON {index.to_cypher()}(id);"
 
