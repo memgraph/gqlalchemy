@@ -221,9 +221,13 @@ class TestMatch:
         mock.assert_called_with(expected_query)
 
     def test_call_procedure_node2vec(self):
-        query_builder = QueryBuilder().call(procedure="node2vec_online.get_embeddings", arguments="False, 2.0, 0.5")
-        expected_query = " CALL node2vec_online.get_embeddings(False, 2.0, 0.5) "
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder = (
+            QueryBuilder()
+            .call(procedure="node2vec_online.set_word2vec_learner", arguments="128, 0.01, True, 10, 1")
+            .yield_()
+        )
+        expected_query = " CALL node2vec_online.set_word2vec_learner(128, 0.01, True, 10, 1) YIELD * "
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -256,7 +260,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").with_()
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WITH * "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -265,7 +269,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node(variable="n").with_({"n": ""})
         expected_query = " MATCH (n) WITH n "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -310,7 +314,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node(variable="n1", labels="Node1").delete({"n1"})
         expected_query = " MATCH (n1:Node1) DELETE n1 "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -326,7 +330,7 @@ class TestMatch:
         )
         expected_query = " MATCH (n1:Node1)-[:EDGE]->(n2:Node2) DETACH DELETE n1, n2 "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -335,7 +339,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node(variable="n", labels="Node").remove({"n.name"})
         expected_query = " MATCH (n:Node) REMOVE n.name "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -344,7 +348,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node(variable="n", labels=["Node1", "Node2"]).remove({"n:Node2"})
         expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2 "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -355,7 +359,7 @@ class TestMatch:
         )
         expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2, n.name "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -364,7 +368,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node(variable="n").order_by("n.id")
         expected_query = " MATCH (n) ORDER BY n.id "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -373,7 +377,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node(variable="n").order_by("n.id DESC")
         expected_query = " MATCH (n) ORDER BY n.id DESC "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
@@ -382,7 +386,7 @@ class TestMatch:
         query_builder = QueryBuilder().match().node(variable="n").limit("3")
         expected_query = " MATCH (n) LIMIT 3 "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Memgraph, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
