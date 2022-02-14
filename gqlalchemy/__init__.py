@@ -36,7 +36,7 @@ from .query_builder import (  # noqa F401
     Unwind,
     With,
 )
-from .mg_util import MemgraphInstance  # noqa F401
+from .instance_runner import MemgraphInstanceBinary, MemgraphInstanceDocker  # noqa F401
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import Field  # noqa F401
