@@ -1,16 +1,12 @@
-from gqlalchemy import Node, Field, Memgraph, match
-
-memgraph = Memgraph()
+from gqlalchemy import Node, Field, match
 
 
-class User(Node):
-    name: str = Field(index=True, unique=True, db=memgraph)
-    followers: int
+def test_without_field(memgraph):
+    class User(Node):
+        name: str = Field(index=True, unique=True, db=memgraph)
+        followers: int
 
-
-def test_without_field():
-    user = User(name="Mislav", followers=123)
-    memgraph.save_node(user)
+    User(name="Mislav", followers=123).save(memgraph)
 
     result = next(
         match()
