@@ -40,7 +40,6 @@ def test_exists_attr(memgraph_without_dropping_constraints):
         MemgraphConstraintExists("Person", "nationality"),
     }
     actual_exists_constraints = memgraph_without_dropping_constraints.get_exists_constraints()
-    print(actual_exists_constraints)
     assert set(actual_exists_constraints) == exists_constraints
 
 
