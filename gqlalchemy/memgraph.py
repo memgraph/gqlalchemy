@@ -146,6 +146,16 @@ class Memgraph:
                 )
         return constraints
 
+    def get_exists_constraints(
+        self,
+    ) -> List[MemgraphConstraintExists]:
+        return [x for x in self.get_constraints() if isinstance(x, MemgraphConstraintExists)]
+
+    def get_unique_constraints(
+        self,
+    ) -> List[MemgraphConstraintUnique]:
+        return [x for x in self.get_constraints() if isinstance(x, MemgraphConstraintUnique)]
+
     def ensure_constraints(
         self,
         constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]],
