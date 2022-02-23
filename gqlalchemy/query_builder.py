@@ -28,6 +28,7 @@ class DeclarativeBaseTypes:
     DELETE = "DELETE"
     EDGE = "EDGE"
     LIMIT = "LIMIT"
+    LOAD_CSV = "LOAD_CSV"
     MATCH = "MATCH"
     MERGE = "MERGE"
     NODE = "NODE"
@@ -41,6 +42,7 @@ class DeclarativeBaseTypes:
     WHERE = "WHERE"
     WITH = "WITH"
     YIELD = "YIELD"
+    XOR_WHERE = "XOR_WHERE"
 
 
 class MatchConstants:
@@ -57,6 +59,7 @@ class WhereConditionConstants:
     WHERE = "WHERE"
     AND = "AND"
     OR = "OR"
+    XOR = "XOR"
 
 
 class NoVariablesMatchedException(Exception):
@@ -78,6 +81,17 @@ class PartialQuery(ABC):
     @abstractmethod
     def construct_query(self) -> str:
         pass
+
+
+class LoadCsvPartialQuery(PartialQuery):
+    def __init__(self, path: str, header: bool, row: str):
+        super().__init__(DeclarativeBaseTypes.LOAD_CSV)
+        self.path = path
+        self.header = header
+        self.row = row
+
+    def construct_query(self) -> str:
+        return f" LOAD CSV FROM '{self.path}' " + ("WITH" if self.header else "NO") + f" HEADER AS {self.row} "
 
 
 class MatchPartialQuery(PartialQuery):
@@ -154,7 +168,7 @@ class NodePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a node partial query."""
-        return f"({self.variable}{self.labels}{self.properties})"
+        return f"({self.variable}{self.labels}{' ' + self.properties if self.properties else ''})"
 
 
 class EdgePartialQuery(PartialQuery):
@@ -423,13 +437,13 @@ class DeclarativeBase(ABC):
             raise InvalidMatchChainException()
 
         if relationship is None:
-            labels_str = to_cypher_labels(edge_label)
+            type_str = to_cypher_labels(edge_label)
             properties_str = to_cypher_properties(kwargs)
         else:
-            labels_str = to_cypher_labels(relationship._type)
+            type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), False))
+        self._query.append(EdgePartialQuery(variable, type_str, properties_str, bool(directed), False))
 
         return self
 
@@ -458,9 +472,10 @@ class DeclarativeBase(ABC):
 
     def where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a WHERE statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property, operator, value_cypher]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.WHERE, " ".join([property, operator, to_cypher_value(value)])
+            )
         )
         self._clauses.append(DeclarativeBaseTypes.WHERE)
 
@@ -468,9 +483,10 @@ class DeclarativeBase(ABC):
 
     def and_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a AND (expression) statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.AND, " ".join([property, operator, value_cypher]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.AND, " ".join([property, operator, to_cypher_value(value)])
+            )
         )
         self._clauses.append(DeclarativeBaseTypes.AND_WHERE)
 
@@ -478,9 +494,20 @@ class DeclarativeBase(ABC):
 
     def or_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a OR (expression) statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.OR, " ".join([property, operator, value_cypher]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.OR, " ".join([property, operator, to_cypher_value(value)])
+            )
+        )
+
+        return self
+
+    def xor_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
+        """Creates a XOR (expression) statement Cypher partial query."""
+        self._query.append(
+            WhereConditionPartialQuery(
+                WhereConditionConstants.XOR, " ".join([property, operator, to_cypher_value(value)])
+            )
         )
         self._clauses.append(DeclarativeBaseTypes.OR_WHERE)
 
@@ -563,6 +590,11 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def load_csv(self, path: str, header: bool, row: str):
+        self._query.append(LoadCsvPartialQuery(path, header, row))
+
+        return self
+
     def get_single(self, retrieve: str) -> Any:
         """Returns a single result with a `retrieve` variable name."""
         query = self._construct_query()
@@ -627,9 +659,9 @@ class Match(DeclarativeBase):
 
 
 class Merge(DeclarativeBase):
-    def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
-        self._query.append(MergePartialQuery(optional))
+        self._query.append(MergePartialQuery())
         self._clauses.append(DeclarativeBaseTypes.MERGE)
 
 

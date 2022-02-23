@@ -12,7 +12,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy import MemgraphConstraintExists, MemgraphConstraintUnique
+from gqlalchemy import Field, MemgraphConstraintExists, MemgraphConstraintUnique, Memgraph, Node
+
+
+db = Memgraph()
+
+
+def test_exists_attr(memgraph_without_dropping_constraints):
+    class Person(Node):
+        first_name: str = Field(index=True, db=db)
+        year: int = Field(exists=True, db=db)
+        person_age: int = Field(unique=True, db=db)
+        hair: str = Field(exists=True, db=db)
+        eyes: str = Field(unique=True, db=db)
+        gender: str = Field(exists=True, unique=True, db=db)
+        height: int = Field(unique=True, db=db)
+        weight: int = Field(unique=True, exists=True, db=db)
+        nationality: str = Field(exists=True, unique=True, db=db)
+        state: str = Field(exists=False, unique=False, db=db)
+
+    exists_constraints = {
+        MemgraphConstraintExists("Person", "year"),
+        MemgraphConstraintExists("Person", "gender"),
+        MemgraphConstraintExists("Person", "hair"),
+        MemgraphConstraintExists("Person", "gender"),
+        MemgraphConstraintExists("Person", "weight"),
+        MemgraphConstraintExists("Person", "nationality"),
+    }
+    actual_exists_constraints = memgraph_without_dropping_constraints.get_exists_constraints()
+    assert set(actual_exists_constraints) == exists_constraints
+
+
+def test_unique_attr(memgraph_without_dropping_constraints):
+    class Person(Node):
+        first_name: str = Field(index=True, db=db)
+        year: int = Field(exists=True, db=db)
+        person_age: int = Field(unique=True, db=db)
+        hair: str = Field(exists=True, db=db)
+        eyes: str = Field(unique=True, db=db)
+        gender: str = Field(exists=True, unique=True, db=db)
+        height: int = Field(unique=True, db=db)
+        weight: int = Field(unique=True, exists=True, db=db)
+        nationality: str = Field(exists=True, unique=True, db=db)
+        state: str = Field(exists=False, unique=False, db=db)
+
+    unique_constraints = {
+        MemgraphConstraintUnique("Person", ("person_age",)),
+        MemgraphConstraintUnique("Person", ("eyes",)),
+        MemgraphConstraintUnique("Person", ("gender",)),
+        MemgraphConstraintUnique("Person", ("height",)),
+        MemgraphConstraintUnique("Person", ("weight",)),
+        MemgraphConstraintUnique("Person", ("nationality",)),
+    }
+    actual_unique_constraints = memgraph_without_dropping_constraints.get_unique_constraints()
+    assert set(actual_unique_constraints) == unique_constraints
 
 
 def test_create_constraint_exist(memgraph):
