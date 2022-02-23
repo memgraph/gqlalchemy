@@ -27,18 +27,21 @@ def test_raise_value_error(memgraph):
         def name_can_not_be_empty(cls, v):
             if v == "":
                 raise ValueError("name can't be empty")
+
             return v
 
         @validator("age")
         def age_must_be_greater_than_zero(cls, v):
             if v <= 0:
                 raise ValueError("age must be greater than zero")
+
             return v
 
         @validator("friends", each_item=True)
         def friends_must_be_(cls, v):
             if v == "":
                 raise ValueError("name can't be empty")
+
             return v
 
     with pytest.raises(ValueError):

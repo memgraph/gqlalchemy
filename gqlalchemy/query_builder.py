@@ -91,10 +91,7 @@ class LoadCsvPartialQuery(PartialQuery):
         self.row = row
 
     def construct_query(self) -> str:
-        if self.header:
-            return f" LOAD CSV FROM '{self.path}' WITH HEADER AS {self.row} "
-        else:
-            return f" LOAD CSV FROM '{self.path}' NO HEADER AS {self.row} "
+        return f" LOAD CSV FROM '{self.path}' " + ("WITH" if self.header else "NO") + f" HEADER AS {self.row} "
 
 
 class MatchPartialQuery(PartialQuery):
@@ -171,8 +168,7 @@ class NodePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a node partial query."""
-        result = f"{self.variable}{self.labels} {self.properties}".strip()
-        return f"({result})"
+        return "(" + f"{self.variable}{self.labels} {self.properties}".strip() + ")"
 
 
 class EdgePartialQuery(PartialQuery):
@@ -471,36 +467,40 @@ class DeclarativeBase(ABC):
 
     def where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a WHERE statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property, operator, value_cypher]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.WHERE, " ".join([property, operator, to_cypher_value(value)])
+            )
         )
 
         return self
 
     def and_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a AND (expression) statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.AND, " ".join([property, operator, value_cypher]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.AND, " ".join([property, operator, to_cypher_value(value)])
+            )
         )
 
         return self
 
     def or_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a OR (expression) statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.OR, " ".join([property, operator, value_cypher]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.OR, " ".join([property, operator, to_cypher_value(value)])
+            )
         )
 
         return self
 
     def xor_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a XOR (expression) statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.XOR, " ".join([property, operator, value_cypher]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.XOR, " ".join([property, operator, to_cypher_value(value)])
+            )
         )
 
         return self

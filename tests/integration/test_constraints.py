@@ -42,9 +42,6 @@ def test_exists_attr(memgraph_without_dropping_constraints):
         MemgraphConstraintExists("Person", "nationality"),
     }
     actual_exists_constraints = memgraph_without_dropping_constraints.get_exists_constraints()
-    print(actual_exists_constraints)
-    print("\n")
-    print(exists_constraints)
     assert set(actual_exists_constraints) == exists_constraints
 
 
@@ -58,9 +55,6 @@ def test_unique_attr(memgraph_without_dropping_constraints):
         MemgraphConstraintUnique("Person", ("nationality",)),
     }
     actual_unique_constraints = memgraph_without_dropping_constraints.get_unique_constraints()
-    print(actual_unique_constraints)
-    print("\n")
-    print(unique_constraints)
     assert set(actual_unique_constraints) == unique_constraints
 
 

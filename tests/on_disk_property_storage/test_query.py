@@ -22,21 +22,18 @@ memgraph = Memgraph()
 db = SQLitePropertyDatabase("./tests/on_disk_storage.db", memgraph)
 
 
+def drop_data_and_constraints():
+    memgraph.drop_database()
+    db.drop_database()
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+
+
 @pytest.fixture(scope="module")
 def clear_db():
-    memgraph = Memgraph()
-    db = SQLitePropertyDatabase("./tests/on_disk_storage.db", memgraph)
-    memgraph.drop_database()
-    db.drop_database()
-    memgraph.ensure_indexes([])
-    memgraph.ensure_constraints([])
-
+    drop_data_and_constraints()
     yield
-
-    db.drop_database()
-    memgraph.drop_database()
-    memgraph.ensure_indexes([])
-    memgraph.ensure_constraints([])
+    drop_data_and_constraints()
 
 
 def test_add_relationship_property(clear_db):

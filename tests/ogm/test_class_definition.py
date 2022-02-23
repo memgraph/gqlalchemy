@@ -12,6 +12,7 @@ def test_multiple_inheritance(memgraph):
 
     user = User(name="Kate").save(memgraph)
     streamer = Streamer(id=7, name="Ivan", followers=172).save(memgraph)
+
     assert "name" in Streamer.__fields__
     assert user.name == "Kate"
     assert streamer.name == "Ivan"
@@ -20,4 +21,3 @@ def test_multiple_inheritance(memgraph):
     assert Streamer.labels == {"Streamer", "User"}
     assert user._labels == {"User"}
     assert streamer._labels == {"Streamer", "User"}
-    assert "name" in Streamer.__fields__

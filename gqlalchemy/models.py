@@ -158,11 +158,11 @@ class MemgraphTrigger:
 
     def to_cypher(self) -> str:
         """Converts a Trigger to a cypher clause."""
-        query = f"CREATE TRIGGER {self.name} "
-        if self.event_object is TriggerEventObject.ALL:
-            query += f"ON {self.event_type} "
-        else:
-            query += f"ON {self.event_object} {self.event_type} "
+        query = f"CREATE TRIGGER {self.name} ON " + (
+            f"{self.event_type} "
+            if self.event_object is TriggerEventObject.ALL
+            else f"{self.event_object} {self.event_type} "
+        )
         query += f"{self.execution_phase} COMMIT EXECUTE "
         query += f"{self.statement};"
         return query
