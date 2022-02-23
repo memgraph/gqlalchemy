@@ -18,151 +18,159 @@ from gqlalchemy import match, call, create, merge
 from gqlalchemy.memgraph import Memgraph
 
 
-class TestMatch:
-    def test_call_procedures_1(self):
-        query_builder = call("pagerank.get").yield_().return_()
-        expected_query = " CALL pagerank.get() YIELD * RETURN * "
+def test_call_procedures_1(memgraph):
+    query_builder = call("pagerank.get").yield_().return_()
+    expected_query = " CALL pagerank.get() YIELD * RETURN * "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-        mock.assert_called_with(expected_query)
+    mock.assert_called_with(expected_query)
 
-    def test_call_procedures_2(self):
-        query_builder = (
-            call("json_util.load_from_url", "https://some-url.com")
-            .yield_({"objects": "objects"})
-            .return_({"objects": "objects"})
-        )
 
-        expected_query = " CALL json_util.load_from_url(https://some-url.com) YIELD objects RETURN objects "
+def test_call_procedures_2(memgraph):
+    query_builder = (
+        call("json_util.load_from_url", "https://some-url.com")
+        .yield_({"objects": "objects"})
+        .return_({"objects": "objects"})
+    )
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    expected_query = " CALL json_util.load_from_url(https://some-url.com) YIELD objects RETURN objects "
 
-        mock.assert_called_with(expected_query)
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-    def test_create_nodes_relationships_1(self):
-        query_builder = create().node(labels="Person", name="Ron")
+    mock.assert_called_with(expected_query)
 
-        expected_query = " CREATE (:Person {name: 'Ron'})"
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+def test_create_nodes_relationships_1(memgraph):
+    query_builder = create().node(labels="Person", name="Ron")
 
-        mock.assert_called_with(expected_query)
+    expected_query = " CREATE (:Person {name: 'Ron'})"
 
-    def test_create_nodes_relationships_2(self):
-        query_builder = merge().node(labels="Person", name="Leslie")
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-        expected_query = " MERGE (:Person {name: 'Leslie'})"
+    mock.assert_called_with(expected_query)
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
 
-        mock.assert_called_with(expected_query)
+def test_create_nodes_relationships_2(memgraph):
+    query_builder = merge().node(labels="Person", name="Leslie")
 
-    def test_create_nodes_relationships_3(self):
-        query_builder = (
-            create()
-            .node(labels="Person", name="Leslie")
-            .to(edge_label="FRIENDS_WITH")
-            .node(labels="Person", name="Ron")
-        )
+    expected_query = " MERGE (:Person {name: 'Leslie'})"
 
-        expected_query = " CREATE (:Person {name: 'Leslie'})-[:FRIENDS_WITH]->(:Person {name: 'Ron'})"
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    mock.assert_called_with(expected_query)
 
-        mock.assert_called_with(expected_query)
 
-    def test_delete_remove_objects_1(self):
-        query_builder = match().node("Person", variable="p").delete(["p"])
+def test_create_nodes_relationships_3(memgraph):
+    query_builder = (
+        create().node(labels="Person", name="Leslie").to(edge_label="FRIENDS_WITH").node(labels="Person", name="Ron")
+    )
 
-        expected_query = " MATCH (p:Person) DELETE p "
+    expected_query = " CREATE (:Person {name: 'Leslie'})-[:FRIENDS_WITH]->(:Person {name: 'Ron'})"
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-        mock.assert_called_with(expected_query)
+    mock.assert_called_with(expected_query)
 
-    def test_delete_remove_objects_2(self):
-        query_builder = match().node("Person").to("FRIENDS_WITH", variable="f").node("Person").delete(["f"])
 
-        expected_query = " MATCH (:Person)-[f:FRIENDS_WITH]->(:Person) DELETE f "
+def test_delete_remove_objects_1(memgraph):
+    query_builder = match().node("Person", variable="p").delete(["p"])
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    expected_query = " MATCH (p:Person) DELETE p "
 
-        mock.assert_called_with(expected_query)
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-    def test_delete_remove_objects_3(self):
-        query_builder = match().node("Person", variable="p").remove(["p.name"])
+    mock.assert_called_with(expected_query)
 
-        expected_query = " MATCH (p:Person) REMOVE p.name "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+def test_delete_remove_objects_2(memgraph):
+    query_builder = match().node("Person").to("FRIENDS_WITH", variable="f").node("Person").delete(["f"])
 
-        mock.assert_called_with(expected_query)
+    expected_query = " MATCH (:Person)-[f:FRIENDS_WITH]->(:Person) DELETE f "
 
-    def test_filter_data_1(self):
-        query_builder = (
-            match()
-            .node("Person", variable="p1")
-            .to("FRIENDS_WITH")
-            .node("Person", variable="p2")
-            .where("n.name", "=", "Ron")
-            .or_where("m.id", "=", 0)
-            .return_()
-        )
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-        expected_query = " MATCH (p1:Person)-[:FRIENDS_WITH]->(p2:Person) WHERE n.name = 'Ron' OR m.id = 0 RETURN * "
+    mock.assert_called_with(expected_query)
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
 
-        mock.assert_called_with(expected_query)
+def test_delete_remove_objects_3(memgraph):
+    query_builder = match().node("Person", variable="p").remove(["p.name"])
 
-    def test_return_results_1(self):
-        query_builder = match().node(labels="Person", variable="p").return_()
+    expected_query = " MATCH (p:Person) REMOVE p.name "
 
-        expected_query = " MATCH (p:Person) RETURN * "
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    mock.assert_called_with(expected_query)
 
-        mock.assert_called_with(expected_query)
 
-    def test_return_results_2(self):
-        query_builder = (
-            match().node(labels="Person", variable="p1").to().node(labels="Person", variable="p2").return_({"p1": "p1"})
-        )
+def test_filter_data_1(memgraph):
+    query_builder = (
+        match()
+        .node("Person", variable="p1")
+        .to("FRIENDS_WITH")
+        .node("Person", variable="p2")
+        .where("n.name", "=", "Ron")
+        .or_where("m.id", "=", 0)
+        .return_()
+    )
 
-        expected_query = " MATCH (p1:Person)-[]->(p2:Person) RETURN p1 "
+    expected_query = " MATCH (p1:Person)-[:FRIENDS_WITH]->(p2:Person) WHERE n.name = 'Ron' OR m.id = 0 RETURN * "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-        mock.assert_called_with(expected_query)
+    mock.assert_called_with(expected_query)
 
-    def test_return_results_3(self):
-        query_builder = match().node(labels="Person", variable="p").return_().limit(10)
 
-        expected_query = " MATCH (p:Person) RETURN * LIMIT 10 "
+def test_return_results_1(memgraph):
+    query_builder = match().node(labels="Person", variable="p").return_()
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+    expected_query = " MATCH (p:Person) RETURN * "
 
-        mock.assert_called_with(expected_query)
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
 
-    def test_return_results_4(self):
-        query_builder = match().node(labels="Person", variable="p").return_({"p": "p"}).order_by("p.name DESC")
+    mock.assert_called_with(expected_query)
 
-        expected_query = " MATCH (p:Person) RETURN p ORDER BY p.name DESC "
 
-        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
-            query_builder.execute()
+def test_return_results_2(memgraph):
+    query_builder = (
+        match().node(labels="Person", variable="p1").to().node(labels="Person", variable="p2").return_({"p1": "p1"})
+    )
 
-        mock.assert_called_with(expected_query)
+    expected_query = " MATCH (p1:Person)-[]->(p2:Person) RETURN p1 "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_return_results_3(memgraph):
+    query_builder = match().node(labels="Person", variable="p").return_().limit(10)
+
+    expected_query = " MATCH (p:Person) RETURN * LIMIT 10 "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_return_results_4(memgraph):
+    query_builder = match().node(labels="Person", variable="p").return_({"p": "p"}).order_by("p.name DESC")
+
+    expected_query = " MATCH (p:Person) RETURN p ORDER BY p.name DESC "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
