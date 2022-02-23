@@ -12,27 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy import MemgraphConstraintExists, MemgraphConstraintUnique, Memgraph
+from gqlalchemy import Field, MemgraphConstraintExists, MemgraphConstraintUnique, Memgraph, Node
 
-from gqlalchemy import Node, Field
 
 db = Memgraph()
 
 
-class Person(Node):
-    first_name: str = Field(index=True, db=db)
-    year: int = Field(exists=True, db=db)
-    person_age: int = Field(unique=True, db=db)
-    hair: str = Field(exists=True, db=db)
-    eyes: str = Field(unique=True, db=db)
-    gender: str = Field(exists=True, unique=True, db=db)
-    height: int = Field(unique=True, db=db)
-    weight: int = Field(unique=True, exists=True, db=db)
-    nationality: str = Field(exists=True, unique=True, db=db)
-    state: str = Field(exists=False, unique=False, db=db)
-
-
 def test_exists_attr(memgraph_without_dropping_constraints):
+    class Person(Node):
+        first_name: str = Field(index=True, db=db)
+        year: int = Field(exists=True, db=db)
+        person_age: int = Field(unique=True, db=db)
+        hair: str = Field(exists=True, db=db)
+        eyes: str = Field(unique=True, db=db)
+        gender: str = Field(exists=True, unique=True, db=db)
+        height: int = Field(unique=True, db=db)
+        weight: int = Field(unique=True, exists=True, db=db)
+        nationality: str = Field(exists=True, unique=True, db=db)
+        state: str = Field(exists=False, unique=False, db=db)
+
     exists_constraints = {
         MemgraphConstraintExists("Person", "year"),
         MemgraphConstraintExists("Person", "gender"),
@@ -46,6 +44,18 @@ def test_exists_attr(memgraph_without_dropping_constraints):
 
 
 def test_unique_attr(memgraph_without_dropping_constraints):
+    class Person(Node):
+        first_name: str = Field(index=True, db=db)
+        year: int = Field(exists=True, db=db)
+        person_age: int = Field(unique=True, db=db)
+        hair: str = Field(exists=True, db=db)
+        eyes: str = Field(unique=True, db=db)
+        gender: str = Field(exists=True, unique=True, db=db)
+        height: int = Field(unique=True, db=db)
+        weight: int = Field(unique=True, exists=True, db=db)
+        nationality: str = Field(exists=True, unique=True, db=db)
+        state: str = Field(exists=False, unique=False, db=db)
+
     unique_constraints = {
         MemgraphConstraintUnique("Person", ("person_age",)),
         MemgraphConstraintUnique("Person", ("eyes",)),

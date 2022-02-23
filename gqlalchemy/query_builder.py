@@ -168,7 +168,7 @@ class NodePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a node partial query."""
-        return "(" + f"{self.variable}{self.labels} {self.properties}".strip() + ")"
+        return f"({self.variable}{self.labels}{' ' + self.properties if self.properties else ''})"
 
 
 class EdgePartialQuery(PartialQuery):
