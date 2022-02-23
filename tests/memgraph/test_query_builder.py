@@ -92,7 +92,7 @@ def test_with_empty(memgraph):
     query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").with_()
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WITH * "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -102,7 +102,7 @@ def test_with(memgraph):
     query_builder = QueryBuilder().match().node(variable="n").with_({"n": ""})
     expected_query = " MATCH (n) WITH n "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -150,7 +150,7 @@ def test_delete(memgraph):
     query_builder = QueryBuilder().match().node(variable="n1", labels="Node1").delete({"n1"})
     expected_query = " MATCH (n1:Node1) DELETE n1 "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
         mock.assert_called_with(expected_query)
 
@@ -159,7 +159,7 @@ def test_simple_merge(memgraph):
     query_builder = merge().node("L1", variable="n").to("TO").node("L2")
     expected_query = " MERGE (n:L1)-[:TO]->(:L2)"
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -230,7 +230,7 @@ def test_delete_detach(memgraph):
     )
     expected_query = " MATCH (n1:Node1)-[:EDGE]->(n2:Node2) DETACH DELETE n1, n2 "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -240,7 +240,7 @@ def test_remove_property(memgraph):
     query_builder = QueryBuilder().match().node(variable="n", labels="Node").remove({"n.name"})
     expected_query = " MATCH (n:Node) REMOVE n.name "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -263,6 +263,8 @@ def test_multiple_merges(memgraph):
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
+
+    mock.assert_called_with(expected_query)
 
 
 def test_load_csv_with_header(memgraph):
@@ -429,7 +431,7 @@ def test_call_procedure_pagerank(memgraph):
 def test_call_procedure_node2vec(memgraph):
     query_builder = QueryBuilder().call(procedure="node2vec_online.get_embeddings", arguments="False, 2.0, 0.5")
     expected_query = " CALL node2vec_online.get_embeddings(False, 2.0, 0.5) "
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -465,7 +467,7 @@ def test_remove_label(memgraph):
     query_builder = QueryBuilder().match().node(variable="n", labels=["Node1", "Node2"]).remove({"n:Node2"})
     expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2 "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -475,15 +477,15 @@ def test_remove_property_and_label(memgraph):
     query_builder = QueryBuilder().match().node(variable="n", labels=["Node1", "Node2"]).remove(["n:Node2", "n.name"])
     expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2, n.name "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
 
 
 def test_orderby(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").order_by("n.id")
-    expected_query = " MATCH (n) ORDER BY n.id "
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by("n.id")
+    expected_query = " MATCH (n) RETURN * ORDER BY n.id "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -492,8 +494,8 @@ def test_orderby(memgraph):
 
 
 def test_orderby_desc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").order_by("n.id DESC")
-    expected_query = " MATCH (n) ORDER BY n.id DESC "
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by("n.id DESC")
+    expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -502,8 +504,8 @@ def test_orderby_desc(memgraph):
 
 
 def test_limit(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").limit("3")
-    expected_query = " MATCH (n) LIMIT 3 "
+    query_builder = QueryBuilder().match().node(variable="n").return_().limit("3")
+    expected_query = " MATCH (n) RETURN * LIMIT 3 "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
