@@ -9,7 +9,7 @@ def test_start_memgraph_docker():
 
 
 def test_start_memgraph_binary():
-    memgraph_instance = MemgraphInstanceBinary(port=7689)
-    memgraph = memgraph_instance.start(user="memgraph")
+    memgraph_instance = MemgraphInstanceBinary(port=7689, binary_path="/usr/lib/memgraph/memgraph")
+    memgraph = memgraph_instance.start()
     assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
     memgraph_instance.stop()

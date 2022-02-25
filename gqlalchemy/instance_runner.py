@@ -10,23 +10,19 @@
 # licenses/APL.txt.
 
 import docker
-import os
 import subprocess
-import tempfile
 import time
 import socket
 from abc import ABC, abstractmethod
 from typing import Dict, Union, Optional
 from .memgraph import Memgraph
-import pwd
-import grp
-import os
+from enum import Enum
 
 
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-PROJECT_DIR = os.path.normpath(os.path.join(SCRIPT_DIR, "..", ".."))
-BUILD_DIR = os.path.join(PROJECT_DIR, "build")
-MEMGRAPH_BINARY = os.path.join(BUILD_DIR, "memgraph")
+class DockerImage(Enum):
+    MEMGRAPH = "memgraph/memgraph"
+    MAGE = "memgraph/memgraph-mage"
+    PLATFORM = "memgraph/memgraph-platform"
 
 
 def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01, timeout: float = 5.0):
@@ -44,9 +40,19 @@ def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01
                 ) from ex
 
 
+def is_port_in_use(port: int = 7687) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("localhost", port)) == 0
+
+
 class MemgraphInstance(ABC):
     def __init__(
-        self, host: str = "127.0.0.1", port: int = 7687, username: str = "", password: str = "", encrypted=False
+        self,
+        host: str = "127.0.0.1",
+        port: int = 7687,
+        username: str = "",
+        password: str = "",
+        encrypted: bool = False,
     ) -> None:
         self.host = host
         self.port = port
@@ -61,7 +67,8 @@ class MemgraphInstance(ABC):
 
     def connect(self):
         self.memgraph = Memgraph(self.host, self.port, self.username, self.password, self.encrypted)
-        assert self.is_running(), "The Memgraph process died!"
+        if not self.is_running():
+            raise ConnectionError("The Memgraph process probably died.")
         return self.memgraph
 
     @abstractmethod
@@ -78,16 +85,20 @@ class MemgraphInstance(ABC):
 
 
 class MemgraphInstanceBinary(MemgraphInstance):
-    def start(self, restart=False, binary_path="/usr/lib/memgraph/memgraph", user: str = ""):
+    def __init__(self, binary_path="/usr/lib/memgraph/memgraph", user: str = "memgraph", **data):
+        super().__init__(**data)
         self.binary_path = binary_path
+        self.user = user
+
+    def start(self, restart=False):
         if not restart and self.is_running():
             return
         self.stop()
 
         args_mg = f"{self.binary_path }" + (" ").join([f"{k} {v}" for k, v in self.config])
         args_mg += f" --bolt-address {self.host} --bolt-port {self.port}"
-        args_mg = (f"sudo -u {user} " if user != "" else "") + args_mg
-
+        args_mg = (f"sudo -H -u {self.user} " if self.user != "" else "") + args_mg
+        print(args_mg)
         # TODO: Process should be started as user memgraph
         self.proc_mg = subprocess.Popen(args_mg, shell=True)
         wait_for_port(self.host, self.port)
@@ -111,8 +122,10 @@ class MemgraphInstanceBinary(MemgraphInstance):
 
 
 class MemgraphInstanceDocker(MemgraphInstance):
-    def __init__(self, **data):
+    def __init__(self, docker_image: DockerImage = DockerImage.MEMGRAPH, docker_tag: str = "latest", **data):
         super().__init__(**data)
+        self.docker_image = docker_image
+        self.docker_tag = docker_tag
         self.client = docker.from_env()
         self.container = None
 
@@ -122,7 +135,7 @@ class MemgraphInstanceDocker(MemgraphInstance):
         self.stop()
 
         self.container = self.client.containers.run(
-            "memgraph/memgraph-mage", detach=True, ports={f"7687/tcp": self.port}
+            self.docker_image.value + ":" + self.docker_tag, detach=True, ports={f"7687/tcp": self.port}
         )
         wait_for_port(self.host, self.port)
 
