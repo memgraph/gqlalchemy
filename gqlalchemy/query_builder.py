@@ -372,33 +372,29 @@ class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         self._query: List[Any] = []
         self._connection = connection if connection is not None else Memgraph()
-        self._clauses: List[DeclarativeBaseTypes] = []
+        self._fetch_results: bool = False
 
     def match(self, optional: bool = False) -> "DeclarativeBase":
         """Creates a MATCH statement Cypher partial query."""
         self._query.append(MatchPartialQuery(optional))
-        self._clauses.append(DeclarativeBaseTypes.MATCH)
 
         return self
 
     def merge(self) -> "DeclarativeBase":
         """Creates a MERGE statement Cypher partial query."""
         self._query.append(MergePartialQuery())
-        self._clauses.append(DeclarativeBaseTypes.MERGE)
 
         return self
 
     def create(self) -> "DeclarativeBase":
         """Creates a CREATE statement Cypher partial query."""
         self._query.append(CreatePartialQuery())
-        self._clauses.append(DeclarativeBaseTypes.CREATE)
 
         return self
 
     def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
         """Creates a CALL statement Cypher partial query."""
         self._query.append(CallPartialQuery(procedure, arguments))
-        self._clauses.append(DeclarativeBaseTypes.CALL)
 
         return self
 
@@ -477,7 +473,6 @@ class DeclarativeBase(ABC):
                 WhereConditionConstants.WHERE, " ".join([property, operator, to_cypher_value(value)])
             )
         )
-        self._clauses.append(DeclarativeBaseTypes.WHERE)
 
         return self
 
@@ -488,7 +483,6 @@ class DeclarativeBase(ABC):
                 WhereConditionConstants.AND, " ".join([property, operator, to_cypher_value(value)])
             )
         )
-        self._clauses.append(DeclarativeBaseTypes.AND_WHERE)
 
         return self
 
@@ -509,84 +503,74 @@ class DeclarativeBase(ABC):
                 WhereConditionConstants.XOR, " ".join([property, operator, to_cypher_value(value)])
             )
         )
-        self._clauses.append(DeclarativeBaseTypes.OR_WHERE)
 
         return self
 
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
         """Creates a UNWIND statement Cypher partial query."""
         self._query.append(UnwindPartialQuery(list_expression, variable))
-        self._clauses.append(DeclarativeBaseTypes.UNWIND)
 
         return self
 
     def with_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         """Creates a WITH statement Cypher partial query."""
         self._query.append(WithPartialQuery(results))
-        self._clauses.append(DeclarativeBaseTypes.WITH)
 
         return self
 
     def union(self, include_duplicates: Optional[bool] = True) -> "DeclarativeBase":
         """Creates a UNION statement Cypher partial query."""
         self._query.append(UnionPartialQuery(include_duplicates))
-        self._clauses.append(DeclarativeBaseTypes.UNION)
 
         return self
 
     def delete(self, variable_expressions: List[str], detach: Optional[bool] = False) -> "DeclarativeBase":
         """Creates a DELETE statement Cypher partial query."""
         self._query.append(DeletePartialQuery(variable_expressions, detach))
-        self._clauses.append(DeclarativeBaseTypes.DELETE)
 
         return self
 
     def remove(self, items: List[str]) -> "DeclarativeBase":
         """Creates a REMOVE statement Cypher partial query."""
         self._query.append(RemovePartialQuery(items))
-        self._clauses.append(DeclarativeBaseTypes.REMOVE)
 
         return self
 
     def yield_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         """Creates a YIELD statement Cypher partial query."""
         self._query.append(YieldPartialQuery(results))
-        self._clauses.append(DeclarativeBaseTypes.YIELD)
 
         return self
 
     def return_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         """Creates a RETURN statement Cypher partial query."""
         self._query.append(ReturnPartialQuery(results))
-        self._clauses.append(DeclarativeBaseTypes.RETURN)
+        self._fetch_results = True
 
         return self
 
     def order_by(self, properties: str) -> "DeclarativeBase":
         """Creates a ORDER BY statement Cypher partial query."""
         self._query.append(OrderByPartialQuery(properties))
-        self._clauses.append(DeclarativeBaseTypes.ORDER_BY)
 
         return self
 
     def limit(self, integer_expression: str) -> "DeclarativeBase":
         """Creates a LIMIT statement Cypher partial query."""
         self._query.append(LimitPartialQuery(integer_expression))
-        self._clauses.append(DeclarativeBaseTypes.LIMIT)
 
         return self
 
     def skip(self, integer_expression: str) -> "DeclarativeBase":
         """Creates a SKIP statement Cypher partial query."""
         self._query.append(SkipPartialQuery(integer_expression))
-        self._clauses.append(DeclarativeBaseTypes.SKIP)
 
         return self
 
     def add_custom_cypher(self, custom_cypher: str) -> "DeclarativeBase":
         self._query.append(AddStringPartialQuery(custom_cypher))
-        if "RETURN" in custom_cypher:
-            self._clauses.append(DeclarativeBaseTypes.RETURN)
+        if " RETURN " in custom_cypher:
+            self._fetch_results = True
 
         return self
 
@@ -608,7 +592,7 @@ class DeclarativeBase(ABC):
     def execute(self) -> Iterator[Dict[str, Any]]:
         """Executes the Cypher query."""
         query = self._construct_query()
-        if DeclarativeBaseTypes.RETURN in self._clauses:
+        if self._fetch_results:
             return self._connection.execute_and_fetch(query)
         else:
             return self._connection.execute(query)
@@ -648,21 +632,18 @@ class Create(DeclarativeBase):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
         self._query.append(CreatePartialQuery())
-        self._clauses.append(DeclarativeBaseTypes.CREATE)
 
 
 class Match(DeclarativeBase):
     def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
         self._query.append(MatchPartialQuery(optional))
-        self._clauses.append(DeclarativeBaseTypes.MATCH)
 
 
 class Merge(DeclarativeBase):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
         self._query.append(MergePartialQuery())
-        self._clauses.append(DeclarativeBaseTypes.MERGE)
 
 
 class Call(DeclarativeBase):
@@ -671,14 +652,12 @@ class Call(DeclarativeBase):
     ):
         super().__init__(connection)
         self._query.append(CallPartialQuery(procedure, arguments))
-        self._clauses.append(DeclarativeBaseTypes.CALL)
 
 
 class Unwind(DeclarativeBase):
     def __init__(self, list_expression: str, variable: str, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
         self._query.append(UnwindPartialQuery(list_expression, variable))
-        self._clauses.append(DeclarativeBaseTypes.UNWIND)
 
 
 class With(DeclarativeBase):
@@ -687,4 +666,3 @@ class With(DeclarativeBase):
     ):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
-        self._clauses.append(DeclarativeBaseTypes.WITH)
