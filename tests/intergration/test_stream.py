@@ -78,9 +78,22 @@ def test_kafka_stream_extended_cypher():
         transform="kafka_stream.transform",
         consumer_group="my_group",
         batch_interval="9999",
-        bootstrap_servers="'localhost:9092'",
+        bootstrap_servers="localhost:9092",
     )
     query = "CREATE KAFKA STREAM test_stream TOPICS topic TRANSFORM kafka_stream.transform CONSUMER_GROUP my_group BATCH_INTERVAL 9999 BOOTSTRAP_SERVERS 'localhost:9092';"
+    assert kafka_stream.to_cypher() == query
+
+
+def test_kafka_stream_extended_cypher_list():
+    kafka_stream = MemgraphKafkaStream(
+        name="test_stream",
+        topics=["topic"],
+        transform="kafka_stream.transform",
+        consumer_group="my_group",
+        batch_interval="9999",
+        bootstrap_servers=["localhost:9092", "localhost:9093", "localhost:9094"],
+    )
+    query = "CREATE KAFKA STREAM test_stream TOPICS topic TRANSFORM kafka_stream.transform CONSUMER_GROUP my_group BATCH_INTERVAL 9999 BOOTSTRAP_SERVERS 'localhost:9092', 'localhost:9093', 'localhost:9094';"
     assert kafka_stream.to_cypher() == query
 
 
