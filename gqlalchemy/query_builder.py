@@ -473,7 +473,7 @@ class DeclarativeBase(ABC):
                 WhereConditionConstants.WHERE, separator.join([item, operator, to_cypher_value(value)])
             )
         )
-        
+
         return self
 
     def and_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
