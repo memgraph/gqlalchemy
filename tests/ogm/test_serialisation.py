@@ -12,54 +12,46 @@
 # limitations under the License.
 
 from typing import Optional
-from gqlalchemy import Memgraph, Node, Relationship, Field
-import pytest
-
-db = Memgraph()
+from gqlalchemy import Node, Relationship, Field
 
 
-class SimpleNode(Node):
-    id: Optional[int] = Field()
-    name: Optional[str] = Field()
+def test_save_node(memgraph):
+    class SimpleNode(Node):
+        id: Optional[int] = Field()
+        name: Optional[str] = Field()
 
-
-class NodeWithKey(Node):
-    id: int = Field(exists=True, unique=True, index=True, db=db)
-    name: Optional[str] = Field()
-
-
-class SimpleRelationship(Relationship, type="SIMPLE_RELATIONSHIP"):
-    pass
-
-
-@pytest.fixture
-def clear_db():
-    db = Memgraph()
-    db.drop_database()
-
-
-def test_save_node(clear_db):
     node1 = SimpleNode(id=1, name="First Simple Node")
     assert node1._id is None
-    node1.save(db)
+    node1.save(memgraph)
     assert node1._id is not None
     node2 = SimpleNode(id=1)
-    node2.save(db)
+    node2.save(memgraph)
     assert node1._id != node2._id
 
 
-def test_save_node2(memgraph, clear_db):
+def test_save_node2(memgraph):
+    class NodeWithKey(Node):
+        id: int = Field(exists=True, unique=True, index=True, db=memgraph)
+        name: Optional[str] = Field()
+
     node1 = NodeWithKey(id=1, name="First NodeWithKey")
     assert node1._id is None
-    node1.save(db)
+    node1.save(memgraph)
     assert node1._id is not None
     node2 = NodeWithKey(id=1)
-    node2.save(db)
+    node2.save(memgraph)
     assert node1._id == node2._id
     assert node1.name == node2.name
 
 
-def test_save_relationship(memgraph, clear_db):
+def test_save_relationship(memgraph):
+    class NodeWithKey(Node):
+        id: int = Field(exists=True, unique=True, index=True, db=memgraph)
+        name: Optional[str] = Field()
+
+    class SimpleRelationship(Relationship, type="SIMPLE_RELATIONSHIP"):
+        pass
+
     node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
     node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
     relationship = SimpleRelationship(
@@ -72,7 +64,14 @@ def test_save_relationship(memgraph, clear_db):
     assert relationship._id is not None
 
 
-def test_save_relationship2(memgraph, clear_db):
+def test_save_relationship2(memgraph):
+    class NodeWithKey(Node):
+        id: int = Field(exists=True, unique=True, index=True, db=memgraph)
+        name: Optional[str] = Field()
+
+    class SimpleRelationship(Relationship, type="SIMPLE_RELATIONSHIP"):
+        pass
+
     node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
     node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
     relationship = SimpleRelationship(
@@ -83,5 +82,5 @@ def test_save_relationship2(memgraph, clear_db):
     assert SimpleRelationship.type is not None
     relationship.save(memgraph)
     assert relationship._id is not None
-    relationship2 = db.load_relationship(relationship)
+    relationship2 = memgraph.load_relationship(relationship)
     assert relationship2._id == relationship._id
