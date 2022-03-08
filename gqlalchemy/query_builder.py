@@ -470,7 +470,7 @@ class DeclarativeBase(ABC):
         separator = "" if operator == ":" else " "
         self._query.append(
             WhereConditionPartialQuery(
-              WhereConditionConstants.WHERE, separator.join([item, operator, to_cypher_value(value)])
+                WhereConditionConstants.WHERE, separator.join([item, operator, to_cypher_value(value)])
             )
         )
         
@@ -481,7 +481,7 @@ class DeclarativeBase(ABC):
         separator = "" if operator == ":" else " "
         self._query.append(
             WhereConditionPartialQuery(
-              WhereConditionConstants.AND, separator.join([item, operator, to_cypher_value(value)])
+                WhereConditionConstants.AND, separator.join([item, operator, to_cypher_value(value)])
             )
         )
 
