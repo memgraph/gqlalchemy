@@ -117,7 +117,7 @@ class MemgraphKafkaStream(MemgraphStream):
     consumer_group: str = None
     batch_interval: str = None
     batch_size: str = None
-    bootstrap_servers: Union[str, List] = None
+    bootstrap_servers: Union[str, List[str]] = None
 
     def to_cypher(self) -> str:
         """Converts Kafka stream to a cypher clause."""
