@@ -44,6 +44,16 @@ class TriggerExecutionPhase:
     AFTER = "AFTER"
 
 
+class FieldAttrsConstants:
+    INDEX = "index"
+    EXISTS = "exists"
+    UNIQUE = "unique"
+
+    @classmethod
+    def list(cls):
+        return [cls.INDEX, cls.EXISTS, cls.UNIQUE]
+
+
 @dataclass(frozen=True, eq=True)
 class MemgraphIndex:
     label: str
@@ -152,9 +162,11 @@ class MemgraphTrigger:
 
     def to_cypher(self) -> str:
         """Converts a Trigger to a cypher clause."""
-        query = f"CREATE TRIGGER {self.name} "
-        # when self.event_object is TriggerEventObject.ALL there is a double space
-        query += f"ON {self.event_object} {self.event_type} "
+        query = f"CREATE TRIGGER {self.name} ON " + (
+            f"{self.event_type} "
+            if self.event_object is TriggerEventObject.ALL
+            else f"{self.event_object} {self.event_type} "
+        )
         query += f"{self.execution_phase} COMMIT EXECUTE "
         query += f"{self.statement};"
         return query
@@ -215,9 +227,7 @@ class GraphObject(BaseModel):
         """
         return cls._convert_to_real_type_(obj)
 
-    def escape_value(
-        self, value: Union[None, bool, int, float, str, list, dict, datetime.datetime], in_list_or_dict=False
-    ) -> str:
+    def escape_value(self, value: Union[None, bool, int, float, str, list, dict, datetime.datetime]) -> str:
         if value is None:
             "Null"
         elif isinstance(value, bool):
@@ -272,6 +282,14 @@ class GraphObject(BaseModel):
         """
         return self._get_cypher_field_assignment_block(variable_name, " AND ")
 
+    def _get_cypher_fields_xor_block(self, variable_name: str) -> str:
+        """Returns a cypher field assignment block separated by an XOR
+        statement.
+        """
+        return self._get_cypher_field_assignment_block(variable_name, " XOR ")
+
+    # TODO: add NOT
+
     def _get_cypher_set_properties(self, variable_name: str) -> str:
         """Returns a cypher set properties block."""
         cypher_set_properties = []
@@ -301,7 +319,7 @@ class UniqueGraphObject(GraphObject):
 
     @property
     def _properties(self) -> Dict[str, Any]:
-        return {k: v for k, v in dict(self).items() if not k.startswith("_")}
+        return {k: v for k, v in dict(self).items() if not k.startswith("_") and k != "labels"}
 
     def __str__(self) -> str:
         return f"<GraphObject id={self._id} properties={self._properties}>"
@@ -345,7 +363,7 @@ class NodeMetaclass(BaseModel.__class__):
             label = attrs.get("label", cls.label)
             db = attrs.get("db", None)
             skip_constraints = False
-            for constraint in ["index", "unique", "exists"]:
+            for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
                     base = field_in_superclass(field, constraint)
                     if base is not None:
@@ -361,15 +379,15 @@ class NodeMetaclass(BaseModel.__class__):
             if skip_constraints:
                 continue
 
-            if "index" in attrs:
+            if FieldAttrsConstants.INDEX in attrs and attrs[FieldAttrsConstants.INDEX] is True:
                 index = MemgraphIndex(label, field)
                 db.create_index(index)
 
-            if "exists" in attrs:
+            if FieldAttrsConstants.EXISTS in attrs and attrs[FieldAttrsConstants.EXISTS] is True:
                 constraint = MemgraphConstraintExists(label, field)
                 db.create_constraint(constraint)
 
-            if "unique" in attrs:
+            if FieldAttrsConstants.UNIQUE in attrs and attrs[FieldAttrsConstants.UNIQUE] is True:
                 constraint = MemgraphConstraintUnique(label, field)
                 db.create_constraint(constraint)
 

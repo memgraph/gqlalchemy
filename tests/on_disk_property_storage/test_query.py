@@ -22,21 +22,18 @@ memgraph = Memgraph()
 db = SQLitePropertyDatabase("./tests/on_disk_storage.db", memgraph)
 
 
-class User(Node):
-    id: int = Field(unique=True, index=True, db=memgraph)
-    huge_string: Optional[str] = Field(on_disk=True)
-
-
-class FriendTo(Relationship, type="FRIEND_TO"):
-    huge_string: Optional[str] = Field(on_disk=True)
-
-
-@pytest.fixture
-def clear_db():
-    memgraph = Memgraph()
-    db = SQLitePropertyDatabase("./tests/on_disk_storage.db", memgraph)
+def drop_data_and_constraints():
     memgraph.drop_database()
     db.drop_database()
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+
+
+@pytest.fixture(scope="module")
+def clear_db():
+    drop_data_and_constraints()
+    yield
+    drop_data_and_constraints()
 
 
 def test_add_relationship_property(clear_db):
@@ -77,7 +74,11 @@ def test_delete_relationship_property(clear_db):
     assert result_value is None
 
 
-def test_add_node_with_an_on_disk_property(clear_db):
+def test_add_node_with_an_on_disk_property():
+    class User(Node):
+        id: int = Field(unique=True, index=True, db=memgraph)
+        huge_string: Optional[str] = Field(on_disk=True)
+
     secret = "qwertyuiopasdfghjklzxcvbnm"
     user = User(id=12, huge_string=secret)
     memgraph.save_node(user)
@@ -85,7 +86,14 @@ def test_add_node_with_an_on_disk_property(clear_db):
     assert user_2.huge_string == secret
 
 
-def test_add_relationship_with_an_on_disk_property(clear_db):
+def test_add_relationship_with_an_on_disk_property():
+    class User(Node):
+        id: int = Field(unique=True, index=True, db=memgraph)
+        huge_string: Optional[str] = Field(on_disk=True)
+
+    class FriendTo(Relationship, type="FRIEND_TO"):
+        huge_string: Optional[str] = Field(on_disk=True)
+
     secret = "qwertyuiopasdfghjklzxcvbnm"
     user_1 = User(id=12).save(memgraph)
     user_2 = User(id=11).save(memgraph)
