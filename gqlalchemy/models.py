@@ -32,11 +32,18 @@ class TriggerEventType:
     UPDATE = "UPDATE"
     DELETE = "DELETE"
 
+    @classmethod
+    def list(cls):
+        return [cls.CREATE, cls.UPDATE, cls.DELETE]
+
 
 class TriggerEventObject:
-    ALL = ""
     NODE = "()"
     RELATIONSHIP = "-->"
+
+    @classmethod
+    def list(cls):
+        return [cls.NODE, cls.RELATIONSHIP]
 
 
 class TriggerExecutionPhase:
@@ -155,18 +162,20 @@ class MemgraphPulsarStream(MemgraphStream):
 @dataclass(frozen=True, eq=True)
 class MemgraphTrigger:
     name: str
-    event_type: TriggerEventType
-    event_object: TriggerEventObject
     execution_phase: TriggerExecutionPhase
     statement: str
+    event_type: Optional[TriggerEventType] = None
+    event_object: Optional[TriggerEventObject] = None
 
     def to_cypher(self) -> str:
         """Converts a Trigger to a cypher clause."""
-        query = f"CREATE TRIGGER {self.name} ON " + (
-            f"{self.event_type} "
-            if self.event_object is TriggerEventObject.ALL
-            else f"{self.event_object} {self.event_type} "
-        )
+        query = f"CREATE TRIGGER {self.name} "
+        if self.event_type in TriggerEventType.list():
+            query += f"ON " + (
+                f"{self.event_object} {self.event_type} "
+                if self.event_object in TriggerEventObject.list()
+                else f"{self.event_type} "
+            )
         query += f"{self.execution_phase} COMMIT EXECUTE "
         query += f"{self.statement};"
         return query
