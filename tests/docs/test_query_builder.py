@@ -48,7 +48,7 @@ def test_create_nodes_relationships_1(memgraph):
 
     expected_query = " CREATE (:Person {name: 'Ron'})"
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -59,7 +59,7 @@ def test_create_nodes_relationships_2(memgraph):
 
     expected_query = " MERGE (:Person {name: 'Leslie'})"
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -72,7 +72,7 @@ def test_create_nodes_relationships_3(memgraph):
 
     expected_query = " CREATE (:Person {name: 'Leslie'})-[:FRIENDS_WITH]->(:Person {name: 'Ron'})"
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -83,7 +83,7 @@ def test_delete_remove_objects_1(memgraph):
 
     expected_query = " MATCH (p:Person) DELETE p "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -94,7 +94,7 @@ def test_delete_remove_objects_2(memgraph):
 
     expected_query = " MATCH (:Person)-[f:FRIENDS_WITH]->(:Person) DELETE f "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
@@ -105,7 +105,7 @@ def test_delete_remove_objects_3(memgraph):
 
     expected_query = " MATCH (p:Person) REMOVE p.name "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
