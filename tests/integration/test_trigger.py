@@ -13,35 +13,34 @@
 # limitations under the License.
 import pytest
 from gqlalchemy import Memgraph, MemgraphTrigger
-from gqlalchemy.models import TriggerEventType, TriggerEventObject, TriggerExecutionPhase
+from gqlalchemy.models import TriggerEventObject, TriggerEventType, TriggerExecutionPhase
 
 
 @pytest.fixture
 def cleanup_trigger():
-    yield
     memgraph = Memgraph()
-    memgraph.execute("DROP TRIGGER test_trigger;")
+    memgraph.drop_triggers()
+    yield
+    memgraph.drop_triggers()
 
 
 @pytest.mark.usefixtures("cleanup_trigger")
-def test_create_get_trigger(memgraph: Memgraph):
+def test_create_trigger_without_event_object(memgraph: Memgraph):
     trigger = MemgraphTrigger(
         name="test_trigger",
         event_type=TriggerEventType.CREATE,
-        event_object=TriggerEventObject.ALL,
         execution_phase=TriggerExecutionPhase.BEFORE,
         statement="CREATE (:Node)",
     )
 
     memgraph.create_trigger(trigger)
-    assert any(map(lambda t: t["trigger name"] == "test_trigger", memgraph.get_triggers()))
+    assert any(map(lambda t: t.name == "test_trigger", memgraph.get_triggers()))
 
 
 def test_drop_trigger(memgraph: Memgraph):
     trigger = MemgraphTrigger(
         name="test_trigger",
         event_type=TriggerEventType.CREATE,
-        event_object=TriggerEventObject.ALL,
         execution_phase=TriggerExecutionPhase.BEFORE,
         statement="CREATE (:Node)",
     )
@@ -55,9 +54,58 @@ def test_trigger_cypher():
     trigger = MemgraphTrigger(
         name="test_trigger",
         event_type=TriggerEventType.CREATE,
-        event_object=TriggerEventObject.ALL,
         execution_phase=TriggerExecutionPhase.BEFORE,
         statement="CREATE (:Node)",
     )
     query = "CREATE TRIGGER test_trigger ON CREATE BEFORE COMMIT EXECUTE CREATE (:Node);"
+    assert trigger.to_cypher() == query
+
+
+@pytest.mark.usefixtures("cleanup_trigger")
+def test_create_trigger_with_event_object(memgraph: Memgraph):
+    trigger = MemgraphTrigger(
+        name="test_trigger",
+        event_type=TriggerEventType.CREATE,
+        event_object=TriggerEventObject.NODE,
+        execution_phase=TriggerExecutionPhase.AFTER,
+        statement="CREATE (:Node)",
+    )
+
+    memgraph.create_trigger(trigger)
+    assert any(map(lambda t: t.name == "test_trigger", memgraph.get_triggers()))
+
+
+def test_trigger_with_event_object_cypher(memgraph: Memgraph):
+    trigger = MemgraphTrigger(
+        name="test_trigger",
+        event_type=TriggerEventType.CREATE,
+        event_object=TriggerEventObject.NODE,
+        execution_phase=TriggerExecutionPhase.AFTER,
+        statement="CREATE (:Node)",
+    )
+
+    query = "CREATE TRIGGER test_trigger ON () CREATE AFTER COMMIT EXECUTE CREATE (:Node);"
+    assert trigger.to_cypher() == query
+
+
+@pytest.mark.usefixtures("cleanup_trigger")
+def test_create_trigger_without_on(memgraph: Memgraph):
+    trigger = MemgraphTrigger(
+        name="test_trigger",
+        execution_phase=TriggerExecutionPhase.BEFORE,
+        statement="CREATE (n:Node)",
+    )
+
+    memgraph.create_trigger(trigger)
+    assert any(map(lambda t: t.name == "test_trigger", memgraph.get_triggers()))
+
+
+def test_trigger_without_on_cypher():
+    trigger = MemgraphTrigger(
+        name="test_trigger",
+        execution_phase=TriggerExecutionPhase.BEFORE,
+        statement="CREATE (:Node)",
+    )
+
+    query = "CREATE TRIGGER test_trigger BEFORE COMMIT EXECUTE CREATE (:Node);"
     assert trigger.to_cypher() == query

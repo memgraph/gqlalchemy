@@ -200,13 +200,38 @@ class Memgraph:
         self.execute(query)
 
     def get_triggers(self) -> List[str]:
-        """Creates a trigger"""
-        return list(self.execute_and_fetch("SHOW TRIGGERS;"))
+        """Returns a list of all database triggers"""
+        triggers_list = list(self.execute_and_fetch("SHOW TRIGGERS;"))
+        memgraph_triggers_list = []
+        for trigger in triggers_list:
+            event_type = trigger["event type"]
+            event_object = None
+
+            if event_type == "ANY":
+                event_type = None
+            elif len(event_type.split()) > 1:
+                [event_object, event_type] = [part for part in event_type.split()]
+
+            memgraph_triggers_list.append(
+                MemgraphTrigger(
+                    name=trigger["trigger name"],
+                    event_type=event_type,
+                    event_object=event_object,
+                    execution_phase=trigger["phase"].split()[0],
+                    statement=trigger["statement"],
+                )
+            )
+        return memgraph_triggers_list
 
     def drop_trigger(self, trigger) -> None:
         """Drop a trigger"""
         query = f"DROP TRIGGER {trigger.name};"
         self.execute(query)
+
+    def drop_triggers(self) -> None:
+        """Drops all triggers in the database"""
+        for trigger in self.get_triggers():
+            self.drop_trigger(trigger)
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
