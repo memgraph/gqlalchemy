@@ -372,6 +372,7 @@ class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         self._query: List[Any] = []
         self._connection = connection if connection is not None else Memgraph()
+        self._fetch_results: bool = False
 
     def match(self, optional: bool = False) -> "DeclarativeBase":
         """Creates a MATCH statement Cypher partial query."""
@@ -548,6 +549,7 @@ class DeclarativeBase(ABC):
     def return_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         """Creates a RETURN statement Cypher partial query."""
         self._query.append(ReturnPartialQuery(results))
+        self._fetch_results = True
 
         return self
 
@@ -571,6 +573,8 @@ class DeclarativeBase(ABC):
 
     def add_custom_cypher(self, custom_cypher: str) -> "DeclarativeBase":
         self._query.append(AddStringPartialQuery(custom_cypher))
+        if " RETURN " in custom_cypher:
+            self._fetch_results = True
 
         return self
 
@@ -592,7 +596,10 @@ class DeclarativeBase(ABC):
     def execute(self) -> Iterator[Dict[str, Any]]:
         """Executes the Cypher query."""
         query = self._construct_query()
-        return self._connection.execute_and_fetch(query)
+        if self._fetch_results:
+            return self._connection.execute_and_fetch(query)
+        else:
+            return self._connection.execute(query)
 
     def _construct_query(self) -> str:
         """Constructs the (partial) Cypher query so it can be executed."""
