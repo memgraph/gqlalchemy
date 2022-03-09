@@ -37,7 +37,7 @@ import pyarrow.dataset as ds
 
 
 @dataclass(frozen=True)
-class RelationshipMapping:
+class ForeignKeyMapping:
     foreign_key: str
     reference_table: str
     reference_key: str
@@ -47,29 +47,29 @@ class RelationshipMapping:
 
 
 @dataclass(frozen=True)
-class Nx1Mapping:
-    mapping: RelationshipMapping
+class OneToManyMapping:
+    mapping: ForeignKeyMapping
     from_entity: bool = False
 
 
 
 @dataclass(frozen=True)
-class MxNMapping:
-    mapping1: RelationshipMapping
-    mapping2: RelationshipMapping
+class ManyToManyMapping:
+    mapping1: ForeignKeyMapping
+    mapping2: ForeignKeyMapping
     label: str
     from_first: bool = True
 
 
 
-Mapping = Union[List[Nx1Mapping], MxNMapping]
+Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
 
 
 
 @dataclass
-class CollectionMapping:
-    collection_name: str
-    mapping: Mapping = None
+class TableMapping:
+    table_name: str
+    mapping: Optional[Mapping] = None
     indices: Optional[List[str]] = None
 
 
@@ -110,7 +110,7 @@ class S3DataSource(DataSource):
     def load_data(
         self,
         collection_name: str,
-        is_cross_table: bool=False,
+        is_cross_table: bool = False,
         columns: Optional[List[str]] = None,
     ) -> None:
         s3 = fs.S3FileSystem(
@@ -123,7 +123,10 @@ class S3DataSource(DataSource):
         print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
 
         # Load dataset via Pyarrow
-        dataset = ds.dataset(source, filesystem=s3)
+        dataset = ds.dataset(
+            source=source, 
+            filesystem=s3
+        )
 
         # Load batches from raw data
         for batch in dataset.to_batches(
@@ -139,7 +142,7 @@ class Configuration:
     column_names_mapping: Optional[Dict[str, str]] = None
 
 
-class Translator:
+class TableToGraphTranslator:
     _DIRECTION = {
         True: ("a", "b"),
         False: ("b", "a"),
@@ -152,13 +155,9 @@ class Translator:
         memgraph: Optional[Memgraph] = None
     ) -> None:
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
-        self._data_source = data_source
-        self._collection_mappings: List[CollectionMapping] = []
-        self._cross_relationship_mappings: List[CollectionMapping] = []
+        self._data_source: DataSource = data_source
 
-        self._load_name_mappings(data_configuration["name_mappings"])
-        self._load_nx1_relations_and_indices(data_configuration["nx1_relations"], data_configuration["indices"])
-        self._load_mxn_relations(data_configuration["mxn_relations"])
+        self.__load_configuration(data_configuration=data_configuration)
 
 
     def translate(self, drop_database_on_start: bool):
@@ -175,8 +174,8 @@ class Translator:
 
 
     def _load_nodes(self) -> None:
-        for collection_mapping in self._collection_mappings:
-            collection_name = collection_mapping.collection_name
+        for one_to_many_mapping in self._one_to_many_mappings:
+            collection_name = one_to_many_mapping.table_name
             for row in self._data_source.load_data(collection_name=collection_name):
                 self._save_row_as_node(
                     label=collection_name, 
@@ -185,45 +184,63 @@ class Translator:
 
 
     def _load_cross_relationships(self) -> None:
-        for cross_relationship_mapping in self._cross_relationship_mappings:
-            collection_name = cross_relationship_mapping.collection_name
-            
-            mapping1 = cross_relationship_mapping.mapping.mapping1
-            mapping2 = cross_relationship_mapping.mapping.mapping2
+        for many_to_many_mapping in self._many_to_many_mappings:
+            collection_name = many_to_many_mapping.table_name
+            mapping1 = many_to_many_mapping.mapping.mapping1
+            mapping2 = many_to_many_mapping.mapping.mapping2
 
-            table_name1 = mapping1.reference_table
-            table_name2 = mapping2.reference_table
+            table_name1, property1 = mapping1.reference_table, mapping1.reference_key
+            table_name2, property2 = mapping2.reference_table, mapping2.reference_key
 
-            node1 = self._get_node_name(table_name1)
-            node2 = self._get_node_name(table_name2)
+            node1 = self._get_node_name(original_name=table_name1)
+            node2 = self._get_node_name(original_name=table_name2)
 
-            property1 = mapping1.reference_key
-            property2 = mapping2.reference_key
-
-            new_property1 = self._get_property_name(table_name1, property1)
-            new_property2 = self._get_property_name(table_name2, property2)
+            new_property1 = self._get_property_name(collection_name=table_name1, original_column_name=property1)
+            new_property2 = self._get_property_name(collection_name=table_name2, original_column_name=property2)
 
             for row in self._data_source.load_data(collection_name=collection_name, is_cross_table=True):
                 self._save_row_as_relationship(
                     relations=[node1, node2],
                     on_properties=[(property1, new_property1), (property2, new_property2)],
-                    relation_label=cross_relationship_mapping.mapping.label,
+                    relation_label=many_to_many_mapping.mapping.label,
                     row=row
                 )
 
 
     def _create_triggers(self) -> None:
-        for collection_mapping in self._collection_mappings:
-            label1 = self._get_node_name(collection_mapping.collection_name)
-            for nx1_mapping in collection_mapping.mapping:
-                property1 = self._get_property_name(collection_mapping.collection_name, nx1_mapping.mapping.foreign_key)
-                label2 = self._get_node_name(nx1_mapping.mapping.reference_table)
-                property2 = self._get_property_name(collection_mapping.collection_name, nx1_mapping.mapping.reference_key)
-                edge_type = nx1_mapping.mapping.label
-                from_entity = nx1_mapping.from_entity
+        for one_to_many_mapping in self._one_to_many_mappings:
+            label1 = self._get_node_name(original_name=one_to_many_mapping.table_name)
+            for mapping in one_to_many_mapping.mapping:
+                property1 = self._get_property_name(
+                    collection_name=one_to_many_mapping.table_name, 
+                    original_column_name=mapping.mapping.foreign_key
+                )
+                label2 = self._get_node_name(
+                    original_name=mapping.mapping.reference_table
+                )
+                property2 = self._get_property_name(
+                    collection_name=one_to_many_mapping.table_name, 
+                    original_column_name=mapping.mapping.reference_key
+                )
+                edge_type = mapping.mapping.label
+                from_entity = mapping.from_entity
 
-                self._create_trigger(label1, label2, property1, property2, edge_type, from_entity)
-                self._create_trigger(label2, label1, property2, property1, edge_type, not from_entity)
+                self._create_trigger(
+                    label1=label1, 
+                    label2=label2, 
+                    property1=property1, 
+                    property2=property2, 
+                    edge_type=edge_type, 
+                    from_entity=from_entity
+                )
+                self._create_trigger(
+                    label1=label2, 
+                    label2=label1, 
+                    property1=property2, 
+                    property2=property1, 
+                    edge_type=edge_type, 
+                    from_entity=not from_entity
+                )
 
 
     def _drop_triggers(self) -> None:
@@ -247,11 +264,14 @@ class Translator:
 
 
     def _create_indices(self) -> None:
-        for collection_mapping in self._collection_mappings:
-            collection_name = self._get_node_name(collection_mapping.collection_name)
-            for index in collection_mapping.indices:
-                new_index = self._get_property_name(collection_mapping.collection_name, index)
-                self._memgraph.create_index(MemgraphIndex(collection_name, new_index))
+        for one_to_many_mapping in self._one_to_many_mappings:
+            collection_name = self._get_node_name(original_name=one_to_many_mapping.table_name)
+            for index in one_to_many_mapping.indices:
+                new_index = self._get_property_name(
+                    collection_name=one_to_many_mapping.table_name, 
+                    original_column_name=index
+                )
+                self._memgraph.create_index(index=MemgraphIndex(collection_name, new_index))
                 print(f"Created index for {collection_name} on {new_index}")
 
 
@@ -261,7 +281,7 @@ class Translator:
 
 
     def _create_trigger_cypher_query(self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool) -> str:
-        from_node, to_node = Translator._DIRECTION[from_entity]
+        from_node, to_node = TableToGraphTranslator._DIRECTION[from_entity]
         return Unwind(list_expression="createdVertices", variable="a") \
                 .with_(results={"a":""}) \
                 .where(property1=f"a:{label2}", operator="MATCH", property2=f"(b:{label1})") \
@@ -293,7 +313,7 @@ class Translator:
         if len(relations) != len(on_properties):
             raise RuntimeError("Relations and properties should be a same-sized list.")
 
-        from_node, to_node = Translator._DIRECTION[from_first]
+        from_node, to_node = TableToGraphTranslator._DIRECTION[from_first]
         label1, label2 = relations[0], relations[1]
         property1, new_property1 = on_properties[0]
         property2, new_property2 = on_properties[1]
@@ -333,34 +353,44 @@ class Translator:
         return new_col_name if new_col_name is not None else original_column_name
 
 
-    def _load_name_mappings(self, name_mappings: Dict[str, Any]):
+    def __load_configuration(self, data_configuration: Dict[str, Any]):
+        self.__load_name_mappings(data_configuration["name_mappings"])
+        self.__load_one_to_many_mappings_and_indices(data_configuration["nx1_relations"], data_configuration["indices"])
+        self.__load_many_to_many_mappings(data_configuration["mxn_relations"])
+
+
+    def __load_name_mappings(self, name_mappings: Dict[str, Any]):
         self._configurations = {k: Configuration(**v) for k, v in name_mappings.items()}
 
 
-    def _load_nx1_relations_and_indices(self, nx1_relations: Dict[str, List[str]], indices: Dict[str, List[str]]) -> None:
-        self._collection_mappings = [
-            CollectionMapping(
-                collection_name=table_name, 
-                mapping=[Nx1Mapping(mapping=RelationshipMapping(**relation)) for relation in relations], 
+    def __load_one_to_many_mappings_and_indices(
+        self, 
+        one_to_many_configuration: Dict[str, List[str]], 
+        indices: Dict[str, List[str]]
+    ) -> None:
+        self._one_to_many_mappings = [
+            TableMapping(
+                table_name=table_name, 
+                mapping=[OneToManyMapping(mapping=ForeignKeyMapping(**relation)) for relation in relations], 
                 indices=indices[table_name]
-            ) for table_name, relations in nx1_relations.items()]
+            ) for table_name, relations in one_to_many_configuration.items()]
 
 
-    def _load_mxn_relations(self, mxn_relations: Dict):
-        self._cross_relationship_mappings = [
-            CollectionMapping(
-            collection_name=table_name, 
-                mapping=MxNMapping(
-                    mapping1=RelationshipMapping(**relations["mapping1"]),
-                    mapping2=RelationshipMapping(**relations["mapping2"]),
+    def __load_many_to_many_mappings(self, many_to_many_configuration: Dict[str, Any]):
+        self._many_to_many_mappings = [
+            TableMapping(
+            table_name=table_name, 
+                mapping=ManyToManyMapping(
+                    mapping1=ForeignKeyMapping(**relations["mapping1"]),
+                    mapping2=ForeignKeyMapping(**relations["mapping2"]),
                     label=relations["label"]
                 )
             )
-            for table_name, relations in mxn_relations.items()]
+            for table_name, relations in many_to_many_configuration.items()]
 
 
 
-class S3Translator(Translator):
+class S3Translator(TableToGraphTranslator):
     def __init__(
         self, 
         bucket_name: str,
