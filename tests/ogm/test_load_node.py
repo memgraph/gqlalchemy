@@ -11,8 +11,8 @@ def test_load_node(memgraph):
         followers: int = Field()
         totalViewCount: int = Field()
 
-    Streamer(name="Mislav", id="7", followers=777, totalViewCount=7777).save(memgraph)
-    loaded_streamer = memgraph.load_node(Node(id="7", _label="Stream"))
+    streamer = Streamer(name="Mislav", id="7", followers=777, totalViewCount=7777).save(memgraph)
+    loaded_streamer = memgraph.load_node(streamer)
     assert loaded_streamer.name == "Mislav"
     assert loaded_streamer.id == "7"
     assert loaded_streamer.followers == 777
