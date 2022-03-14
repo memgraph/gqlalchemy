@@ -35,7 +35,6 @@ from typing import (
 import pyarrow.dataset as ds
 
 
-
 @dataclass(frozen=True)
 class ForeignKeyMapping:
     foreign_key: str
@@ -45,12 +44,10 @@ class ForeignKeyMapping:
     variables: Optional[Dict[str, str]] = None
 
 
-
 @dataclass(frozen=True)
 class OneToManyMapping:
     mapping: ForeignKeyMapping
     from_entity: bool = False
-
 
 
 @dataclass(frozen=True)
@@ -61,9 +58,7 @@ class ManyToManyMapping:
     from_first: bool = True
 
 
-
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
-
 
 
 @dataclass
@@ -73,12 +68,10 @@ class TableMapping:
     indices: Optional[List[str]] = None
 
 
-
 class DataSource(ABC):
     def __init__(self, file_extension: str) -> None:
         self._file_extension: str = file_extension
 
-    
     @abstractmethod
     def load_data(
         self,
@@ -86,7 +79,6 @@ class DataSource(ABC):
         is_cross_table: bool=False
     ) -> None:
         pass
-
 
 
 class S3DataSource(DataSource):
@@ -106,7 +98,6 @@ class S3DataSource(DataSource):
         self._s3_region: str = s3_region
         self._s3_session_token: Optional[str] = s3_session_token
 
-    
     def load_data(
         self,
         collection_name: str,
@@ -142,7 +133,7 @@ class Configuration:
     column_names_mapping: Optional[Dict[str, str]] = None
 
 
-class TableToGraphTranslator:
+class TableToGraphImporter:
     _DIRECTION = {
         True: ("a", "b"),
         False: ("b", "a"),
@@ -159,7 +150,6 @@ class TableToGraphTranslator:
 
         self.__load_configuration(data_configuration=data_configuration)
 
-
     def translate(self, drop_database_on_start: bool):
         if drop_database_on_start:
             self._memgraph.drop_database()
@@ -172,7 +162,6 @@ class TableToGraphTranslator:
         self._load_nodes()
         self._load_cross_relationships()
 
-
     def _load_nodes(self) -> None:
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = one_to_many_mapping.table_name
@@ -181,7 +170,6 @@ class TableToGraphTranslator:
                     label=collection_name, 
                     row=row
                 )
-
 
     def _load_cross_relationships(self) -> None:
         for many_to_many_mapping in self._many_to_many_mappings:
@@ -205,7 +193,6 @@ class TableToGraphTranslator:
                     relation_label=many_to_many_mapping.mapping.label,
                     row=row
                 )
-
 
     def _create_triggers(self) -> None:
         for one_to_many_mapping in self._one_to_many_mappings:
@@ -242,11 +229,9 @@ class TableToGraphTranslator:
                     from_entity=not from_entity
                 )
 
-
     def _drop_triggers(self) -> None:
         for trigger in self._memgraph.get_triggers():
             self._memgraph.drop_trigger(MemgraphTrigger(trigger["trigger name"], None, None, None, None))
-
 
     def _create_trigger(self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool) -> None:
         trigger_name = "__".join([label1, property1, label2, property2])
@@ -262,7 +247,6 @@ class TableToGraphTranslator:
 
         self._memgraph.create_trigger(trigger)
 
-
     def _create_indices(self) -> None:
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = self._get_node_name(original_name=one_to_many_mapping.table_name)
@@ -274,14 +258,12 @@ class TableToGraphTranslator:
                 self._memgraph.create_index(index=MemgraphIndex(collection_name, new_index))
                 print(f"Created index for {collection_name} on {new_index}")
 
-
     def _drop_indices(self) -> None:
         for index in self._memgraph.get_indexes():
             self._memgraph.drop_index(index)
 
-
     def _create_trigger_cypher_query(self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool) -> str:
-        from_node, to_node = TableToGraphTranslator._DIRECTION[from_entity]
+        from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
         return Unwind(list_expression="createdVertices", variable="a") \
                 .with_(results={"a":""}) \
                 .where(property1=f"a:{label2}", operator="MATCH", property2=f"(b:{label1})") \
@@ -292,7 +274,6 @@ class TableToGraphTranslator:
                 .node(variable=to_node) \
                 .construct_query()
             
-
     def _save_row_as_node(self, label: str, row: Dict[str, Any]):
         list(
             QueryBuilder(connection=self._memgraph).
@@ -300,7 +281,6 @@ class TableToGraphTranslator:
             node(labels=self._get_node_name(label), 
                  **{self._get_property_name(label, k): v for k, v in row.items()})
             .execute())
-
 
     def _save_row_as_relationship(
         self, 
@@ -313,7 +293,7 @@ class TableToGraphTranslator:
         if len(relations) != len(on_properties):
             raise RuntimeError("Relations and properties should be a same-sized list.")
 
-        from_node, to_node = TableToGraphTranslator._DIRECTION[from_first]
+        from_node, to_node = TableToGraphImporter._DIRECTION[from_first]
         label1, label2 = relations[0], relations[1]
         property1, new_property1 = on_properties[0]
         property2, new_property2 = on_properties[1]
@@ -332,7 +312,6 @@ class TableToGraphTranslator:
             .execute()
         )
 
-
     def _get_node_name(self, original_name: str) -> str:
         configuration = self._configurations.get(original_name, None)
 
@@ -340,7 +319,6 @@ class TableToGraphTranslator:
             return original_name
 
         return configuration.label if configuration.label is not None else original_name
-
 
     def _get_property_name(self, collection_name: str, original_column_name: str):
         configuration = self._configurations.get(collection_name, None)
@@ -352,16 +330,13 @@ class TableToGraphTranslator:
 
         return new_col_name if new_col_name is not None else original_column_name
 
-
     def __load_configuration(self, data_configuration: Dict[str, Any]):
         self.__load_name_mappings(data_configuration["name_mappings"])
         self.__load_one_to_many_mappings_and_indices(data_configuration["nx1_relations"], data_configuration["indices"])
         self.__load_many_to_many_mappings(data_configuration["mxn_relations"])
 
-
     def __load_name_mappings(self, name_mappings: Dict[str, Any]):
         self._configurations = {k: Configuration(**v) for k, v in name_mappings.items()}
-
 
     def __load_one_to_many_mappings_and_indices(
         self, 
@@ -374,7 +349,6 @@ class TableToGraphTranslator:
                 mapping=[OneToManyMapping(mapping=ForeignKeyMapping(**relation)) for relation in relations], 
                 indices=indices[table_name]
             ) for table_name, relations in one_to_many_configuration.items()]
-
 
     def __load_many_to_many_mappings(self, many_to_many_configuration: Dict[str, Any]):
         self._many_to_many_mappings = [
@@ -389,8 +363,7 @@ class TableToGraphTranslator:
             for table_name, relations in many_to_many_configuration.items()]
 
 
-
-class S3Translator(TableToGraphTranslator):
+class S3Translator(TableToGraphImporter):
     def __init__(
         self, 
         bucket_name: str,
