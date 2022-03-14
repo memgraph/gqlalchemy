@@ -42,6 +42,7 @@ MG_PORT = int(os.getenv("MG_PORT", "7687"))
 MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
+MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
 
 class MemgraphConstants:
@@ -61,12 +62,14 @@ class Memgraph:
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
     ):
         self._host = host
         self._port = port
         self._username = username
         self._password = password
         self._encrypted = encrypted
+        self._client_name = client_name
         self._cached_connection: Optional[Connection] = None
         self._on_disk_db = None
 
@@ -143,6 +146,16 @@ class Memgraph:
                 )
         return constraints
 
+    def get_exists_constraints(
+        self,
+    ) -> List[MemgraphConstraintExists]:
+        return [x for x in self.get_constraints() if isinstance(x, MemgraphConstraintExists)]
+
+    def get_unique_constraints(
+        self,
+    ) -> List[MemgraphConstraintUnique]:
+        return [x for x in self.get_constraints() if isinstance(x, MemgraphConstraintUnique)]
+
     def ensure_constraints(
         self,
         constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]],
@@ -187,13 +200,38 @@ class Memgraph:
         self.execute(query)
 
     def get_triggers(self) -> List[str]:
-        """Creates a trigger"""
-        return list(self.execute_and_fetch("SHOW TRIGGERS;"))
+        """Returns a list of all database triggers"""
+        triggers_list = list(self.execute_and_fetch("SHOW TRIGGERS;"))
+        memgraph_triggers_list = []
+        for trigger in triggers_list:
+            event_type = trigger["event type"]
+            event_object = None
+
+            if event_type == "ANY":
+                event_type = None
+            elif len(event_type.split()) > 1:
+                [event_object, event_type] = [part for part in event_type.split()]
+
+            memgraph_triggers_list.append(
+                MemgraphTrigger(
+                    name=trigger["trigger name"],
+                    event_type=event_type,
+                    event_object=event_object,
+                    execution_phase=trigger["phase"].split()[0],
+                    statement=trigger["statement"],
+                )
+            )
+        return memgraph_triggers_list
 
     def drop_trigger(self, trigger) -> None:
         """Drop a trigger"""
         query = f"DROP TRIGGER {trigger.name};"
         self.execute(query)
+
+    def drop_triggers(self) -> None:
+        """Drops all triggers in the database"""
+        for trigger in self.get_triggers():
+            self.drop_trigger(trigger)
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
@@ -210,6 +248,7 @@ class Memgraph:
             username=self._username,
             password=self._password,
             encrypted=self._encrypted,
+            client_name=self._client_name,
         )
         return Connection.create(**args)
 

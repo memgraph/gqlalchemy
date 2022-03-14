@@ -19,7 +19,6 @@ def nx_graph_to_memgraph_parallel(graph: nx.Graph, host: str = "127.0.0.1", port
 
 Generates a Cypher queries and inserts data into Memgraph in parallel.
 
-
 ## NetworkXCypherBuilder Objects
 
 ```python
@@ -33,7 +32,6 @@ def yield_queries(graph: nx.Graph) -> Iterator[str]
 ```
 
 Generates a Cypher queries for creating graph.
-
 
 #### yield\_query\_groups
 
