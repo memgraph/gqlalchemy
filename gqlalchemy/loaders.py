@@ -33,6 +33,7 @@ from typing import (
     Union
 )
 import pyarrow.dataset as ds
+import adlfs
 
 
 @dataclass(frozen=True)
@@ -117,6 +118,48 @@ class S3DataSource(DataSource):
         dataset = ds.dataset(
             source=source, 
             filesystem=s3
+        )
+
+        # Load batches from raw data
+        for batch in dataset.to_batches(
+            columns=columns,
+        ):
+            for batch in batch.to_pylist():
+                yield batch
+
+
+class AzureBlobDataSource(DataSource):
+    def __init__(
+        self,
+        container_name: str,
+        account_name: str,
+        account_key: str,
+        file_extension: str,
+        sas_token: Optional[str],
+    ) -> None:
+        super().__init__(file_extension=file_extension)
+        self._container_name = container_name
+        self._account_name = account_name
+        self._account_key = account_key
+        self._sas_token = sas_token
+
+    def load_data(
+        self,
+        collection_name: str,
+        is_cross_table: bool = False,
+        columns: Optional[List[str]] = None,
+    ) -> None:
+        azureBlob = adlfs.AzureBlobFileSystem(
+            account_name=self._account_name,
+            account_key=self._account_key,
+        )
+        source = f"{self._container_name}/{collection_name}.{self._file_extension}"
+        print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
+
+        # Load dataset via Pyarrow
+        dataset = ds.dataset(
+            source=source,
+            filesystem=azureBlob
         )
 
         # Load batches from raw data
@@ -363,7 +406,7 @@ class TableToGraphImporter:
             for table_name, relations in many_to_many_configuration.items()]
 
 
-class S3Translator(TableToGraphImporter):
+class S3Importer(TableToGraphImporter):
     def __init__(
         self, 
         bucket_name: str,
@@ -383,6 +426,30 @@ class S3Translator(TableToGraphImporter):
                 s3_region=s3_region,
                 s3_session_token=s3_session_token,
                 file_extension=file_extension
+            ),
+            data_configuration=data_configuration,
+            memgraph=memgraph
+        )
+
+
+class AzureBlobImporter(TableToGraphImporter):
+    def __init__(
+        self,
+        container_name: str,
+        account_name: str,
+        account_key: str,
+        file_extension: str,
+        data_configuration: Dict[str, Any],
+        sas_token: Optional[str] = None,
+        memgraph: Optional[Memgraph] = None
+    ) -> None:
+        super().__init__(
+            data_source=AzureBlobDataSource(
+                container_name=container_name,
+                account_name=account_name,
+                account_key=account_key,
+                file_extension=file_extension,
+                sas_token=sas_token
             ),
             data_configuration=data_configuration,
             memgraph=memgraph
