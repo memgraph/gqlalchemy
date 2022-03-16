@@ -183,7 +183,6 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
-    # TODO: What is labels used for?
     def __init_subclass__(cls, type=None, label=None, labels=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
@@ -353,15 +352,26 @@ class NodeMetaclass(BaseModel.__class__):
 
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         cls.label = kwargs.get("label", name)
-        # TODO: Check what happens with Node
+        print("name: ", name)
+        print("cls.label: ", cls.label)
         if name == "Node":
             pass
         elif "labels" in kwargs:  # overrides superclass labels
-            cls.labels = {cls.label} | kwargs["labels"] | cls.labels if hasattr(cls, "labels") else {}
+            print("cls: ", cls)
+            print("cls.labels1: ", (cls.labels if hasattr(cls, "labels") else set()))
+            labs = set()
+            for base in bases:
+                labs = labs.union(base.labels if hasattr(base, "labels") else set())
+            print("labs: ", labs)
+            cls.labels = {cls.label} | kwargs["labels"] | (cls.labels if hasattr(cls, "labels") else set()) | labs
+            print("cls.labels1: ", cls.labels)
+            print("kwargs['labels']:", kwargs["labels"])
         elif hasattr(cls, "labels"):
             cls.labels = cls.labels | {cls.label}
+            print("cls.labels2: ", cls.labels)
         else:
             cls.labels = {cls.label}
+            print("cls.labels3: ", cls.labels)
 
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
@@ -408,7 +418,6 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
 
     def __init__(self, **data):
         super().__init__(**data)
-
         self._labels = data.get("_labels", getattr(type(self), "labels", {"Node"}))
 
     def __str__(self) -> str:

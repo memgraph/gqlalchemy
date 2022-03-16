@@ -2,7 +2,110 @@ from gqlalchemy import Node, Field
 from typing import Optional
 
 
-def test_multiple_inheritance(memgraph):
+def test_node(memgraph):
+    class User(Node):
+        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    user = User(id=0, name="Kate").save(memgraph)
+
+    assert User.label == "User"
+    assert User.labels == {"User"}
+
+    assert "id" in User.__fields__
+    assert "name" in User.__fields__
+
+    assert user.id == 0
+    assert user.name == "Kate"
+
+
+def test_node_inheritance(memgraph):
+    class User(Node):
+        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    class Admin(User):
+        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    user = User(id=0, name="Kate").save(memgraph)
+    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+
+    assert User.label == "User"
+    assert User.labels == {"User"}
+
+    assert "id" in User.__fields__
+    assert "name" in User.__fields__
+
+    assert user.id == 0
+    assert user.name == "Kate"
+
+    assert Admin.label == "Admin"
+    assert Admin.labels == {"Admin", "User"}
+
+    assert "id" in Admin.__fields__
+    assert "admin_id" in Admin.__fields__
+    assert "name" in Admin.__fields__
+
+    assert admin.id == 1
+    assert admin.admin_id == 0
+    assert admin.name == "Admin"
+    assert admin.label == "Admin"
+    assert admin.labels == {"Admin", "User"}
+    assert admin._label == "Admin:User"
+    assert admin._labels == {"Admin", "User"}
+
+
+def test_node_custom_label(memgraph):
+    class User(Node, label="UserX"):
+        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    class Admin(User, label="AdminX"):
+        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    user = User(id=0, name="Kate").save(memgraph)
+    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+
+    assert User.label == "UserX"
+    assert User.labels == {"UserX"}
+
+    assert user.label == "UserX"
+    assert user.labels == {"UserX"}
+    assert user._label == "UserX"
+    assert user._labels == {"UserX"}
+
+    assert Admin.label == "AdminX"
+    assert Admin.labels == {"AdminX", "UserX"}
+
+    assert admin.label == "AdminX"
+    assert admin.labels == {"AdminX", "UserX"}
+    assert admin._label == "AdminX:UserX"
+    assert admin._labels == {"AdminX", "UserX"}
+
+
+def test_node_custom_labels(memgraph):
+    class User(Node, labels={"UserX", "UserY"}):
+        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    class Admin(User, label="AdminX", labels={"AdminX", "AdminY"}):
+        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+
+    assert User.label == "User"
+    assert User.labels == {"User", "UserX", "UserY"}
+
+    assert Admin.label == "AdminX"
+    assert Admin.labels == {"AdminX", "AdminY", "User", "UserX", "UserY"}
+
+    assert admin.label == "AdminX"
+    assert admin.labels == {"AdminX", "AdminY", "User", "UserX", "UserY"}
+    assert admin._label == "AdminX:AdminY:User:UserX:UserY"
+    assert admin._labels == {"AdminX", "AdminY", "User", "UserX", "UserY"}
+
+
+def test_node_various_inheritance(memgraph):
     class User(Node):
         name: str = Field(index=True, exists=True, unique=True, db=memgraph)
 
@@ -89,3 +192,31 @@ def test_multiple_inheritance(memgraph):
         "Streamer3",
         "Streamer4",
     }
+
+
+def test_node_multiple_inheritence(memgraph):
+    class User(Node, labels={"UserX"}):
+        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    class UserOne(Node, labels={"UserOneX"}):
+        pass
+
+    class UserTwo(Node, label="UserTwoX"):
+        pass
+
+    class Admin(UserOne, UserTwo, User, label="AdminX", labels={"AdminX", "AdminY"}):
+        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+
+    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+
+    assert UserOne.label == "UserOne"
+    assert UserTwo.label == "UserTwoX"
+
+    assert Admin.label == "AdminX"
+    assert Admin.labels == {"AdminX", "AdminY", "User", "UserX", "UserOne", "UserOneX", "UserTwoX"}
+
+    assert admin.label == "AdminX"
+    assert admin.labels == {"AdminX", "AdminY", "User", "UserX", "UserOne", "UserOneX", "UserTwoX"}
+    assert admin._label == "AdminX:AdminY:User:UserOne:UserOneX:UserTwoX:UserX"
+    assert admin._labels == {"AdminX", "AdminY", "User", "UserX", "UserOne", "UserOneX", "UserTwoX"}
