@@ -9,7 +9,7 @@ def test_multiple_inheritance(memgraph):
     class UserOne(Node, label="User1"):
         name: str = Field(index=True, exists=True, unique=True, db=memgraph)
 
-    class UserTwo(Node, labels={"User2"}):
+    class UserTwo(User, label="User2", labels={"User3"}):
         name: str = Field(index=True, exists=True, unique=True, db=memgraph)
 
     class Streamer(User):
@@ -20,7 +20,7 @@ def test_multiple_inheritance(memgraph):
         id: str = Field(index=True, exists=True, unique=True, db=memgraph)
         followers: Optional[int] = Field()
 
-    class StreamerTwo(User, labels={"Streamer2"}):
+    class StreamerTwo(Streamer, label="Streamer2", labels={"Streamer3", "Streamer4"}):
         id: str = Field(index=True, exists=True, unique=True, db=memgraph)
         followers: Optional[int] = Field()
 
@@ -28,8 +28,8 @@ def test_multiple_inheritance(memgraph):
     userOne = UserOne(name="Mrma").save(memgraph)
     userTwo = UserTwo(name="Boris").save(memgraph)
     streamer = Streamer(id=7, name="Ivan", followers=172).save(memgraph)
-    streamerOne = StreamerOne(id=7, name="Bruno", followers=173).save(memgraph)
-    streamerTwo = StreamerTwo(id=7, name="Marko", followers=174).save(memgraph)
+    streamerOne = StreamerOne(id=8, name="Bruno", followers=173).save(memgraph)
+    streamerTwo = StreamerTwo(id=9, name="Marko", followers=174).save(memgraph)
 
     assert "name" in Streamer.__fields__
     assert user.name == "Kate"
@@ -42,8 +42,8 @@ def test_multiple_inheritance(memgraph):
     assert UserOne.label == "User1"
     assert UserOne.labels == {"User1"}
 
-    assert UserTwo.label == "UserTwo" # TODO: Main label should be Streamer2
-    assert UserTwo.labels == {"User2"}
+    assert UserTwo.label == "User2"
+    assert UserTwo.labels == {"User", "User2", "User3"}
 
     assert user.label == "User"
     assert user.labels == {"User"}
@@ -55,10 +55,10 @@ def test_multiple_inheritance(memgraph):
     assert userOne._label == "User1"
     assert userOne._labels == {"User1"}
 
-    assert userTwo.label == "UserTwo" # TODO: Main label should be User2
-    assert userTwo.labels == {"User2"}
-    assert userTwo._label == "User2"
-    assert userTwo._labels == {"User2"}
+    assert userTwo.label == "User2"
+    assert userTwo.labels == {"User", "User2", "User3"}
+    assert userTwo._label == "User:User2:User3"
+    assert userTwo._labels == {"User", "User2", "User3"}
 
     assert Streamer.label == "Streamer"
     assert Streamer.labels == {"Streamer", "User"}
@@ -66,8 +66,8 @@ def test_multiple_inheritance(memgraph):
     assert StreamerOne.label == "Streamer1"
     assert StreamerOne.labels == {"Streamer1", "User"}
 
-    assert StreamerTwo.label == "StreamerTwo"
-    assert StreamerTwo.labels == {"Streamer2"} # TODO: Missing User label
+    assert StreamerTwo.label == "Streamer2"
+    assert StreamerTwo.labels == {"User", "Streamer", "Streamer2", "Streamer3", "Streamer4"}
 
     assert streamer.label == "Streamer"
     assert streamer.labels == {"Streamer", "User"}
@@ -79,7 +79,13 @@ def test_multiple_inheritance(memgraph):
     assert streamerOne._label == "Streamer1:User"
     assert streamerOne._labels == {"Streamer1", "User"}
 
-    assert streamerTwo.label == "StreamerTwo" # TODO: Main label should be Streamer2
-    assert streamerTwo.labels == {"Streamer2"} # TODO: Missing label User
-    assert streamerTwo._label == "Streamer2" # TODO: Missing label User
-    assert streamerTwo._labels == {"Streamer2"} # TODO: Missing label User
+    assert streamerTwo.label == "Streamer2"
+    assert streamerTwo.labels == {"User", "Streamer", "Streamer2", "Streamer3", "Streamer4"}
+    assert streamerTwo._label == "Streamer:Streamer2:Streamer3:Streamer4:User"
+    assert streamerTwo._labels == {
+        "User",
+        "Streamer",
+        "Streamer2",
+        "Streamer3",
+        "Streamer4",
+    }
