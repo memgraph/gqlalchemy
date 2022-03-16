@@ -183,16 +183,21 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
+    # TODO: What is labels used for?
     def __init_subclass__(cls, type=None, label=None, labels=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
         if type is not None:  # Relationship
             cls._subtypes_[type] = cls
+            print("GraphObject __init_subclass__ ", cls._subtypes_[type])
         elif label is not None:  # Node
             cls._subtypes_[label] = cls
+            print("GraphObject __init_subclass__ ", cls._subtypes_[label])
         else:
             cls._subtypes_[cls.__name__] = cls
+            print("GraphObject __init_subclass__ ", cls._subtypes_[cls.__name__])
+        
 
     @classmethod
     def __get_validators__(cls):
@@ -321,6 +326,7 @@ class UniqueGraphObject(GraphObject):
         super().__init__(**data)
         self._id = data.get("_id")
         self._type = data.get("_type")
+        print("UniqueGraphObject __init__ ",  self._type)
 
     @property
     def _properties(self) -> Dict[str, Any]:
@@ -352,6 +358,8 @@ class NodeMetaclass(BaseModel.__class__):
 
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         cls.label = kwargs.get("label", name)
+        print("cls.label " + cls.label)
+        # TODO: Check what happens with Node
         if name == "Node":
             pass
         elif "labels" in kwargs:  # overrides superclass labels
@@ -406,7 +414,9 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
 
     def __init__(self, **data):
         super().__init__(**data)
+        
         self._labels = data.get("_labels", getattr(type(self), "labels", {"Node"}))
+        print("Node  __init__ ", self._labels)
 
     def __str__(self) -> str:
         return "".join(
