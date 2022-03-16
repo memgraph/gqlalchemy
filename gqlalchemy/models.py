@@ -352,26 +352,17 @@ class NodeMetaclass(BaseModel.__class__):
 
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         cls.label = kwargs.get("label", name)
-        print("name: ", name)
-        print("cls.label: ", cls.label)
         if name == "Node":
             pass
         elif "labels" in kwargs:  # overrides superclass labels
-            print("cls: ", cls)
-            print("cls.labels1: ", (cls.labels if hasattr(cls, "labels") else set()))
             labs = set()
             for base in bases:
                 labs = labs.union(base.labels if hasattr(base, "labels") else set())
-            print("labs: ", labs)
-            cls.labels = {cls.label} | kwargs["labels"] | (cls.labels if hasattr(cls, "labels") else set()) | labs
-            print("cls.labels1: ", cls.labels)
-            print("kwargs['labels']:", kwargs["labels"])
+            cls.labels = {cls.label} | kwargs["labels"] | labs
         elif hasattr(cls, "labels"):
             cls.labels = cls.labels | {cls.label}
-            print("cls.labels2: ", cls.labels)
         else:
             cls.labels = {cls.label}
-            print("cls.labels3: ", cls.labels)
 
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
