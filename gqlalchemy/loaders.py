@@ -35,8 +35,40 @@ from typing import (
 import pyarrow.dataset as ds
 
 
+NAME_MAPPINGS_KEY = "name_mappings"
+
+ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
+
+INDICES_KEY = "indices"
+
+MANY_TO_MANY_RELATIONS_KEY = "many_to_many_relations"
+MANY_TO_MANY_MAPPING_FROM_KEY = "mapping_from"
+MANY_TO_MANY_MAPPING_TO_KEY = "mapping_to"
+MANY_TO_MANY_LABEL_KEY = "label"
+
+FROM_NODE_VARIABLE_NAME = "from_node"
+TO_NODE_VARIABLE_NAME = "to_node"
+
+NODE_A = "a"
+NODE_B = "b"
+
+
 @dataclass(frozen=True)
 class ForeignKeyMapping:
+    """
+    Class that contains the full description of a single foreign key in a table.
+
+    :param foreign_key: Column name that holds the foreign key
+    :type foreign_key: str
+    :param reference_table: Name of a table from which the foreign key is taken
+    :type reference_table: str
+    :param reference_key: Column name in referenced table from which the foreign key is taken
+    :type reference_key: str
+    :param label: Label which will be applied to the relationship created from this object
+    :type label: str
+    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    :type variables: Dict[str, str]
+    """
     foreign_key: str
     reference_table: str
     reference_key: str
@@ -46,16 +78,34 @@ class ForeignKeyMapping:
 
 @dataclass(frozen=True)
 class OneToManyMapping:
+    """
+    Class that holds the full description of a single one to many mapping in a table.
+
+    :param mapping: Foreign key used for mapping
+    :type mapping: ForeignKeyMapping
+    :param from_entity: Direction of the relationship created from mapping object
+    :type from_entity: bool
+    """
     mapping: ForeignKeyMapping
     from_entity: bool = False
 
 
 @dataclass(frozen=True)
 class ManyToManyMapping:
-    mapping1: ForeignKeyMapping
-    mapping2: ForeignKeyMapping
+    """
+    Class that holds the full description of a single many to many mapping in a table.
+    Many to many mapping is intended to be used in case of associative tables
+
+    :param mapping_from: Describes the source of the relationship
+    :type mapping_from: ForeignKeyMapping
+    :param mapping_to: Describes the destination of the relationship
+    :type mapping_to: ForeignKeyMapping
+    :param label: Label to be applied to the newly created relationship
+    :type label: str
+    """
+    mapping_from: ForeignKeyMapping
+    mapping_to: ForeignKeyMapping
     label: str
-    from_first: bool = True
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -63,13 +113,30 @@ Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
 
 @dataclass
 class TableMapping:
+    """
+    Class that holds the full description of all of the mappings for a single table.
+
+    :param table_name: Name of the table
+    :type table_name: str
+    :param mapping: All of the mappings in the table (Optional)
+    :type mapping: Mapping
+    :param indices: List of the indices to be created for this table (Optional)
+    :type indices: List[str]
+    """
     table_name: str
     mapping: Optional[Mapping] = None
     indices: Optional[List[str]] = None
 
 
 class DataSource(ABC):
+    """
+    Base class. Inherit this class and encapsulate reading of the file format from some data source
+    """
     def __init__(self, file_extension: str) -> None:
+        """
+        :param file_extension: Extension for which the reading is implemented
+        :type file_extension: str
+        """
         self._file_extension: str = file_extension
 
     @abstractmethod
@@ -78,10 +145,21 @@ class DataSource(ABC):
         collection_name: str,
         is_cross_table: bool=False
     ) -> None:
+        """
+        Override this method in the derrived class. Intended to be used for reading data from data format.
+
+        :param collection_name: Name of the collection from which to read data
+        :type collection_name: str
+        :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
+        :type is_cross_table: bool
+        """
         pass
 
 
 class S3DataSource(DataSource):
+    """
+    Hold the implementation of reading files from Amazon S3
+    """
     def __init__(
         self, 
         bucket_name: str,
@@ -91,6 +169,20 @@ class S3DataSource(DataSource):
         file_extension: str,
         s3_session_token: Optional[str] = None,
     ) -> None:
+        """
+        :param bucket_name: Name of the bucket on S3 from which to read the data
+        :type bucket_name: str
+        :param s3_access_key: S3 access key
+        :type s3_access_key: str
+        :param s3_secret_key: S3 secret key
+        :type s3_secret_key: str
+        :param s3_region: S3 region
+        :type s3_region: str
+        :param file_extension: Extension for which the reading is implemented
+        :type file_extension: str
+        :param s3_session_token: S3 session token (Optional)
+        :type s3_session_token: str
+        """
         super().__init__(file_extension=file_extension)
         self._bucket_name: str = bucket_name
         self._s3_access_key: str = s3_access_key
@@ -104,6 +196,16 @@ class S3DataSource(DataSource):
         is_cross_table: bool = False,
         columns: Optional[List[str]] = None,
     ) -> None:
+        """
+        Read the data from S3 and process it in batches. 
+
+        :param collection_name: Name of the collection from which to read the data
+        :type collection_name: str
+        :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
+        :type is_cross_table: bool
+        :param columns: List of columns to be read from the collection (Optional)
+        :type columns: List[str]
+        """
         s3 = fs.S3FileSystem(
             region=self._s3_region,
             access_key=self._s3_access_key,
@@ -128,29 +230,54 @@ class S3DataSource(DataSource):
 
 
 @dataclass(frozen=True)
-class Configuration:
+class NameMappings:
+    """
+    Class that contains new label name and all of the column name mappings for a single table
+
+    :param label: New label (Optional)
+    :type label: str
+    :param column_names_mapping: Dictionary containing key-value pairs in form ("column name", "property name") (Optional)
+    :type column_names_mapping: Dict[str, str]
+    """
     label: Optional[str] = None
     column_names_mapping: Optional[Dict[str, str]] = None
 
 
 class TableToGraphImporter:
+    """
+    Class that implements translation of table data to graph data, and imports it to Memgraph
+    """
     _DIRECTION = {
-        True: ("a", "b"),
-        False: ("b", "a"),
+        True: (NODE_A, NODE_B),
+        False: (NODE_B, NODE_A),
     }
 
     def __init__(
         self,
         data_source: DataSource,
-        data_configuration: Dict[str, Any], 
+        data_configuration: Dict[str, Any],
         memgraph: Optional[Memgraph] = None
     ) -> None:
+        """
+        :param data_source: Source of the data
+        :type data_source: DataSource
+        :param data_configuration: Configuration for the translations
+        :type data_configuration: Dict[str, Any]
+        :param memgraph: Connection to Memgraph (Optional)
+        :type memgraph: Memgraph
+        """
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
         self._data_source: DataSource = data_source
 
         self.__load_configuration(data_configuration=data_configuration)
 
-    def translate(self, drop_database_on_start: bool):
+    def translate(self, drop_database_on_start: bool) -> None:
+        """
+        Performs the translations
+        
+        :param drop_database_on_start: Indicate whether or not the database should be dropped prior to the start of the translations
+        :type drop_database_on_start: bool
+        """
         if drop_database_on_start:
             self._memgraph.drop_database()
             self._drop_indices() # to gqla
@@ -163,6 +290,9 @@ class TableToGraphImporter:
         self._load_cross_relationships()
 
     def _load_nodes(self) -> None:
+        """
+        Reads all of the data from the single table in the data source, translates it, and writes it to memgraph.
+        """
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = one_to_many_mapping.table_name
             for row in self._data_source.load_data(collection_name=collection_name):
@@ -172,29 +302,38 @@ class TableToGraphImporter:
                 )
 
     def _load_cross_relationships(self) -> None:
+        """
+        Reads all of the data from the single associative table in the data source, translates it, and writes it to memgraph.
+        """
         for many_to_many_mapping in self._many_to_many_mappings:
             collection_name = many_to_many_mapping.table_name
-            mapping1 = many_to_many_mapping.mapping.mapping1
-            mapping2 = many_to_many_mapping.mapping.mapping2
+            mapping_from = many_to_many_mapping.mapping.mapping_from
+            mapping_to = many_to_many_mapping.mapping.mapping_to
 
-            table_name1, property1 = mapping1.reference_table, mapping1.reference_key
-            table_name2, property2 = mapping2.reference_table, mapping2.reference_key
+            table_name_from, property_from = mapping_from.reference_table, mapping_from.reference_key
+            table_name_to, property_to = mapping_to.reference_table, mapping_to.reference_key
 
-            node1 = self._get_node_name(original_name=table_name1)
-            node2 = self._get_node_name(original_name=table_name2)
+            node_from = self._get_node_name(original_name=table_name_from)
+            node_to = self._get_node_name(original_name=table_name_to)
 
-            new_property1 = self._get_property_name(collection_name=table_name1, original_column_name=property1)
-            new_property2 = self._get_property_name(collection_name=table_name2, original_column_name=property2)
+            new_property_from = self._get_property_name(collection_name=table_name_from, original_column_name=property_from)
+            new_property_to = self._get_property_name(collection_name=table_name_to, original_column_name=property_to)
 
             for row in self._data_source.load_data(collection_name=collection_name, is_cross_table=True):
                 self._save_row_as_relationship(
-                    relations=[node1, node2],
-                    on_properties=[(property1, new_property1), (property2, new_property2)],
+                    relations=[node_from, node_to],
+                    on_properties=[(property_from, new_property_from), (property_to, new_property_to)],
                     relation_label=many_to_many_mapping.mapping.label,
                     row=row
                 )
 
     def _create_triggers(self) -> None:
+        """
+        Creates all of the Triggers in the Memgraph. Triggers are used as a part of speeding up the translation.
+        Since nodes and relationships are written in one go, foreign keys that are represented as relationships
+        might not yet be present in memgraph. When they do appear, triggers make sure to write relationship at that point in time,
+        rather than having hanging relationship.
+        """
         for one_to_many_mapping in self._one_to_many_mappings:
             label1 = self._get_node_name(original_name=one_to_many_mapping.table_name)
             for mapping in one_to_many_mapping.mapping:
@@ -230,10 +369,37 @@ class TableToGraphImporter:
                 )
 
     def _drop_triggers(self) -> None:
+        """
+        Drops all of the triggers from Memgraph
+        """
         for trigger in self._memgraph.get_triggers():
             self._memgraph.drop_trigger(MemgraphTrigger(trigger["trigger name"], None, None, None, None))
 
-    def _create_trigger(self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool) -> None:
+    def _create_trigger(
+        self, 
+        label1: str, 
+        label2: str, 
+        property1: str, 
+        property2: str, 
+        edge_type: str, 
+        from_entity: bool
+    ) -> None:
+        """
+        Creates translation trigger in Memgraph. 
+
+        :param label1: Label of the first Node
+        :type label1: str
+        :param label2: Label of the second Node
+        :type label2: str
+        :param property1: Property of the first Node
+        :type property1: str
+        :param property2: Property of the second Node
+        :type property2: str
+        :param edge_type: Label for the relationship that the trigger creates
+        :type edge_type: str
+        :param from_entity: Indicate whether relationship goes from or to first entity
+        :type from_entity: bool
+        """
         trigger_name = "__".join([label1, property1, label2, property2])
 
         trigger = MemgraphTrigger(
@@ -248,6 +414,9 @@ class TableToGraphImporter:
         self._memgraph.create_trigger(trigger)
 
     def _create_indices(self) -> None:
+        """
+        Creates indices in Memgraph
+        """
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = self._get_node_name(original_name=one_to_many_mapping.table_name)
             for index in one_to_many_mapping.indices:
@@ -259,22 +428,50 @@ class TableToGraphImporter:
                 print(f"Created index for {collection_name} on {new_index}")
 
     def _drop_indices(self) -> None:
+        """
+        Drops all indices from Memgraph
+        """
         for index in self._memgraph.get_indexes():
             self._memgraph.drop_index(index)
 
-    def _create_trigger_cypher_query(self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool) -> str:
+    def _create_trigger_cypher_query(
+        self, 
+        label1: str, 
+        label2: str, 
+        property1: str, 
+        property2: str, 
+        edge_type: str, 
+        from_entity: bool
+    ) -> str:
+        """
+        Creates Cypher Query for translation Trigger
+
+        @TODO: Investigate creating Template string instead of this method
+        """
         from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
-        return Unwind(list_expression="createdVertices", variable="a") \
-                .with_(results={"a":""}) \
-                .where(property1=f"a:{label2}", operator="MATCH", property2=f"(b:{label1})") \
-                .where(property1=f"b.{property1}", operator="=", property2=f"a.{property2}") \
+        return Unwind(list_expression="createdVertices", variable=NODE_A) \
+                .with_(results={NODE_A:""}) \
+                .where(property1=f"{NODE_A}:{label2}", operator="MATCH", property2=f"({NODE_B}:{label1})") \
+                .where(property1=f"{NODE_B}.{property1}", operator="=", property2=f"{NODE_A}.{property2}") \
                 .create() \
                 .node(variable=from_node) \
                 .to(edge_label=edge_type) \
                 .node(variable=to_node) \
                 .construct_query()
             
-    def _save_row_as_node(self, label: str, row: Dict[str, Any]):
+    def _save_row_as_node(
+        self, 
+        label: str, 
+        row: Dict[str, Any],
+    ) -> None:
+        """
+        Translates row to Node and writes it to Memgraph
+
+        :param label: Original label of the new node
+        :type label: str
+        :param row: Row that should be saved to Memgraph as Node
+        :type row: Dict[str, Any]
+        """
         list(
             QueryBuilder(connection=self._memgraph).
             create().
@@ -287,32 +484,42 @@ class TableToGraphImporter:
         relations: List[str], 
         on_properties: List[Tuple[str, str]], 
         relation_label: str, 
-        row: Dict[str, Any], 
-        from_first: bool = True
-    ):
+        row: Dict[str, Any],
+    ) -> None:
+        """
+        Translates row to Relationship and writes it to Memgraph
+
+        @TODO: Rewrite this method
+        """
         if len(relations) != len(on_properties):
             raise RuntimeError("Relations and properties should be a same-sized list.")
 
-        from_node, to_node = TableToGraphImporter._DIRECTION[from_first]
-        label1, label2 = relations[0], relations[1]
-        property1, new_property1 = on_properties[0]
-        property2, new_property2 = on_properties[1]
+        label_from, label_to = relations[0], relations[1]
+        property_from, new_property_from = on_properties[0]
+        property_to, new_property_to = on_properties[1]
         
         query_builder = QueryBuilder(connection=self._memgraph)
         list(
             query_builder.match()
-            .node(labels=label1, variable=from_node, **{new_property1: row[property1]})
+            .node(labels=label_from, variable=NODE_A, **{new_property_from: row[property_from]})
             .match()
-            .node(labels=label2, variable=to_node, **{new_property2: row[property2]})
+            .node(labels=label_to, variable=NODE_B, **{new_property_to: row[property_to]})
             .create()
-            .node(variable=from_node)
+            .node(variable=NODE_A)
             .to(relation_label)
-            .node(variable=to_node)
+            .node(variable=NODE_B)
             .return_({"1": "1"})
             .execute()
         )
 
     def _get_node_name(self, original_name: str) -> str:
+        """
+        Gets node name from original table name
+
+        :param original_name: Original table name
+        :type original_name: str
+        :returns: str
+        """
         configuration = self._configurations.get(original_name, None)
 
         if configuration is None:
@@ -320,7 +527,16 @@ class TableToGraphImporter:
 
         return configuration.label if configuration.label is not None else original_name
 
-    def _get_property_name(self, collection_name: str, original_column_name: str):
+    def _get_property_name(self, collection_name: str, original_column_name: str) -> str:
+        """
+        Gets property name from original column name
+
+        :param collection_name: Original table name
+        :type collection_name: str
+        :param original_column_name: Original column name
+        :type original_column_name: str
+        :returns: str
+        """
         configuration = self._configurations.get(collection_name, None)
 
         if configuration is None or configuration.column_names_mapping is None:
@@ -330,34 +546,46 @@ class TableToGraphImporter:
 
         return new_col_name if new_col_name is not None else original_column_name
 
-    def __load_configuration(self, data_configuration: Dict[str, Any]):
-        self.__load_name_mappings(data_configuration["name_mappings"])
-        self.__load_one_to_many_mappings_and_indices(data_configuration["nx1_relations"], data_configuration["indices"])
-        self.__load_many_to_many_mappings(data_configuration["mxn_relations"])
+    def __load_configuration(self, data_configuration: Dict[str, Any]) -> None:
+        """
+        Loads all of the configuration
+        """
+        self.__load_name_mappings(data_configuration.get(NAME_MAPPINGS_KEY, {}))
+        self.__load_one_to_many_mappings_and_indices(data_configuration[ONE_TO_MANY_RELATIONS_KEY], data_configuration.get(INDICES_KEY, {}))
+        self.__load_many_to_many_mappings(data_configuration.get(MANY_TO_MANY_RELATIONS_KEY, {}))
 
-    def __load_name_mappings(self, name_mappings: Dict[str, Any]):
-        self._configurations = {k: Configuration(**v) for k, v in name_mappings.items()}
+    def __load_name_mappings(self, name_mappings: Dict[str, Any]) -> None:
+        """
+        Loads name mappings from the configuration
+        """
+        self._configurations = {k: NameMappings(**v) for k, v in name_mappings.items()}
 
     def __load_one_to_many_mappings_and_indices(
         self, 
         one_to_many_configuration: Dict[str, List[str]], 
         indices: Dict[str, List[str]]
     ) -> None:
+        """
+        Loads One To Many Mappings and indices from the configuration. 
+        """
         self._one_to_many_mappings = [
             TableMapping(
                 table_name=table_name, 
                 mapping=[OneToManyMapping(mapping=ForeignKeyMapping(**relation)) for relation in relations], 
-                indices=indices[table_name]
+                indices=indices.get(table_name, {})
             ) for table_name, relations in one_to_many_configuration.items()]
 
-    def __load_many_to_many_mappings(self, many_to_many_configuration: Dict[str, Any]):
+    def __load_many_to_many_mappings(self, many_to_many_configuration: Dict[str, Any]) -> None:
+        """
+        Loads Many To Many Mappings from the configuration
+        """
         self._many_to_many_mappings = [
             TableMapping(
             table_name=table_name, 
                 mapping=ManyToManyMapping(
-                    mapping1=ForeignKeyMapping(**relations["mapping1"]),
-                    mapping2=ForeignKeyMapping(**relations["mapping2"]),
-                    label=relations["label"]
+                    mapping_from=ForeignKeyMapping(**relations[MANY_TO_MANY_MAPPING_FROM_KEY]),
+                    mapping_to=ForeignKeyMapping(**relations[MANY_TO_MANY_MAPPING_TO_KEY]),
+                    label=relations[MANY_TO_MANY_LABEL_KEY]
                 )
             )
             for table_name, relations in many_to_many_configuration.items()]
