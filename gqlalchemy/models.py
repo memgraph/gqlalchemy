@@ -350,19 +350,22 @@ class NodeMetaclass(BaseModel.__class__):
 
             return None
 
+        def get_base_labels() -> Set[str]:
+            base_labels = set()
+            nonlocal bases
+            for base in bases:
+                base_labels = base_labels.union(base.labels if hasattr(base, "labels") else set())
+            return base_labels
+
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+
         cls.label = kwargs.get("label", name)
         if name == "Node":
             pass
-        elif "labels" in kwargs:  # overrides superclass labels
-            labs = set()
-            for base in bases:
-                labs = labs.union(base.labels if hasattr(base, "labels") else set())
-            cls.labels = {cls.label} | kwargs["labels"] | labs
-        elif hasattr(cls, "labels"):
-            cls.labels = cls.labels | {cls.label}
+        elif "labels" in kwargs:
+            cls.labels = {cls.label} | kwargs["labels"] | get_base_labels()
         else:
-            cls.labels = {cls.label}
+            cls.labels = {cls.label} | get_base_labels()
 
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
@@ -379,9 +382,7 @@ class NodeMetaclass(BaseModel.__class__):
                         skip_constraints = True
                         break
                     raise GQLAlchemyDatabaseMissingInFieldError(
-                        constraint=constraint,
-                        field=field,
-                        field_type=field_type,
+                        constraint=constraint, field=field, field_type=field_type,
                     )
 
             if skip_constraints:
@@ -562,9 +563,5 @@ class Path(GraphObject):
 
     def __str__(self) -> str:
         return "".join(
-            (
-                f"<{type(self).__name__}",
-                f" nodes={self._nodes}",
-                f" relationships={self._relationships}" ">",
-            )
+            (f"<{type(self).__name__}", f" nodes={self._nodes}", f" relationships={self._relationships}" ">",)
         )
