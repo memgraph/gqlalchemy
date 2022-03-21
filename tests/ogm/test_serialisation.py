@@ -54,7 +54,10 @@ def test_save_relationship(memgraph):
 
     node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
     node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
-    relationship = SimpleRelationship(_start_node_id=node1._id, _end_node_id=node2._id,)
+    relationship = SimpleRelationship(
+        _start_node_id=node1._id,
+        _end_node_id=node2._id,
+    )
     assert SimpleRelationship.type == relationship._type
     assert SimpleRelationship._type is not None
     relationship.save(memgraph)
@@ -71,7 +74,10 @@ def test_save_relationship2(memgraph):
 
     node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
     node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
-    relationship = SimpleRelationship(_start_node_id=node1._id, _end_node_id=node2._id,)
+    relationship = SimpleRelationship(
+        _start_node_id=node1._id,
+        _end_node_id=node2._id,
+    )
     assert SimpleRelationship.type == relationship._type
     assert SimpleRelationship.type is not None
     relationship.save(memgraph)
@@ -95,8 +101,14 @@ def test_save_relationships(memgraph):
     assert node1._id is not None
     assert node2._id is not None
 
-    relationship1 = Follows(_start_node_id=node1._id, _end_node_id=node2._id,)
-    relationship2 = Follows(_start_node_id=node2._id, _end_node_id=node1._id,)
+    relationship1 = Follows(
+        _start_node_id=node1._id,
+        _end_node_id=node2._id,
+    )
+    relationship2 = Follows(
+        _start_node_id=node2._id,
+        _end_node_id=node1._id,
+    )
 
     assert Follows.type == relationship1._type
     assert Follows._type is not None
