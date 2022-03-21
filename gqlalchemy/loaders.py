@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import Memgraph
-from .query_builder import QueryBuilder, Unwind
+from memgraph import Memgraph
+from query_builder import QueryBuilder, Unwind
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from dacite import from_dict
 from gqlalchemy.models import (
     MemgraphIndex, 
     MemgraphTrigger, 
@@ -33,18 +34,13 @@ from typing import (
     Union
 )
 import pyarrow.dataset as ds
+import adlfs
 
 
 NAME_MAPPINGS_KEY = "name_mappings"
-
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
-
 INDICES_KEY = "indices"
-
 MANY_TO_MANY_RELATIONS_KEY = "many_to_many_relations"
-MANY_TO_MANY_MAPPING_FROM_KEY = "mapping_from"
-MANY_TO_MANY_MAPPING_TO_KEY = "mapping_to"
-MANY_TO_MANY_LABEL_KEY = "label"
 
 FROM_NODE_VARIABLE_NAME = "from_node"
 TO_NODE_VARIABLE_NAME = "to_node"
@@ -58,8 +54,8 @@ class ForeignKeyMapping:
     """
     Class that contains the full description of a single foreign key in a table.
 
-    :param foreign_key: Column name that holds the foreign key
-    :type foreign_key: str
+    :param column_name: Column name that holds the foreign key
+    :type column_name: str
     :param reference_table: Name of a table from which the foreign key is taken
     :type reference_table: str
     :param reference_key: Column name in referenced table from which the foreign key is taken
@@ -69,11 +65,9 @@ class ForeignKeyMapping:
     :param variables: Variables that will be added to the relationship created from this object (Optional)
     :type variables: Dict[str, str]
     """
-    foreign_key: str
+    column_name: str
     reference_table: str
     reference_key: str
-    label: str
-    variables: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -83,11 +77,18 @@ class OneToManyMapping:
 
     :param mapping: Foreign key used for mapping
     :type mapping: ForeignKeyMapping
+    :param label: Label which will be applied to the relationship created from this object
+    :type label: str
     :param from_entity: Direction of the relationship created from mapping object
     :type from_entity: bool
+    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    :type variables: Dict[str, str]
     """
     mapping: ForeignKeyMapping
+    foreign_key: ForeignKeyMapping
+    label: str
     from_entity: bool = False
+    variables: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -96,16 +97,19 @@ class ManyToManyMapping:
     Class that holds the full description of a single many to many mapping in a table.
     Many to many mapping is intended to be used in case of associative tables
 
-    :param mapping_from: Describes the source of the relationship
-    :type mapping_from: ForeignKeyMapping
-    :param mapping_to: Describes the destination of the relationship
-    :type mapping_to: ForeignKeyMapping
+    :param foreign_key_from: Describes the source of the relationship
+    :type foreign_key_from: ForeignKeyMapping
+    :param foreign_key_to: Describes the destination of the relationship
+    :type foreign_key_to: ForeignKeyMapping
     :param label: Label to be applied to the newly created relationship
     :type label: str
+    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    :type variables: Dict[str, str]
     """
-    mapping_from: ForeignKeyMapping
-    mapping_to: ForeignKeyMapping
+    foreign_key_from: ForeignKeyMapping
+    foreign_key_to: ForeignKeyMapping
     label: str
+    variables: Optional[Dict[str, str]] = None
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -128,107 +132,6 @@ class TableMapping:
     indices: Optional[List[str]] = None
 
 
-class DataSource(ABC):
-    """
-    Base class. Inherit this class and encapsulate reading of the file format from some data source
-    """
-    def __init__(self, file_extension: str) -> None:
-        """
-        :param file_extension: Extension for which the reading is implemented
-        :type file_extension: str
-        """
-        self._file_extension: str = file_extension
-
-    @abstractmethod
-    def load_data(
-        self,
-        collection_name: str,
-        is_cross_table: bool=False
-    ) -> None:
-        """
-        Override this method in the derrived class. Intended to be used for reading data from data format.
-
-        :param collection_name: Name of the collection from which to read data
-        :type collection_name: str
-        :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
-        :type is_cross_table: bool
-        """
-        pass
-
-
-class S3DataSource(DataSource):
-    """
-    Hold the implementation of reading files from Amazon S3
-    """
-    def __init__(
-        self, 
-        bucket_name: str,
-        s3_access_key: str,
-        s3_secret_key: str,
-        s3_region: str,
-        file_extension: str,
-        s3_session_token: Optional[str] = None,
-    ) -> None:
-        """
-        :param bucket_name: Name of the bucket on S3 from which to read the data
-        :type bucket_name: str
-        :param s3_access_key: S3 access key
-        :type s3_access_key: str
-        :param s3_secret_key: S3 secret key
-        :type s3_secret_key: str
-        :param s3_region: S3 region
-        :type s3_region: str
-        :param file_extension: Extension for which the reading is implemented
-        :type file_extension: str
-        :param s3_session_token: S3 session token (Optional)
-        :type s3_session_token: str
-        """
-        super().__init__(file_extension=file_extension)
-        self._bucket_name: str = bucket_name
-        self._s3_access_key: str = s3_access_key
-        self._s3_secret_key: str = s3_secret_key
-        self._s3_region: str = s3_region
-        self._s3_session_token: Optional[str] = s3_session_token
-
-    def load_data(
-        self,
-        collection_name: str,
-        is_cross_table: bool = False,
-        columns: Optional[List[str]] = None,
-    ) -> None:
-        """
-        Read the data from S3 and process it in batches. 
-
-        :param collection_name: Name of the collection from which to read the data
-        :type collection_name: str
-        :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
-        :type is_cross_table: bool
-        :param columns: List of columns to be read from the collection (Optional)
-        :type columns: List[str]
-        """
-        s3 = fs.S3FileSystem(
-            region=self._s3_region,
-            access_key=self._s3_access_key,
-            secret_key=self._s3_secret_key,
-            session_token=self._s3_session_token,
-        )
-        source = f"{self._bucket_name}/{collection_name}.{self._file_extension}"
-        print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
-
-        # Load dataset via Pyarrow
-        dataset = ds.dataset(
-            source=source, 
-            filesystem=s3
-        )
-
-        # Load batches from raw data
-        for batch in dataset.to_batches(
-            columns=columns,
-        ):
-            for batch in batch.to_pylist():
-                yield batch
-
-
 @dataclass(frozen=True)
 class NameMappings:
     """
@@ -243,6 +146,239 @@ class NameMappings:
     column_names_mapping: Optional[Dict[str, str]] = None
 
 
+class FileSystemHandler(ABC):
+    """
+    Abstract class for defining FileSystemHandler. Inherit this class and initialize
+    connection to custom data source.
+    """
+    def __init__(self) -> None:
+        super().__init__()
+
+    @abstractmethod
+    def get_path(self):
+        pass
+
+
+class S3FileSystemHandler(FileSystemHandler):
+    """
+    Handler connection to Amazon S3 service via pyarrow
+    """
+    def __init__(self, **kwargs):
+        """
+        kwargs>
+        :param bucket_name: Name of the bucket on S3 from which to read the data
+        :type bucket_name: str
+        :param s3_access_key: S3 access key
+        :type s3_access_key: str
+        :param s3_secret_key: S3 secret key
+        :type s3_secret_key: str
+        :param s3_region: S3 region
+        :type s3_region: str
+        :param s3_session_token: S3 session token (Optional)
+        :type s3_session_token: str
+        """
+        self.fs = fs.S3FileSystem(
+            region=kwargs.get('s3_region'),
+            access_key=kwargs.get('s3_access_key'),
+            secret_key=kwargs.get('s3_secret_key'),
+            session_token=kwargs.get('s3_session_token', None),
+        )
+        self._bucket_name = kwargs.get('bucket_name')
+
+    def get_path(
+        self,
+        collection_name: str,
+        file_extension: str
+        ) -> str:
+        """
+        Get file path in file system
+
+        :param collection_name: Name of file to read
+        :type collection_name: str
+        :param file_extension: File type
+        :type file_extension: str
+
+        :returns: string
+        """
+        return f"{self._bucket_name}/{collection_name}.{file_extension}"
+
+
+class AzureBlobFileSystemHandler(FileSystemHandler):
+    """
+    Handles connection to Azure Blob service via adlfs package
+    """
+    def __init__(self, **kwargs) -> None:
+        """
+        kwargs>
+        :param blob_account_name: Account name from Azure Blob
+        :type blob_account_name: str
+        :param blob_account_key: Account key for Azure Blob (Optional - if using sas_token)
+        :type blob_account_key: str
+        :param blob_sas_token: Shared access signature token for authentification (Optional)
+        :type blob_sas_token: str
+        :param container_name: Name of Blob container storing data
+        :type container_name: str
+        """
+        self.fs = adlfs.AzureBlobFileSystem(
+            account_name=kwargs.get('blob_account_name'),
+            account_key=kwargs.get('blob_account_key', None),
+            sas_token=kwargs.get('blob_sas_token', None)
+        )
+        self._container_name = kwargs['container_name']
+
+    def get_path(
+        self,
+        collection_name: str,
+        file_extension: str
+    ) -> str:
+        """
+        Get file path in file system
+
+        :param collection_name: Name of file to read
+        :type collection_name: str
+        :param file_extension: File type
+        :type file_extension: str
+
+        :returns: str
+        """
+        return f"{self._container_name}/{collection_name}.{file_extension}"
+
+
+class DataLoader(ABC):
+    """
+    Implements loading of data type from file system service to TableToGraphImporter
+    """
+    def __init__(
+        self,
+        file_system_handler: FileSystemHandler
+    ) -> None:
+        """
+        :param file_system_handler: object for handling of file system service
+        :type file_system_handler: FileSystemHandler
+        """
+        super().__init__()
+        self._file_system_handler = file_system_handler
+
+    @abstractmethod
+    def load_data(
+        self,
+        collection_name: str,
+        is_cross_table: bool=False
+    ) -> None:
+        """
+        Override this method in the derived class. Intended to be used for reading data from data format.
+
+        :param collection_name: name of file to read
+        :type collection_name: str
+        :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
+        :type is_cross_table: bool
+        """
+        pass
+
+
+class PyarrowDataLoader(DataLoader):
+    """
+    Loads data using Pyarrow.
+    Pyarrow currently supports "parquet", "ipc"/"arrow"/"feather", "csv",
+    and "orc", see pyarrow.dataset.dataset for up-to-date info.
+    ds.dataset in load_data accepts any fsspec subclass, making this DataLoader
+    compatible with fsspec-compatible filesystems.
+    """
+    def __init__(
+        self,
+        file_extension: str,
+        file_system_handler: FileSystemHandler,
+    ) -> None:
+        """
+        :param file_extension: File format to be read
+        :type file_extension: str
+        :param file_system_handler: Object for handling of file system service
+        :type file_system_handler: FileSystemHandler
+        """
+        super().__init__(file_system_handler=file_system_handler)
+        self._file_extension = file_extension
+
+    def load_data(
+        self,
+        collection_name: str,
+        is_cross_table: bool = False,
+        columns: Optional[List[str]] = None
+    ) -> None:
+        """
+        Generator for loading data from data format.
+
+        :param collection_name: Name of file to read
+        :type collection_name: str
+        :param is_cross_table: Flag signifying whether it is a cross table
+        :type is_cross_table: bool
+        :param columns: Table columns to read
+        :type columns: List[str]
+        """
+        source = self._file_system_handler.get_path(collection_name, self._file_extension)
+        print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
+
+        # Load dataset via Pyarrow
+        dataset = ds.dataset(
+            source=source,
+            filesystem=self._file_system_handler.fs
+        )
+
+        # Load batches from raw data
+        for batch in dataset.to_batches(
+            columns=columns,
+        ):
+            for batch in batch.to_pylist():
+                yield batch
+
+
+def get_data_loader(
+    file_extension: str,
+    filesystem_type: str,
+    **kwargs
+    ) -> DataLoader:
+    """
+    Returns DataLoader object, which uses instance of FileSystemHandler, in order to load data
+    of specific type from specific File System.
+
+    :param file_extension: File type to read
+    :type file_extension: str
+    :param filesystem_type: Type of filesystem we want to use
+    :type filesystem_type: str
+    :param **kwargs: For filesystem use
+
+    :returns: DataLoader 
+    """
+    if (file_extension == "parquet" or
+        file_extension == "csv" or
+        file_extension == "orc" or
+        file_extension == "ipc" or
+        file_extension == "feather" or
+        file_extension == "arrow"):
+        return PyarrowDataLoader(
+            file_extension=file_extension,
+            file_system_handler=get_filesystem(filesystem_type, **kwargs)
+        )
+    else:
+        raise ValueError(file_extension)
+
+
+def get_filesystem(filesystem_type, **kwargs) -> FileSystemHandler:
+    """
+    Returns specific FileSystemHandler.
+
+    :param filesystem_type: Type of filesystem we want to use
+    :type filesystem_type: str
+
+    :returns: FileSystemHandler
+    """
+    if filesystem_type == "S3":
+        return S3FileSystemHandler(**kwargs)
+    elif filesystem_type == "AzureBlob":
+        return AzureBlobFileSystemHandler(**kwargs)
+    else:
+        return ValueError(filesystem_type)
+
+
 class TableToGraphImporter:
     """
     Class that implements translation of table data to graph data, and imports it to Memgraph
@@ -254,20 +390,24 @@ class TableToGraphImporter:
 
     def __init__(
         self,
-        data_source: DataSource,
+        file_extension: str,
+        file_system: str,
         data_configuration: Dict[str, Any],
-        memgraph: Optional[Memgraph] = None
+        memgraph: Optional[Memgraph] = None,
+        **kwargs
     ) -> None:
         """
-        :param data_source: Source of the data
-        :type data_source: DataSource
+        :param file_extension: file format to be read
+        :type file_extension: string
+        :param file_system: type of file system storage to use
+        :type file_system: string
         :param data_configuration: Configuration for the translations
         :type data_configuration: Dict[str, Any]
         :param memgraph: Connection to Memgraph (Optional)
         :type memgraph: Memgraph
         """
+        self._data_loader: DataLoader = get_data_loader(file_extension, file_system, **kwargs)
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
-        self._data_source: DataSource = data_source
 
         self.__load_configuration(data_configuration=data_configuration)
 
@@ -295,7 +435,7 @@ class TableToGraphImporter:
         """
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = one_to_many_mapping.table_name
-            for row in self._data_source.load_data(collection_name=collection_name):
+            for row in self._data_loader.load_data(collection_name=collection_name):
                 self._save_row_as_node(
                     label=collection_name, 
                     row=row
@@ -307,8 +447,8 @@ class TableToGraphImporter:
         """
         for many_to_many_mapping in self._many_to_many_mappings:
             collection_name = many_to_many_mapping.table_name
-            mapping_from = many_to_many_mapping.mapping.mapping_from
-            mapping_to = many_to_many_mapping.mapping.mapping_to
+            mapping_from = many_to_many_mapping.mapping.foreign_key_from
+            mapping_to = many_to_many_mapping.mapping.foreign_key_to
 
             table_name_from, property_from = mapping_from.reference_table, mapping_from.reference_key
             table_name_to, property_to = mapping_to.reference_table, mapping_to.reference_key
@@ -319,7 +459,7 @@ class TableToGraphImporter:
             new_property_from = self._get_property_name(collection_name=table_name_from, original_column_name=property_from)
             new_property_to = self._get_property_name(collection_name=table_name_to, original_column_name=property_to)
 
-            for row in self._data_source.load_data(collection_name=collection_name, is_cross_table=True):
+            for row in self._data_loader.load_data(collection_name=collection_name, is_cross_table=True):
                 self._save_row_as_relationship(
                     relations=[node_from, node_to],
                     on_properties=[(property_from, new_property_from), (property_to, new_property_to)],
@@ -339,16 +479,16 @@ class TableToGraphImporter:
             for mapping in one_to_many_mapping.mapping:
                 property1 = self._get_property_name(
                     collection_name=one_to_many_mapping.table_name, 
-                    original_column_name=mapping.mapping.foreign_key
+                    original_column_name=mapping.foreign_key.column_name
                 )
                 label2 = self._get_node_name(
-                    original_name=mapping.mapping.reference_table
+                    original_name=mapping.foreign_key.reference_table
                 )
                 property2 = self._get_property_name(
                     collection_name=one_to_many_mapping.table_name, 
-                    original_column_name=mapping.mapping.reference_key
+                    original_column_name=mapping.foreign_key.reference_key
                 )
-                edge_type = mapping.mapping.label
+                edge_type = mapping.label
                 from_entity = mapping.from_entity
 
                 self._create_trigger(
@@ -551,8 +691,8 @@ class TableToGraphImporter:
         Loads all of the configuration
         """
         self.__load_name_mappings(data_configuration.get(NAME_MAPPINGS_KEY, {}))
-        self.__load_one_to_many_mappings_and_indices(data_configuration[ONE_TO_MANY_RELATIONS_KEY], data_configuration.get(INDICES_KEY, {}))
-        self.__load_many_to_many_mappings(data_configuration.get(MANY_TO_MANY_RELATIONS_KEY, {}))
+        # self.__load_one_to_many_mappings_and_indices(data_configuration[ONE_TO_MANY_RELATIONS_KEY], data_configuration.get(INDICES_KEY, {}))
+        # self.__load_many_to_many_mappings(data_configuration.get(MANY_TO_MANY_RELATIONS_KEY, {}))
 
     def __load_name_mappings(self, name_mappings: Dict[str, Any]) -> None:
         """
@@ -571,7 +711,7 @@ class TableToGraphImporter:
         self._one_to_many_mappings = [
             TableMapping(
                 table_name=table_name, 
-                mapping=[OneToManyMapping(mapping=ForeignKeyMapping(**relation)) for relation in relations], 
+                mapping=[from_dict(data_class=OneToManyMapping, data=relation) for relation in relations], 
                 indices=indices.get(table_name, {})
             ) for table_name, relations in one_to_many_configuration.items()]
 
@@ -581,37 +721,7 @@ class TableToGraphImporter:
         """
         self._many_to_many_mappings = [
             TableMapping(
-            table_name=table_name, 
-                mapping=ManyToManyMapping(
-                    mapping_from=ForeignKeyMapping(**relations[MANY_TO_MANY_MAPPING_FROM_KEY]),
-                    mapping_to=ForeignKeyMapping(**relations[MANY_TO_MANY_MAPPING_TO_KEY]),
-                    label=relations[MANY_TO_MANY_LABEL_KEY]
-                )
+                table_name=table_name, 
+                mapping=from_dict(data_class=ManyToManyMapping, data=relations)
             )
             for table_name, relations in many_to_many_configuration.items()]
-
-
-class S3Translator(TableToGraphImporter):
-    def __init__(
-        self, 
-        bucket_name: str,
-        s3_access_key: str,
-        s3_secret_key: str,
-        s3_region: str,
-        data_configuration: Dict[str, Any],
-        file_extension: str, 
-        s3_session_token: Optional[str] = None,
-        memgraph: Optional[Memgraph] = None
-    ) -> None:
-        super().__init__(
-            data_source=S3DataSource(
-                bucket_name=bucket_name,
-                s3_access_key=s3_access_key,
-                s3_secret_key=s3_secret_key,
-                s3_region=s3_region,
-                s3_session_token=s3_session_token,
-                file_extension=file_extension
-            ),
-            data_configuration=data_configuration,
-            memgraph=memgraph
-        )
