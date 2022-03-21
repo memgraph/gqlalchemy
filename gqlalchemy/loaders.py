@@ -16,6 +16,7 @@ from . import Memgraph
 from .query_builder import QueryBuilder, Unwind
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from dacite import from_dict
 from gqlalchemy.models import (
     MemgraphIndex, 
     MemgraphTrigger, 
@@ -36,15 +37,9 @@ import pyarrow.dataset as ds
 
 
 NAME_MAPPINGS_KEY = "name_mappings"
-
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
-
 INDICES_KEY = "indices"
-
 MANY_TO_MANY_RELATIONS_KEY = "many_to_many_relations"
-MANY_TO_MANY_MAPPING_FROM_KEY = "mapping_from"
-MANY_TO_MANY_MAPPING_TO_KEY = "mapping_to"
-MANY_TO_MANY_LABEL_KEY = "label"
 
 FROM_NODE_VARIABLE_NAME = "from_node"
 TO_NODE_VARIABLE_NAME = "to_node"
@@ -58,22 +53,16 @@ class ForeignKeyMapping:
     """
     Class that contains the full description of a single foreign key in a table.
 
-    :param foreign_key: Column name that holds the foreign key
-    :type foreign_key: str
+    :param column_name: Column name that holds the foreign key
+    :type column_name: str
     :param reference_table: Name of a table from which the foreign key is taken
     :type reference_table: str
     :param reference_key: Column name in referenced table from which the foreign key is taken
     :type reference_key: str
-    :param label: Label which will be applied to the relationship created from this object
-    :type label: str
-    :param variables: Variables that will be added to the relationship created from this object (Optional)
-    :type variables: Dict[str, str]
     """
-    foreign_key: str
+    column_name: str
     reference_table: str
     reference_key: str
-    label: str
-    variables: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -83,11 +72,17 @@ class OneToManyMapping:
 
     :param mapping: Foreign key used for mapping
     :type mapping: ForeignKeyMapping
+    :param label: Label which will be applied to the relationship created from this object
+    :type label: str
     :param from_entity: Direction of the relationship created from mapping object
     :type from_entity: bool
+    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    :type variables: Dict[str, str]
     """
-    mapping: ForeignKeyMapping
+    foreign_key: ForeignKeyMapping
+    label: str
     from_entity: bool = False
+    variables: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -102,10 +97,13 @@ class ManyToManyMapping:
     :type mapping_to: ForeignKeyMapping
     :param label: Label to be applied to the newly created relationship
     :type label: str
+    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    :type variables: Dict[str, str]
     """
-    mapping_from: ForeignKeyMapping
-    mapping_to: ForeignKeyMapping
+    foreign_key_from: ForeignKeyMapping
+    foreign_key_to: ForeignKeyMapping
     label: str
+    variables: Optional[Dict[str, str]] = None
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -307,8 +305,8 @@ class TableToGraphImporter:
         """
         for many_to_many_mapping in self._many_to_many_mappings:
             collection_name = many_to_many_mapping.table_name
-            mapping_from = many_to_many_mapping.mapping.mapping_from
-            mapping_to = many_to_many_mapping.mapping.mapping_to
+            mapping_from = many_to_many_mapping.mapping.foreign_key_from
+            mapping_to = many_to_many_mapping.mapping.foreign_key_to
 
             table_name_from, property_from = mapping_from.reference_table, mapping_from.reference_key
             table_name_to, property_to = mapping_to.reference_table, mapping_to.reference_key
@@ -339,16 +337,16 @@ class TableToGraphImporter:
             for mapping in one_to_many_mapping.mapping:
                 property1 = self._get_property_name(
                     collection_name=one_to_many_mapping.table_name, 
-                    original_column_name=mapping.mapping.foreign_key
+                    original_column_name=mapping.foreign_key.column_name
                 )
                 label2 = self._get_node_name(
-                    original_name=mapping.mapping.reference_table
+                    original_name=mapping.foreign_key.reference_table
                 )
                 property2 = self._get_property_name(
                     collection_name=one_to_many_mapping.table_name, 
-                    original_column_name=mapping.mapping.reference_key
+                    original_column_name=mapping.foreign_key.reference_key
                 )
-                edge_type = mapping.mapping.label
+                edge_type = mapping.label
                 from_entity = mapping.from_entity
 
                 self._create_trigger(
@@ -571,7 +569,7 @@ class TableToGraphImporter:
         self._one_to_many_mappings = [
             TableMapping(
                 table_name=table_name, 
-                mapping=[OneToManyMapping(mapping=ForeignKeyMapping(**relation)) for relation in relations], 
+                mapping=[from_dict(data_class=OneToManyMapping, data=relation) for relation in relations], 
                 indices=indices.get(table_name, {})
             ) for table_name, relations in one_to_many_configuration.items()]
 
@@ -581,12 +579,8 @@ class TableToGraphImporter:
         """
         self._many_to_many_mappings = [
             TableMapping(
-            table_name=table_name, 
-                mapping=ManyToManyMapping(
-                    mapping_from=ForeignKeyMapping(**relations[MANY_TO_MANY_MAPPING_FROM_KEY]),
-                    mapping_to=ForeignKeyMapping(**relations[MANY_TO_MANY_MAPPING_TO_KEY]),
-                    label=relations[MANY_TO_MANY_LABEL_KEY]
-                )
+                table_name=table_name, 
+                mapping=from_dict(data_class=ManyToManyMapping, data=relations)
             )
             for table_name, relations in many_to_many_configuration.items()]
 
