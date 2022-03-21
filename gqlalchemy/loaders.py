@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from memgraph import Memgraph
-from query_builder import QueryBuilder, Unwind
+from . import Memgraph
+from .query_builder import QueryBuilder, Unwind
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dacite import from_dict
@@ -691,8 +691,8 @@ class TableToGraphImporter:
         Loads all of the configuration
         """
         self.__load_name_mappings(data_configuration.get(NAME_MAPPINGS_KEY, {}))
-        # self.__load_one_to_many_mappings_and_indices(data_configuration[ONE_TO_MANY_RELATIONS_KEY], data_configuration.get(INDICES_KEY, {}))
-        # self.__load_many_to_many_mappings(data_configuration.get(MANY_TO_MANY_RELATIONS_KEY, {}))
+        self.__load_one_to_many_mappings_and_indices(data_configuration[ONE_TO_MANY_RELATIONS_KEY], data_configuration.get(INDICES_KEY, {}))
+        self.__load_many_to_many_mappings(data_configuration.get(MANY_TO_MANY_RELATIONS_KEY, {}))
 
     def __load_name_mappings(self, name_mappings: Dict[str, Any]) -> None:
         """
