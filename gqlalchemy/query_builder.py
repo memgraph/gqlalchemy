@@ -460,14 +460,6 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def where(self, property1: str, operator: str, property2: str) -> "DeclarativeBase":
-        """Creates a WHERE statement Cypher partial query."""
-        self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property1, operator, property2]))
-        )
-
-        return self
-
     def and_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a AND (expression) statement Cypher partial query."""
         value_cypher = to_cypher_value(value)
@@ -579,9 +571,6 @@ class DeclarativeBase(ABC):
         joined_query = "".join(query)
         joined_query = re.sub("\\s\\s+", " ", joined_query)
         return joined_query
-
-    def construct_query(self) -> str:
-        return self._construct_query()
 
     def _any_variables_matched(self) -> bool:
         """Checks if any variables are present in the result."""
