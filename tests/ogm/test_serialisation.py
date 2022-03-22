@@ -44,6 +44,36 @@ def test_save_node2(memgraph):
     assert node1.name == node2.name
 
 
+def test_save_nodes(memgraph):
+    class SimpleNode(Node):
+        id: Optional[int] = Field()
+        name: Optional[str] = Field()
+
+    node1 = SimpleNode(id=1, name="First Simple Node")
+    node2 = SimpleNode(id=2, name="Second Simple Node")
+    node3 = SimpleNode(id=3, name="Third Simple Node")
+
+    assert node1._id is None
+    assert node2._id is None
+    assert node3._id is None
+
+    memgraph.save_nodes([node1, node2, node3])
+
+    assert node1._id is not None
+    assert node2._id is not None
+    assert node3._id is not None
+
+    node1.name = "1st Simple Node"
+    node2.name = "2nd Simple Node"
+    node3.name = "3rd Simple Node"
+
+    memgraph.save_nodes([node1, node2, node3])
+
+    assert node1.name == "1st Simple Node"
+    assert node2.name == "2nd Simple Node"
+    assert node3.name == "3rd Simple Node"
+
+
 def test_save_relationship(memgraph):
     class NodeWithKey(Node):
         id: int = Field(exists=True, unique=True, index=True, db=memgraph)
