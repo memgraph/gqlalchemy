@@ -593,7 +593,61 @@ def test_add_string_complete(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_node_object(memgraph):
+def test_node_instance(memgraph):
+    class User(Node):
+        name: Optional[str] = Field(index=True, unique=True, db=memgraph)
+
+    user = User(name="Ron").save(memgraph)
+    query_builder = QueryBuilder().match().node(node=user, variable="u").return_()
+    expected_query = " MATCH (u:User {name: 'Ron'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_unsaved_node_instance(memgraph):
+    class User(Node):
+        name: Optional[str] = Field(index=True, unique=True, db=memgraph)
+
+    user = User(name="Ron")
+    query_builder = QueryBuilder().match().node(node=user, variable="u").return_()
+    expected_query = " MATCH (u:User {name: 'Ron'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_node_relationship_instances(memgraph):
+    class User(Node):
+        name: Optional[str] = Field(index=True, unique=True, db=memgraph)
+
+    class Follows_test(Relationship, type="FOLLOWS"):
+        pass
+
+    user_1 = User(name="Ron").save(memgraph)
+    user_2 = User(name="Leslie").save(memgraph)
+    follows = Follows_test(_start_node_id=user_1._id, _end_node_id=user_2._id).save(memgraph)
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(node=user_1, variable="user_1")
+        .to(relationship=follows)
+        .node(node=user_2, variable="user_2")
+        .return_()
+    )
+    expected_query = " MATCH (user_1:User {name: 'Ron'})-[:FOLLOWS]->(user_2:User {name: 'Leslie'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_unsaved_node_relationship_instances(memgraph):
     class User(Node):
         name: Optional[str] = Field(index=True, unique=True, db=memgraph)
 
