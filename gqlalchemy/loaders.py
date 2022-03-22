@@ -60,10 +60,6 @@ class ForeignKeyMapping:
     :type reference_table: str
     :param reference_key: Column name in referenced table from which the foreign key is taken
     :type reference_key: str
-    :param label: Label which will be applied to the relationship created from this object
-    :type label: str
-    :param variables: Variables that will be added to the relationship created from this object (Optional)
-    :type variables: Dict[str, str]
     """
     column_name: str
     reference_table: str
@@ -75,8 +71,8 @@ class OneToManyMapping:
     """
     Class that holds the full description of a single one to many mapping in a table.
 
-    :param mapping: Foreign key used for mapping
-    :type mapping: ForeignKeyMapping
+    :param foreign_key: Foreign key used for mapping
+    :type foreing_key: ForeignKeyMapping
     :param label: Label which will be applied to the relationship created from this object
     :type label: str
     :param from_entity: Direction of the relationship created from mapping object
@@ -84,7 +80,7 @@ class OneToManyMapping:
     :param variables: Variables that will be added to the relationship created from this object (Optional)
     :type variables: Dict[str, str]
     """
-    mapping: ForeignKeyMapping
+
     foreign_key: ForeignKeyMapping
     label: str
     from_entity: bool = False
