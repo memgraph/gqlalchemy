@@ -154,7 +154,7 @@ class FileSystemHandler(ABC):
     @abstractmethod
     def get_path(self):
         """
-        returns complete path in specific file system. Used to read the file system
+        Returns complete path in specific file system. Used to read the file system
         for a specific file.
         
         :return: str
@@ -350,7 +350,7 @@ class DataLoaderTypeEnum(Enum):
 
 
 """
-collection of supported file type extensions and their corresponding Data Loaders
+collection of supported file type extensions and their corresponding 
 """
 supported_file_extensions = {
     "parquet": DataLoaderTypeEnum.Pyarrow,
@@ -380,7 +380,7 @@ def get_data_loader(
     :returns: DataLoader 
     """
     if file_extension not in supported_file_extensions:
-        raise ValueError(f"{file_extension} is currently not supported.\nSupported types are: " + ", ".join(supported_file_extensions))
+        raise ValueError(f"{file_extension} is currently not supported. Supported types are: " + ", ".join(supported_file_extensions))
     if supported_file_extensions[file_extension] == DataLoaderTypeEnum.Pyarrow:
         return PyarrowDataLoader(
             file_extension=file_extension,
