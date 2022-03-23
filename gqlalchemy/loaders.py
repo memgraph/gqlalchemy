@@ -36,6 +36,7 @@ from typing import (
 import pyarrow.dataset as ds
 import adlfs
 
+from enum import Enum
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
@@ -152,6 +153,12 @@ class FileSystemHandler(ABC):
 
     @abstractmethod
     def get_path(self):
+        """
+        returns complete path in specific file system. Used to read the file system
+        for a specific file.
+        
+        :return: str
+        """
         pass
 
 
@@ -327,9 +334,14 @@ class PyarrowDataLoader(DataLoader):
                 yield batch
 
 
+class FileSystemTypeEnum(Enum):
+    AmazonS3 = "AmazonS3"
+    AzureBlob = "AzureBlob"
+
+
 def get_data_loader(
     file_extension: str,
-    filesystem_type: str,
+    filesystem_type: FileSystemTypeEnum,
     **kwargs
     ) -> DataLoader:
     """
@@ -339,7 +351,7 @@ def get_data_loader(
     :param file_extension: File type to read
     :type file_extension: str
     :param filesystem_type: Type of filesystem we want to use
-    :type filesystem_type: str
+    :type filesystem_type: FileSystemTypeEnum
     :param **kwargs: For filesystem use
 
     :returns: DataLoader 
@@ -355,24 +367,22 @@ def get_data_loader(
             file_system_handler=get_filesystem(filesystem_type, **kwargs)
         )
     else:
-        raise ValueError(file_extension)
+        raise ValueError(f"{file_extension} is currently not supported")
 
 
-def get_filesystem(filesystem_type, **kwargs) -> FileSystemHandler:
+def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemHandler:
     """
     Returns specific FileSystemHandler.
 
     :param filesystem_type: Type of filesystem we want to use
-    :type filesystem_type: str
+    :type filesystem_type: FileSystemTypeEnum
 
     :returns: FileSystemHandler
     """
-    if filesystem_type == "S3":
+    if filesystem_type == FileSystemTypeEnum.AmazonS3:
         return S3FileSystemHandler(**kwargs)
-    elif filesystem_type == "AzureBlob":
+    elif filesystem_type == FileSystemTypeEnum.AzureBlob:
         return AzureBlobFileSystemHandler(**kwargs)
-    else:
-        return ValueError(filesystem_type)
 
 
 class TableToGraphImporter:
@@ -387,7 +397,7 @@ class TableToGraphImporter:
     def __init__(
         self,
         file_extension: str,
-        file_system: str,
+        filesystem_type: FileSystemTypeEnum,
         data_configuration: Dict[str, Any],
         memgraph: Optional[Memgraph] = None,
         **kwargs
@@ -402,7 +412,7 @@ class TableToGraphImporter:
         :param memgraph: Connection to Memgraph (Optional)
         :type memgraph: Memgraph
         """
-        self._data_loader: DataLoader = get_data_loader(file_extension, file_system, **kwargs)
+        self._data_loader: DataLoader = get_data_loader(file_extension, filesystem_type, **kwargs)
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
 
         self.__load_configuration(data_configuration=data_configuration)
