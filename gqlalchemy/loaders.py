@@ -350,7 +350,7 @@ class DataLoaderTypeEnum(Enum):
 
 
 """
-collection of supported file type extensions and their corresponding 
+collection of supported file type extensions and their corresponding Data Loaders
 """
 supported_file_extensions = {
     "parquet": DataLoaderTypeEnum.Pyarrow,
