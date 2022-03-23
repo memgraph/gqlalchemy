@@ -361,8 +361,8 @@ class TableToGraphImporter:
                 self._save_row_as_relationship(
                     collection_name_from=mapping_from.reference_table, 
                     collection_name_to=mapping_to.reference_table,
-                    properties_from=[mapping_from.reference_key], 
-                    properties_to=[mapping_to.reference_key],
+                    property_from=mapping_from.reference_key, 
+                    property_to=mapping_to.reference_key,
                     relation_label=many_to_many_mapping.mapping.label,
                     row=row
                 )
