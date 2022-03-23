@@ -335,8 +335,31 @@ class PyarrowDataLoader(DataLoader):
 
 
 class FileSystemTypeEnum(Enum):
-    AmazonS3 = "AmazonS3"
-    AzureBlob = "AzureBlob"
+    """
+    Enumerates all available file systems.
+    """
+    AmazonS3 = 1
+    AzureBlob = 2
+
+
+class DataLoaderTypeEnum(Enum):
+    """
+    Enumerates all available data loaders
+    """
+    Pyarrow = 1
+
+
+"""
+collection of supported file type extensions and their corresponding 
+"""
+supported_file_extensions = {
+    "parquet": DataLoaderTypeEnum.Pyarrow,
+    "csv": DataLoaderTypeEnum.Pyarrow,
+    "orc": DataLoaderTypeEnum.Pyarrow,
+    "ipc": DataLoaderTypeEnum.Pyarrow,
+    "feather": DataLoaderTypeEnum.Pyarrow,
+    "arrow": DataLoaderTypeEnum.Pyarrow
+}
 
 
 def get_data_loader(
@@ -356,18 +379,13 @@ def get_data_loader(
 
     :returns: DataLoader 
     """
-    if (file_extension == "parquet" or
-        file_extension == "csv" or
-        file_extension == "orc" or
-        file_extension == "ipc" or
-        file_extension == "feather" or
-        file_extension == "arrow"):
+    if file_extension not in supported_file_extensions:
+        raise ValueError(f"{file_extension} is currently not supported.\nSupported types are: " + ", ".join(supported_file_extensions))
+    if supported_file_extensions[file_extension] == DataLoaderTypeEnum.Pyarrow:
         return PyarrowDataLoader(
             file_extension=file_extension,
             file_system_handler=get_filesystem(filesystem_type, **kwargs)
         )
-    else:
-        raise ValueError(f"{file_extension} is currently not supported")
 
 
 def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemHandler:
