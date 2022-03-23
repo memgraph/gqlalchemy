@@ -271,6 +271,39 @@ class TableToGraphImporter:
             .construct_query()
     )
 
+    @staticmethod
+    def _create_trigger_cypher_query(
+        label1: str, 
+        label2: str, 
+        property1: str, 
+        property2: str, 
+        edge_type: str, 
+        from_entity: bool
+    ) -> str:
+        """
+        Creates Cypher Query for translation Trigger
+
+        :param label1: Label of the first Node
+        :param label2: Label of the second Node
+        :param property1: Property of the first Node
+        :param property2: Property of the second Node
+        :param edge_type: Label for the relationship that the trigger creates
+        :param from_entity: Indicate whether relationship goes from or to first entity
+        """
+        from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
+
+        return TableToGraphImporter._TriggerQueryTemplate.substitute(
+            node_a=NODE_A,
+            node_b=NODE_B,
+            label_1=label1,
+            label_2=label2,
+            property_1=property1,
+            property_2=property2,
+            from_node=from_node,
+            to_node=to_node,
+            edge_type=edge_type,
+        )
+
     def __init__(
         self,
         data_source: DataSource,
@@ -295,11 +328,11 @@ class TableToGraphImporter:
         """
         if drop_database_on_start:
             self._memgraph.drop_database()
-            self._drop_indices() # to gqla
-            self._drop_triggers() # to gqla
+            self._memgraph.drop_all_indexes()
+            self._memgraph.drop_all_triggers()
 
-        self._create_indices()
-        self._create_triggers() # to gqla
+        self._create_indexes()
+        self._create_triggers()
 
         self._load_nodes()
         self._load_cross_relationships()
@@ -375,13 +408,6 @@ class TableToGraphImporter:
                     from_entity=not from_entity
                 )
 
-    def _drop_triggers(self) -> None:
-        """
-        Drops all of the triggers from Memgraph
-        """
-        for trigger in self._memgraph.get_triggers():
-            self._memgraph.drop_trigger(MemgraphTrigger(trigger["trigger name"], None, None, None, None))
-
     def _create_trigger(
         self, 
         label1: str, 
@@ -408,13 +434,13 @@ class TableToGraphImporter:
             event_type=TriggerEventType.CREATE,
             event_object=TriggerEventObject.NODE,
             execution_phase=TriggerExecutionPhase.BEFORE,
-            statement=self._create_trigger_cypher_query(label1, label2, property1, property2, edge_type, from_entity)
+            statement=TableToGraphImporter._create_trigger_cypher_query(label1, label2, property1, property2, edge_type, from_entity)
         )
         print(f"Created trigger {trigger_name}")
 
         self._memgraph.create_trigger(trigger)
 
-    def _create_indices(self) -> None:
+    def _create_indexes(self) -> None:
         """
         Creates indices in Memgraph
         """
@@ -427,46 +453,6 @@ class TableToGraphImporter:
                 )
                 self._memgraph.create_index(index=MemgraphIndex(collection_name, new_index))
                 print(f"Created index for {collection_name} on {new_index}")
-
-    def _drop_indices(self) -> None:
-        """
-        Drops all indices from Memgraph
-        """
-        for index in self._memgraph.get_indexes():
-            self._memgraph.drop_index(index)
-
-    def _create_trigger_cypher_query(
-        self, 
-        label1: str, 
-        label2: str, 
-        property1: str, 
-        property2: str, 
-        edge_type: str, 
-        from_entity: bool
-    ) -> str:
-        """
-        Creates Cypher Query for translation Trigger
-
-        :param label1: Label of the first Node
-        :param label2: Label of the second Node
-        :param property1: Property of the first Node
-        :param property2: Property of the second Node
-        :param edge_type: Label for the relationship that the trigger creates
-        :param from_entity: Indicate whether relationship goes from or to first entity
-        """
-        from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
-
-        return self._TriggerQueryTemplate.substitute(
-            node_a=NODE_A,
-            node_b=NODE_B,
-            label_1=label1,
-            label_2=label2,
-            property_1=property1,
-            property_2=property2,
-            from_node=from_node,
-            to_node=to_node,
-            edge_type=edge_type,
-        )
 
     def _save_row_as_node(
         self, 
@@ -493,8 +479,8 @@ class TableToGraphImporter:
         self, 
         collection_name_from: str,
         collection_name_to: str,
-        properties_from: List[str],
-        properties_to: List[str],
+        property_from: str,
+        property_to: str,
         relation_label: str, 
         row: Dict[str, Any],
     ) -> None:
@@ -503,8 +489,8 @@ class TableToGraphImporter:
 
         :param collection_name_from: Collection name of the source node
         :param collection_name_to: Collection name of the destination node
-        :param properties_from: Properties of the source Node
-        :param properties_to: Properties of the destination Node
+        :param property_from: Property of the source Node
+        :param property_to: Property of the destination Node
         :param relation_label: Label for the relationship
         :param row: row to be translated
         """
@@ -513,25 +499,23 @@ class TableToGraphImporter:
             .match()
             .node(
                 labels=self._name_mapper.get_label(collection_name=collection_name_from), 
-                variable=NODE_A, 
+                variable=NODE_A,
                 **{
                     self._name_mapper.get_property_name(
-                        collection_name=collection_name_from, 
+                        collection_name=collection_name_from,
                         column_name=property_from
                     ): row[property_from]
-                    for property_from in properties_from
                 }
             )
             .match()
             .node(
-                labels=self._name_mapper.get_label(collection_name=collection_name_to), 
-                variable=NODE_B, 
+                labels=self._name_mapper.get_label(collection_name=collection_name_to),
+                variable=NODE_B,
                 **{
                     self._name_mapper.get_property_name(
-                        collection_name=collection_name_to, 
+                        collection_name=collection_name_to,
                         column_name=property_to
                     ): row[property_to]
-                    for property_to in properties_to
                 }
             )
             .create()
