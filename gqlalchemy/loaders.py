@@ -225,7 +225,7 @@ class NameMapper:
     def __init__(self, mappings: Dict[str, Any]) -> None:
         self._name_mappings: Dict[str, NameMappings] = {k: NameMappings(**v) for k, v in mappings.items()}
 
-    def get_label(self, collection_name: str):
+    def get_label(self, collection_name: str) -> str:
         """
         Returns label for given collection
 
@@ -237,7 +237,7 @@ class NameMapper:
 
         return label if label is not None else collection_name
 
-    def get_property_name(self, collection_name: str, column_name: str):
+    def get_property_name(self, collection_name: str, column_name: str) -> str:
         """
         Returns property name for column from collection
 
