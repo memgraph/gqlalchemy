@@ -32,7 +32,6 @@ from typing import (
     Dict, 
     Any, 
     Optional,
-    Tuple, 
     Union
 )
 import pyarrow.dataset as ds
