@@ -58,9 +58,16 @@ IPC_EXTENSION = "ipc"
 FEATHER_EXTENSION = "feather"
 ARROW_EXTENSION = "arrow"
 
-"blob_account_name"
-"blob_account_key"
-"blob_sas_token"
+BLOB_ACCOUNT_NAME = "blob_account_name"
+BLOB_ACCOUNT_KEY = "blob_account_key"
+BLOB_SAS_TOKEN = "blob_sas_token"
+BLOB_CONTAINER_NAME_KEY = "container_name"
+
+S3_REGION = "s3_region"
+S3_ACCESS_KEY = "s3_access_key"
+S3_SECRET_KEY = "s3_secret_key"
+S3_SESSION_TOKEN = "s3_session_token"
+S3_BUCKET_NAME_KEY = "bucket_name"
 
 
 @dataclass(frozen=True)
@@ -216,12 +223,12 @@ class S3FileSystemHandler(FileSystemHandler):
         :type s3_session_token: str
         """
         self.fs = fs.S3FileSystem(
-            region=kwargs.get("s3_region"),
-            access_key=kwargs.get("s3_access_key"),
-            secret_key=kwargs.get("s3_secret_key"),
-            session_token=kwargs.get("s3_session_token", None),
+            region=kwargs.get(S3_REGION),
+            access_key=kwargs.get(S3_ACCESS_KEY),
+            secret_key=kwargs.get(S3_SECRET_KEY),
+            session_token=kwargs.get(S3_SESSION_TOKEN, None),
         )
-        self._bucket_name = kwargs.get("bucket_name")
+        self._bucket_name = kwargs.get(S3_BUCKET_NAME_KEY)
 
     def get_path(
         self,
@@ -258,11 +265,11 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         :type container_name: str
         """
         self.fs = adlfs.AzureBlobFileSystem(
-            account_name=kwargs.get("blob_account_name"),
-            account_key=kwargs.get("blob_account_key", None),
-            sas_token=kwargs.get("blob_sas_token", None)
+            account_name=kwargs.get(BLOB_ACCOUNT_NAME),
+            account_key=kwargs.get(BLOB_ACCOUNT_KEY, None),
+            sas_token=kwargs.get(BLOB_SAS_TOKEN, None)
         )
-        self._container_name = kwargs["container_name"]
+        self._container_name = kwargs[BLOB_CONTAINER_NAME_KEY]
 
     def get_path(
         self,
