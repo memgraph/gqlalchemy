@@ -51,6 +51,17 @@ TO_NODE_VARIABLE_NAME = "to_node"
 NODE_A = "a"
 NODE_B = "b"
 
+PARQUET_EXTENSION = "parquet"
+CSV_EXTENSION = "csv"
+ORC_EXTENSION = "prc"
+IPC_EXTENSION = "ipc"
+FEATHER_EXTENSION = "feather"
+ARROW_EXTENSION = "arrow"
+
+"blob_account_name"
+"blob_account_key"
+"blob_sas_token"
+
 
 @dataclass(frozen=True)
 class ForeignKeyMapping:
@@ -135,7 +146,6 @@ class NameMappings:
         return self.column_names_mapping.get(column_name, column_name)
 
 
-
 class NameMapper:
     """
     Class that holds all name mappings for all of the collections.
@@ -184,7 +194,7 @@ class FileSystemHandler(ABC):
         
         :return: str
         """
-        pass
+        raise NotImplementedError('Subclasses must override get_path()')
 
 
 class S3FileSystemHandler(FileSystemHandler):
@@ -206,12 +216,12 @@ class S3FileSystemHandler(FileSystemHandler):
         :type s3_session_token: str
         """
         self.fs = fs.S3FileSystem(
-            region=kwargs.get('s3_region'),
-            access_key=kwargs.get('s3_access_key'),
-            secret_key=kwargs.get('s3_secret_key'),
-            session_token=kwargs.get('s3_session_token', None),
+            region=kwargs.get("s3_region"),
+            access_key=kwargs.get("s3_access_key"),
+            secret_key=kwargs.get("s3_secret_key"),
+            session_token=kwargs.get("s3_session_token", None),
         )
-        self._bucket_name = kwargs.get('bucket_name')
+        self._bucket_name = kwargs.get("bucket_name")
 
     def get_path(
         self,
@@ -228,7 +238,7 @@ class S3FileSystemHandler(FileSystemHandler):
 
         :returns: string
         """
-        return f"{self._bucket_name}/{collection_name}.{file_extension}"
+        pass
 
 
 class AzureBlobFileSystemHandler(FileSystemHandler):
@@ -248,11 +258,11 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         :type container_name: str
         """
         self.fs = adlfs.AzureBlobFileSystem(
-            account_name=kwargs.get('blob_account_name'),
-            account_key=kwargs.get('blob_account_key', None),
-            sas_token=kwargs.get('blob_sas_token', None)
+            account_name=kwargs.get("blob_account_name"),
+            account_key=kwargs.get("blob_account_key", None),
+            sas_token=kwargs.get("blob_sas_token", None)
         )
-        self._container_name = kwargs['container_name']
+        self._container_name = kwargs["container_name"]
 
     def get_path(
         self,
@@ -301,7 +311,7 @@ class DataLoader(ABC):
         :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
         :type is_cross_table: bool
         """
-        pass
+        raise NotImplementedError('Subclasses must override load_data() for use in TableToGraphImporter')
 
 
 class PyarrowDataLoader(DataLoader):
@@ -363,27 +373,29 @@ class FileSystemTypeEnum(Enum):
     """
     Enumerates all available file systems.
     """
-    AmazonS3 = 1
-    AzureBlob = 2
+    Dummy = 1
+    AmazonS3 = 2
+    AzureBlob = 3
 
 
 class DataLoaderTypeEnum(Enum):
     """
     Enumerates all available data loaders
     """
-    Pyarrow = 1
+    Dummy = 1
+    Pyarrow = 2
 
 
 """
 collection of supported file type extensions and their corresponding Data Loaders
 """
 supported_file_extensions = {
-    "parquet": DataLoaderTypeEnum.Pyarrow,
-    "csv": DataLoaderTypeEnum.Pyarrow,
-    "orc": DataLoaderTypeEnum.Pyarrow,
-    "ipc": DataLoaderTypeEnum.Pyarrow,
-    "feather": DataLoaderTypeEnum.Pyarrow,
-    "arrow": DataLoaderTypeEnum.Pyarrow
+    PARQUET_EXTENSION: DataLoaderTypeEnum.Pyarrow,
+    CSV_EXTENSION: DataLoaderTypeEnum.Pyarrow,
+    ORC_EXTENSION: DataLoaderTypeEnum.Pyarrow,
+    IPC_EXTENSION: DataLoaderTypeEnum.Pyarrow,
+    FEATHER_EXTENSION: DataLoaderTypeEnum.Pyarrow,
+    ARROW_EXTENSION: DataLoaderTypeEnum.Pyarrow
 }
 
 
@@ -482,6 +494,11 @@ class TableToGraphImporter:
             edge_type=edge_type,
         )
 
+    """
+    ili saljemo data loader, ili saljemo enum i file extension
+
+
+    """
     def __init__(
         self,
         file_extension: str,
@@ -754,3 +771,55 @@ class TableToGraphImporter:
 
             for table_name, relations in many_to_many_configuration.items()
         ]
+
+
+class AmazonS3Importer(TableToGraphImporter):
+    def __init__(
+        self,
+        file_extension: str,
+        data_configuration: Dict[str, Any],
+        memgraph: Optional[Memgraph] = None,
+        **kwargs
+    ) -> None:
+        """
+        :param file_extension: file format to be read
+        :type file_extension: string
+        :param data_configuration: Configuration for the translations
+        :type data_configuration: Dict[str, Any]
+        :param memgraph: Connection to Memgraph (Optional)
+        :type memgraph: Memgraph (Optional)
+        """
+        super.__init__(
+            self,
+            file_extension,
+            filesystem_type=FileSystemTypeEnum.AmazonS3,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs
+        )
+
+
+class AzureBlobImporter(TableToGraphImporter):
+    def __init__(
+        self,
+        file_extension: str,
+        data_configuration: Dict[str, Any],
+        memgraph: Optional[Memgraph] = None,
+        **kwargs
+    ) -> None:
+        """
+        :param file_extension: file format to be read
+        :type file_extension: string
+        :param data_configuration: Configuration for the translations
+        :type data_configuration: Dict[str, Any]
+        :param memgraph: Connection to Memgraph (Optional)
+        :type memgraph: Memgraph (Optional)
+        """
+        super.__init__(
+            self,
+            file_extension,
+            filesystem_type=FileSystemTypeEnum.AzureBlob,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs
+        )
