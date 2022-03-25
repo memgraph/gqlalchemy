@@ -201,7 +201,7 @@ class FileSystemHandler(ABC):
         
         :return: str
         """
-        raise NotImplementedError('Subclasses must override get_path()')
+        pass
 
 
 class S3FileSystemHandler(FileSystemHandler):
@@ -245,7 +245,7 @@ class S3FileSystemHandler(FileSystemHandler):
 
         :returns: string
         """
-        pass
+        return f"{self._bucket_name}/{collection_name}.{file_extension}"
 
 
 class AzureBlobFileSystemHandler(FileSystemHandler):
@@ -501,11 +501,6 @@ class TableToGraphImporter:
             edge_type=edge_type,
         )
 
-    """
-    ili saljemo data loader, ili saljemo enum i file extension
-
-
-    """
     def __init__(
         self,
         file_extension: str,
