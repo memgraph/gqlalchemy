@@ -382,7 +382,9 @@ class NodeMetaclass(BaseModel.__class__):
                         skip_constraints = True
                         break
                     raise GQLAlchemyDatabaseMissingInFieldError(
-                        constraint=constraint, field=field, field_type=field_type,
+                        constraint=constraint,
+                        field=field,
+                        field_type=field_type,
                     )
 
             if skip_constraints:
@@ -563,5 +565,9 @@ class Path(GraphObject):
 
     def __str__(self) -> str:
         return "".join(
-            (f"<{type(self).__name__}", f" nodes={self._nodes}", f" relationships={self._relationships}" ">",)
+            (
+                f"<{type(self).__name__}",
+                f" nodes={self._nodes}",
+                f" relationships={self._relationships}" ">",
+            )
         )
