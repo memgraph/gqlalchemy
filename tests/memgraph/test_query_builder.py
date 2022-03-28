@@ -136,18 +136,36 @@ class TestMatch:
 
         mock.assert_called_with(expected_query)
 
-    def test_where(self):
+    def test_where_with_value(self):
         query_builder = (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where(property="n.name", operator="=", value="best_name")
+            .where("n.name", "=", "best_name")
             .or_where("m.id", "<", 4)
             .return_()
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR m.id < 4 RETURN * "
+
+        with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_where_with_property(self):
+        query_builder = (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where("n.name", "=", "m.name", value_is_property=True)
+            .or_where("m.id", "<", 4)
+            .return_()
+        )
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name OR m.id < 4 RETURN * "
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
