@@ -1,6 +1,7 @@
 from gqlalchemy import MemgraphInstanceBinary, MemgraphInstanceDocker
+from gqlalchemy.instance_runner import MemgraphInstanceUbuntu
 
-
+"""
 def test_start_memgraph_docker():
     memgraph_instance = MemgraphInstanceDocker(port=7688)
     memgraph = memgraph_instance.start()
@@ -10,6 +11,14 @@ def test_start_memgraph_docker():
 
 def test_start_memgraph_binary():
     memgraph_instance = MemgraphInstanceBinary(port=7689, binary_path="/usr/lib/memgraph/memgraph")
+    memgraph = memgraph_instance.start()
+    assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
+    memgraph_instance.stop()
+"""
+
+
+def test_start_memgraph_ubuntu():
+    memgraph_instance = MemgraphInstanceUbuntu()
     memgraph = memgraph_instance.start()
     assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
     memgraph_instance.stop()

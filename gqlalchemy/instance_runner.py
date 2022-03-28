@@ -1,14 +1,3 @@
-# Copyright 2021 Memgraph Ltd.
-#
-# Use of this software is governed by the Business Source License
-# included in the file licenses/BSL.txt; by using this file, you agree to be bound by the terms of the Business Source
-# License, and you may not use this file except in compliance with the Business Source License.
-#
-# As of the Change Date specified in that file, in accordance with
-# the Business Source License, use of this software will be governed
-# by the Apache License, Version 2.0, included in the file
-# licenses/APL.txt.
-
 import docker
 import os
 import subprocess
@@ -46,23 +35,20 @@ class MemgraphInstance(ABC):
         self,
         host: str = "127.0.0.1",
         port: int = 7687,
-        username: str = "",
-        password: str = "",
-        encrypted: bool = False,
+        config: Dict[str, Union[str, int, bool]] = {},
     ) -> None:
         self.host = host
         self.port = port
-        self.username = username
-        self.password = password
-        self.encrypted = encrypted
-        self.config = {}
+        self.config = config
         self.proc_mg = None
+
+        self.config["--bolt-port"] = self.port
 
     def set_config(self, config: Dict[str, Union[str, int, bool]]):
         self.config.update(config)
 
     def connect(self):
-        self.memgraph = Memgraph(self.host, self.port, self.username, self.password, self.encrypted)
+        self.memgraph = Memgraph(self.host, self.port)
         if not self.is_running():
             raise ConnectionError("The Memgraph process probably died.")
         return self.memgraph
@@ -81,10 +67,9 @@ class MemgraphInstance(ABC):
 
 
 class MemgraphInstanceBinary(MemgraphInstance):
-    def __init__(self, binary_path="/usr/lib/memgraph/memgraph", user: str = "memgraph", **data):
+    def __init__(self, binary_path="/usr/lib/memgraph/memgraph", **data):
         super().__init__(**data)
         self.binary_path = binary_path
-        self.user = user
 
     def start(self, restart=False):
         if not restart and self.is_running():
@@ -92,8 +77,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         self.stop()
 
         args_mg = f"{self.binary_path }" + (" ").join([f"{k} {v}" for k, v in self.config])
-        args_mg += f" --bolt-address {self.host} --bolt-port {self.port}"
-        args_mg = (f"sudo -u {self.user} " if self.user != "" else "") + args_mg
+        rgs_mg += f" --bolt-address {self.host} --bolt-port {self.port}"
         print(args_mg)
         self.proc_mg = subprocess.Popen(args_mg, shell=True, preexec_fn=os.setsid)
         wait_for_port(self.host, self.port)
@@ -113,6 +97,45 @@ class MemgraphInstanceBinary(MemgraphInstance):
         if self.proc_mg.poll() is not None:
             return False
         return True
+
+
+def update_conf(conf_path, config):
+    with open(conf_path, "a") as writer:
+        writer.write(f"## Start instance_runner config\n")
+        for key, value in config.items():
+            writer.write(f"{key}={value}\n")
+        writer.write(f"## End instance_runner config\n")
+
+
+class MemgraphInstanceUbuntu(MemgraphInstance):
+    def __init__(self, conf_path="/etc/memgraph/memgraph.conf", **data):
+        super().__init__(**data)
+        self.conf_path = conf_path
+
+    def start(self, restart=False):
+        if not restart and self.is_running():
+            print("not starting")
+            return
+        self.stop()
+        print("starting")
+        args_mg = "systemctl start memgraph"
+        if self.config:
+            update_conf(self.conf_path, self.config)
+        self.proc_mg = subprocess.Popen(args_mg, shell=True, preexec_fn=os.setsid)
+        wait_for_port(self.host, self.port)
+
+        self.connect()
+        return self.memgraph
+
+    def stop(self):
+        subprocess.Popen("systemctl start memgraph", shell=True, preexec_fn=os.setsid)
+
+    def is_running(self):
+        if os.system("systemctl is-active memgraph") == "active":
+            print("running")
+            return True
+        print("not running")
+        return False
 
 
 class MemgraphInstanceDocker(MemgraphInstance):
