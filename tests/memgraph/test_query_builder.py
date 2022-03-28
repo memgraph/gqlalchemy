@@ -143,7 +143,7 @@ class TestMatch:
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("n.name", "=", "best_name")
+            .where(property="n.name", operator="=", value="best_name")
             .or_where("m.id", "<", 4)
             .return_()
         )
