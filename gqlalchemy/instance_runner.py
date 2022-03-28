@@ -77,7 +77,6 @@ class MemgraphInstanceBinary(MemgraphInstance):
         self.stop()
 
         args_mg = f"{self.binary_path }" + (" ").join([f"{k} {v}" for k, v in self.config.items()])
-        print(args_mg)
         self.proc_mg = subprocess.Popen(args_mg, shell=True, preexec_fn=os.setsid)
         wait_for_port(self.host, self.port)
 
@@ -125,8 +124,7 @@ class MemgraphInstanceDocker(MemgraphInstance):
     def stop(self):
         if not self.is_running():
             return
-        code = self.container.stop()
-        print(f"Exit code: {code}")
+        self.container.stop()
 
     def is_running(self):
         if self.container is None:
