@@ -301,6 +301,17 @@ def test_where(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_where_label(memgraph):
+    query_builder = QueryBuilder().match().node(variable="n").where("n", ":", "L1").return_()
+
+    expected_query = " MATCH (n) WHERE n:L1 RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_or_where(memgraph):
     query_builder = (
         QueryBuilder()
@@ -313,6 +324,25 @@ def test_or_where(memgraph):
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR m.id < 4 RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_or_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where("n.name", "=", "best_name")
+        .or_where("m", ":", "L2")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR m:L2 RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -339,6 +369,25 @@ def test_and_where(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_and_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where("n.name", "=", "best_name")
+        .and_where("m", ":", "L1")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND m:L1 RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_xor_where(memgraph):
     query_builder = (
         QueryBuilder()
@@ -351,6 +400,25 @@ def test_xor_where(memgraph):
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' XOR m.id < 4 RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_xor_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where("n", ":", "L1")
+        .xor_where("m.id", "<", 4)
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:L1 XOR m.id < 4 RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
