@@ -470,13 +470,9 @@ class DeclarativeBase(ABC):
         """Creates a WHERE statement Cypher partial query."""
         separator = "" if operator == ":" else " "
         self._query.append(
-<<<<<<< HEAD
-            WhereConditionPartialQuery(WhereConditionConstants.WHERE, separator.join([item, operator, value_cypher]))
-=======
             WhereConditionPartialQuery(
                 WhereConditionConstants.WHERE, separator.join([item, operator, to_cypher_value(value)])
             )
->>>>>>> 3bac6bd (patch slight merge difference)
         )
 
         return self
@@ -485,13 +481,9 @@ class DeclarativeBase(ABC):
         """Creates a AND (expression) statement Cypher partial query."""
         separator = "" if operator == ":" else " "
         self._query.append(
-<<<<<<< HEAD
-            WhereConditionPartialQuery(WhereConditionConstants.AND, separator.join([item, operator, value_cypher]))
-=======
             WhereConditionPartialQuery(
                 WhereConditionConstants.AND, separator.join([item, operator, to_cypher_value(value)])
             )
->>>>>>> 3bac6bd (patch slight merge difference)
         )
 
         return self
