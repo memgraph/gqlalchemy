@@ -33,6 +33,10 @@ def test_properties(memgraph):
     assert hasattr(loaded_user, "_age") is True
     assert hasattr(loaded_user2, "_name") is False
     assert hasattr(loaded_user2, "_age") is False
+    assert "id" in User.__fields__
+    assert "last_name" in User.__fields__
+    assert "_name" not in User.__fields__
+    assert "_age" not in User.__fields__
     assert loaded_user.id == 1
     assert loaded_user.last_name == "Smith"
     assert loaded_user._label == "User"

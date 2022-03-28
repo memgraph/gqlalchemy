@@ -34,10 +34,10 @@ def test_partial_loading(memgraph):
 def test_node_loading(memgraph):
     class User(Node):
         id: int
-        name: str = None
+        name: str
 
     User(id=1, name="Jane").save(memgraph)
-    user_by_name = memgraph.load_node(User(name="Jane"))
+    user_by_name = memgraph.load_node(User(id=1, name="Jane"))
 
     assert user_by_name.id == 1
     assert user_by_name.name == "Jane"
