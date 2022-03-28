@@ -37,7 +37,7 @@ jobs:
       - name: Install Memgraph
         run: |
           curl -O https://download.memgraph.com/memgraph/v2.2.1/ubuntu-20.04/memgraph_2.2.1-1_amd64.deb
-          dpkg -i memgraph_2.2.1-1_amd64.deb
+          sudo dpkg -i memgraph_2.2.1-1_amd64.deb
       - name: Test project
         run: |
           poetry install
