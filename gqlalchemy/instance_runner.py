@@ -76,8 +76,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
             return
         self.stop()
 
-        args_mg = f"{self.binary_path }" + (" ").join([f"{k} {v}" for k, v in self.config])
-        rgs_mg += f" --bolt-address {self.host} --bolt-port {self.port}"
+        args_mg = f"{self.binary_path }" + (" ").join([f"{k} {v}" for k, v in self.config.items()])
         print(args_mg)
         self.proc_mg = subprocess.Popen(args_mg, shell=True, preexec_fn=os.setsid)
         wait_for_port(self.host, self.port)
@@ -99,45 +98,6 @@ class MemgraphInstanceBinary(MemgraphInstance):
         return True
 
 
-def update_conf(conf_path, config):
-    with open(conf_path, "a") as writer:
-        writer.write(f"## Start instance_runner config\n")
-        for key, value in config.items():
-            writer.write(f"{key}={value}\n")
-        writer.write(f"## End instance_runner config\n")
-
-
-class MemgraphInstanceUbuntu(MemgraphInstance):
-    def __init__(self, conf_path="/etc/memgraph/memgraph.conf", **data):
-        super().__init__(**data)
-        self.conf_path = conf_path
-
-    def start(self, restart=False):
-        if not restart and self.is_running():
-            print("not starting")
-            return
-        self.stop()
-        print("starting")
-        args_mg = "systemctl start memgraph"
-        if self.config:
-            update_conf(self.conf_path, self.config)
-        self.proc_mg = subprocess.Popen(args_mg, shell=True, preexec_fn=os.setsid)
-        wait_for_port(self.host, self.port)
-
-        self.connect()
-        return self.memgraph
-
-    def stop(self):
-        subprocess.Popen("systemctl start memgraph", shell=True, preexec_fn=os.setsid)
-
-    def is_running(self):
-        if os.system("systemctl is-active memgraph") == "active":
-            print("running")
-            return True
-        print("not running")
-        return False
-
-
 class MemgraphInstanceDocker(MemgraphInstance):
     def __init__(self, docker_image: DockerImage = DockerImage.MEMGRAPH, docker_tag: str = "latest", **data):
         super().__init__(**data)
@@ -152,7 +112,8 @@ class MemgraphInstanceDocker(MemgraphInstance):
         self.stop()
 
         self.container = self.client.containers.run(
-            self.docker_image.value + ":" + self.docker_tag + (" ").join([f"{k} {v}" for k, v in self.config]),
+            image=self.docker_image.value + ":" + self.docker_tag,
+            command="/usr/lib/memgraph/memgraph" + (" ").join([f"{k} {v}" for k, v in self.config.items()]),
             detach=True,
             ports={f"7687/tcp": self.port},
         )
