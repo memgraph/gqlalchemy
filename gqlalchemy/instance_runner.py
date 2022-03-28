@@ -35,13 +35,14 @@ class MemgraphInstance(ABC):
         self,
         host: str = "127.0.0.1",
         port: int = 7687,
-        config: Dict[str, Union[str, int, bool]] = {},
+        config: Dict[str, Union[str, int, bool]] = dict(),
     ) -> None:
         self.host = host
         self.port = port
         self.config = config
         self.proc_mg = None
-
+        print(self.config)
+        print(type(self.config))
         self.config["--bolt-port"] = self.port
 
     def set_config(self, config: Dict[str, Union[str, int, bool]]):
@@ -67,16 +68,20 @@ class MemgraphInstance(ABC):
 
 
 class MemgraphInstanceBinary(MemgraphInstance):
-    def __init__(self, binary_path="/usr/lib/memgraph/memgraph", **data):
+    def __init__(self, binary_path="/usr/lib/memgraph/memgraph", user="", **data):
         super().__init__(**data)
         self.binary_path = binary_path
+        self.user = user
 
     def start(self, restart=False):
         if not restart and self.is_running():
             return
         self.stop()
 
-        args_mg = f"{self.binary_path }" + (" ").join([f"{k} {v}" for k, v in self.config.items()])
+        args_mg = f"{self.binary_path } " + (" ").join([f"{k}={repr(v)}" for k, v in self.config.items()])
+        if self.user != "":
+            args_mg = f"sudo runuser -l {self.user} -c '{args_mg}'"
+        print(args_mg)
         self.proc_mg = subprocess.Popen(args_mg, shell=True, preexec_fn=os.setsid)
         wait_for_port(self.host, self.port)
 
