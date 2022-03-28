@@ -499,12 +499,12 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def xor_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
+    def xor_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a XOR (expression) statement Cypher partial query."""
         separator = "" if operator == ":" else " "
         self._query.append(
             WhereConditionPartialQuery(
-                WhereConditionConstants.XOR, separator.join([property, operator, to_cypher_value(value)])
+                WhereConditionConstants.XOR, separator.join([item, operator, to_cypher_value(value)])
             )
         )
 
