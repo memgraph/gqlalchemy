@@ -1,9 +1,20 @@
-from pydantic import ValidationError
+# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from gqlalchemy import Node
 
 
-# test whether the private properties are saved into Memgraph
-def test_private_properties(memgraph):
+def test_properties(memgraph):
     class User(Node):
         id: int
         last_name: str
@@ -14,10 +25,7 @@ def test_private_properties(memgraph):
     User(id=2, last_name="Scott").save(memgraph)
     loaded_user = memgraph.load_node(user)
     loaded_user._age = 24
-    try:
-        memgraph.load_node(User(id=2))
-    except ValidationError:
-        loaded_user2 = memgraph.load_node(User(id=2, last_name="Scott"))
+    loaded_user2 = memgraph.load_node(User(id=2, last_name="Scott"))
 
     assert type(loaded_user) is User
     assert type(loaded_user2) is User
@@ -31,24 +39,5 @@ def test_private_properties(memgraph):
     assert loaded_user2.id == 2
     assert loaded_user2.last_name == "Scott"
     assert loaded_user2._label == "User"
-    user._name == "Jane"
+    assert user._name == "Jane"
     assert loaded_user._age == 24
-
-
-# test whether the node can be loaded with one of the properties
-def test_partial_loading(memgraph):
-    class User(Node):
-        id: int
-        name: str = None
-
-    User(id=1, name="Jane").save(memgraph)
-    try:
-        memgraph.load_node(User(name="Jane"))
-    except ValidationError:  # validation error since no 'id' is provided - missing field
-        user_by_id = memgraph.load_node(
-            User(id=1)
-        )  # user_by_id will be loaded from the database ('name' is not missing)
-
-    assert user_by_id.id == 1
-    assert user_by_id.name == "Jane"
-    assert user_by_id._label == "User"
