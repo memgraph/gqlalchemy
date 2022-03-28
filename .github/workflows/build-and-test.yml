@@ -78,4 +78,4 @@ jobs:
       - name: Test project
         run: |
           poetry install
-          poetry run pytest -vvv -m "not slow and not ubuntu"
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"

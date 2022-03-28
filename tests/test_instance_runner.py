@@ -16,6 +16,7 @@ import pytest
 from gqlalchemy import MemgraphInstanceBinary, MemgraphInstanceDocker
 
 
+@pytest.mark.docker
 def test_start_memgraph_docker():
     memgraph_instance = MemgraphInstanceDocker(port=7688)
     memgraph = memgraph_instance.start()
