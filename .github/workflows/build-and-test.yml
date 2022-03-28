@@ -72,6 +72,9 @@ jobs:
         uses: abatilo/actions-poetry@v2.0.0
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Pull memgraph/memgraph image
+        run: |
+          docker pull memgraph/memgraph
       - name: Test project
         run: |
           poetry install
