@@ -117,8 +117,8 @@ def test_filter_data_1(memgraph):
         .node("Person", variable="p1")
         .to("FRIENDS_WITH")
         .node("Person", variable="p2")
-        .where("n.name", "=", "Ron")
-        .or_where("m.id", "=", 0)
+        .where("n.name", "=", literal="Ron")
+        .or_where("m.id", "=", literal=0)
         .return_()
     )
 
