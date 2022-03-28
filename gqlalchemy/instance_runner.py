@@ -14,9 +14,9 @@
 
 import docker
 import os
+import psutil
 import subprocess
 import time
-import signal
 import socket
 from abc import ABC, abstractmethod
 from typing import Dict, Union, Optional
@@ -102,21 +102,26 @@ class MemgraphInstanceBinary(MemgraphInstance):
             return
         self.stop()
 
-        args_mg = f"{self.binary_path } " + (" ").join([f"{k}={repr(v)}" for k, v in self.config.items()])
+        args_mg = f"{self.binary_path } " + (" ").join([f"{k}={v}" for k, v in self.config.items()])
         if self.user != "":
             args_mg = f"sudo runuser -l {self.user} -c '{args_mg}'"
-        self.proc_mg = subprocess.Popen(args_mg, shell=True, preexec_fn=os.setsid)
+        self.proc_mg = subprocess.Popen(args_mg, shell=True)
         wait_for_port(self.host, self.port)
 
         self.connect()
         return self.memgraph
 
-    def stop(self) -> None:
+    def stop(self) -> int:
         if not self.is_running():
             return
-        code = os.killpg(os.getpgid(self.proc_mg.pid), signal.SIGTERM)
-        self.proc_mg.wait()
-        return code
+        procs = set()
+        process = psutil.Process(self.proc_mg.pid)
+        procs.add(process)
+        for proc in process.children(recursive=True):
+            procs.add(proc)
+            os.system(f"sudo kill {proc.pid}")
+        process.kill()
+        psutil.wait_procs(procs)
 
     def is_running(self) -> bool:
         if self.proc_mg is None:

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import pathlib
 import pytest
 from gqlalchemy import MemgraphInstanceBinary, MemgraphInstanceDocker
 
@@ -49,32 +51,48 @@ def test_start_memgraph_docker_connect():
 
 @pytest.mark.ubuntu
 def test_start_memgraph_binary():
-    memgraph_instance = MemgraphInstanceBinary(port=7693, binary_path="/usr/lib/memgraph/memgraph", user="memgraph")
-    memgraph = memgraph_instance.start()
-    assert memgraph_instance.is_running()
-    assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
-    memgraph_instance.stop()
-    assert not memgraph_instance.is_running()
-
-
-@pytest.mark.ubuntu
-def test_start_memgraph_binary_config():
+    path = pathlib.Path().resolve() / "memgraph_one"
+    os.system(f"mkdir {path}")
+    os.system(f"sudo chown -R memgraph:memgraph {path}")
     memgraph_instance = MemgraphInstanceBinary(
-        port=7694, config={"--data-directory": "data"}, binary_path="/usr/lib/memgraph/memgraph", user="memgraph"
+        port=7693, config={"--data-directory": str(path)}, binary_path="/usr/lib/memgraph/memgraph", user="memgraph"
     )
     memgraph = memgraph_instance.start()
     assert memgraph_instance.is_running()
     assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
     memgraph_instance.stop()
     assert not memgraph_instance.is_running()
+    os.system(f"rm -rf {path}")
+
+
+@pytest.mark.ubuntu
+def test_start_memgraph_binary_config():
+    path = pathlib.Path().resolve() / "memgraph_two/"
+    os.system(f"mkdir {path}")
+    os.system(f"sudo chown -R memgraph:memgraph {path}")
+    memgraph_instance = MemgraphInstanceBinary(
+        port=7694, config={"--data-directory": str(path)}, binary_path="/usr/lib/memgraph/memgraph", user="memgraph"
+    )
+    memgraph = memgraph_instance.start()
+    assert memgraph_instance.is_running()
+    assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
+    memgraph_instance.stop()
+    assert not memgraph_instance.is_running()
+    os.system(f"rm -rf {path}")
 
 
 @pytest.mark.ubuntu
 def test_start_memgraph_binary_connect():
-    memgraph_instance = MemgraphInstanceBinary(port=7695, binary_path="/usr/lib/memgraph/memgraph", user="memgraph")
+    path = pathlib.Path().resolve() / "memgraph_three"
+    os.system(f"mkdir {path}")
+    os.system(f"sudo chown -R memgraph:memgraph {path}")
+    memgraph_instance = MemgraphInstanceBinary(
+        port=7695, config={"--data-directory": str(path)}, binary_path="/usr/lib/memgraph/memgraph", user="memgraph"
+    )
     memgraph_instance.start()
     assert memgraph_instance.is_running()
     memgraph = memgraph_instance.connect()
     assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
     memgraph_instance.stop()
     assert not memgraph_instance.is_running()
+    os.system(f"rm -rf {path}")
