@@ -74,7 +74,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Pull memgraph/memgraph image
         run: |
-          docker pull memgraph/memgraph
+          docker pull --platform linux memgraph/memgraph
       - name: Test project
         run: |
           poetry install
