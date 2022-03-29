@@ -25,8 +25,6 @@ from gqlalchemy.loaders import (
     get_data_loader,
 )
 
-from tests.conftest import memgraph
-
 
 class myFileSystemHandler(FileSystemHandler):
     def __init__(self) -> None:
@@ -70,13 +68,13 @@ def test_name_mapper_get_property_name():
 def test_file_system_handler_abstract():
     """Test that base FileSystemHandler class can't be instantiated"""
     with pytest.raises(TypeError):
-        filesystem = FileSystemHandler()
+        FileSystemHandler()
 
 
 def test_data_loader_abstract():
     """Test that base DataLoader class can't be instantiated"""
     with pytest.raises(TypeError):
-        data_loader = DataLoader()
+        DataLoader()
 
 
 def test_custom_data_loader(dummy_loader):
@@ -88,13 +86,13 @@ def test_custom_data_loader(dummy_loader):
 def test_get_data_loader_error():
     """Test get_data_loader when the file_extension is not supported"""
     with pytest.raises(ValueError):
-        data_loader = get_data_loader("fail", FileSystemTypeEnum.AmazonS3)
+        get_data_loader("fail", FileSystemTypeEnum.AmazonS3)
 
 
 def test_get_data_loader_wrong_filesystem():
     """Test get_data_loader when the filesystem is not supported"""
     with pytest.raises(ValueError):
-        data_loader = get_data_loader("csv", 1)
+        get_data_loader("csv", 1)
 
 
 def test_data_loader():
