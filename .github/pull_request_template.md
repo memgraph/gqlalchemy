@@ -7,7 +7,8 @@ Please briefly explain the changes you made here.
 - [ ] Bugfix
 - [ ] Feature
 - [ ] Code style update (formatting, renaming)
-- [ ] Refactoring (no functional changes, no API changes)
+- [ ] Refactoring with functional or API changes
+- [ ] Refactoring without functional or API changes
 - [ ] Build or packaging related changes
 - [ ] Documentation content changes
 - [ ] Other (please describe):
