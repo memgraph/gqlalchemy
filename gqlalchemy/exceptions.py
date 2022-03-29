@@ -18,6 +18,12 @@ Define your property as:
   {field}: {field_type} = Field({constraint}=True, db=Memgraph())
 """
 
+DATABASE_MISSING_IN_NODE_CLASS_ERROR_MESSAGE = """
+Can't have an index on a label without providing the database `db` object.
+Define your class as:
+  {cls.__name__}(Node, index=True, db=Memgraph())
+"""
+
 SUBCLASS_NOT_FOUND_WARNING = """
 GraphObject subclass(es) '{types}' not found.
 '{cls.__name__}' will be used until you create a subclass.
@@ -60,6 +66,12 @@ class GQLAlchemyDatabaseMissingInFieldError(GQLAlchemyError):
             field=field,
             field_type=field_type,
         )
+
+
+class GQLAlchemyDatabaseMissingInNodeClassError(GQLAlchemyError):
+    def __init__(self, cls):
+        super().__init__()
+        self.message = DATABASE_MISSING_IN_NODE_CLASS_ERROR_MESSAGE.format(cls=cls)
 
 
 class GQLAlchemyOnDiskPropertyDatabaseNotDefinedError(GQLAlchemyError):
