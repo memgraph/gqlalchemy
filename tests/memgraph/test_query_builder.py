@@ -349,7 +349,7 @@ def test_where_no_lhs(memgraph):
             .return_()
         )
 
-    assert "DeclarativeBase.where() missing 1 required positional argument:" in str(e_info.value)
+    assert "where() missing 1 required positional argument:" in str(e_info.value)
 
 
 def test_where_no_rhs(memgraph):
@@ -452,7 +452,7 @@ def test_or_where_no_lhs(memgraph):
             .return_()
         )
 
-    assert "DeclarativeBase.or_where() missing 1 required positional argument:" in str(e_info.value)
+    assert "or_where() missing 1 required positional argument:" in str(e_info.value)
 
 
 def test_or_where_no_rhs(memgraph):
@@ -557,7 +557,7 @@ def test_and_where_no_lhs(memgraph):
             .return_()
         )
 
-    assert "DeclarativeBase.and_where() missing 1 required positional argument:" in str(e_info.value)
+    assert "and_where() missing 1 required positional argument:" in str(e_info.value)
 
 
 def test_and_where_no_rhs(memgraph):
@@ -662,7 +662,7 @@ def test_xor_where_no_lhs(memgraph):
             .return_()
         )
 
-    assert "DeclarativeBase.xor_where() missing 1 required positional argument:" in str(e_info.value)
+    assert "xor_where() missing 1 required positional argument:" in str(e_info.value)
 
 
 def test_xor_where_no_rhs(memgraph):
