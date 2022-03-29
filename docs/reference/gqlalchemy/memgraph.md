@@ -97,6 +97,14 @@ def create_stream(stream: MemgraphStream) -> None
 
 Create a stream
 
+#### start\_stream
+
+```python
+def start_stream(stream: MemgraphStream) -> None
+```
+
+Start a stream
+
 #### get\_streams
 
 ```python
@@ -135,7 +143,7 @@ Creates a trigger
 def get_triggers() -> List[str]
 ```
 
-Creates a trigger
+Returns a list of all database triggers
 
 #### drop\_trigger
 
@@ -144,6 +152,14 @@ def drop_trigger(trigger) -> None
 ```
 
 Drop a trigger
+
+#### drop\_triggers
+
+```python
+def drop_triggers() -> None
+```
+
+Drops all triggers in the database
 
 #### new\_connection
 

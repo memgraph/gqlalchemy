@@ -15,13 +15,13 @@
 import docker
 import os
 import psutil
+import socket
 import subprocess
 import time
-import socket
 from abc import ABC, abstractmethod
-from typing import Dict, Union, Optional
-from .memgraph import Memgraph
 from enum import Enum
+from typing import Any, Dict, Optional, Union
+from .memgraph import Memgraph
 
 
 class DockerImage(Enum):
@@ -30,6 +30,18 @@ class DockerImage(Enum):
 
 
 def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01, timeout: float = 5.0) -> None:
+    """Wait for a TCP port to become available.
+
+    Args:
+        host (str): The IP address that is being checked.
+        port (str): The port that is being checked.
+        delay (float): A float that defines how long to wait between retries.
+        timeout (float): A float that defines how long to wait for the port.
+
+    Raises:
+      TimeoutError: Raises an error when the host and port are not accepting
+      connections after the timeout period has passed.
+    """
     start_time = time.perf_counter()
     time.sleep(delay)
     while True:
@@ -44,7 +56,18 @@ def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01
                 ) from ex
 
 
-def wait_for_docker_container(container, delay: float = 0.01, timeout: float = 5.0) -> None:
+def wait_for_docker_container(container: "docker.Container", delay: float = 0.01, timeout: float = 5.0) -> None:
+    """Wait for a Docker container to enter the status `running`.
+
+    Args:
+        container (docker.Container): The Docker container to wait for.
+        delay (float): A float that defines how long to wait between retries.
+        timeout (float): A float that defines how long to wait for the status.
+
+    Raises:
+      TimeoutError: Raises an error when the container isn't running after the
+      timeout period has passed.
+    """
     start_time = time.perf_counter()
     time.sleep(delay)
     container.reload()
@@ -57,10 +80,7 @@ def wait_for_docker_container(container, delay: float = 0.01, timeout: float = 5
 
 class MemgraphInstance(ABC):
     def __init__(
-        self,
-        host: str = "0.0.0.0",
-        port: int = 7687,
-        config: Dict[str, Union[str, int, bool]] = dict(),
+        self, host: str = "0.0.0.0", port: int = 7687, config: Dict[str, Union[str, int, bool]] = dict(),
     ) -> None:
         self.host = host
         self.port = port
@@ -79,25 +99,41 @@ class MemgraphInstance(ABC):
         return self.memgraph
 
     @abstractmethod
-    def is_running(self):
+    def start(self, restart: bool = False, binary_path: Optional[str] = "") -> "Memgraph":
         pass
 
     @abstractmethod
-    def stop(self):
+    def stop(self) -> Any:
         pass
 
     @abstractmethod
-    def start(self, restart: bool = False, binary_path: Optional[str] = ""):
+    def is_running(self) -> bool:
         pass
 
 
 class MemgraphInstanceBinary(MemgraphInstance):
+    """A class for managing Memgraph instances started from binary files on Unix
+    systems.
+
+    Attributes:
+      binary_path (str): A string representing the path to a Memgraph binary
+      file.
+      user (str): A string representing the user that should start the Memgraph
+      process.
+    """
+
     def __init__(self, binary_path: str = "/usr/lib/memgraph/memgraph", user: str = "", **data) -> None:
         super().__init__(**data)
         self.binary_path = binary_path
         self.user = user
 
     def start(self, restart: bool = False) -> "Memgraph":
+        """Start the Memgraph instance and return the connection object.
+
+        Attributes:
+            restart (bool): A bool indicating if the instance should be
+            restarted if it's already running.
+        """
         if not restart and self.is_running():
             return
         self.stop()
@@ -112,6 +148,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         return self.memgraph
 
     def stop(self) -> int:
+        """Stop the Memgraph instance."""
         if not self.is_running():
             return
         procs = set()
@@ -124,6 +161,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         psutil.wait_procs(procs)
 
     def is_running(self) -> bool:
+        """Check if the Memgraph instance is still running."""
         if self.proc_mg is None:
             return False
         if self.proc_mg.poll() is not None:
@@ -132,40 +170,56 @@ class MemgraphInstanceBinary(MemgraphInstance):
 
 
 class MemgraphInstanceDocker(MemgraphInstance):
+    """A class for managing Memgraph instances started in Docker containers.
+
+    Attributes:
+      docker_image (DockerImage): An enum representing the Docker image. Values:
+      `DockerImage.MEMGRAPH` and `DockerImage.MAGE`.
+      docker_image_tag (str): A string representing the tag of the Docker image.
+    """
+
     def __init__(
         self, docker_image: DockerImage = DockerImage.MEMGRAPH, docker_image_tag: str = "latest", **data
     ) -> None:
         super().__init__(**data)
         self.docker_image = docker_image
         self.docker_image_tag = docker_image_tag
-        self.client = docker.from_env()
-        self.container = None
+        self._client = docker.from_env()
+        self._container = None
 
     def start(self, restart: bool = False) -> "Memgraph":
+        """Start the Memgraph instance and return the connection object.
+        
+        Attributes:
+            restart (bool): A bool indicating if the instance should be
+            restarted if it's already running.
+        """
         if not restart and self.is_running():
             return
         self.stop()
-        self.container = self.client.containers.run(
+        self._container = self._client.containers.run(
             image=self.docker_image.value + ":" + self.docker_image_tag,
             command="/usr/lib/memgraph/memgraph " + (" ").join([f"{k}={v}" for k, v in self.config.items()]),
             detach=True,
             ports={f"{self.port}/tcp": self.port},
         )
-        wait_for_docker_container(self.container, delay=1)
+        wait_for_docker_container(self._container, delay=1)
 
         self.connect()
         return self.memgraph
 
     def stop(self) -> Dict:
+        """Stop the Memgraph instance."""
         if not self.is_running():
             return
-        self.container.stop()
-        return self.container.wait()
+        self._container.stop()
+        return self._container.wait()
 
     def is_running(self) -> bool:
-        if self.container is None:
+        """Check if the Memgraph instance is still running."""
+        if self._container is None:
             return False
-        self.container.reload()
-        if self.container.status == "running":
+        self._container.reload()
+        if self._container.status == "running":
             return True
         return False
