@@ -362,7 +362,8 @@ class PyarrowDataLoader(DataLoader):
         super().__init__(file_system_handler=file_system_handler)
         self._file_extension = file_extension
 
-    def load_data(self, collection_name: str, is_cross_table: bool = False, columns: Optional[List[str]] = None
+    def load_data(
+        self, collection_name: str, is_cross_table: bool = False, columns: Optional[List[str]] = None
     ) -> None:
         """
         Generator for loading data from data format.
@@ -773,7 +774,8 @@ class AmazonS3Importer(TableToGraphImporter):
     TableToGraphImporter wrapper for use with Amazon S3 File System
     """
 
-    def __init__(self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    def __init__(
+        self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         :param file_extension: file format to be read
@@ -797,7 +799,8 @@ class AzureBlobImporter(TableToGraphImporter):
     TableToGraphImporter wrapper for use with Azure Blob File System
     """
 
-    def __init__(self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    def __init__(
+        self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         :param file_extension: file format to be read
@@ -821,7 +824,8 @@ class LocalFileSystemImporter(TableToGraphImporter):
     TableToGraphImporter wrapper for use with Local File System
     """
 
-    def __init__(self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    def __init__(
+        self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         :param file_extension: file format to be read
