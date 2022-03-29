@@ -24,6 +24,7 @@ from .exceptions import (
     GQLAlchemyError,
     GQLAlchemySubclassNotFoundWarning,
     GQLAlchemyDatabaseMissingInFieldError,
+    GQLAlchemyDatabaseMissingInNodeClassError,
 )
 
 
@@ -187,7 +188,7 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
-    def __init_subclass__(cls, type=None, label=None, labels=None):
+    def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
@@ -355,6 +356,7 @@ class NodeMetaclass(BaseModel.__class__):
             return None
 
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+        cls.index = kwargs.get("index")
         cls.label = kwargs.get("label", name)
         if name == "Node":
             pass
@@ -365,12 +367,20 @@ class NodeMetaclass(BaseModel.__class__):
         else:
             cls.labels = {cls.label}
 
+        db = kwargs.get("db", None)
+        if cls.index is True:
+            if db is None:
+                raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+            index = MemgraphIndex(cls.label)
+            db.create_index(index)
+
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
 
             label = attrs.get("label", cls.label)
-            db = attrs.get("db", None)
+            if db is None:
+                db = attrs.get("db", None)
             skip_constraints = False
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
