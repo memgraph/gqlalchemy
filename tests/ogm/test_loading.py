@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 from gqlalchemy import Node
 from pydantic import ValidationError
 
@@ -21,10 +22,11 @@ def test_partial_loading(memgraph):
         name: str = None
 
     User(id=1, name="Jane").save(memgraph)
-    try:
+
+    with pytest.raises(ValidationError):
         memgraph.load_node(User(name="Jane"))
-    except ValidationError:
-        user_by_id = memgraph.load_node(User(id=1))
+
+    user_by_id = memgraph.load_node(User(id=1))
 
     assert user_by_id.id == 1
     assert user_by_id.name == "Jane"
