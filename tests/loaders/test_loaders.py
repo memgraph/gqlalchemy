@@ -107,14 +107,18 @@ def test_data_loader():
 
 def test_local_table_to_graph_importer(memgraph):
     """e2e test, using Local File System to import into memgraph"""
-    my_configuration = {'indices': {'example': ['name']}, 'name_mappings': {'example': {'label': 'PERSON'}}, 'one_to_many_relations': {'example': []}}
+    my_configuration = {
+        "indices": {"example": ["name"]},
+        "name_mappings": {"example": {"label": "PERSON"}},
+        "one_to_many_relations": {"example": []},
+    }
 
     importer = LocalFileSystemImporter(
-            file_extension="parquet",
-            data_configuration=my_configuration,
-            local_storage_path="./tests/loaders/data",
-            memgraph=memgraph
-        )  
+        file_extension="parquet",
+        data_configuration=my_configuration,
+        local_storage_path="./tests/loaders/data",
+        memgraph=memgraph,
+    )
 
     importer.translate(False)
 

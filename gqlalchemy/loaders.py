@@ -157,6 +157,7 @@ class NameMapper:
     """
     Class that holds all name mappings for all of the collections.
     """
+
     def __init__(self, mappings: Dict[str, Any]) -> None:
         self._name_mappings: Dict[str, NameMappings] = {k: NameMappings(**v) for k, v in mappings.items()}
 
@@ -190,6 +191,7 @@ class FileSystemHandler(ABC):
     Abstract class for defining FileSystemHandler. Inherit this class and initialize
     connection to custom data source.
     """
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -198,7 +200,7 @@ class FileSystemHandler(ABC):
         """
         Returns complete path in specific file system. Used to read the file system
         for a specific file.
-        
+
         :return: str
         """
         pass
@@ -208,6 +210,7 @@ class S3FileSystemHandler(FileSystemHandler):
     """
     Handler connection to Amazon S3 service via pyarrow
     """
+
     def __init__(self, **kwargs):
         """
         kwargs>
@@ -230,11 +233,7 @@ class S3FileSystemHandler(FileSystemHandler):
         )
         self._bucket_name: str = kwargs.get(S3_BUCKET_NAME_KEY)
 
-    def get_path(
-        self,
-        collection_name: str,
-        file_extension: str
-        ) -> str:
+    def get_path(self, collection_name: str, file_extension: str) -> str:
         """
         Get file path in file system
 
@@ -252,6 +251,7 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
     """
     Handles connection to Azure Blob service via adlfs package
     """
+
     def __init__(self, **kwargs) -> None:
         """
         kwargs>
@@ -267,15 +267,11 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         self.fs = adlfs.AzureBlobFileSystem(
             account_name=kwargs.get(BLOB_ACCOUNT_NAME),
             account_key=kwargs.get(BLOB_ACCOUNT_KEY, None),
-            sas_token=kwargs.get(BLOB_SAS_TOKEN, None)
+            sas_token=kwargs.get(BLOB_SAS_TOKEN, None),
         )
         self._container_name = kwargs[BLOB_CONTAINER_NAME_KEY]
 
-    def get_path(
-        self,
-        collection_name: str,
-        file_extension: str
-    ) -> str:
+    def get_path(self, collection_name: str, file_extension: str) -> str:
         """
         Get file path in file system
 
@@ -293,6 +289,7 @@ class LocalFileSystemHandler(FileSystemHandler):
     """
     Handles a local filesystem "connection"
     """
+
     def __init__(self, **kwargs) -> None:
         """
         kwargs>
@@ -320,10 +317,8 @@ class DataLoader(ABC):
     """
     Implements loading of data type from file system service to TableToGraphImporter
     """
-    def __init__(
-        self,
-        file_system_handler: FileSystemHandler
-    ) -> None:
+
+    def __init__(self, file_system_handler: FileSystemHandler) -> None:
         """
         :param file_system_handler: object for handling of file system service
         :type file_system_handler: FileSystemHandler
@@ -341,7 +336,7 @@ class DataLoader(ABC):
         :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
         :type is_cross_table: bool
         """
-        raise NotImplementedError('Subclasses must override load_data() for use in TableToGraphImporter')
+        raise NotImplementedError("Subclasses must override load_data() for use in TableToGraphImporter")
 
 
 class PyarrowDataLoader(DataLoader):
@@ -367,11 +362,7 @@ class PyarrowDataLoader(DataLoader):
         super().__init__(file_system_handler=file_system_handler)
         self._file_extension = file_extension
 
-    def load_data(
-        self,
-        collection_name: str,
-        is_cross_table: bool = False,
-        columns: Optional[List[str]] = None
+    def load_data(self, collection_name: str, is_cross_table: bool = False, columns: Optional[List[str]] = None
     ) -> None:
         """
         Generator for loading data from data format.
@@ -386,13 +377,8 @@ class PyarrowDataLoader(DataLoader):
         source = self._file_system_handler.get_path(collection_name, self._file_extension)
         print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
 
-        # Load dataset via Pyarrow
-        dataset = ds.dataset(
-            source=source,
-            filesystem=self._file_system_handler.fs
-        )
+        dataset = ds.dataset(source=source, filesystem=self._file_system_handler.fs)
 
-        # Load batches from raw data
         for batch in dataset.to_batches(
             columns=columns,
         ):
@@ -404,6 +390,7 @@ class FileSystemTypeEnum(Enum):
     """
     Enumerates all available file systems.
     """
+
     Default = 1
     Local = 2
     AmazonS3 = 3
@@ -414,6 +401,7 @@ class DataLoaderTypeEnum(Enum):
     """
     Enumerates all available data loaders
     """
+
     Default = 1
     Pyarrow = 2
 
@@ -427,15 +415,11 @@ supported_file_extensions = {
     ORC_EXTENSION: DataLoaderTypeEnum.Pyarrow,
     IPC_EXTENSION: DataLoaderTypeEnum.Pyarrow,
     FEATHER_EXTENSION: DataLoaderTypeEnum.Pyarrow,
-    ARROW_EXTENSION: DataLoaderTypeEnum.Pyarrow
+    ARROW_EXTENSION: DataLoaderTypeEnum.Pyarrow,
 }
 
 
-def get_data_loader(
-    file_extension: str,
-    filesystem_type: FileSystemTypeEnum,
-    **kwargs
-    ) -> DataLoader:
+def get_data_loader(file_extension: str, filesystem_type: FileSystemTypeEnum, **kwargs) -> DataLoader:
     """
     Returns DataLoader object, which uses instance of FileSystemHandler, in order to load data
     of specific type from specific File System.
@@ -446,14 +430,16 @@ def get_data_loader(
     :type filesystem_type: FileSystemTypeEnum
     :param **kwargs: For filesystem use
 
-    :returns: DataLoader 
+    :returns: DataLoader
     """
     if file_extension not in supported_file_extensions:
-        raise ValueError(f"{file_extension} is currently not supported.\nSupported types are: " + ", ".join(supported_file_extensions))
+        raise ValueError(
+            f"{file_extension} is currently not supported.\nSupported types are: "
+            + ", ".join(supported_file_extensions)
+        )
     if supported_file_extensions[file_extension] == DataLoaderTypeEnum.Pyarrow:
         return PyarrowDataLoader(
-            file_extension=file_extension,
-            file_system_handler=get_filesystem(filesystem_type, **kwargs)
+            file_extension=file_extension, file_system_handler=get_filesystem(filesystem_type, **kwargs)
         )
 
 
@@ -474,6 +460,7 @@ def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemH
         return AzureBlobFileSystemHandler(**kwargs)
     else:
         raise ValueError("FileSystemType not supported!")
+
 
 class TableToGraphImporter:
     """
@@ -785,12 +772,8 @@ class AmazonS3Importer(TableToGraphImporter):
     """
     TableToGraphImporter wrapper for use with Amazon S3 File System
     """
-    def __init__(
-        self,
-        file_extension: str,
-        data_configuration: Dict[str, Any],
-        memgraph: Optional[Memgraph] = None,
-        **kwargs
+
+    def __init__(self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         :param file_extension: file format to be read
@@ -803,7 +786,7 @@ class AmazonS3Importer(TableToGraphImporter):
         super().__init__(
             data_loader=get_data_loader(
                 file_extension=file_extension, filesystem_type=FileSystemTypeEnum.AmazonS3, **kwargs
-                ),
+            ),
             data_configuration=data_configuration,
             memgraph=memgraph,
         )
@@ -813,12 +796,8 @@ class AzureBlobImporter(TableToGraphImporter):
     """
     TableToGraphImporter wrapper for use with Azure Blob File System
     """
-    def __init__(
-        self,
-        file_extension: str,
-        data_configuration: Dict[str, Any],
-        memgraph: Optional[Memgraph] = None,
-        **kwargs
+
+    def __init__(self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         :param file_extension: file format to be read
@@ -831,7 +810,7 @@ class AzureBlobImporter(TableToGraphImporter):
         super().__init__(
             data_loader=get_data_loader(
                 file_extension=file_extension, filesystem_type=FileSystemTypeEnum.AzureBlob, **kwargs
-                ),
+            ),
             data_configuration=data_configuration,
             memgraph=memgraph,
         )
@@ -841,12 +820,8 @@ class LocalFileSystemImporter(TableToGraphImporter):
     """
     TableToGraphImporter wrapper for use with Local File System
     """
-    def __init__(
-        self,
-        file_extension: str,
-        data_configuration: Dict[str, Any],
-        memgraph: Optional[Memgraph] = None,
-        **kwargs
+
+    def __init__(self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         :param file_extension: file format to be read
