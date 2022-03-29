@@ -80,7 +80,10 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
 
 class MemgraphInstance(ABC):
     def __init__(
-        self, host: str = "0.0.0.0", port: int = 7687, config: Dict[str, Union[str, int, bool]] = dict(),
+        self,
+        host: str = "0.0.0.0",
+        port: int = 7687,
+        config: Dict[str, Union[str, int, bool]] = dict(),
     ) -> None:
         self.host = host
         self.port = port
@@ -189,7 +192,7 @@ class MemgraphInstanceDocker(MemgraphInstance):
 
     def start(self, restart: bool = False) -> "Memgraph":
         """Start the Memgraph instance and return the connection object.
-        
+
         Attributes:
             restart: A bool indicating if the instance should be
               restarted if it's already running.
