@@ -32,7 +32,6 @@ from typing import (
     Dict, 
     Any, 
     Optional,
-    Tuple, 
     Union
 )
 import pyarrow.dataset as ds
@@ -541,13 +540,12 @@ class TableToGraphImporter:
         memgraph: Optional[Memgraph] = None,
     ) -> None:
         """
-        :param file_extension: file format to be read
-        :type file_extension: string
-        :param file_system: type of file system storage to use
-        :type file_system: string
-
+        :param data_loader: object for loading data
+        :type data_loader: DataLoader
         :param data_configuration: Configuration for the translations
+        :type data_configuration: Dict[str, Any]
         :param memgraph: Connection to Memgraph (Optional)
+        :type memgraph: Memgraph (Optional)
         """
         self._data_loader: DataLoader = data_loader
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
