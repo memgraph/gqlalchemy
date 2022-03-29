@@ -69,6 +69,8 @@ S3_SECRET_KEY = "s3_secret_key"
 S3_SESSION_TOKEN = "s3_session_token"
 S3_BUCKET_NAME_KEY = "bucket_name"
 
+LOCAL_STORAGE_PATH = "local_storage_path"
+
 
 @dataclass(frozen=True)
 class ForeignKeyMapping:
@@ -228,7 +230,7 @@ class S3FileSystemHandler(FileSystemHandler):
             secret_key=kwargs.get(S3_SECRET_KEY),
             session_token=kwargs.get(S3_SESSION_TOKEN, None),
         )
-        self._bucket_name = kwargs.get(S3_BUCKET_NAME_KEY)
+        self._bucket_name: str = kwargs.get(S3_BUCKET_NAME_KEY)
 
     def get_path(
         self,
@@ -287,6 +289,33 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         :returns: str
         """
         return f"{self._container_name}/{collection_name}.{file_extension}"
+
+
+class LocalFileSystemHandler(FileSystemHandler):
+    """
+    Handles a local filesystem "connection"
+    """
+    def __init__(self, **kwargs) -> None:
+        """
+        kwargs>
+        :param LOCAL_STORAGE_PATH: path to storage location
+        :type LOCAL_STORAGE_PATH: str
+        """
+        self.fs = fs.LocalFileSystem()
+        self._path = kwargs[LOCAL_STORAGE_PATH]
+
+    def get_path(self, collection_name: str, file_extension: str) -> str:
+        """
+        Get file path in local file system.
+
+        :param collection_name: Name of file to read
+        :type collection_name: str
+        :param file_extension: File type
+        :type file_extension: str
+
+        :returns: str
+        """
+        return f"{self._path}/{collection_name}.{file_extension}"
 
 
 class DataLoader(ABC):
@@ -380,16 +409,17 @@ class FileSystemTypeEnum(Enum):
     """
     Enumerates all available file systems.
     """
-    Dummy = 1
-    AmazonS3 = 2
-    AzureBlob = 3
+    Default = 1
+    Local = 2
+    AmazonS3 = 3
+    AzureBlob = 4
 
 
 class DataLoaderTypeEnum(Enum):
     """
     Enumerates all available data loaders
     """
-    Dummy = 1
+    Default = 1
     Pyarrow = 2
 
 
@@ -441,11 +471,14 @@ def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemH
 
     :returns: FileSystemHandler
     """
-    if filesystem_type == FileSystemTypeEnum.AmazonS3:
+    if filesystem_type == FileSystemTypeEnum.Local:
+        return LocalFileSystemHandler(**kwargs)
+    elif filesystem_type == FileSystemTypeEnum.AmazonS3:
         return S3FileSystemHandler(**kwargs)
     elif filesystem_type == FileSystemTypeEnum.AzureBlob:
         return AzureBlobFileSystemHandler(**kwargs)
-
+    else:
+        raise ValueError("FileSystemType not supported!")
 
 class TableToGraphImporter:
     """
@@ -503,11 +536,9 @@ class TableToGraphImporter:
 
     def __init__(
         self,
-        file_extension: str,
-        filesystem_type: FileSystemTypeEnum,
+        data_loader: DataLoader,
         data_configuration: Dict[str, Any],
         memgraph: Optional[Memgraph] = None,
-        **kwargs
     ) -> None:
         """
         :param file_extension: file format to be read
@@ -518,7 +549,7 @@ class TableToGraphImporter:
         :param data_configuration: Configuration for the translations
         :param memgraph: Connection to Memgraph (Optional)
         """
-        self._data_loader: DataLoader = get_data_loader(file_extension, filesystem_type, **kwargs)
+        self._data_loader: DataLoader = data_loader
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
 
         self.__load_configuration(data_configuration=data_configuration)
@@ -776,6 +807,9 @@ class TableToGraphImporter:
 
 
 class AmazonS3Importer(TableToGraphImporter):
+    """
+    TableToGraphImporter wrapper for use with Amazon S3 File System
+    """
     def __init__(
         self,
         file_extension: str,
@@ -791,17 +825,19 @@ class AmazonS3Importer(TableToGraphImporter):
         :param memgraph: Connection to Memgraph (Optional)
         :type memgraph: Memgraph (Optional)
         """
-        super.__init__(
-            self,
-            file_extension,
-            filesystem_type=FileSystemTypeEnum.AmazonS3,
+        super().__init__(
+            data_loader=get_data_loader(
+                file_extension=file_extension, filesystem_type=FileSystemTypeEnum.AmazonS3, **kwargs
+                ),
             data_configuration=data_configuration,
             memgraph=memgraph,
-            **kwargs
         )
 
 
 class AzureBlobImporter(TableToGraphImporter):
+    """
+    TableToGraphImporter wrapper for use with Azure Blob File System
+    """
     def __init__(
         self,
         file_extension: str,
@@ -817,11 +853,38 @@ class AzureBlobImporter(TableToGraphImporter):
         :param memgraph: Connection to Memgraph (Optional)
         :type memgraph: Memgraph (Optional)
         """
-        super.__init__(
-            self,
-            file_extension,
-            filesystem_type=FileSystemTypeEnum.AzureBlob,
+        super().__init__(
+            data_loader=get_data_loader(
+                file_extension=file_extension, filesystem_type=FileSystemTypeEnum.AzureBlob, **kwargs
+                ),
             data_configuration=data_configuration,
             memgraph=memgraph,
-            **kwargs
+        )
+
+
+class LocalFileSystemImporter(TableToGraphImporter):
+    """
+    TableToGraphImporter wrapper for use with Local File System
+    """
+    def __init__(
+        self,
+        file_extension: str,
+        data_configuration: Dict[str, Any],
+        memgraph: Optional[Memgraph] = None,
+        **kwargs
+    ) -> None:
+        """
+        :param file_extension: file format to be read
+        :type file_extension: string
+        :param data_configuration: Configuration for the translations
+        :type data_configuration: Dict[str, Any]
+        :param memgraph: Connection to Memgraph (Optional)
+        :type memgraph: Memgraph (Optional)
+        """
+        super().__init__(
+            data_loader=get_data_loader(
+                file_extension=file_extension, filesystem_type=FileSystemTypeEnum.Local, **kwargs
+            ),
+            data_configuration=data_configuration,
+            memgraph=memgraph,
         )
