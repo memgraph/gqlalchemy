@@ -13,10 +13,10 @@ Wait for a TCP port to become available.
 
 **Arguments**:
 
-- `host` _str_ - The IP address that is being checked.
-- `port` _str_ - The port that is being checked.
-- `delay` _float_ - A float that defines how long to wait between retries.
-- `timeout` _float_ - A float that defines how long to wait for the port.
+- `host` - A string representing the IP address that is being checked.
+- `port` - A string representing the port that is being checked.
+- `delay` - A float that defines how long to wait between retries.
+- `timeout` - A float that defines how long to wait for the port.
   
 
 **Raises**:
@@ -34,9 +34,9 @@ Wait for a Docker container to enter the status `running`.
 
 **Arguments**:
 
-- `container` _docker.Container_ - The Docker container to wait for.
-- `delay` _float_ - A float that defines how long to wait between retries.
-- `timeout` _float_ - A float that defines how long to wait for the status.
+- `container` - The Docker container to wait for.
+- `delay` - A float that defines how long to wait between retries.
+- `timeout` - A float that defines how long to wait for the status.
   
 
 **Raises**:
@@ -55,9 +55,9 @@ systems.
 
 **Attributes**:
 
-- `binary_path` _str_ - A string representing the path to a Memgraph binary
+- `binary_path` - A string representing the path to a Memgraph binary
   file.
-- `user` _str_ - A string representing the user that should start the Memgraph
+- `user` - A string representing the user that should start the Memgraph
   process.
 
 #### start
@@ -70,7 +70,7 @@ Start the Memgraph instance and return the connection object.
 
 **Attributes**:
 
-- `restart` _bool_ - A bool indicating if the instance should be
+- `restart` - A bool indicating if the instance should be
   restarted if it&#x27;s already running.
 
 #### stop
@@ -99,9 +99,9 @@ A class for managing Memgraph instances started in Docker containers.
 
 **Attributes**:
 
-- `docker_image` _DockerImage_ - An enum representing the Docker image. Values:
+- `docker_image` - An enum representing the Docker image. Values:
   `DockerImage.MEMGRAPH` and `DockerImage.MAGE`.
-- `docker_image_tag` _str_ - A string representing the tag of the Docker image.
+- `docker_image_tag` - A string representing the tag of the Docker image.
 
 #### start
 
@@ -113,7 +113,7 @@ Start the Memgraph instance and return the connection object.
 
 **Attributes**:
 
-- `restart` _bool_ - A bool indicating if the instance should be
+- `restart` - A bool indicating if the instance should be
   restarted if it&#x27;s already running.
 
 #### stop

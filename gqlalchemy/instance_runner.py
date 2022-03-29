@@ -33,14 +33,14 @@ def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01
     """Wait for a TCP port to become available.
 
     Args:
-        host (str): The IP address that is being checked.
-        port (str): The port that is being checked.
-        delay (float): A float that defines how long to wait between retries.
-        timeout (float): A float that defines how long to wait for the port.
+        host: A string representing the IP address that is being checked.
+        port: A string representing the port that is being checked.
+        delay: A float that defines how long to wait between retries.
+        timeout: A float that defines how long to wait for the port.
 
     Raises:
       TimeoutError: Raises an error when the host and port are not accepting
-      connections after the timeout period has passed.
+        connections after the timeout period has passed.
     """
     start_time = time.perf_counter()
     time.sleep(delay)
@@ -60,13 +60,13 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
     """Wait for a Docker container to enter the status `running`.
 
     Args:
-        container (docker.Container): The Docker container to wait for.
-        delay (float): A float that defines how long to wait between retries.
-        timeout (float): A float that defines how long to wait for the status.
+        container: The Docker container to wait for.
+        delay: A float that defines how long to wait between retries.
+        timeout: A float that defines how long to wait for the status.
 
     Raises:
       TimeoutError: Raises an error when the container isn't running after the
-      timeout period has passed.
+        timeout period has passed.
     """
     start_time = time.perf_counter()
     time.sleep(delay)
@@ -116,10 +116,10 @@ class MemgraphInstanceBinary(MemgraphInstance):
     systems.
 
     Attributes:
-      binary_path (str): A string representing the path to a Memgraph binary
-      file.
-      user (str): A string representing the user that should start the Memgraph
-      process.
+      binary_path: A string representing the path to a Memgraph binary
+        file.
+      user: A string representing the user that should start the Memgraph
+        process.
     """
 
     def __init__(self, binary_path: str = "/usr/lib/memgraph/memgraph", user: str = "", **data) -> None:
@@ -131,8 +131,8 @@ class MemgraphInstanceBinary(MemgraphInstance):
         """Start the Memgraph instance and return the connection object.
 
         Attributes:
-            restart (bool): A bool indicating if the instance should be
-            restarted if it's already running.
+            restart: A bool indicating if the instance should be
+              restarted if it's already running.
         """
         if not restart and self.is_running():
             return
@@ -173,9 +173,9 @@ class MemgraphInstanceDocker(MemgraphInstance):
     """A class for managing Memgraph instances started in Docker containers.
 
     Attributes:
-      docker_image (DockerImage): An enum representing the Docker image. Values:
-      `DockerImage.MEMGRAPH` and `DockerImage.MAGE`.
-      docker_image_tag (str): A string representing the tag of the Docker image.
+      docker_image: An enum representing the Docker image. Values:
+        `DockerImage.MEMGRAPH` and `DockerImage.MAGE`.
+      docker_image_tag: A string representing the tag of the Docker image.
     """
 
     def __init__(
@@ -191,8 +191,8 @@ class MemgraphInstanceDocker(MemgraphInstance):
         """Start the Memgraph instance and return the connection object.
         
         Attributes:
-            restart (bool): A bool indicating if the instance should be
-            restarted if it's already running.
+            restart: A bool indicating if the instance should be
+              restarted if it's already running.
         """
         if not restart and self.is_running():
             return
