@@ -451,19 +451,13 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a WHERE statement Cypher partial query."""
-        value_cypher = to_cypher_value(value)
-        self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property, operator, value_cypher]))
-        )
-
-        return self
-
-    def where(self, property1: str, operator: str, property2: str) -> "DeclarativeBase":
+    def where(self, property: str, operator: str, value: Any, value_is_property: bool = False) -> "DeclarativeBase":
         """Creates a WHERE statement Cypher partial query."""
         self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.WHERE, " ".join([property1, operator, property2]))
+            WhereConditionPartialQuery(
+                WhereConditionConstants.WHERE,
+                " ".join([property, operator, (value if value_is_property else to_cypher_value(value))]),
+            )
         )
 
         return self
