@@ -429,7 +429,7 @@ def test_orderby_desc(memgraph):
 
 
 def test_order_by_desc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by_desc("n.id")
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by_desc(properties="n.id")
     expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
