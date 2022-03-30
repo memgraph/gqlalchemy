@@ -354,7 +354,7 @@ class NodeMetaclass(BaseModel.__class__):
             base_labels = set()
             nonlocal bases
             for base in bases:
-                base_labels = base_labels.union(base.labels if hasattr(base, "labels") else set())
+                base_labels = base_labels.union(base.labels) if hasattr(base, "labels") else base_labels
             return base_labels
 
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
