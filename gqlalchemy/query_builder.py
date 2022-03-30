@@ -26,6 +26,7 @@ class DeclarativeBaseTypes:
     CALL = "CALL"
     CREATE = "CREATE"
     DELETE = "DELETE"
+    DESC = "DESC"
     EDGE = "EDGE"
     LIMIT = "LIMIT"
     LOAD_CSV = "LOAD_CSV"
@@ -336,6 +337,17 @@ class OrderByPartialQuery(PartialQuery):
         return f" ORDER BY {self.properties} "
 
 
+class OrderByDescPartialQuery(PartialQuery):
+    def __init__(self, properties: str):
+        super().__init__(DeclarativeBaseTypes.DESC)
+
+        self.properties = properties
+
+    def construct_query(self) -> str:
+        """Creates a ORDER BY statement Cypher partial query."""
+        return OrderByPartialQuery(self.properties).construct_query() + "DESC "
+
+
 class LimitPartialQuery(PartialQuery):
     def __init__(self, integer_expression: str):
         super().__init__(DeclarativeBaseTypes.LIMIT)
@@ -576,6 +588,12 @@ class DeclarativeBase(ABC):
     def order_by(self, properties: str) -> "DeclarativeBase":
         """Creates a ORDER BY statement Cypher partial query."""
         self._query.append(OrderByPartialQuery(properties))
+
+        return self
+
+    def order_by_desc(self, properties: str) -> "DeclarativeBase":
+        """Creates an ORDER BY DESC statement Cypher partial query."""
+        self._query.append(OrderByDescPartialQuery(properties))
 
         return self
 

@@ -428,6 +428,16 @@ def test_orderby_desc(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_order_by_desc(memgraph):
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by_desc("n.id")
+    expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_limit(memgraph):
     query_builder = QueryBuilder().match().node(variable="n").return_().limit("3")
     expected_query = " MATCH (n) RETURN * LIMIT 3 "
