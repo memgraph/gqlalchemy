@@ -470,8 +470,47 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def create_where_query(
+        self, statement: str, item: str, operator: str, separator: str, literal: Any, expression: Any
+    ):
+
+        if statement == WhereConditionConstants.WHERE:
+            clause = WhereConditionConstants.WHERE
+        elif statement == WhereConditionConstants.AND:
+            clause = WhereConditionConstants.AND
+        elif statement == WhereConditionConstants.OR:
+            clause = WhereConditionConstants.OR
+        elif statement == WhereConditionConstants.XOR:
+            clause = WhereConditionConstants.XOR
+
+        if literal is None:
+            if expression is None:
+                raise GQLAlchemyLiteralAndExpressionMissingInWhere
+            self._query.append(WhereConditionPartialQuery(clause, separator.join([item, operator, expression])))
+            return self
+
+        if expression is not None:
+            raise GQLAlchemyExtraKeywordArgumentsInWhere
+
+        self._query.append(
+            WhereConditionPartialQuery(clause, separator.join([item, operator, to_cypher_value(literal)]))
+        )
+        return self
+
     def where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
-        """Creates a WHERE statement Cypher partial query."""
+        """Creates a WHERE statement Cypher partial query.
+
+        Args:
+            item: A string representing variable or property. operator: A string
+            representing the operator. literal: A value that will be converted
+            to Cypher value, such as int, float, string, etc. expression: A node
+            label or property that won't be converted to Cypher value (no
+            additional quotes will be added).
+        Raises: GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error
+        when neither literal nor expression keyword arguments were provided.
+        GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both
+        literal and expression keyword arguments were provided.
+        """
         # WHERE item operator (literal | expression)
         # item: variable | property
         # expression: label | property
@@ -480,22 +519,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if literal is None:
-            if expression is None:
-                raise GQLAlchemyLiteralAndExpressionMissingInWhere
-            self._query.append(
-                WhereConditionPartialQuery(WhereConditionConstants.WHERE, separator.join([item, operator, expression]))
-            )
-            return self
-        if expression is not None:
-            raise GQLAlchemyExtraKeywordArgumentsInWhere
-
-        self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.WHERE, separator.join([item, operator, to_cypher_value(literal)])
-            )
-        )
-        return self
+        return self.create_where_query(WhereConditionConstants.WHERE, item, operator, separator, literal, expression)
 
     def and_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an AND (expression) statement Cypher partial query."""
@@ -504,22 +528,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if literal is None:
-            if expression is None:
-                raise GQLAlchemyLiteralAndExpressionMissingInWhere
-            self._query.append(
-                WhereConditionPartialQuery(WhereConditionConstants.AND, separator.join([item, operator, expression]))
-            )
-            return self
-        if expression is not None:
-            raise GQLAlchemyExtraKeywordArgumentsInWhere
-
-        self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.AND, separator.join([item, operator, to_cypher_value(literal)])
-            )
-        )
-        return self
+        return self.create_where_query(WhereConditionConstants.AND, item, operator, separator, literal, expression)
 
     def or_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an OR (expression) statement Cypher partial query."""
@@ -528,22 +537,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if literal is None:
-            if expression is None:
-                raise GQLAlchemyLiteralAndExpressionMissingInWhere
-            self._query.append(
-                WhereConditionPartialQuery(WhereConditionConstants.OR, separator.join([item, operator, expression]))
-            )
-            return self
-        if expression is not None:
-            raise GQLAlchemyExtraKeywordArgumentsInWhere
-
-        self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.OR, separator.join([item, operator, to_cypher_value(literal)])
-            )
-        )
-        return self
+        return self.create_where_query(WhereConditionConstants.OR, item, operator, separator, literal, expression)
 
     def xor_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates a XOR (expression) statement Cypher partial query."""
@@ -552,22 +546,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if literal is None:
-            if expression is None:
-                raise GQLAlchemyLiteralAndExpressionMissingInWhere
-            self._query.append(
-                WhereConditionPartialQuery(WhereConditionConstants.XOR, separator.join([item, operator, expression]))
-            )
-            return self
-        if expression is not None:
-            raise GQLAlchemyExtraKeywordArgumentsInWhere
-
-        self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.XOR, separator.join([item, operator, to_cypher_value(literal)])
-            )
-        )
-        return self
+        return self.create_where_query(WhereConditionConstants.XOR, item, operator, separator, literal, expression)
 
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
         """Creates a UNWIND statement Cypher partial query."""
