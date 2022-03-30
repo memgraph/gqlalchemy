@@ -34,6 +34,19 @@ db = Memgraph()
 SQLitePropertyDatabase("path-to-sqlite-db", db)
 """
 
+OPERATOR_MISSING_IN_WHERE = """
+Can't create WHERE query without providing the 'operator' keyword argument. Possible values for operator are '=', '<>', '!=', '<', '>', '<=', '>=', ':'.
+"""
+
+LITERAL_AND_EXPRESSION_MISSING_IN_WHERE = """
+Can't create WHERE query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
+"""
+
+EXTRA_KEYWORD_ARGUMENTS_IN_WHERE = """
+Can't create WHERE query with extra keyword arguments:
+Please provide a value to either 'literal' or 'expression' keyword arguments."
+"""
+
 
 class GQLAlchemyWarning(Warning):
     pass
@@ -66,3 +79,21 @@ class GQLAlchemyOnDiskPropertyDatabaseNotDefinedError(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = ON_DISK_PROPERTY_DATABASE_NOT_DEFINED_ERROR
+
+
+class GQLAlchemyOperatorMissingInWhere(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = OPERATOR_MISSING_IN_WHERE
+
+
+class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = LITERAL_AND_EXPRESSION_MISSING_IN_WHERE
+
+
+class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = EXTRA_KEYWORD_ARGUMENTS_IN_WHERE

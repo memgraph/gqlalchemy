@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from gqlalchemy.exceptions import (
+    GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyExtraKeywordArgumentsInWhere,
+)
 import pytest
 from gqlalchemy import (
     InvalidMatchChainException,
@@ -290,7 +294,7 @@ def test_where_literal(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", literal="best_name")
+        .where(item="n.name", operator="=", literal="best_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' RETURN * "
@@ -308,7 +312,7 @@ def test_where_property(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", expression="m.name")
+        .where(item="n.name", operator="=", expression="m.name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name RETURN * "
@@ -326,7 +330,7 @@ def test_where_label(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n", ":", expression="Node")
+        .where(item="n", operator=":", expression="Node")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node RETURN * "
@@ -337,49 +341,30 @@ def test_where_label(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_where_no_lhs(memgraph):
-    with pytest.raises(Exception) as e_info:
+def test_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("=", literal="best_name")
+            .where(item="n.name", operator="=")
             .return_()
         )
-
-    assert "where() missing 1 required positional argument:" in str(e_info.value)
-
-
-def test_where_no_rhs(memgraph):
-    with pytest.raises(Exception) as e_info:
-        (
-            QueryBuilder()
-            .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
-            .where("n.name", "=")
-            .return_()
-        )
-
-    assert "Create WHERE query GQLAlchemy error on rhs:" in str(e_info.value)
 
 
 def test_where_extra_values(memgraph):
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("n.name", "=", literal="best_name", expression="Node")
+            .where(item="n.name", operator="=", literal="best_name", expression="Node")
             .return_()
         )
-
-    assert "Create WHERE query GQLAlchemy error extra values:" in str(e_info.value)
 
 
 def test_or_where_literal(memgraph):
@@ -389,8 +374,8 @@ def test_or_where_literal(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", literal="best_name")
-        .or_where("m.id", "<", literal=4)
+        .where(item="n.name", operator="=", literal="best_name")
+        .or_where(item="m.id", operator="<", literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR m.id < 4 RETURN * "
@@ -408,8 +393,8 @@ def test_or_where_property(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", expression="m.name")
-        .or_where("m.name", "=", expression="n.last_name")
+        .where(item="n.name", operator="=", expression="m.name")
+        .or_where(item="m.name", operator="=", expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name OR m.name = n.last_name RETURN * "
@@ -427,8 +412,8 @@ def test_or_where_label(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n", ":", expression="Node")
-        .or_where("m", ":", expression="User")
+        .where(item="n", operator=":", expression="Node")
+        .or_where(item="m", operator=":", expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node OR m:User RETURN * "
@@ -439,52 +424,32 @@ def test_or_where_label(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_or_where_no_lhs(memgraph):
-    with pytest.raises(Exception) as e_info:
+def test_or_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("n.name", "=", literal="best_name")
-            .or_where("=", literal="my_name")
+            .where(item="n.name", operator="=", literal="my_name")
+            .or_where(item="m.name", operator="=")
             .return_()
         )
-
-    assert "or_where() missing 1 required positional argument:" in str(e_info.value)
-
-
-def test_or_where_no_rhs(memgraph):
-    with pytest.raises(Exception) as e_info:
-        (
-            QueryBuilder()
-            .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
-            .where("n.name", "=", literal="my_name")
-            .or_where("m.name", "=")
-            .return_()
-        )
-
-    assert "Create OR WHERE query GQLAlchemy error on rhs:" in str(e_info.value)
 
 
 def test_or_where_extra_values(memgraph):
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("m.name", "=", literal="best_name")
-            .or_where("n.name", "=", literal="best_name", expression="Node")
+            .where(item="m.name", operator="=", literal="best_name")
+            .or_where(item="n.name", operator="=", literal="best_name", expression="Node")
             .return_()
         )
-
-    assert "Create OR WHERE query GQLAlchemy error extra values:" in str(e_info.value)
 
 
 def test_and_where_literal(memgraph):
@@ -494,8 +459,8 @@ def test_and_where_literal(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", literal="best_name")
-        .and_where("m.id", "<", literal=4)
+        .where(item="n.name", operator="=", literal="best_name")
+        .and_where(item="m.id", operator="<", literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND m.id < 4 RETURN * "
@@ -513,8 +478,8 @@ def test_and_where_property(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", expression="m.name")
-        .and_where("m.name", "=", expression="n.last_name")
+        .where(item="n.name", operator="=", expression="m.name")
+        .and_where(item="m.name", operator="=", expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name AND m.name = n.last_name RETURN * "
@@ -532,8 +497,8 @@ def test_and_or_where_label(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n", ":", expression="Node")
-        .and_where("m", ":", expression="User")
+        .where(item="n", operator=":", expression="Node")
+        .and_where(item="m", operator=":", expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node AND m:User RETURN * "
@@ -544,52 +509,32 @@ def test_and_or_where_label(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_and_where_no_lhs(memgraph):
-    with pytest.raises(Exception) as e_info:
+def test_and_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("n.name", "=", literal="best_name")
-            .and_where("=", literal="my_name")
+            .where(item="n.name", operator="=", literal="my_name")
+            .and_where(item="m.name", operator="=")
             .return_()
         )
-
-    assert "and_where() missing 1 required positional argument:" in str(e_info.value)
-
-
-def test_and_where_no_rhs(memgraph):
-    with pytest.raises(Exception) as e_info:
-        (
-            QueryBuilder()
-            .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
-            .where("n.name", "=", literal="my_name")
-            .and_where("m.name", "=")
-            .return_()
-        )
-
-    assert "Create AND WHERE query GQLAlchemy error on rhs:" in str(e_info.value)
 
 
 def test_and_where_extra_values(memgraph):
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("m.name", "=", literal="best_name")
-            .and_where("n.name", "=", literal="best_name", expression="Node")
+            .where(item="m.name", operator="=", literal="best_name")
+            .and_where(item="n.name", operator="=", literal="best_name", expression="Node")
             .return_()
         )
-
-    assert "Create AND WHERE query GQLAlchemy error extra values:" in str(e_info.value)
 
 
 def test_xor_where_literal(memgraph):
@@ -599,8 +544,8 @@ def test_xor_where_literal(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", literal="best_name")
-        .xor_where("m.id", "<", literal=4)
+        .where(item="n.name", operator="=", literal="best_name")
+        .xor_where(item="m.id", operator="<", literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' XOR m.id < 4 RETURN * "
@@ -618,8 +563,8 @@ def test_xor_where_property(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n.name", "=", expression="m.name")
-        .xor_where("m.name", "=", expression="n.last_name")
+        .where(item="n.name", operator="=", expression="m.name")
+        .xor_where(item="m.name", operator="=", expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name XOR m.name = n.last_name RETURN * "
@@ -637,8 +582,8 @@ def test_xor_or_where_label(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where("n", ":", expression="Node")
-        .xor_where("m", ":", expression="User")
+        .where(item="n", operator=":", expression="Node")
+        .xor_where(item="m", operator=":", expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node XOR m:User RETURN * "
@@ -649,52 +594,32 @@ def test_xor_or_where_label(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_xor_where_no_lhs(memgraph):
-    with pytest.raises(Exception) as e_info:
+def test_xor_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("n.name", "=", literal="best_name")
-            .xor_where("=", literal="my_name")
+            .where(item="n.name", operator="=", literal="my_name")
+            .xor_where(item="m.name", operator="=")
             .return_()
         )
-
-    assert "xor_where() missing 1 required positional argument:" in str(e_info.value)
-
-
-def test_xor_where_no_rhs(memgraph):
-    with pytest.raises(Exception) as e_info:
-        (
-            QueryBuilder()
-            .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
-            .where("n.name", "=", literal="my_name")
-            .xor_where("m.name", "=")
-            .return_()
-        )
-
-    assert "Create XOR WHERE query GQLAlchemy error on rhs:" in str(e_info.value)
 
 
 def test_xor_and_where_extra_values(memgraph):
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
         (
             QueryBuilder()
             .match()
             .node("L1", variable="n")
             .to("TO")
             .node("L2", variable="m")
-            .where("m.name", "=", literal="best_name")
-            .xor_where("n.name", "=", literal="best_name", expression="Node")
+            .where(item="m.name", operator="=", literal="best_name")
+            .xor_where(item="n.name", operator="=", literal="best_name", expression="Node")
             .return_()
         )
-
-    assert "Create XOR WHERE query GQLAlchemy error extra values:" in str(e_info.value)
 
 
 def test_get_single(memgraph):

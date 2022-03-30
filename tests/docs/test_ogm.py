@@ -64,7 +64,9 @@ class TestMapNodesAndRelationships:
             description="Hi, I am streamer!",
         ).save(db)
 
-        result = next(match().node("Streamer", variable="s").where("s.id", "=", literal="7").return_().execute())["s"]
+        result = next(
+            match().node("Streamer", variable="s").where(item="s.id", operator="=", literal="7").return_().execute()
+        )["s"]
 
         assert result.id == streamer.id
         assert result.username == streamer.username
@@ -110,7 +112,9 @@ class TestSaveNodesAndRelationships:
         user = UserSave(id="3", username="John").save(db)
         language = Language(name="en").save(db)
 
-        result = next(match().node("UserSave", variable="u").where("u.id", "=", literal="3").return_().execute())["u"]
+        result = next(
+            match().node("UserSave", variable="u").where(item="u.id", operator="=", literal="3").return_().execute()
+        )["u"]
 
         assert result.id == user.id
         assert result.username == user.username
@@ -126,7 +130,9 @@ class TestSaveNodesAndRelationships:
         db.save_node(user)
         db.save_node(language)
 
-        result = next(match().node("UserSave", variable="u").where("u.id", "=", literal="4").return_().execute())["u"]
+        result = next(
+            match().node("UserSave", variable="u").where(item="u.id", operator="=", literal="4").return_().execute()
+        )["u"]
 
         assert result.id == user.id
         assert result.username == user.username

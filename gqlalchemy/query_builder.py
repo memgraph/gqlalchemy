@@ -19,7 +19,10 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
-from .exceptions import GQLAlchemyError
+from .exceptions import (
+    GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyExtraKeywordArgumentsInWhere,
+)
 
 
 class DeclarativeBaseTypes:
@@ -477,28 +480,15 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if item is None:
-            raise GQLAlchemyError(
-                f"Create WHERE query GQLAlchemy error on lhs:"
-                + " Please provide a value to the 'item' keyword argument,"
-                + " that is a variable or a property."
-            )
         if literal is None:
             if expression is None:
-                raise GQLAlchemyError(
-                    f"Create WHERE query GQLAlchemy error on rhs:"
-                    + " Please provide a value to either 'literal' or 'expression' keyword arguments,"
-                    + " that can be literals, labels or properties."
-                )
+                raise GQLAlchemyLiteralAndExpressionMissingInWhere
             self._query.append(
                 WhereConditionPartialQuery(WhereConditionConstants.WHERE, separator.join([item, operator, expression]))
             )
             return self
         if expression is not None:
-            raise GQLAlchemyError(
-                f"Create WHERE query GQLAlchemy error extra values:"
-                + " Please provide a value to only one of the 'literal' and 'expression' keyword arguments."
-            )
+            raise GQLAlchemyExtraKeywordArgumentsInWhere
 
         self._query.append(
             WhereConditionPartialQuery(
@@ -509,34 +499,20 @@ class DeclarativeBase(ABC):
 
     def and_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an AND (expression) statement Cypher partial query."""
-        separator = "" if operator == ":" else " "
 
         literal = kwargs.get("literal")
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if item is None:
-            raise GQLAlchemyError(
-                f"Create AND WHERE query GQLAlchemy error on lhs:"
-                + " Please provide a value to the 'item' keyword argument,"
-                + " that is a variable or a property."
-            )
         if literal is None:
             if expression is None:
-                raise GQLAlchemyError(
-                    f"Create AND WHERE query GQLAlchemy error on rhs:"
-                    + " Please provide a value to either 'literal' or 'expression' keyword arguments,"
-                    + " that can be literals, labels or properties."
-                )
+                raise GQLAlchemyLiteralAndExpressionMissingInWhere
             self._query.append(
                 WhereConditionPartialQuery(WhereConditionConstants.AND, separator.join([item, operator, expression]))
             )
             return self
         if expression is not None:
-            raise GQLAlchemyError(
-                f"Create AND WHERE query GQLAlchemy error extra values:"
-                + " Please provide a value to only one of the 'literal' and 'expression' keyword arguments."
-            )
+            raise GQLAlchemyExtraKeywordArgumentsInWhere
 
         self._query.append(
             WhereConditionPartialQuery(
@@ -548,34 +524,19 @@ class DeclarativeBase(ABC):
     def or_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an OR (expression) statement Cypher partial query."""
 
-        separator = "" if operator == ":" else " "
-
         literal = kwargs.get("literal")
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if item is None:
-            raise GQLAlchemyError(
-                f"Create OR WHERE query GQLAlchemy error on lhs:"
-                + " Please provide a value to the 'item' keyword argument,"
-                + " that is a variable or a property."
-            )
         if literal is None:
             if expression is None:
-                raise GQLAlchemyError(
-                    f"Create OR WHERE query GQLAlchemy error on rhs:"
-                    + " Please provide a value to either 'literal' or 'expression' keyword arguments,"
-                    + " that can be literals, labels or properties."
-                )
+                raise GQLAlchemyLiteralAndExpressionMissingInWhere
             self._query.append(
                 WhereConditionPartialQuery(WhereConditionConstants.OR, separator.join([item, operator, expression]))
             )
             return self
         if expression is not None:
-            raise GQLAlchemyError(
-                f"Create OR WHERE query GQLAlchemy error extra values:"
-                + " Please provide a value to only one of the 'literal' and 'expression' keyword arguments."
-            )
+            raise GQLAlchemyExtraKeywordArgumentsInWhere
 
         self._query.append(
             WhereConditionPartialQuery(
@@ -587,34 +548,19 @@ class DeclarativeBase(ABC):
     def xor_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates a XOR (expression) statement Cypher partial query."""
 
-        separator = "" if operator == ":" else " "
-
         literal = kwargs.get("literal")
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        if item is None:
-            raise GQLAlchemyError(
-                f"Create XOR WHERE query GQLAlchemy error on lhs:"
-                + " Please provide a value to the 'item' keyword argument,"
-                + " that is a variable or a property."
-            )
         if literal is None:
             if expression is None:
-                raise GQLAlchemyError(
-                    f"Create XOR WHERE query GQLAlchemy error on rhs:"
-                    + " Please provide a value to either 'literal' or 'expression' keyword arguments,"
-                    + " that can be literals, labels or properties."
-                )
+                raise GQLAlchemyLiteralAndExpressionMissingInWhere
             self._query.append(
                 WhereConditionPartialQuery(WhereConditionConstants.XOR, separator.join([item, operator, expression]))
             )
             return self
         if expression is not None:
-            raise GQLAlchemyError(
-                f"Create XOR WHERE query GQLAlchemy error extra values:"
-                + " Please provide a value to only one of the 'literal' and 'expression' keyword arguments."
-            )
+            raise GQLAlchemyExtraKeywordArgumentsInWhere
 
         self._query.append(
             WhereConditionPartialQuery(
