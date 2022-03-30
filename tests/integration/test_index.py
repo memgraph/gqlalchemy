@@ -19,12 +19,21 @@ from gqlalchemy.exceptions import GQLAlchemyDatabaseMissingInNodeClassError
 
 
 def test_index_label(memgraph):
-    class User(Node, index=True, db=memgraph):
-        id: str
+    class Animal(Node, index=True, db=memgraph):
+        name: str
 
     actual_index = memgraph.get_indexes()
 
-    assert set(actual_index) == {MemgraphIndex("User")}
+    assert set(actual_index) == {MemgraphIndex("Animal")}
+
+
+def test_index_property(memgraph):
+    class Human(Node):
+        id: str = Field(index=True, db=memgraph)
+
+    actual_index = memgraph.get_indexes()
+
+    assert set(actual_index) == {MemgraphIndex("Human", "id")}
 
 
 def test_missing_db_in_node_class(memgraph):
