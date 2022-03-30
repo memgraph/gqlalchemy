@@ -501,15 +501,14 @@ class DeclarativeBase(ABC):
         """Creates a WHERE statement Cypher partial query.
 
         Args:
-            item: A string representing variable or property. operator: A string
-            representing the operator. literal: A value that will be converted
-            to Cypher value, such as int, float, string, etc. expression: A node
-            label or property that won't be converted to Cypher value (no
-            additional quotes will be added).
-        Raises: GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error
-        when neither literal nor expression keyword arguments were provided.
-        GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both
-        literal and expression keyword arguments were provided.
+            item: A string representing variable or property.
+            operator: A string representing the operator.
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Raises:
+            GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error when neither literal nor expression keyword arguments were provided.
+            GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both literal and expression keyword arguments were provided.
         """
         # WHERE item operator (literal | expression)
         # item: variable | property
