@@ -309,7 +309,7 @@ class Memgraph:
         """
         result = None
         if node._id is not None:
-            result = self._save_node_with_id(node)
+            result = self.save_node_with_id(node)
         elif node.has_unique_fields():
             matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
