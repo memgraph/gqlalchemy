@@ -24,6 +24,13 @@ from typing import Any, Dict, Optional, Union
 from .memgraph import Memgraph
 
 
+DEFAULT_MEMGRAPH_PATH = "/usr/lib/memgraph/memgraph"
+
+TIMEOUT_ERROR_MESSAGE = "Waited too long for the port {port} on host {host} to start accepting connections."
+DOCKER_TIMEOUT_ETTOT_MESSAGE = "Waited too long for the Docker container to start."
+MEMGRAPH_CONNECTION_ERROR_MESSAGE = "The Memgraph process probably died."
+
+
 class DockerImage(Enum):
     MEMGRAPH = "memgraph/memgraph"
     MAGE = "memgraph/memgraph-mage"
@@ -51,9 +58,7 @@ def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01
         except OSError as ex:
             time.sleep(delay)
             if time.perf_counter() - start_time >= timeout:
-                raise TimeoutError(
-                    f"Waited too long for the port {port} on host {host} to start accepting connections."
-                ) from ex
+                raise TimeoutError(TIMEOUT_ERROR_MESSAGE.format(port=port, host=host)) from ex
 
 
 def wait_for_docker_container(container: "docker.Container", delay: float = 0.01, timeout: float = 5.0) -> None:
@@ -74,7 +79,7 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
     while container.status != "running":
         time.sleep(delay)
         if time.perf_counter() - start_time >= timeout:
-            raise TimeoutError(f"Waited too long for the Docker container to start.")
+            raise TimeoutError(DOCKER_TIMEOUT_ETTOT_MESSAGE)
         container.reload()
 
 
@@ -98,7 +103,7 @@ class MemgraphInstance(ABC):
     def connect(self) -> "Memgraph":
         self.memgraph = Memgraph(self.host, self.port)
         if not self.is_running():
-            raise ConnectionError("The Memgraph process probably died.")
+            raise ConnectionError(MEMGRAPH_CONNECTION_ERROR_MESSAGE)
         return self.memgraph
 
     @abstractmethod
@@ -125,7 +130,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         process.
     """
 
-    def __init__(self, binary_path: str = "/usr/lib/memgraph/memgraph", user: str = "", **data) -> None:
+    def __init__(self, binary_path: str = DEFAULT_MEMGRAPH_PATH, user: str = "", **data) -> None:
         super().__init__(**data)
         self.binary_path = binary_path
         self.user = user
@@ -202,7 +207,7 @@ class MemgraphInstanceDocker(MemgraphInstance):
         self.stop()
         self._container = self._client.containers.run(
             image=self.docker_image.value + ":" + self.docker_image_tag,
-            command="/usr/lib/memgraph/memgraph " + (" ").join([f"{k}={v}" for k, v in self.config.items()]),
+            command=DEFAULT_MEMGRAPH_PATH + " " + (" ").join([f"{k}={v}" for k, v in self.config.items()]),
             detach=True,
             ports={f"{self.port}/tcp": self.port},
         )
