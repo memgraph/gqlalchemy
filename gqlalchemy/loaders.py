@@ -257,8 +257,8 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(property="$node_a:$label_2", operator="MATCH", value="($node_b:$label_1)", value_is_property=True)
-        .where(property="$node_b.$property_1", operator="=", value="$node_a.$property_2", value_is_property=True)
+        .where(item="$node_a:$label_2", operator="MATCH", value="($node_b:$label_1)")
+        .where(item="$node_b.$property_1", operator="=", value="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
         .to(edge_label="$edge_type")
