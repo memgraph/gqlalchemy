@@ -358,6 +358,7 @@ class NodeMetaclass(BaseModel.__class__):
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         cls.index = kwargs.get("index")
         cls.label = kwargs.get("label", name)
+
         if name == "Node":
             pass
         elif "labels" in kwargs:  # overrides superclass labels
@@ -368,6 +369,7 @@ class NodeMetaclass(BaseModel.__class__):
             cls.labels = {cls.label}
 
         db = kwargs.get("db")
+
         if cls.index is True:
             if db is None:
                 raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
@@ -378,12 +380,12 @@ class NodeMetaclass(BaseModel.__class__):
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
-
             label = attrs.get("label", cls.label)
+            skip_constraints = False
+
             if db is None:
                 db = attrs.get("db", None)
 
-            skip_constraints = False
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
                     base = field_in_superclass(field, constraint)
