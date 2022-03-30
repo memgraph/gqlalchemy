@@ -154,6 +154,7 @@ def test_delete(memgraph):
         query_builder.execute()
         mock.assert_called_with(expected_query)
 
+
 def test_simple_merge(memgraph):
     query_builder = merge().node("L1", variable="n").to("TO").node("L2")
     expected_query = " MERGE (n:L1)-[:TO]->(:L2)"

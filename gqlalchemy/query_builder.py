@@ -615,9 +615,6 @@ class DeclarativeBase(ABC):
         joined_query = re.sub("\\s\\s+", " ", joined_query)
         return joined_query
 
-    def construct_query(self) -> str:
-        return self._construct_query()
-
     def _any_variables_matched(self) -> bool:
         """Checks if any variables are present in the result."""
         return any(
