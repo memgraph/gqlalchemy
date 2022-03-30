@@ -68,12 +68,12 @@ LOCAL_STORAGE_PATH = "local_storage_path"
 
 @dataclass(frozen=True)
 class ForeignKeyMapping:
-    """
-    Class that contains the full description of a single foreign key in a table.
+    """Class that contains the full description of a single foreign key in a table.
 
-    :param column_name: Column name that holds the foreign key
-    :param reference_table: Name of a table from which the foreign key is taken
-    :param reference_key: Column name in referenced table from which the foreign key is taken
+    Attributes:
+        column_name: Column name that holds the foreign key
+        reference_table: Name of a table from which the foreign key is taken
+        reference_key: Column name in referenced table from which the foreign key is taken
     """
 
     column_name: str
@@ -83,14 +83,13 @@ class ForeignKeyMapping:
 
 @dataclass(frozen=True)
 class OneToManyMapping:
-    """
-    Class that holds the full description of a single one to many mapping in a table.
+    """Class that holds the full description of a single one to many mapping in a table.
 
-    :param foreign_key: Foreign key used for mapping
-    :type foreing_key: ForeignKeyMapping
-    :param label: Label which will be applied to the relationship created from this object
-    :param from_entity: Direction of the relationship created from mapping object
-    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    Attributes:
+        foreign_key: Foreign key used for mapping
+        label: Label which will be applied to the relationship created from this object
+        from_entity: Direction of the relationship created from mapping object
+        variables: Variables that will be added to the relationship created from this object (Optional)
     """
 
     foreign_key: ForeignKeyMapping
@@ -101,16 +100,14 @@ class OneToManyMapping:
 
 @dataclass(frozen=True)
 class ManyToManyMapping:
-    """
-    Class that holds the full description of a single many to many mapping in a table.
+    """Class that holds the full description of a single many to many mapping in a table.
     Many to many mapping is intended to be used in case of associative tables
 
-    :param foreign_key_from: Describes the source of the relationship
-    :type foreign_key_from: ForeignKeyMapping
-    :param foreign_key_to: Describes the destination of the relationship
-    :type foreign_key_to: ForeignKeyMapping
-    :param label: Label to be applied to the newly created relationship
-    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    Attributes:
+        foreign_key_from: Describes the source of the relationship
+        foreign_key_to: Describes the destination of the relationship
+        label: Label to be applied to the newly created relationship
+        variables: Variables that will be added to the relationship created from this object (Optional)
     """
 
     foreign_key_from: ForeignKeyMapping
@@ -124,12 +121,12 @@ Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
 
 @dataclass
 class TableMapping:
-    """
-    Class that holds the full description of all of the mappings for a single table.
+    """Class that holds the full description of all of the mappings for a single table.
 
-    :param table_name: Name of the table
-    :param mapping: All of the mappings in the table (Optional)
-    :param indices: List of the indices to be created for this table (Optional)
+    Attributes:
+        table_name: Name of the table
+        mapping: All of the mappings in the table (Optional)
+        indices: List of the indices to be created for this table (Optional)
     """
 
     table_name: str
@@ -139,11 +136,11 @@ class TableMapping:
 
 @dataclass(frozen=True)
 class NameMappings:
-    """
-    Class that contains new label name and all of the column name mappings for a single table
+    """Class that contains new label name and all of the column name mappings for a single table.
 
-    :param label: New label (Optional)
-    :param column_names_mapping: Dictionary containing key-value pairs in form ("column name", "property name") (Optional)
+    Attributes:
+        label: New label (Optional)
+        column_names_mapping: Dictionary containing key-value pairs in form ("column name", "property name") (Optional)
     """
 
     label: Optional[str] = None
@@ -154,42 +151,36 @@ class NameMappings:
 
 
 class NameMapper:
-    """
-    Class that holds all name mappings for all of the collections.
-    """
+    """Class that holds all name mappings for all of the collections."""
 
     def __init__(self, mappings: Dict[str, Any]) -> None:
         self._name_mappings: Dict[str, NameMappings] = {k: NameMappings(**v) for k, v in mappings.items()}
 
     def get_label(self, collection_name: str) -> str:
-        """
-        Returns label for given collection
+        """Returns label for given collection.
 
-        :param collection_name: Original collection name
-        :type collection_name: str
-        :returns: str
+        Args:
+            collection_name: Original collection name
         """
         label = self._name_mappings[collection_name].label
 
         return label if label is not None else collection_name
 
     def get_property_name(self, collection_name: str, column_name: str) -> str:
-        """
-        Returns property name for column from collection
+        """Returns property name for column from collection
 
-        :param collection_name: Original collection name
-        :type collection_name: str
-        :param column_name: Original column name
-        :type column_name: str
-        :returns: str
+        Args:
+            collection_name: Original collection name
+            column_name: Original column name
         """
         return self._name_mappings[collection_name].get_property_name(column_name=column_name)
 
 
 class FileSystemHandler(ABC):
-    """
-    Abstract class for defining FileSystemHandler. Inherit this class and initialize
-    connection to custom data source.
+    """Abstract class for defining FileSystemHandler.
+
+    Inherit this class, define a custom data source and initialize the
+    connection.
     """
 
     def __init__(self) -> None:
@@ -197,33 +188,24 @@ class FileSystemHandler(ABC):
 
     @abstractmethod
     def get_path(self):
-        """
-        Returns complete path in specific file system. Used to read the file system
+        """Returns complete path in specific file system. Used to read the file system
         for a specific file.
-
-        :return: str
         """
         pass
 
 
 class S3FileSystemHandler(FileSystemHandler):
-    """
-    Handler connection to Amazon S3 service via pyarrow
-    """
+    """Handles connection to Amazon S3 service via pyarrow."""
 
     def __init__(self, **kwargs):
-        """
-        kwargs>
-        :param bucket_name: Name of the bucket on S3 from which to read the data
-        :type bucket_name: str
-        :param s3_access_key: S3 access key
-        :type s3_access_key: str
-        :param s3_secret_key: S3 secret key
-        :type s3_secret_key: str
-        :param s3_region: S3 region
-        :type s3_region: str
-        :param s3_session_token: S3 session token (Optional)
-        :type s3_session_token: str
+        """Initializes connection and data bucket.
+
+        Kwargs:
+            bucket_name: Name of the bucket on S3 from which to read the data
+            s3_access_key: S3 access key
+            s3_secret_key: S3 secret key
+            s3_region: S3 region
+            s3_session_token: S3 session token (Optional)
         """
         self.fs = fs.S3FileSystem(
             region=kwargs.get(S3_REGION),
@@ -234,35 +216,26 @@ class S3FileSystemHandler(FileSystemHandler):
         self._bucket_name: str = kwargs.get(S3_BUCKET_NAME_KEY)
 
     def get_path(self, collection_name: str, file_extension: str) -> str:
-        """
-        Get file path in file system
+        """Get file path in file system.
 
-        :param collection_name: Name of file to read
-        :type collection_name: str
-        :param file_extension: File type
-        :type file_extension: str
-
-        :returns: string
+        Args:
+            collection_name: Name of file to read
+            file_extension: File type
         """
         return f"{self._bucket_name}/{collection_name}.{file_extension}"
 
 
 class AzureBlobFileSystemHandler(FileSystemHandler):
-    """
-    Handles connection to Azure Blob service via adlfs package
-    """
+    """Handles connection to Azure Blob service via adlfs package."""
 
     def __init__(self, **kwargs) -> None:
-        """
-        kwargs>
-        :param blob_account_name: Account name from Azure Blob
-        :type blob_account_name: str
-        :param blob_account_key: Account key for Azure Blob (Optional - if using sas_token)
-        :type blob_account_key: str
-        :param blob_sas_token: Shared access signature token for authentification (Optional)
-        :type blob_sas_token: str
-        :param container_name: Name of Blob container storing data
-        :type container_name: str
+        """Initializes connection and data container.
+
+        Kwargs:
+            blob_account_name: Account name from Azure Blob
+            blob_account_key: Account key for Azure Blob (Optional - if using sas_token)
+            blob_sas_token: Shared access signature token for authentification (Optional)
+            container_name: Name of Blob container storing data
         """
         self.fs = adlfs.AzureBlobFileSystem(
             account_name=kwargs.get(BLOB_ACCOUNT_NAME),
@@ -272,76 +245,66 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         self._container_name = kwargs[BLOB_CONTAINER_NAME_KEY]
 
     def get_path(self, collection_name: str, file_extension: str) -> str:
-        """
-        Get file path in file system
+        """Get file path in file system.
 
-        :param collection_name: Name of file to read
-        :type collection_name: str
-        :param file_extension: File type
-        :type file_extension: str
-
-        :returns: str
+        Args:
+            collection_name: Name of file to read
+            file_extension: File type
         """
         return f"{self._container_name}/{collection_name}.{file_extension}"
 
 
 class LocalFileSystemHandler(FileSystemHandler):
-    """
-    Handles a local filesystem "connection"
-    """
+    """Handles a local filesystem."""
 
     def __init__(self, **kwargs) -> None:
-        """
-        kwargs>
-        :param LOCAL_STORAGE_PATH: path to storage location
-        :type LOCAL_STORAGE_PATH: str
+        """Initializes an fsspec local file system and sets path to data.
+
+        Kwargs:
+            LOCAL_STORAGE_PATH: path to storage location
+            LOCAL_STORAGE_PATH: str
         """
         self.fs = fs.LocalFileSystem()
         self._path = kwargs[LOCAL_STORAGE_PATH]
 
     def get_path(self, collection_name: str, file_extension: str) -> str:
-        """
-        Get file path in local file system.
+        """Get file path in local file system.
 
-        :param collection_name: Name of file to read
-        :type collection_name: str
-        :param file_extension: File type
-        :type file_extension: str
-
-        :returns: str
+        Args:
+            collection_name: Name of file to read
+            file_extension: File type
         """
         return f"{self._path}/{collection_name}.{file_extension}"
 
 
 class DataLoader(ABC):
-    """
-    Implements loading of data type from file system service to TableToGraphImporter
-    """
+    """Implements loading of a data type from file system service to TableToGraphImporter."""
 
     def __init__(self, file_system_handler: FileSystemHandler) -> None:
         """
-        :param file_system_handler: object for handling of file system service
-        :type file_system_handler: FileSystemHandler
+        Args:
+            file_system_handler: object for handling of file system service
         """
         super().__init__()
         self._file_system_handler = file_system_handler
 
     @abstractmethod
     def load_data(self, collection_name: str, is_cross_table: bool = False) -> None:
-        """
-        Override this method in the derived class. Intended to be used for reading data from data format.
+        """Override this method in the derived class. Intended to be used for reading data from data format.
 
-        :param collection_name: name of file to read
-        :type collection_name: str
-        :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
-        :type is_cross_table: bool
+        Args:
+            collection_name: name of file to read
+            is_cross_table: Indicate whether or not the collection contains associative table (default=False)
+
+        Raises:
+            NotImplementedError: The method is not implemented in the extended class.
         """
         raise NotImplementedError("Subclasses must override load_data() for use in TableToGraphImporter")
 
 
 class PyarrowDataLoader(DataLoader):
-    """
-    Loads data using Pyarrow.
+    """Loads data using Pyarrow.
+
     Pyarrow currently supports "parquet", "ipc"/"arrow"/"feather", "csv",
     and "orc", see pyarrow.dataset.dataset for up-to-date info.
     ds.dataset in load_data accepts any fsspec subclass, making this DataLoader
@@ -354,10 +317,9 @@ class PyarrowDataLoader(DataLoader):
         file_system_handler: FileSystemHandler,
     ) -> None:
         """
-        :param file_extension: File format to be read
-        :type file_extension: str
-        :param file_system_handler: Object for handling of file system service
-        :type file_system_handler: FileSystemHandler
+        Args:
+            file_extension: File format to be read
+            file_system_handler: Object for handling of file system service
         """
         super().__init__(file_system_handler=file_system_handler)
         self._file_extension = file_extension
@@ -365,15 +327,12 @@ class PyarrowDataLoader(DataLoader):
     def load_data(
         self, collection_name: str, is_cross_table: bool = False, columns: Optional[List[str]] = None
     ) -> None:
-        """
-        Generator for loading data from data format.
+        """Generator for loading data to.
 
-        :param collection_name: Name of file to read
-        :type collection_name: str
-        :param is_cross_table: Flag signifying whether it is a cross table
-        :type is_cross_table: bool
-        :param columns: Table columns to read
-        :type columns: List[str]
+        Args:
+            collection_name: Name of file to read
+            is_cross_table: Flag signifying whether it is a cross table
+            columns: Table columns to read
         """
         source = self._file_system_handler.get_path(collection_name, self._file_extension)
         print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
@@ -388,9 +347,7 @@ class PyarrowDataLoader(DataLoader):
 
 
 class FileSystemTypeEnum(Enum):
-    """
-    Enumerates all available file systems.
-    """
+    """Enumerates all available file systems."""
 
     Default = 1
     Local = 2
@@ -399,17 +356,13 @@ class FileSystemTypeEnum(Enum):
 
 
 class DataLoaderTypeEnum(Enum):
-    """
-    Enumerates all available data loaders
-    """
+    """Enumerates all available data loaders."""
 
     Default = 1
     Pyarrow = 2
 
 
-"""
-collection of supported file type extensions and their corresponding Data Loaders
-"""
+"""collection of supported file type extensions and their corresponding Data Loaders."""
 supported_file_extensions = {
     PARQUET_EXTENSION: DataLoaderTypeEnum.Pyarrow,
     CSV_EXTENSION: DataLoaderTypeEnum.Pyarrow,
@@ -421,17 +374,18 @@ supported_file_extensions = {
 
 
 def get_data_loader(file_extension: str, filesystem_type: FileSystemTypeEnum, **kwargs) -> DataLoader:
-    """
-    Returns DataLoader object, which uses instance of FileSystemHandler, in order to load data
-    of specific type from specific File System.
+    """Fetches a DataLoader object.
 
-    :param file_extension: File type to read
-    :type file_extension: str
-    :param filesystem_type: Type of filesystem we want to use
-    :type filesystem_type: FileSystemTypeEnum
-    :param **kwargs: For filesystem use
+    The DataLoader object uses an instance of FileSystemHandler, in order to load data
+    of specific type from a specific File System.
 
-    :returns: DataLoader
+    Args:
+        file_extension: File type to read
+        filesystem_type: Type of filesystem we want to use
+        **kwargs: For filesystem use
+
+    Raises:
+        ValueError: unsupported file extension
     """
     if file_extension not in supported_file_extensions:
         raise ValueError(
@@ -445,13 +399,13 @@ def get_data_loader(file_extension: str, filesystem_type: FileSystemTypeEnum, **
 
 
 def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemHandler:
-    """
-    Returns specific FileSystemHandler.
+    """Fetches a FileSystemHandler object.
 
-    :param filesystem_type: Type of filesystem we want to use
-    :type filesystem_type: FileSystemTypeEnum
+    Args:
+        filesystem_type: Type of filesystem we want to use
 
-    :returns: FileSystemHandler
+    Raises:
+        ValueError: selected FileSystem is not supported
     """
     if filesystem_type == FileSystemTypeEnum.Local:
         return LocalFileSystemHandler(**kwargs)
@@ -464,9 +418,7 @@ def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemH
 
 
 class TableToGraphImporter:
-    """
-    Class that implements translation of table data to graph data, and imports it to Memgraph
-    """
+    """Implements translation of table data to graph data, and imports it to Memgraph."""
 
     _DIRECTION = {
         True: (NODE_A, NODE_B),
@@ -489,15 +441,15 @@ class TableToGraphImporter:
     def _create_trigger_cypher_query(
         label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool
     ) -> str:
-        """
-        Creates Cypher Query for translation Trigger
+        """Creates Cypher Query for translation Trigger.
 
-        :param label1: Label of the first Node
-        :param label2: Label of the second Node
-        :param property1: Property of the first Node
-        :param property2: Property of the second Node
-        :param edge_type: Label for the relationship that the trigger creates
-        :param from_entity: Indicate whether relationship goes from or to first entity
+        Args:
+            label1: Label of the first Node
+            label2: Label of the second Node
+            property1: Property of the first Node
+            property2: Property of the second Node
+            edge_type: Label for the relationship that the trigger creates
+            from_entity: Indicate whether relationship goes from or to first entity
         """
         from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
 
@@ -520,12 +472,10 @@ class TableToGraphImporter:
         memgraph: Optional[Memgraph] = None,
     ) -> None:
         """
-        :param data_loader: object for loading data
-        :type data_loader: DataLoader
-        :param data_configuration: Configuration for the translations
-        :type data_configuration: Dict[str, Any]
-        :param memgraph: Connection to Memgraph (Optional)
-        :type memgraph: Memgraph (Optional)
+        Args:
+            data_loader: object for loading data
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
         """
         self._data_loader: DataLoader = data_loader
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
@@ -533,10 +483,10 @@ class TableToGraphImporter:
         self.__load_configuration(data_configuration=data_configuration)
 
     def translate(self, drop_database_on_start: bool) -> None:
-        """
-        Performs the translations
+        """Performs the translations.
 
-        :param drop_database_on_start: Indicate whether or not the database should be dropped prior to the start of the translations
+        Args:
+            drop_database_on_start: Indicate whether or not the database should be dropped prior to the start of the translations
         """
         if drop_database_on_start:
             self._memgraph.drop_database()
@@ -550,18 +500,14 @@ class TableToGraphImporter:
         self._load_cross_relationships()
 
     def _load_nodes(self) -> None:
-        """
-        Reads all of the data from the single table in the data source, translates it, and writes it to memgraph.
-        """
+        """Reads all of the data from the single table in the data source, translates it, and writes it to memgraph."""
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = one_to_many_mapping.table_name
             for row in self._data_loader.load_data(collection_name=collection_name):
                 self._save_row_as_node(label=collection_name, row=row)
 
     def _load_cross_relationships(self) -> None:
-        """
-        Reads all of the data from the single associative table in the data source, translates it, and writes it to memgraph.
-        """
+        """Reads all of the data from the single associative table in the data source, translates it, and writes it to memgraph."""
         for many_to_many_mapping in self._many_to_many_mappings:
             mapping_from = many_to_many_mapping.mapping.foreign_key_from
             mapping_to = many_to_many_mapping.mapping.foreign_key_to
@@ -579,10 +525,12 @@ class TableToGraphImporter:
                 )
 
     def _create_triggers(self) -> None:
-        """
-        Creates all of the Triggers in the Memgraph. Triggers are used as a part of speeding up the translation.
-        Since nodes and relationships are written in one go, foreign keys that are represented as relationships
-        might not yet be present in memgraph. When they do appear, triggers make sure to write relationship at that point in time,
+        """Creates all of the Triggers in the Memgraph.
+
+        Triggers are used as a part of speeding up the translation. Since nodes
+        and relationships are written in one go, foreign keys that are represented
+        as relationships might not yet be present in memgraph. When they do appear,
+        triggers make sure to write relationship at that point in time,
         rather than having hanging relationship.
         """
         for one_to_many_mapping in self._one_to_many_mappings:
@@ -618,15 +566,15 @@ class TableToGraphImporter:
     def _create_trigger(
         self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool
     ) -> None:
-        """
-        Creates translation trigger in Memgraph.
+        """Creates translation trigger in Memgraph.
 
-        :param label1: Label of the first Node
-        :param label2: Label of the second Node
-        :param property1: Property of the first Node
-        :param property2: Property of the second Node
-        :param edge_type: Label for the relationship that the trigger creates
-        :param from_entity: Indicate whether relationship goes from or to first entity
+        Args:
+            label1: Label of the first Node
+            label2: Label of the second Node
+            property1: Property of the first Node
+            property2: Property of the second Node
+            edge_type: Label for the relationship that the trigger creates
+            from_entity: Indicate whether relationship goes from or to first entity
         """
         trigger_name = "__".join([label1, property1, label2, property2])
 
@@ -644,9 +592,7 @@ class TableToGraphImporter:
         self._memgraph.create_trigger(trigger)
 
     def _create_indexes(self) -> None:
-        """
-        Creates indices in Memgraph
-        """
+        """Creates indices in Memgraph."""
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = self._name_mapper.get_label(collection_name=one_to_many_mapping.table_name)
             for index in one_to_many_mapping.indices:
@@ -661,11 +607,11 @@ class TableToGraphImporter:
         label: str,
         row: Dict[str, Any],
     ) -> None:
-        """
-        Translates row to Node and writes it to Memgraph
+        """Translates row to Node and writes it to Memgraph.
 
-        :param label: Original label of the new node
-        :param row: Row that should be saved to Memgraph as Node
+        Args:
+            label: Original label of the new node
+            row: Row that should be saved to Memgraph as Node
         """
         list(
             QueryBuilder(connection=self._memgraph)
@@ -688,15 +634,15 @@ class TableToGraphImporter:
         relation_label: str,
         row: Dict[str, Any],
     ) -> None:
-        """
-        Translates row to Relationship and writes it to Memgraph
+        """Translates row to Relationship and writes it to Memgraph.
 
-        :param collection_name_from: Collection name of the source node
-        :param collection_name_to: Collection name of the destination node
-        :param property_from: Property of the source Node
-        :param property_to: Property of the destination Node
-        :param relation_label: Label for the relationship
-        :param row: row to be translated
+        Args:
+            collection_name_from: Collection name of the source node
+            collection_name_to: Collection name of the destination node
+            property_from: Property of the source Node
+            property_to: Property of the destination Node
+            relation_label: Label for the relationship
+            row: row to be translated
         """
         list(
             QueryBuilder(connection=self._memgraph)
@@ -729,8 +675,10 @@ class TableToGraphImporter:
         )
 
     def __load_configuration(self, data_configuration: Dict[str, Any]) -> None:
-        """
-        Loads all of the configuration
+        """Loads all of the configuration.
+
+        Args:
+            data_configuration: instructions to translate table to graph.
         """
         self.__load_name_mappings(data_configuration.get(NAME_MAPPINGS_KEY, {}))
         self.__load_one_to_many_mappings_and_indices(
@@ -739,17 +687,13 @@ class TableToGraphImporter:
         self.__load_many_to_many_mappings(data_configuration.get(MANY_TO_MANY_RELATIONS_KEY, {}))
 
     def __load_name_mappings(self, name_mappings: Dict[str, Any]) -> None:
-        """
-        Loads name mappings from the configuration
-        """
+        """Loads name mappings from the configuration."""
         self._name_mapper = NameMapper(mappings=name_mappings)
 
     def __load_one_to_many_mappings_and_indices(
         self, one_to_many_configuration: Dict[str, List[str]], indices: Dict[str, List[str]]
     ) -> None:
-        """
-        Loads One To Many Mappings and indices from the configuration.
-        """
+        """Loads One To Many Mappings and indices from the configuration."""
         self._one_to_many_mappings = [
             TableMapping(
                 table_name=table_name,
@@ -760,9 +704,7 @@ class TableToGraphImporter:
         ]
 
     def __load_many_to_many_mappings(self, many_to_many_configuration: Dict[str, Any]) -> None:
-        """
-        Loads Many To Many Mappings from the configuration
-        """
+        """Loads Many To Many Mappings from the configuration."""
         self._many_to_many_mappings = [
             TableMapping(table_name=table_name, mapping=from_dict(data_class=ManyToManyMapping, data=relations))
             for table_name, relations in many_to_many_configuration.items()
@@ -770,20 +712,16 @@ class TableToGraphImporter:
 
 
 class AmazonS3Importer(TableToGraphImporter):
-    """
-    TableToGraphImporter wrapper for use with Amazon S3 File System
-    """
+    """TableToGraphImporter wrapper for use with Amazon S3 File System."""
 
     def __init__(
         self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
-        :param file_extension: file format to be read
-        :type file_extension: string
-        :param data_configuration: Configuration for the translations
-        :type data_configuration: Dict[str, Any]
-        :param memgraph: Connection to Memgraph (Optional)
-        :type memgraph: Memgraph (Optional)
+        Args:
+            file_extension: file format to be read
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
         """
         super().__init__(
             data_loader=get_data_loader(
@@ -795,20 +733,16 @@ class AmazonS3Importer(TableToGraphImporter):
 
 
 class AzureBlobImporter(TableToGraphImporter):
-    """
-    TableToGraphImporter wrapper for use with Azure Blob File System
-    """
+    """TableToGraphImporter wrapper for use with Azure Blob File System."""
 
     def __init__(
         self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
-        :param file_extension: file format to be read
-        :type file_extension: string
-        :param data_configuration: Configuration for the translations
-        :type data_configuration: Dict[str, Any]
-        :param memgraph: Connection to Memgraph (Optional)
-        :type memgraph: Memgraph (Optional)
+        Args:
+            file_extension: file format to be read
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
         """
         super().__init__(
             data_loader=get_data_loader(
@@ -820,20 +754,16 @@ class AzureBlobImporter(TableToGraphImporter):
 
 
 class LocalFileSystemImporter(TableToGraphImporter):
-    """
-    TableToGraphImporter wrapper for use with Local File System
-    """
+    """TableToGraphImporter wrapper for use with Local File System."""
 
     def __init__(
         self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
-        :param file_extension: file format to be read
-        :type file_extension: string
-        :param data_configuration: Configuration for the translations
-        :type data_configuration: Dict[str, Any]
-        :param memgraph: Connection to Memgraph (Optional)
-        :type memgraph: Memgraph (Optional)
+        Args:
+            file_extension: file format to be read
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
         """
         super().__init__(
             data_loader=get_data_loader(
