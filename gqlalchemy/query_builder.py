@@ -470,7 +470,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def build_where_query(
+    def _build_where_query(
         self, statement: str, item: str, operator: str, separator: str, literal: Any, expression: Any
     ):
         """Builds parts of a WHERE Cypher query divided by the boolean operators.
@@ -510,6 +510,7 @@ class DeclarativeBase(ABC):
         self._query.append(
             WhereConditionPartialQuery(clause, separator.join([item, operator, to_cypher_value(literal)]))
         )
+
         return self
 
     def where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
@@ -534,7 +535,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        return self.build_where_query(WhereConditionConstants.WHERE, item, operator, separator, literal, expression)
+        return self._build_where_query(WhereConditionConstants.WHERE, item, operator, separator, literal, expression)
 
     def and_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an AND statement as a part of WHERE Cypher partial query.
@@ -555,7 +556,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        return self.build_where_query(WhereConditionConstants.AND, item, operator, separator, literal, expression)
+        return self._build_where_query(WhereConditionConstants.AND, item, operator, separator, literal, expression)
 
     def or_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an OR statement as a part of WHERE Cypher partial query.
@@ -576,7 +577,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        return self.build_where_query(WhereConditionConstants.OR, item, operator, separator, literal, expression)
+        return self._build_where_query(WhereConditionConstants.OR, item, operator, separator, literal, expression)
 
     def xor_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an XOR statement as a part of WHERE Cypher partial query.
@@ -597,7 +598,7 @@ class DeclarativeBase(ABC):
         expression = kwargs.get("expression")
         separator = "" if operator == ":" else " "
 
-        return self.build_where_query(WhereConditionConstants.XOR, item, operator, separator, literal, expression)
+        return self._build_where_query(WhereConditionConstants.XOR, item, operator, separator, literal, expression)
 
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
         """Creates a UNWIND statement Cypher partial query."""
