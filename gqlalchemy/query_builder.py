@@ -337,15 +337,13 @@ class OrderByPartialQuery(PartialQuery):
         return f" ORDER BY {self.properties} "
 
 
-class OrderByDescPartialQuery(PartialQuery):
+class OrderByDescPartialQuery(OrderByPartialQuery):
     def __init__(self, properties: str):
-        super().__init__(DeclarativeBaseTypes.ORDER_BY_DESC)
-
-        self.properties = properties
+        super().__init__(properties)
 
     def construct_query(self) -> str:
-        """Creates a ORDER BY statement Cypher partial query."""
-        return f"{OrderByPartialQuery(self.properties).construct_query()}DESC "
+        """Creates an ORDER BY DESC statement Cypher partial query."""
+        return super().construct_query() + "DESC "
 
 
 class LimitPartialQuery(PartialQuery):
