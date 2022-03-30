@@ -27,11 +27,6 @@ db = Memgraph()
 SQLitePropertyDatabase("./tests/on_disk_storage.db", db)
 
 
-class User(Node):
-    id: Optional[str] = Field(unique=True, index=True, db=db)
-    huge_string: Optional[str] = Field(on_disk=True)
-
-
 @pytest.fixture
 def clear_db():
     db = Memgraph()
@@ -63,6 +58,10 @@ def _run_n_queries(n: int):
 
 
 def _create_n_user_objects(n: int) -> None:
+    class User(Node):
+        id: Optional[str] = Field(unique=True, index=True, db=db)
+        huge_string: Optional[str] = Field(on_disk=True)
+
     db = Memgraph()
     SQLitePropertyDatabase("./tests/on_disk_storage.db", db)
     huge_string = "I LOVE MEMGRAPH" * 1000

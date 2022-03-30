@@ -12,7 +12,6 @@
 # limitations under the License.
 
 from gqlalchemy import (
-    Memgraph,
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
@@ -20,22 +19,11 @@ from gqlalchemy import (
 )
 from pydantic import Field
 
-db = Memgraph()
-
-
-class Node1(Node):
-    id: int = Field(exists=True, db=db)
-
-
-class Node2(Node):
-    id: int = Field(unique=True, db=db)
-
-
-class Node3(Node):
-    id: int = Field(index=True, db=db)
-
 
 def test_create_constraint_exist(memgraph):
+    class Node1(Node):
+        id: int = Field(exists=True, db=memgraph)
+
     memgraph_constraint = MemgraphConstraintExists("Node1", "id")
 
     memgraph.create_constraint(memgraph_constraint)
@@ -45,6 +33,9 @@ def test_create_constraint_exist(memgraph):
 
 
 def test_create_constraint_unique(memgraph):
+    class Node2(Node):
+        id: int = Field(unique=True, db=memgraph)
+
     memgraph_constraint = MemgraphConstraintUnique("Node2", ("id",))
 
     memgraph.create_constraint(memgraph_constraint)
