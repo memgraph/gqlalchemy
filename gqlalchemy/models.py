@@ -367,10 +367,11 @@ class NodeMetaclass(BaseModel.__class__):
         else:
             cls.labels = {cls.label}
 
-        db = kwargs.get("db", None)
+        db = kwargs.get("db")
         if cls.index is True:
             if db is None:
                 raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+
             index = MemgraphIndex(cls.label)
             db.create_index(index)
 
@@ -381,6 +382,7 @@ class NodeMetaclass(BaseModel.__class__):
             label = attrs.get("label", cls.label)
             if db is None:
                 db = attrs.get("db", None)
+
             skip_constraints = False
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
@@ -389,6 +391,7 @@ class NodeMetaclass(BaseModel.__class__):
                         cls.__fields__[field].field_info.extra = base.__fields__[field].field_info.extra
                         skip_constraints = True
                         break
+
                     raise GQLAlchemyDatabaseMissingInFieldError(
                         constraint=constraint,
                         field=field,
@@ -412,6 +415,7 @@ class NodeMetaclass(BaseModel.__class__):
 
             if attrs and "db" in attrs:
                 del attrs["db"]
+
         return cls
 
 
