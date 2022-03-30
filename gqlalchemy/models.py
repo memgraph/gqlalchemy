@@ -384,7 +384,7 @@ class NodeMetaclass(BaseModel.__class__):
             skip_constraints = False
 
             if db is None:
-                db = attrs.get("db", None)
+                db = attrs.get("db")
 
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
