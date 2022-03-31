@@ -14,11 +14,12 @@
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
+from .exceptions import GQLAlchemyMissingOrdering
 
 
 class DeclarativeBaseTypes:
@@ -33,7 +34,6 @@ class DeclarativeBaseTypes:
     MERGE = "MERGE"
     NODE = "NODE"
     ORDER_BY = "ORDER_BY"
-    ORDER_BY_DESC = "ORDER_BY_DESC"
     OR_WHERE = "OR_WHERE"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
@@ -61,6 +61,17 @@ class WhereConditionConstants:
     AND = "AND"
     OR = "OR"
     XOR = "XOR"
+
+
+class OrderByConstants:
+    ASC = "ASC"
+    ASCENDING = "ASCENDING"
+    DESC = "DESC"
+    DESCENDING = "DESCENDING"
+
+    @classmethod
+    def is_member(cls, ordering: str) -> bool:
+        return ordering in [cls.ASC, cls.ASCENDING, cls.DESC, cls.DESCENDING]
 
 
 class NoVariablesMatchedException(Exception):
@@ -327,23 +338,48 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, properties: str):
+    def __init__(self, properties: Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
         self.properties = properties
 
     def construct_query(self) -> str:
         """Creates a ORDER BY statement Cypher partial query."""
-        return f" ORDER BY {self.properties} "
 
+        result_query = " ORDER BY "
+        if isinstance(self.properties, str):
+            result_query += f"{self._read_str(self.properties)} "
+        elif isinstance(self.properties, tuple):
+            result_query += f"{self._read_tuple(self.properties)} "
+        elif isinstance(self.properties, list):
+            result_query += f"{self._read_list(self.properties)} "
+        else:
+            raise GQLAlchemyMissingOrdering
 
-class OrderByDescPartialQuery(OrderByPartialQuery):
-    def __init__(self, properties: str):
-        super().__init__(properties)
+        return result_query
 
-    def construct_query(self) -> str:
-        """Creates an ORDER BY DESC statement Cypher partial query."""
-        return super().construct_query() + "DESC "
+    def _read_str(self, property: str) -> str:
+        return f"{property}"
+
+    def _read_tuple(self, property: Tuple[str, str]) -> str:
+        if not OrderByConstants.is_member(property[1]):
+            raise GQLAlchemyMissingOrdering
+        return f"{property[0]} {property[1]}"
+
+    def _read_list(self, property: List[Union[str, tuple[str, str]]]):
+        result = ""
+        for i, item in enumerate(property):
+            if isinstance(item, str):
+                result += self._read_str(item)
+            elif isinstance(item, tuple):
+                result += self._read_tuple(item)
+            else:
+                raise GQLAlchemyMissingOrdering
+
+            if i != len(property) - 1:
+                result += ", "
+
+        return result
 
 
 class LimitPartialQuery(PartialQuery):
@@ -583,15 +619,9 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def order_by(self, properties: str) -> "DeclarativeBase":
+    def order_by(self, properties: Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]) -> "DeclarativeBase":
         """Creates a ORDER BY statement Cypher partial query."""
         self._query.append(OrderByPartialQuery(properties))
-
-        return self
-
-    def order_by_desc(self, properties: str) -> "DeclarativeBase":
-        """Creates an ORDER BY DESC statement Cypher partial query."""
-        self._query.append(OrderByDescPartialQuery(properties))
 
         return self
 

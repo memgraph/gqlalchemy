@@ -28,6 +28,7 @@ from gqlalchemy import (
 from gqlalchemy.memgraph import Memgraph
 from typing import Optional
 from unittest.mock import patch
+from gqlalchemy.exceptions import GQLAlchemyMissingOrdering
 
 
 def test_invalid_match_chain_throws_exception():
@@ -408,7 +409,7 @@ def test_remove_property_and_label(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_orderby(memgraph):
+def test_order_by(memgraph):
     query_builder = QueryBuilder().match().node(variable="n").return_().order_by("n.id")
     expected_query = " MATCH (n) RETURN * ORDER BY n.id "
 
@@ -418,8 +419,8 @@ def test_orderby(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_orderby_desc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by("n.id DESC")
+def test_order_by_desc(memgraph):
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", "DESC"))
     expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -428,9 +429,56 @@ def test_orderby_desc(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_order_by_desc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by_desc(properties="n.id")
-    expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC "
+def test_order_by_asc(memgraph):
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", "ASC"))
+    expected_query = " MATCH (n) RETURN * ORDER BY n.id ASC "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_order_by_wrong_ordering(memgraph):
+    with pytest.raises(GQLAlchemyMissingOrdering):
+        QueryBuilder().match().node(variable="n").return_().order_by(("n.id", "DESCE")).execute()
+
+
+def test_order_by_properties(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .return_()
+        .order_by([("n.id", "DESC"), "n.name", ("n.last_name", "DESC")])
+    )
+    expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC, n.name, n.last_name DESC "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_order_by_asc_desc(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .return_()
+        .order_by(
+            [
+                ("n.id", "ASC"),
+                "n.name",
+                ("n.last_name", "DESC"),
+                ("n.age", "ASCENDING"),
+                ("n.middle_name", "DESCENDING"),
+            ]
+        )
+    )
+    expected_query = (
+        " MATCH (n) RETURN * ORDER BY n.id ASC, n.name, n.last_name DESC, n.age ASCENDING, n.middle_name DESCENDING "
+    )
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()

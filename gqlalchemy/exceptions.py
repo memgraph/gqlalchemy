@@ -34,6 +34,10 @@ db = Memgraph()
 SQLitePropertyDatabase("path-to-sqlite-db", db)
 """
 
+MISSING_ORDERING = """
+The second argument of the Tuple must be ordering: ASC, ASCENDING, DESC or DESCENDING.
+"""
+
 
 class GQLAlchemyWarning(Warning):
     pass
@@ -66,3 +70,9 @@ class GQLAlchemyOnDiskPropertyDatabaseNotDefinedError(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = ON_DISK_PROPERTY_DATABASE_NOT_DEFINED_ERROR
+
+
+class GQLAlchemyMissingOrdering(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = MISSING_ORDERING
