@@ -30,6 +30,7 @@ def test_wait_for_port():
         wait_for_port(port=0000, timeout=1)
 
 
+@pytest.mark.docker
 def test_wait_for_docker_container():
     container = docker.from_env().containers.create(DockerImage.MEMGRAPH.value)
     with pytest.raises(TimeoutError):
