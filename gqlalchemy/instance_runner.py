@@ -20,11 +20,14 @@ import subprocess
 import time
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 from .memgraph import Memgraph
 
 
-DEFAULT_MEMGRAPH_PATH = "/usr/lib/memgraph/memgraph"
+MEMGRAPH_DEFAULT_BINARY_PATH = "/usr/lib/memgraph/memgraph"
+MEMGRAPH_DEFAULT_PORT = 7687
+LOOPBACK_ADDRESS = "127.0.0.1"
+WILDCARD_ADDRESS = "0.0.0.0"
 
 TIMEOUT_ERROR_MESSAGE = "Waited too long for the port {port} on host {host} to start accepting connections."
 DOCKER_TIMEOUT_ETTOT_MESSAGE = "Waited too long for the Docker container to start."
@@ -36,7 +39,16 @@ class DockerImage(Enum):
     MAGE = "memgraph/memgraph-mage"
 
 
-def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01, timeout: float = 5.0) -> None:
+class DockerContainerStatus(Enum):
+    EXITED = "exited"
+    PAUSED = "paused"
+    RESTARTING = "restarting"
+    RUNNING = "running"
+
+
+def wait_for_port(
+    host: str = LOOPBACK_ADDRESS, port: int = MEMGRAPH_DEFAULT_PORT, delay: float = 0.01, timeout: float = 5.0
+) -> None:
     """Wait for a TCP port to become available.
 
     Args:
@@ -76,7 +88,7 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
     start_time = time.perf_counter()
     time.sleep(delay)
     container.reload()
-    while container.status != "running":
+    while container.status != DockerContainerStatus.RUNNING.value:
         time.sleep(delay)
         if time.perf_counter() - start_time >= timeout:
             raise TimeoutError(DOCKER_TIMEOUT_ETTOT_MESSAGE)
@@ -86,8 +98,8 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
 class MemgraphInstance(ABC):
     def __init__(
         self,
-        host: str = "0.0.0.0",
-        port: int = 7687,
+        host: str = WILDCARD_ADDRESS,
+        port: int = MEMGRAPH_DEFAULT_PORT,
         config: Dict[str, Union[str, int, bool]] = dict(),
     ) -> None:
         self.host = host
@@ -107,7 +119,11 @@ class MemgraphInstance(ABC):
         return self.memgraph
 
     @abstractmethod
-    def start(self, restart: bool = False, binary_path: Optional[str] = "") -> "Memgraph":
+    def start(self, restart: bool = False) -> None:
+        pass
+
+    @abstractmethod
+    def start_and_connect(self, restart: bool = False) -> "Memgraph":
         pass
 
     @abstractmethod
@@ -130,13 +146,13 @@ class MemgraphInstanceBinary(MemgraphInstance):
         process.
     """
 
-    def __init__(self, binary_path: str = DEFAULT_MEMGRAPH_PATH, user: str = "", **data) -> None:
+    def __init__(self, binary_path: str = MEMGRAPH_DEFAULT_BINARY_PATH, user: str = "", **data) -> None:
         super().__init__(**data)
         self.binary_path = binary_path
         self.user = user
 
-    def start(self, restart: bool = False) -> "Memgraph":
-        """Start the Memgraph instance and return the connection object.
+    def start(self, restart: bool = False) -> None:
+        """Start the Memgraph instance from a binary file.
 
         Attributes:
             restart: A bool indicating if the instance should be
@@ -144,18 +160,27 @@ class MemgraphInstanceBinary(MemgraphInstance):
         """
         if not restart and self.is_running():
             return
-        self.stop()
 
+        self.stop()
         args_mg = f"{self.binary_path } " + (" ").join([f"{k}={v}" for k, v in self.config.items()])
         if self.user != "":
             args_mg = f"sudo runuser -l {self.user} -c '{args_mg}'"
+
         self.proc_mg = subprocess.Popen(args_mg, shell=True)
         wait_for_port(self.host, self.port)
 
-        self.connect()
-        return self.memgraph
+    def start_and_connect(self, restart: bool = False) -> "Memgraph":
+        """Start the Memgraph instance from a binary file and return the
+          connection object.
 
-    def stop(self) -> int:
+        Attributes:
+            restart: A bool indicating if the instance should be
+              restarted if it's already running.
+        """
+        self.start(restart=restart)
+        return self.connect()
+
+    def stop(self) -> None:
         """Stop the Memgraph instance."""
         if not self.is_running():
             return
@@ -195,8 +220,8 @@ class MemgraphInstanceDocker(MemgraphInstance):
         self._client = docker.from_env()
         self._container = None
 
-    def start(self, restart: bool = False) -> "Memgraph":
-        """Start the Memgraph instance and return the connection object.
+    def start(self, restart: bool = False) -> None:
+        """Start the Memgraph instance in a Docker container.
 
         Attributes:
             restart: A bool indicating if the instance should be
@@ -207,14 +232,22 @@ class MemgraphInstanceDocker(MemgraphInstance):
         self.stop()
         self._container = self._client.containers.run(
             image=self.docker_image.value + ":" + self.docker_image_tag,
-            command=DEFAULT_MEMGRAPH_PATH + " " + (" ").join([f"{k}={v}" for k, v in self.config.items()]),
+            command=MEMGRAPH_DEFAULT_BINARY_PATH + " " + (" ").join([f"{k}={v}" for k, v in self.config.items()]),
             detach=True,
             ports={f"{self.port}/tcp": self.port},
         )
         wait_for_docker_container(self._container, delay=1)
 
-        self.connect()
-        return self.memgraph
+    def start_and_connect(self, restart: bool = False) -> "Memgraph":
+        """Start the Memgraph instance in a Docker container and return the
+          connection object.
+
+        Attributes:
+            restart: A bool indicating if the instance should be
+              restarted if it's already running.
+        """
+        self.start(restart=restart)
+        return self.connect()
 
     def stop(self) -> Dict:
         """Stop the Memgraph instance."""
@@ -228,6 +261,6 @@ class MemgraphInstanceDocker(MemgraphInstance):
         if self._container is None:
             return False
         self._container.reload()
-        if self._container.status == "running":
+        if self._container.status == DockerContainerStatus.RUNNING.value:
             return True
         return False
