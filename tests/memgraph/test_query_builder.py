@@ -286,6 +286,7 @@ def test_load_csv_no_header(memgraph):
         query_builder.execute()
     mock.assert_called_with(expected_query)
 
+
 def test_where_literal(memgraph):
     query_builder = (
         QueryBuilder()
@@ -619,6 +620,7 @@ def test_xor_and_where_extra_values(memgraph):
             .xor_where(item="n.name", operator="=", literal="best_name", expression="Node")
             .return_()
         )
+
 
 def test_get_single(memgraph):
     query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"n": ""})
