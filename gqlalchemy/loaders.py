@@ -47,7 +47,7 @@ NODE_B = "b"
 
 PARQUET_EXTENSION = "parquet"
 CSV_EXTENSION = "csv"
-ORC_EXTENSION = "prc"
+ORC_EXTENSION = "orc"
 IPC_EXTENSION = "ipc"
 FEATHER_EXTENSION = "feather"
 ARROW_EXTENSION = "arrow"
@@ -337,7 +337,7 @@ class PyarrowDataLoader(DataLoader):
         source = self._file_system_handler.get_path(collection_name, self._file_extension)
         print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
 
-        dataset = ds.dataset(source=source, filesystem=self._file_system_handler.fs)
+        dataset = ds.dataset(source=source, format=self._file_extension, filesystem=self._file_system_handler.fs)
 
         for batch in dataset.to_batches(
             columns=columns,
@@ -428,8 +428,8 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(property="$node_a:$label_2", operator="MATCH", value="($node_b:$label_1)", value_is_property=True)
-        .where(property="$node_b.$property_1", operator="=", value="$node_a.$property_2", value_is_property=True)
+        .where(property="$node_a:$label_2", operator="MATCH", value="($node_b:$label_1)")
+        .where(property="$node_b.$property_1", operator="=", value="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
         .to(edge_label="$edge_type")
@@ -613,17 +613,14 @@ class TableToGraphImporter:
             label: Original label of the new node
             row: Row that should be saved to Memgraph as Node
         """
-        list(
-            QueryBuilder(connection=self._memgraph)
-            .create()
-            .node(
-                labels=self._name_mapper.get_label(collection_name=label),
-                **{
-                    self._name_mapper.get_property_name(collection_name=label, column_name=k): v for k, v in row.items()
-                },
-            )
-            .execute()
-        )
+        #list(
+        QueryBuilder(connection=self._memgraph).create().node(
+            labels=self._name_mapper.get_label(collection_name=label),
+            **{
+                self._name_mapper.get_property_name(collection_name=label, column_name=k): v for k, v in row.items()
+            },
+        ).execute()
+        #)
 
     def _save_row_as_relationship(
         self,

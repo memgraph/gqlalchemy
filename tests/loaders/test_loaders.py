@@ -26,7 +26,7 @@ from gqlalchemy.loaders import (
 )
 
 
-class myFileSystemHandler(FileSystemHandler):
+class TestFileSystemHandler(FileSystemHandler):
     def __init__(self) -> None:
         super().__init__()
 
@@ -34,7 +34,7 @@ class myFileSystemHandler(FileSystemHandler):
         pass
 
 
-class myDataLoader(DataLoader):
+class TestDataLoader(DataLoader):
     def __init__(self, file_system_handler: FileSystemHandler) -> None:
         super().__init__(file_system_handler)
         self.num = 5
@@ -45,7 +45,7 @@ class myDataLoader(DataLoader):
 
 @pytest.fixture
 def dummy_loader():
-    return myDataLoader(myFileSystemHandler())
+    return TestDataLoader(TestFileSystemHandler())
 
 
 def test_name_mapper_get_label():
@@ -63,18 +63,6 @@ def test_name_mapper_get_property_name():
     name_mapper = NameMapper(mappings)
     property_name = name_mapper.get_property_name("individuals", "label")
     assert property_name == "label"
-
-
-def test_file_system_handler_abstract():
-    """Test that base FileSystemHandler class can't be instantiated"""
-    with pytest.raises(TypeError):
-        FileSystemHandler()
-
-
-def test_data_loader_abstract():
-    """Test that base DataLoader class can't be instantiated"""
-    with pytest.raises(TypeError):
-        DataLoader()
 
 
 def test_custom_data_loader(dummy_loader):
@@ -103,23 +91,30 @@ def test_data_loader():
         assert type(get_data_loader("csv", FileSystemTypeEnum.Local)) is PyarrowDataLoader
 
 
-def test_local_table_to_graph_importer(memgraph):
-    """e2e test, using Local File System to import into memgraph"""
+@pytest.mark.parametrize(
+    "file_extension",
+    [
+        "parquet",
+        "csv",
+        "orc",
+        "feather",
+    ],
+)
+def test_local_table_to_graph_importer(file_extension, memgraph):
+    """e2e test, using Local File System to import into memgraph, tests available file extensions"""
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
 
+    print(file_extension)
+
     importer = LocalFileSystemImporter(
-        file_extension="parquet",
+        file_extension=file_extension,
         data_configuration=my_configuration,
         local_storage_path="./tests/loaders/data",
         memgraph=memgraph,
     )
 
-    importer.translate(False)
-
-
-if __name__ == "__main__":
-    test_local_table_to_graph_importer()
+    importer.translate(drop_database_on_start=True)
