@@ -356,17 +356,13 @@ class NodeMetaclass(BaseModel.__class__):
             for base in bases:
                 if hasattr(base, "labels"):
                     base_labels = base_labels.union(base.labels)
+
             return base_labels
 
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
-
         cls.label = kwargs.get("label", name)
-        if name == "Node":
-            pass
-        elif "labels" in kwargs:
-            cls.labels = {cls.label} | kwargs["labels"] | get_base_labels()
-        else:
-            cls.labels = {cls.label} | get_base_labels()
+        if name != "Node":
+            cls.labels = get_base_labels().union({cls.label}, kwargs.get("labels", set()))
 
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
@@ -382,6 +378,7 @@ class NodeMetaclass(BaseModel.__class__):
                         cls.__fields__[field].field_info.extra = base.__fields__[field].field_info.extra
                         skip_constraints = True
                         break
+
                     raise GQLAlchemyDatabaseMissingInFieldError(
                         constraint=constraint,
                         field=field,
