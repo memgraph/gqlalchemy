@@ -29,6 +29,7 @@ from gqlalchemy.memgraph import Memgraph
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrdering
+from gqlalchemy.query_builder import Order
 
 
 def test_invalid_match_chain_throws_exception():
@@ -420,7 +421,7 @@ def test_order_by(memgraph):
 
 
 def test_order_by_desc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", "DESC"))
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", Order.DESC))
     expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -430,7 +431,7 @@ def test_order_by_desc(memgraph):
 
 
 def test_order_by_asc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", "ASC"))
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", Order.ASC))
     expected_query = " MATCH (n) RETURN * ORDER BY n.id ASC "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -439,7 +440,7 @@ def test_order_by_asc(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_order_by_wrong_ordering(memgraph):
+def test_order_by_wrong_parameter(memgraph):
     with pytest.raises(GQLAlchemyMissingOrdering):
         QueryBuilder().match().node(variable="n").return_().order_by(("n.id", "DESCE")).execute()
 
@@ -450,7 +451,7 @@ def test_order_by_properties(memgraph):
         .match()
         .node(variable="n")
         .return_()
-        .order_by([("n.id", "DESC"), "n.name", ("n.last_name", "DESC")])
+        .order_by([("n.id", Order.DESC), "n.name", ("n.last_name", Order.DESC)])
     )
     expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC, n.name, n.last_name DESC "
 
@@ -468,11 +469,11 @@ def test_order_by_asc_desc(memgraph):
         .return_()
         .order_by(
             [
-                ("n.id", "ASC"),
+                ("n.id", Order.ASC),
                 "n.name",
-                ("n.last_name", "DESC"),
-                ("n.age", "ASCENDING"),
-                ("n.middle_name", "DESCENDING"),
+                ("n.last_name", Order.DESC),
+                ("n.age", Order.ASCENDING),
+                ("n.middle_name", Order.DESCENDING),
             ]
         )
     )

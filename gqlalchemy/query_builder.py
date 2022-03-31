@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
 import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
@@ -33,7 +34,7 @@ class DeclarativeBaseTypes:
     MATCH = "MATCH"
     MERGE = "MERGE"
     NODE = "NODE"
-    ORDER_BY = "ORDER_BY"
+    ORDER_BY = "ORDER BY"
     OR_WHERE = "OR_WHERE"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
@@ -63,15 +64,11 @@ class WhereConditionConstants:
     XOR = "XOR"
 
 
-class OrderByConstants:
-    ASC = "ASC"
-    ASCENDING = "ASCENDING"
-    DESC = "DESC"
-    DESCENDING = "DESCENDING"
-
-    @classmethod
-    def is_member(cls, ordering: str) -> bool:
-        return ordering in [cls.ASC, cls.ASCENDING, cls.DESC, cls.DESCENDING]
+class Order(Enum):
+    ASC = 1
+    ASCENDING = 2
+    DESC = 3
+    DESCENDING = 4
 
 
 class NoVariablesMatchedException(Exception):
@@ -338,7 +335,7 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, properties: Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]):
+    def __init__(self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
         self.properties = properties
@@ -346,40 +343,27 @@ class OrderByPartialQuery(PartialQuery):
     def construct_query(self) -> str:
         """Creates a ORDER BY statement Cypher partial query."""
 
-        result_query = " ORDER BY "
-        if isinstance(self.properties, str):
-            result_query += f"{self._read_str(self.properties)} "
-        elif isinstance(self.properties, tuple):
-            result_query += f"{self._read_tuple(self.properties)} "
-        elif isinstance(self.properties, list):
-            result_query += f"{self._read_list(self.properties)} "
-        else:
-            raise GQLAlchemyMissingOrdering
+        return f" {self.type} {(self._read_list(self.properties)) if isinstance(self.properties, list) else self._read_item(self.properties)} "
 
-        return result_query
+    def _read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
+        if isinstance(item, str):
+            return f"{self._read_str(item)}"
+        elif isinstance(item, tuple):
+            return f"{self._read_tuple(item)}"
+        else:
+            raise GQLAlchemyMissingOrdering  # @TODO: raise TypeError with adequate message
+
+    def _read_list(self, property: List[Union[str, Tuple[str, Order]]]):
+        return ", ".join(self._read_item(item=item) for item in property)
 
     def _read_str(self, property: str) -> str:
         return f"{property}"
 
-    def _read_tuple(self, property: Tuple[str, str]) -> str:
-        if not OrderByConstants.is_member(property[1]):
+    def _read_tuple(self, tuple: Tuple[str, Order]) -> str:
+        if not isinstance(tuple[1], Order):
             raise GQLAlchemyMissingOrdering
-        return f"{property[0]} {property[1]}"
 
-    def _read_list(self, property: List[Union[str, tuple[str, str]]]):
-        result = ""
-        for i, item in enumerate(property):
-            if isinstance(item, str):
-                result += self._read_str(item)
-            elif isinstance(item, tuple):
-                result += self._read_tuple(item)
-            else:
-                raise GQLAlchemyMissingOrdering
-
-            if i != len(property) - 1:
-                result += ", "
-
-        return result
+        return f"{tuple[0]} {tuple[1].name}"
 
 
 class LimitPartialQuery(PartialQuery):
@@ -619,7 +603,9 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def order_by(self, properties: Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]) -> "DeclarativeBase":
+    def order_by(
+        self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]
+    ) -> "DeclarativeBase":
         """Creates a ORDER BY statement Cypher partial query."""
         self._query.append(OrderByPartialQuery(properties))
 
