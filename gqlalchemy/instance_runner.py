@@ -26,11 +26,14 @@ from .memgraph import Memgraph
 
 MEMGRAPH_DEFAULT_BINARY_PATH = "/usr/lib/memgraph/memgraph"
 MEMGRAPH_DEFAULT_PORT = 7687
+MEMGRAPH_CONFIG_BOLT_PORT = "--bolt-port"
+MEMGRAPH_CONFIG_BOLT_ADDRESS = "--bolt-address"
+DOCKER_IMAGE_TAG_LATEST = "latest"
 LOOPBACK_ADDRESS = "127.0.0.1"
 WILDCARD_ADDRESS = "0.0.0.0"
 
 TIMEOUT_ERROR_MESSAGE = "Waited too long for the port {port} on host {host} to start accepting connections."
-DOCKER_TIMEOUT_ETTOT_MESSAGE = "Waited too long for the Docker container to start."
+DOCKER_TIMEOUT_ERROR_MESSAGE = "Waited too long for the Docker container to start."
 MEMGRAPH_CONNECTION_ERROR_MESSAGE = "The Memgraph process probably died."
 
 
@@ -91,7 +94,8 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
     while container.status != DockerContainerStatus.RUNNING.value:
         time.sleep(delay)
         if time.perf_counter() - start_time >= timeout:
-            raise TimeoutError(DOCKER_TIMEOUT_ETTOT_MESSAGE)
+            raise TimeoutError(DOCKER_TIMEOUT_ERROR_MESSAGE)
+
         container.reload()
 
 
@@ -106,8 +110,8 @@ class MemgraphInstance(ABC):
         self.port = port
         self.config = config
         self.proc_mg = None
-        self.config["--bolt-port"] = self.port
-        self.config["--bolt-address"] = self.host
+        self.config[MEMGRAPH_CONFIG_BOLT_PORT] = self.port
+        self.config[MEMGRAPH_CONFIG_BOLT_ADDRESS] = self.host
 
     def set_config(self, config: Dict[str, Union[str, int, bool]]) -> None:
         self.config.update(config)
@@ -116,6 +120,7 @@ class MemgraphInstance(ABC):
         self.memgraph = Memgraph(self.host, self.port)
         if not self.is_running():
             raise ConnectionError(MEMGRAPH_CONNECTION_ERROR_MESSAGE)
+
         return self.memgraph
 
     @abstractmethod
@@ -178,18 +183,21 @@ class MemgraphInstanceBinary(MemgraphInstance):
               restarted if it's already running.
         """
         self.start(restart=restart)
+
         return self.connect()
 
     def stop(self) -> None:
         """Stop the Memgraph instance."""
         if not self.is_running():
             return
+
         procs = set()
         process = psutil.Process(self.proc_mg.pid)
         procs.add(process)
         for proc in process.children(recursive=True):
             procs.add(proc)
             os.system(f"sudo kill {proc.pid}")
+
         process.kill()
         psutil.wait_procs(procs)
 
@@ -197,8 +205,10 @@ class MemgraphInstanceBinary(MemgraphInstance):
         """Check if the Memgraph instance is still running."""
         if self.proc_mg is None:
             return False
+
         if self.proc_mg.poll() is not None:
             return False
+
         return True
 
 
@@ -212,7 +222,7 @@ class MemgraphInstanceDocker(MemgraphInstance):
     """
 
     def __init__(
-        self, docker_image: DockerImage = DockerImage.MEMGRAPH, docker_image_tag: str = "latest", **data
+        self, docker_image: DockerImage = DockerImage.MEMGRAPH, docker_image_tag: str = DOCKER_IMAGE_TAG_LATEST, **data
     ) -> None:
         super().__init__(**data)
         self.docker_image = docker_image
@@ -229,6 +239,7 @@ class MemgraphInstanceDocker(MemgraphInstance):
         """
         if not restart and self.is_running():
             return
+
         self.stop()
         self._container = self._client.containers.run(
             image=self.docker_image.value + ":" + self.docker_image_tag,
@@ -247,20 +258,25 @@ class MemgraphInstanceDocker(MemgraphInstance):
               restarted if it's already running.
         """
         self.start(restart=restart)
+
         return self.connect()
 
     def stop(self) -> Dict:
         """Stop the Memgraph instance."""
         if not self.is_running():
             return
+
         self._container.stop()
+
         return self._container.wait()
 
     def is_running(self) -> bool:
         """Check if the Memgraph instance is still running."""
         if self._container is None:
             return False
+
         self._container.reload()
         if self._container.status == DockerContainerStatus.RUNNING.value:
             return True
+
         return False
