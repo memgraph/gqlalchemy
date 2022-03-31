@@ -24,6 +24,7 @@ from .exceptions import (
     GQLAlchemyError,
     GQLAlchemySubclassNotFoundWarning,
     GQLAlchemyDatabaseMissingInFieldError,
+    GQLAlchemyDatabaseMissingInNodeClassError,
 )
 
 
@@ -117,7 +118,7 @@ class MemgraphKafkaStream(MemgraphStream):
     consumer_group: str = None
     batch_interval: str = None
     batch_size: str = None
-    bootstrap_servers: str = None
+    bootstrap_servers: Union[str, List[str]] = None
 
     def to_cypher(self) -> str:
         """Converts Kafka stream to a cypher clause."""
@@ -130,7 +131,11 @@ class MemgraphKafkaStream(MemgraphStream):
         if self.batch_size is not None:
             query += f" BATCH_SIZE {self.batch_size}"
         if self.bootstrap_servers is not None:
-            query += f" BOOTSTRAP_SERVERS {self.bootstrap_servers}"
+            if isinstance(self.bootstrap_servers, str):
+                servers_field = f"'{self.bootstrap_servers}'"
+            else:
+                servers_field = str(self.bootstrap_servers)[1:-1]
+            query += f" BOOTSTRAP_SERVERS {servers_field}"
         query += ";"
         return query
 
@@ -183,7 +188,7 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
-    def __init_subclass__(cls, type=None, label=None, labels=None):
+    def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
@@ -360,17 +365,28 @@ class NodeMetaclass(BaseModel.__class__):
             return base_labels
 
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+        cls.index = kwargs.get("index")
         cls.label = kwargs.get("label", name)
         if name != "Node":
             cls.labels = get_base_labels().union({cls.label}, kwargs.get("labels", set()))
 
+        db = kwargs.get("db")
+        if cls.index is True:
+            if db is None:
+                raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+
+            index = MemgraphIndex(cls.label)
+            db.create_index(index)
+
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
-
             label = attrs.get("label", cls.label)
-            db = attrs.get("db", None)
             skip_constraints = False
+
+            if db is None:
+                db = attrs.get("db")
+
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
                     base = field_in_superclass(field, constraint)
@@ -402,6 +418,7 @@ class NodeMetaclass(BaseModel.__class__):
 
             if attrs and "db" in attrs:
                 del attrs["db"]
+
         return cls
 
 

@@ -468,44 +468,64 @@ class DeclarativeBase(ABC):
 
     def where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a WHERE statement Cypher partial query."""
-        separator = "" if operator == ":" else " "
+
+        if operator == ":":
+            separator = ""
+            cypher_value = value
+        else:
+            separator = " "
+            cypher_value = to_cypher_value(value)
+
         self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.WHERE, separator.join([item, operator, to_cypher_value(value)])
-            )
+            WhereConditionPartialQuery(WhereConditionConstants.WHERE, separator.join([item, operator, cypher_value]))
         )
 
         return self
 
     def and_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a AND (expression) statement Cypher partial query."""
-        separator = "" if operator == ":" else " "
+
+        if operator == ":":
+            separator = ""
+            cypher_value = value
+        else:
+            separator = " "
+            cypher_value = to_cypher_value(value)
+
         self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.AND, separator.join([item, operator, to_cypher_value(value)])
-            )
+            WhereConditionPartialQuery(WhereConditionConstants.AND, separator.join([item, operator, cypher_value]))
         )
 
         return self
 
     def or_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a OR (expression) statement Cypher partial query."""
-        separator = "" if operator == ":" else " "
+
+        if operator == ":":
+            separator = ""
+            cypher_value = value
+        else:
+            separator = " "
+            cypher_value = to_cypher_value(value)
+
         self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.OR, separator.join([item, operator, to_cypher_value(value)])
-            )
+            WhereConditionPartialQuery(WhereConditionConstants.OR, separator.join([item, operator, cypher_value]))
         )
 
         return self
 
-    def xor_where(self, property: str, operator: str, value: Any) -> "DeclarativeBase":
+    def xor_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
         """Creates a XOR (expression) statement Cypher partial query."""
-        separator = "" if operator == ":" else " "
+
+        if operator == ":":
+            separator = ""
+            cypher_value = value
+        else:
+            separator = " "
+            cypher_value = to_cypher_value(value)
+
         self._query.append(
-            WhereConditionPartialQuery(
-                WhereConditionConstants.XOR, separator.join([property, operator, to_cypher_value(value)])
-            )
+            WhereConditionPartialQuery(WhereConditionConstants.XOR, separator.join([item, operator, cypher_value]))
         )
 
         return self
