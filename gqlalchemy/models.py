@@ -355,21 +355,22 @@ class NodeMetaclass(BaseModel.__class__):
 
             return None
 
+        def get_base_labels() -> Set[str]:
+            base_labels = set()
+            nonlocal bases
+            for base in bases:
+                if hasattr(base, "labels"):
+                    base_labels = base_labels.union(base.labels)
+
+            return base_labels
+
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         cls.index = kwargs.get("index")
         cls.label = kwargs.get("label", name)
-
-        if name == "Node":
-            pass
-        elif "labels" in kwargs:  # overrides superclass labels
-            cls.labels = kwargs["labels"]
-        elif hasattr(cls, "labels"):
-            cls.labels = cls.labels | {cls.label}
-        else:
-            cls.labels = {cls.label}
+        if name != "Node":
+            cls.labels = get_base_labels().union({cls.label}, kwargs.get("labels", set()))
 
         db = kwargs.get("db")
-
         if cls.index is True:
             if db is None:
                 raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
