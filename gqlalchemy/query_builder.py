@@ -470,23 +470,26 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def _build_where_query(self, statement: str, item: str, operator: str, literal: Any, expression: str):
+    def _build_where_query(self, statement: str, item: str, operator: str, **kwargs):
         """Builds parts of a WHERE Cypher query divided by the boolean operators."""
+        literal = kwargs.get("literal")
+        value = kwargs.get("expression")
 
-        separator = "" if operator == ":" else " "
-        if literal is None:
-            if expression is None:
+        if value is None:
+            if literal is None:
                 raise GQLAlchemyLiteralAndExpressionMissingInWhere
-
-            self._query.append(WhereConditionPartialQuery(statement, separator.join([item, operator, expression])))
-
-            return self
-
-        if expression is not None:
+            
+            value = to_cypher_value(literal)
+        elif literal is not None:
             raise GQLAlchemyExtraKeywordArgumentsInWhere
 
         self._query.append(
-            WhereConditionPartialQuery(statement, separator.join([item, operator, to_cypher_value(literal)]))
+            WhereConditionPartialQuery(
+                statement,
+                ("" if operator == ":" else " ").join(
+                    [item, operator, value]
+                ),
+            )
         )
 
         return self
@@ -514,7 +517,7 @@ class DeclarativeBase(ABC):
         # expression: label | property
 
         return self._build_where_query(
-            WhereConditionConstants.WHERE, item, operator, kwargs.get("literal"), kwargs.get("expression")
+            WhereConditionConstants.WHERE, item, operator, **kwargs
         )
 
     def and_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
@@ -532,7 +535,7 @@ class DeclarativeBase(ABC):
             self: A partial Cypher query built from the given parameters.
         """
         return self._build_where_query(
-            WhereConditionConstants.AND, item, operator, kwargs.get("literal"), kwargs.get("expression")
+            WhereConditionConstants.AND, item, operator, **kwargs
         )
 
     def or_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
@@ -551,7 +554,7 @@ class DeclarativeBase(ABC):
         """
 
         return self._build_where_query(
-            WhereConditionConstants.OR, item, operator, kwargs.get("literal"), kwargs.get("expression")
+            WhereConditionConstants.OR, item, operator, **kwargs
         )
 
     def xor_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
@@ -570,7 +573,7 @@ class DeclarativeBase(ABC):
         """
 
         return self._build_where_query(
-            WhereConditionConstants.XOR, item, operator, kwargs.get("literal"), kwargs.get("expression")
+            WhereConditionConstants.XOR, item, operator, **kwargs
         )
 
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
