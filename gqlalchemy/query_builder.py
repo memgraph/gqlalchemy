@@ -348,7 +348,9 @@ class OrderByPartialQuery(PartialQuery):
     def construct_query(self) -> str:
         """Creates a ORDER BY statement Cypher partial query."""
 
-        return f" {self.type} {(self._read_list(self.properties)) if isinstance(self.properties, list) else self._read_item(self.properties)} "
+        return f""" {self.type} {(self._read_list(self.properties)) 
+                                if isinstance(self.properties, list) 
+                                else self._read_item(self.properties)} """
 
     def _read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
         if isinstance(item, str):
