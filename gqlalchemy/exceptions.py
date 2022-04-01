@@ -46,6 +46,7 @@ The second argument of the Tuple must be ordering: ASC, ASCENDING, DESC or DESCE
 
 ORDER_BY_TYPE_ERROR = """
 TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[tuple[str, str]].
+"""
 
 LITERAL_AND_EXPRESSION_MISSING_IN_WHERE = """
 Can't create WHERE query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
