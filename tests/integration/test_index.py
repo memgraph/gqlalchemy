@@ -14,6 +14,81 @@
 
 from gqlalchemy.models import MemgraphIndex
 from gqlalchemy import Field, Node
+import pytest
+from gqlalchemy.exceptions import GQLAlchemyDatabaseMissingInNodeClassError
+
+
+def test_index_label(memgraph):
+    class Animal(Node, index=True, db=memgraph):
+        name: str
+
+    actual_index = memgraph.get_indexes()
+
+    assert set(actual_index) == {MemgraphIndex("Animal")}
+
+
+def test_index_property(memgraph):
+    class Human(Node):
+        id: str = Field(index=True, db=memgraph)
+
+    actual_index = memgraph.get_indexes()
+
+    assert set(actual_index) == {MemgraphIndex("Human", "id")}
+
+
+def test_missing_db_in_node_class(memgraph):
+    with pytest.raises(GQLAlchemyDatabaseMissingInNodeClassError):
+
+        class User(Node, index=True):
+            id: str
+
+
+def test_db_in_node_class(memgraph):
+    class User(Node, db=memgraph):
+        id: str = Field(index=True)
+
+    actual_index = memgraph.get_indexes()
+    assert set(actual_index) == {MemgraphIndex("User", "id")}
+
+
+def test_db_in_node_and_property(memgraph):
+    class User(Node, db=memgraph):
+        id: str = Field(index=True, db=memgraph)
+
+    actual_index = memgraph.get_indexes()
+    assert set(actual_index) == {MemgraphIndex("User", "id")}
+
+
+def test_index_on_label_and_property(memgraph):
+    class User(Node, index=True, db=memgraph):
+        id: str = Field(index=True, db=memgraph)
+
+    actual_index = memgraph.get_indexes()
+    assert set(actual_index) == {MemgraphIndex("User", "id"), MemgraphIndex("User")}
+
+
+def test_false_index_in_node_class(memgraph):
+    class User(Node, index=False, db=memgraph):
+        id: str
+
+    actual_index = memgraph.get_indexes()
+    assert set(actual_index) == set()
+
+
+def test_false_index_no_db_in_node_class(memgraph):
+    class User(Node, index=False):
+        id: str
+
+    actual_index = memgraph.get_indexes()
+    assert set(actual_index) == set()
+
+
+def test_false_index_with_db_in_node_class(memgraph):
+    class User(Node, index=False, db=memgraph):
+        id: str
+
+    actual_index = memgraph.get_indexes()
+    assert set(actual_index) == set()
 
 
 def test_index_attr(memgraph):
