@@ -66,13 +66,13 @@ class OneToManyMapping:
     :param mapping: Foreign key used for mapping
     :param label: Label which will be applied to the relationship created from this object
     :param from_entity: Direction of the relationship created from mapping object
-    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    :param parameters: Parameters that will be added to the relationship created from this object (Optional)
     """
 
     foreign_key: ForeignKeyMapping
     label: str
     from_entity: bool = False
-    variables: Optional[Dict[str, str]] = None
+    parameters: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -84,13 +84,13 @@ class ManyToManyMapping:
     :param mapping_from: Describes the source of the relationship
     :param mapping_to: Describes the destination of the relationship
     :param label: Label to be applied to the newly created relationship
-    :param variables: Variables that will be added to the relationship created from this object (Optional)
+    :param parameters: Parameters that will be added to the relationship created from this object (Optional)
     """
 
     foreign_key_from: ForeignKeyMapping
     foreign_key_to: ForeignKeyMapping
     label: str
-    variables: Optional[Dict[str, str]] = None
+    parameters: Optional[Dict[str, str]] = None
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -136,7 +136,7 @@ class DataSource(ABC):
         """
         :param file_extension: Extension for which the reading is implemented
         """
-        self._file_extension: str = file_extension
+        self._file_extension = file_extension
 
     @abstractmethod
     def load_data(self, collection_name: str, is_cross_table: bool = False) -> None:
@@ -172,11 +172,11 @@ class S3DataSource(DataSource):
         :param s3_session_token: S3 session token (Optional)
         """
         super().__init__(file_extension=file_extension)
-        self._bucket_name: str = bucket_name
-        self._s3_access_key: str = s3_access_key
-        self._s3_secret_key: str = s3_secret_key
-        self._s3_region: str = s3_region
-        self._s3_session_token: Optional[str] = s3_session_token
+        self._bucket_name = bucket_name
+        self._s3_access_key = s3_access_key
+        self._s3_secret_key = s3_secret_key
+        self._s3_region = s3_region
+        self._s3_session_token = s3_session_token
 
     def load_data(
         self,
@@ -217,7 +217,7 @@ class NameMapper:
     """
 
     def __init__(self, mappings: Dict[str, Any]) -> None:
-        self._name_mappings: Dict[str, NameMappings] = {k: NameMappings(**v) for k, v in mappings.items()}
+        self._name_mappings = {k: NameMappings(**v) for k, v in mappings.items()}
 
     def get_label(self, collection_name: str) -> str:
         """
@@ -302,8 +302,8 @@ class TableToGraphImporter:
         :param data_configuration: Configuration for the translations
         :param memgraph: Connection to Memgraph (Optional)
         """
-        self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
-        self._data_source: DataSource = data_source
+        self._memgraph = memgraph if memgraph is not None else Memgraph()
+        self._data_source = data_source
 
         self.__load_configuration(data_configuration=data_configuration)
 
