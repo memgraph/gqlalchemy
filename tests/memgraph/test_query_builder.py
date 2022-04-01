@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from gqlalchemy.exceptions import (
+    GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyExtraKeywordArgumentsInWhere,
+)
 import pytest
 from gqlalchemy import (
     InvalidMatchChainException,
@@ -283,6 +287,341 @@ def test_load_csv_no_header(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_where_literal(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", literal="best_name")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_where_property(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", expression="m.name")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n", operator=":", expression="Node")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="n.name", operator="=")
+            .return_()
+        )
+
+
+def test_where_extra_values(memgraph):
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .return_()
+        )
+
+
+def test_or_where_literal(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", literal="best_name")
+        .or_where(item="m.id", operator="<", literal=4)
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR m.id < 4 RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_or_where_property(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", expression="m.name")
+        .or_where(item="m.name", operator="=", expression="n.last_name")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name OR m.name = n.last_name RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_or_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n", operator=":", expression="Node")
+        .or_where(item="m", operator=":", expression="User")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node OR m:User RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_or_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="n.name", operator="=", literal="my_name")
+            .or_where(item="m.name", operator="=")
+            .return_()
+        )
+
+
+def test_or_where_extra_values(memgraph):
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="m.name", operator="=", literal="best_name")
+            .or_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .return_()
+        )
+
+
+def test_and_where_literal(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", literal="best_name")
+        .and_where(item="m.id", operator="<", literal=4)
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND m.id < 4 RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_and_where_property(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", expression="m.name")
+        .and_where(item="m.name", operator="=", expression="n.last_name")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name AND m.name = n.last_name RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_and_or_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n", operator=":", expression="Node")
+        .and_where(item="m", operator=":", expression="User")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node AND m:User RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_and_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="n.name", operator="=", literal="my_name")
+            .and_where(item="m.name", operator="=")
+            .return_()
+        )
+
+
+def test_and_where_extra_values(memgraph):
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="m.name", operator="=", literal="best_name")
+            .and_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .return_()
+        )
+
+
+def test_xor_where_literal(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", literal="best_name")
+        .xor_where(item="m.id", operator="<", literal=4)
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' XOR m.id < 4 RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_xor_where_property(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator="=", expression="m.name")
+        .xor_where(item="m.name", operator="=", expression="n.last_name")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name XOR m.name = n.last_name RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_xor_or_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n", operator=":", expression="Node")
+        .xor_where(item="m", operator=":", expression="User")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node XOR m:User RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_xor_where_literal_and_expression_missing(memgraph):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="n.name", operator="=", literal="my_name")
+            .xor_where(item="m.name", operator="=")
+            .return_()
+        )
+
+
+def test_xor_and_where_extra_values(memgraph):
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+        (
+            QueryBuilder()
+            .match()
+            .node("L1", variable="n")
+            .to("TO")
+            .node("L2", variable="m")
+            .where(item="m.name", operator="=", literal="best_name")
+            .xor_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .return_()
+        )
+
+
 def test_get_single(memgraph):
     query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"n": ""})
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN n "
@@ -518,7 +857,61 @@ def test_add_string_complete(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_node_object(memgraph):
+def test_node_instance(memgraph):
+    class User(Node):
+        name: Optional[str] = Field(index=True, unique=True, db=memgraph)
+
+    user = User(name="Ron").save(memgraph)
+    query_builder = QueryBuilder().match().node(node=user, variable="u").return_()
+    expected_query = " MATCH (u:User {name: 'Ron'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_unsaved_node_instance(memgraph):
+    class User(Node):
+        name: Optional[str] = Field(index=True, unique=True, db=memgraph)
+
+    user = User(name="Ron")
+    query_builder = QueryBuilder().match().node(node=user, variable="u").return_()
+    expected_query = " MATCH (u:User {name: 'Ron'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_node_relationship_instances(memgraph):
+    class User(Node):
+        name: Optional[str] = Field(index=True, unique=True, db=memgraph)
+
+    class Follows_test(Relationship, type="FOLLOWS"):
+        pass
+
+    user_1 = User(name="Ron").save(memgraph)
+    user_2 = User(name="Leslie").save(memgraph)
+    follows = Follows_test(_start_node_id=user_1._id, _end_node_id=user_2._id).save(memgraph)
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(node=user_1, variable="user_1")
+        .to(relationship=follows)
+        .node(node=user_2, variable="user_2")
+        .return_()
+    )
+    expected_query = " MATCH (user_1:User {name: 'Ron'})-[:FOLLOWS]->(user_2:User {name: 'Leslie'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_unsaved_node_relationship_instances(memgraph):
     class User(Node):
         name: Optional[str] = Field(index=True, unique=True, db=memgraph)
 

@@ -330,6 +330,11 @@ class Memgraph:
         result = self._save_node_properties_on_disk(node, result)
         return result
 
+    def save_nodes(self, nodes: List[Node]) -> None:
+        """Saves a list of nodes to Memgraph."""
+        for i in range(len(nodes)):
+            nodes[i]._id = self.save_node(nodes[i])._id
+
     def _save_node_properties_on_disk(self, node: Node, result: Node) -> Node:
         """Saves all on_disk properties to the on disk database attached to
         Memgraph.
@@ -491,6 +496,11 @@ class Memgraph:
 
         result = self._save_relationship_properties_on_disk(relationship, result)
         return result
+
+    def save_relationships(self, relationships: List[Relationship]) -> None:
+        """Saves a list of relationships to Memgraph."""
+        for i in range(len(relationships)):
+            relationships[i]._id = self.save_relationship(relationships[i])._id
 
     def _save_relationship_properties_on_disk(self, relationship: Relationship, result: Relationship) -> Relationship:
         """Saves on_disk relationship propeties on the OnDiskPropertyDatabase
