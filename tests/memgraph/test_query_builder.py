@@ -28,7 +28,7 @@ from gqlalchemy import (
 from gqlalchemy.memgraph import Memgraph
 from typing import Optional
 from unittest.mock import patch
-from gqlalchemy.exceptions import GQLAlchemyMissingOrdering
+from gqlalchemy.exceptions import GQLAlchemyMissingOrdering, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builder import Order
 
 
@@ -411,7 +411,7 @@ def test_remove_property_and_label(memgraph):
 
 
 def test_order_by(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by("n.id")
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(properties="n.id")
     expected_query = " MATCH (n) RETURN * ORDER BY n.id "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -421,7 +421,7 @@ def test_order_by(memgraph):
 
 
 def test_order_by_desc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", Order.DESC))
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(properties=("n.id", Order.DESC))
     expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -431,7 +431,7 @@ def test_order_by_desc(memgraph):
 
 
 def test_order_by_asc(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(("n.id", Order.ASC))
+    query_builder = QueryBuilder().match().node(variable="n").return_().order_by(properties=("n.id", Order.ASC))
     expected_query = " MATCH (n) RETURN * ORDER BY n.id ASC "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -440,9 +440,14 @@ def test_order_by_asc(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_order_by_wrong_parameter(memgraph):
+def test_order_by_wrong_ordering(memgraph):
     with pytest.raises(GQLAlchemyMissingOrdering):
-        QueryBuilder().match().node(variable="n").return_().order_by(("n.id", "DESCE")).execute()
+        QueryBuilder().match().node(variable="n").return_().order_by(properties=("n.id", "DESCE")).execute()
+
+
+def test_order_by_wrong_type(memgraph):
+    with pytest.raises(GQLAlchemyOrderByTypeError):
+        QueryBuilder().match().node(variable="n").return_().order_by(properties=1).execute()
 
 
 def test_order_by_properties(memgraph):
@@ -451,7 +456,7 @@ def test_order_by_properties(memgraph):
         .match()
         .node(variable="n")
         .return_()
-        .order_by([("n.id", Order.DESC), "n.name", ("n.last_name", Order.DESC)])
+        .order_by(properties=[("n.id", Order.DESC), "n.name", ("n.last_name", Order.DESC)])
     )
     expected_query = " MATCH (n) RETURN * ORDER BY n.id DESC, n.name, n.last_name DESC "
 
@@ -468,7 +473,7 @@ def test_order_by_asc_desc(memgraph):
         .node(variable="n")
         .return_()
         .order_by(
-            [
+            properties=[
                 ("n.id", Order.ASC),
                 "n.name",
                 ("n.last_name", Order.DESC),

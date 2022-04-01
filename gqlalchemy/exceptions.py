@@ -38,6 +38,10 @@ MISSING_ORDERING = """
 The second argument of the Tuple must be ordering: ASC, ASCENDING, DESC or DESCENDING.
 """
 
+ORDER_BY_TYPE_ERROR = """
+TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[tuple[str, str]].
+"""
+
 
 class GQLAlchemyWarning(Warning):
     pass
@@ -76,3 +80,9 @@ class GQLAlchemyMissingOrdering(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = MISSING_ORDERING
+
+
+class GQLAlchemyOrderByTypeError(TypeError):
+    def __init__(self):
+        super().__init__()
+        self.message = ORDER_BY_TYPE_ERROR

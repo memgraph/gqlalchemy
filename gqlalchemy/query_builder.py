@@ -20,7 +20,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
-from .exceptions import GQLAlchemyMissingOrdering
+from .exceptions import GQLAlchemyMissingOrdering, GQLAlchemyOrderByTypeError
 
 
 class DeclarativeBaseTypes:
@@ -351,7 +351,7 @@ class OrderByPartialQuery(PartialQuery):
         elif isinstance(item, tuple):
             return f"{self._read_tuple(item)}"
         else:
-            raise GQLAlchemyMissingOrdering  # @TODO: raise TypeError with adequate message
+            raise GQLAlchemyOrderByTypeError
 
     def _read_list(self, property: List[Union[str, Tuple[str, Order]]]):
         return ", ".join(self._read_item(item=item) for item in property)
