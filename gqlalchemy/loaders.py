@@ -63,7 +63,7 @@ class OneToManyMapping:
     """
     Class that holds the full description of a single one to many mapping in a table.
 
-    :param mapping: Foreign key used for mapping
+    :param foreign_key: Foreign key used for mapping
     :param label: Label which will be applied to the relationship created from this object
     :param from_entity: Direction of the relationship created from mapping object
     :param parameters: Parameters that will be added to the relationship created from this object (Optional)
@@ -81,8 +81,8 @@ class ManyToManyMapping:
     Class that holds the full description of a single many to many mapping in a table.
     Many to many mapping is intended to be used in case of associative tables
 
-    :param mapping_from: Describes the source of the relationship
-    :param mapping_to: Describes the destination of the relationship
+    :param foreign_key_from: Describes the source of the relationship
+    :param foreign_key_to: Describes the destination of the relationship
     :param label: Label to be applied to the newly created relationship
     :param parameters: Parameters that will be added to the relationship created from this object (Optional)
     """
@@ -198,7 +198,7 @@ class S3DataSource(DataSource):
         print("Loading data from " + ("cross " if is_cross_table else "") + f"table {source}...")
 
         # Load dataset via Pyarrow
-        dataset = ds.dataset(source=source, filesystem=s3)
+        dataset = ds.dataset(source=source, filesystem=s3, format=self._file_extension)
 
         # Load batches from raw data
         for batch in dataset.to_batches(
