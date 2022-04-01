@@ -15,17 +15,17 @@
 from string import Template
 
 from . import Memgraph
-from .query_builder import QueryBuilder, Unwind
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from dacite import from_dict
-from gqlalchemy.models import (
+from .models import (
     MemgraphIndex,
     MemgraphTrigger,
     TriggerEventObject,
     TriggerEventType,
     TriggerExecutionPhase,
 )
+from .query_builder import QueryBuilder, Unwind
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from dacite import from_dict
 from pyarrow import fs
 from typing import List, Dict, Any, Optional, Union
 import pyarrow.dataset as ds
