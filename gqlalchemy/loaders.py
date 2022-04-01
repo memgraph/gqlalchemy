@@ -306,7 +306,7 @@ class TableToGraphImporter:
 
         self.__load_configuration(data_configuration=data_configuration)
 
-    def translate(self, drop_database_on_start: bool) -> None:
+    def translate(self, drop_database_on_start: bool = True) -> None:
         """
         Performs the translations
 
