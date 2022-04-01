@@ -206,7 +206,17 @@ class DeclarativeBase(ABC)
 def match(optional: bool = False) -> "DeclarativeBase"
 ```
 
-Creates a MATCH statement Cypher partial query.
+Obtain data from the database by matching it to a given pattern.
+
+**Arguments**:
+
+- `optional` - A bool indicating if missing parts of the pattern will be
+  filled with null values.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### merge
 
@@ -214,7 +224,13 @@ Creates a MATCH statement Cypher partial query.
 def merge() -> "DeclarativeBase"
 ```
 
-Creates a MERGE statement Cypher partial query.
+Ensure that a pattern you are looking for exists in the database.
+This means that if the pattern is not found, it will be created. In a
+way, this clause is like a combination of MATCH and CREATE.
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### create
 
@@ -222,7 +238,11 @@ Creates a MERGE statement Cypher partial query.
 def create() -> "DeclarativeBase"
 ```
 
-Creates a CREATE statement Cypher partial query.
+Create nodes and relationships in a graph.
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### call
 
@@ -230,7 +250,19 @@ Creates a CREATE statement Cypher partial query.
 def call(procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase"
 ```
 
-Creates a CALL statement Cypher partial query.
+Call a query module procedure.
+
+**Arguments**:
+
+- `procedure` - A string representing the name of the procedure in the
+  format `query_module.procedure`.
+- `arguments` - A string representing the arguments of the procedure in
+  text format.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### node
 
@@ -238,7 +270,21 @@ Creates a CALL statement Cypher partial query.
 def node(labels: Union[str, List[str], None] = "", variable: Optional[str] = None, node: Optional["Node"] = None, **kwargs, ,) -> "DeclarativeBase"
 ```
 
-Creates a node Cypher partial query.
+Add a node pattern to the query.
+
+**Arguments**:
+
+- `labels` - A string or list of strings representing the labels of the
+  node.
+- `variable` - A string representing the name of the variable for storing
+  results of the node pattern.
+- `node` - A `Node` object to construct the pattern from.
+- `**kwargs` - Arguments representing the properties of the node.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### to
 
@@ -246,7 +292,21 @@ Creates a node Cypher partial query.
 def to(edge_label: Optional[str] = "", directed: Optional[bool] = True, variable: Optional[str] = None, relationship: Optional["Relationship"] = None, **kwargs, ,) -> "DeclarativeBase"
 ```
 
-Creates a relationship Cypher partial query with a &#x27;-&gt;&#x27; sign.
+Add a relationship pattern to the query.
+
+**Arguments**:
+
+- `edge_label` - A string representing the type of the relationship.
+- `directed` - A bool indicating if the relationship is directed.
+- `variable` - A string representing the name of the variable for storing
+  results of the relationship pattern.
+- `relationship` - A `Relationship` object to construct the pattern from.
+- `**kwargs` - Arguments representing the properties of the relationship.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### from\_
 
@@ -254,12 +314,26 @@ Creates a relationship Cypher partial query with a &#x27;-&gt;&#x27; sign.
 def from_(edge_label: Optional[str] = "", directed: Optional[bool] = True, variable: Optional[str] = None, relationship: Optional["Relationship"] = None, **kwargs, ,) -> "Match"
 ```
 
-Creates a relationship Cypher partial query with a &#x27;&lt;-&#x27; sign.
+Add a relationship pattern to the query.
+
+**Arguments**:
+
+- `edge_label` - A string representing the type of the relationship.
+- `directed` - A bool indicating if the relationship is directed.
+- `variable` - A string representing the name of the variable for storing
+  results of the relationship pattern.
+- `relationship` - A `Relationship` object to construct the pattern from.
+- `**kwargs` - Arguments representing the properties of the relationship.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### where
 
 ```python
-def where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+def where(item: str, operator: str, value: Any) -> "DeclarativeBase"
 ```
 
 Creates a WHERE statement Cypher partial query.
@@ -267,7 +341,7 @@ Creates a WHERE statement Cypher partial query.
 #### and\_where
 
 ```python
-def and_where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+def and_where(item: str, operator: str, value: Any) -> "DeclarativeBase"
 ```
 
 Creates a AND (expression) statement Cypher partial query.
@@ -275,10 +349,18 @@ Creates a AND (expression) statement Cypher partial query.
 #### or\_where
 
 ```python
-def or_where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+def or_where(item: str, operator: str, value: Any) -> "DeclarativeBase"
 ```
 
 Creates a OR (expression) statement Cypher partial query.
+
+#### xor\_where
+
+```python
+def xor_where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+```
+
+Creates a XOR (expression) statement Cypher partial query.
 
 #### unwind
 
@@ -286,7 +368,17 @@ Creates a OR (expression) statement Cypher partial query.
 def unwind(list_expression: str, variable: str) -> "DeclarativeBase"
 ```
 
-Creates a UNWIND statement Cypher partial query.
+Unwind a list of values as individual rows.
+
+**Arguments**:
+
+- `list_expression` - A list of strings representing the list of values.
+- `variable` - A string representing the variable name for unwinding results.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### with\_
 
@@ -294,7 +386,18 @@ Creates a UNWIND statement Cypher partial query.
 def with_(results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase"
 ```
 
-Creates a WITH statement Cypher partial query.
+Chain together parts of a query, piping the results from one to be
+used as starting points or criteria in the next.
+
+**Arguments**:
+
+- `results` - A dictionary mapping variables in the first query with
+  aliases in the second query.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### union
 
@@ -302,7 +405,17 @@ Creates a WITH statement Cypher partial query.
 def union(include_duplicates: Optional[bool] = True) -> "DeclarativeBase"
 ```
 
-Creates a UNION statement Cypher partial query.
+Combine the result of multiple queries.
+
+**Arguments**:
+
+- `include_duplicates` - A bool indicating if duplicates should be
+  included.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### delete
 
@@ -310,7 +423,19 @@ Creates a UNION statement Cypher partial query.
 def delete(variable_expressions: List[str], detach: Optional[bool] = False) -> "DeclarativeBase"
 ```
 
-Creates a DELETE statement Cypher partial query.
+Delete nodes and relationships from the database.
+
+**Arguments**:
+
+- `variable_expressions` - A list of strings indicating which nodes
+  and/or relationships should be removed.
+- `detach` - A bool indicating if relationships should be deleted along
+  with a node.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### remove
 
@@ -318,7 +443,17 @@ Creates a DELETE statement Cypher partial query.
 def remove(items: List[str]) -> "DeclarativeBase"
 ```
 
-Creates a REMOVE statement Cypher partial query.
+Remove labels and properties from nodes and relationships.
+
+**Arguments**:
+
+- `items` - A list of strings indicating which labels and/or properties
+  should be removed.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### yield\_
 
@@ -326,7 +461,17 @@ Creates a REMOVE statement Cypher partial query.
 def yield_(results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase"
 ```
 
-Creates a YIELD statement Cypher partial query.
+Yield data from the query.
+
+**Arguments**:
+
+- `results` - A dictionary mapping items that are returned with alias
+  names.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### return\_
 
@@ -334,7 +479,17 @@ Creates a YIELD statement Cypher partial query.
 def return_(results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase"
 ```
 
-Creates a RETURN statement Cypher partial query.
+Return data from the query.
+
+**Arguments**:
+
+- `results` - A dictionary mapping items that are returned with alias
+  names.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### order\_by
 
@@ -342,7 +497,16 @@ Creates a RETURN statement Cypher partial query.
 def order_by(properties: str) -> "DeclarativeBase"
 ```
 
-Creates a ORDER BY statement Cypher partial query.
+Order the results of the query.
+
+**Arguments**:
+
+- `properties` - A string representing how to order the results.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### limit
 
@@ -350,7 +514,17 @@ Creates a ORDER BY statement Cypher partial query.
 def limit(integer_expression: str) -> "DeclarativeBase"
 ```
 
-Creates a LIMIT statement Cypher partial query.
+Limit the number of records when returning results.
+
+**Arguments**:
+
+- `integer_expression` - An integer indicating how many records to limit
+  the results to.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### skip
 
@@ -358,7 +532,55 @@ Creates a LIMIT statement Cypher partial query.
 def skip(integer_expression: str) -> "DeclarativeBase"
 ```
 
-Creates a SKIP statement Cypher partial query.
+Skip a number of records when returning results.
+
+**Arguments**:
+
+- `integer_expression` - An integer indicating how many records to skip
+  in the results.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
+
+#### add\_custom\_cypher
+
+```python
+def add_custom_cypher(custom_cypher: str) -> "DeclarativeBase"
+```
+
+Inject custom Cypher code into the query.
+
+**Arguments**:
+
+- `custom_cypher` - A string representing the Cypher code to be injected
+  into the query.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
+
+#### load\_csv
+
+```python
+def load_csv(path: str, header: bool, row: str) -> "DeclarativeBase"
+```
+
+Load data from a CSV file by executing a Cypher query for each row.
+
+**Arguments**:
+
+- `path` - A string representing the path to the CSV file.
+- `header` - A bool indicating if the CSV file starts with a header row.
+- `row` - A string representing the name of the variable for iterating
+  over each row.
+  
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
 
 #### get\_single
 
@@ -368,11 +590,24 @@ def get_single(retrieve: str) -> Any
 
 Returns a single result with a `retrieve` variable name.
 
+**Arguments**:
+
+- `retrieve` - A string representing the results variable to be returned.
+  
+
+**Returns**:
+
+  An iterator of dictionaries containing the results of the query.
+
 #### execute
 
 ```python
 def execute() -> Iterator[Dict[str, Any]]
 ```
 
-Executes the Cypher query.
+Executes the Cypher query and returns the results.
+
+**Returns**:
+
+  An iterator of dictionaries containing the results of the query.
 

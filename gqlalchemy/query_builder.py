@@ -375,25 +375,53 @@ class DeclarativeBase(ABC):
         self._fetch_results: bool = False
 
     def match(self, optional: bool = False) -> "DeclarativeBase":
-        """Creates a MATCH statement Cypher partial query."""
+        """Obtain data from the database by matching it to a given pattern.
+        
+        Args:
+            optional: A bool indicating if missing parts of the pattern will be
+            filled with null values.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(MatchPartialQuery(optional))
 
         return self
 
     def merge(self) -> "DeclarativeBase":
-        """Creates a MERGE statement Cypher partial query."""
+        """Ensure that a pattern you are looking for exists in the database.
+        This means that if the pattern is not found, it will be created. In a
+        way, this clause is like a combination of MATCH and CREATE.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(MergePartialQuery())
 
         return self
 
     def create(self) -> "DeclarativeBase":
-        """Creates a CREATE statement Cypher partial query."""
+        """Create nodes and relationships in a graph.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(CreatePartialQuery())
 
         return self
 
     def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
-        """Creates a CALL statement Cypher partial query."""
+        """Call a query module procedure.
+        
+        Args:
+            procedure: A string representing the name of the procedure in the
+              format `query_module.procedure`.
+            arguments: A string representing the arguments of the procedure in
+              text format.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(CallPartialQuery(procedure, arguments))
 
         return self
@@ -405,7 +433,19 @@ class DeclarativeBase(ABC):
         node: Optional["Node"] = None,
         **kwargs,
     ) -> "DeclarativeBase":
-        """Creates a node Cypher partial query."""
+        """Add a node pattern to the query.
+        
+        Args:
+            labels: A string or list of strings representing the labels of the
+              node.
+            variable: A string representing the name of the variable for storing
+              results of the node pattern.
+            node: A `Node` object to construct the pattern from.
+            **kwargs: Arguments representing the properties of the node.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.NODE):
             raise InvalidMatchChainException()
 
@@ -428,7 +468,19 @@ class DeclarativeBase(ABC):
         relationship: Optional["Relationship"] = None,
         **kwargs,
     ) -> "DeclarativeBase":
-        """Creates a relationship Cypher partial query with a '->' sign."""
+        """Add a relationship pattern to the query.
+        
+        Args:
+            edge_label: A string representing the type of the relationship.
+            directed: A bool indicating if the relationship is directed.
+            variable: A string representing the name of the variable for storing
+              results of the relationship pattern.
+            relationship: A `Relationship` object to construct the pattern from.
+            **kwargs: Arguments representing the properties of the relationship.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
             raise InvalidMatchChainException()
 
@@ -451,7 +503,19 @@ class DeclarativeBase(ABC):
         relationship: Optional["Relationship"] = None,
         **kwargs,
     ) -> "Match":
-        """Creates a relationship Cypher partial query with a '<-' sign."""
+        """Add a relationship pattern to the query.
+        
+        Args:
+            edge_label: A string representing the type of the relationship.
+            directed: A bool indicating if the relationship is directed.
+            variable: A string representing the name of the variable for storing
+              results of the relationship pattern.
+            relationship: A `Relationship` object to construct the pattern from.
+            **kwargs: Arguments representing the properties of the relationship.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
             raise InvalidMatchChainException()
 
@@ -511,80 +575,189 @@ class DeclarativeBase(ABC):
         return self
 
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
-        """Creates a UNWIND statement Cypher partial query."""
+        """Unwind a list of values as individual rows.
+        
+        Args:
+            list_expression: A list of strings representing the list of values.
+            variable: A string representing the variable name for unwinding results.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(UnwindPartialQuery(list_expression, variable))
 
         return self
 
     def with_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
-        """Creates a WITH statement Cypher partial query."""
+        """Chain together parts of a query, piping the results from one to be
+        used as starting points or criteria in the next.
+        
+        Args:
+            results: A dictionary mapping variables in the first query with
+            aliases in the second query.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(WithPartialQuery(results))
 
         return self
 
     def union(self, include_duplicates: Optional[bool] = True) -> "DeclarativeBase":
-        """Creates a UNION statement Cypher partial query."""
+        """Combine the result of multiple queries.
+        
+        Args:
+            include_duplicates: A bool indicating if duplicates should be
+              included.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(UnionPartialQuery(include_duplicates))
 
         return self
 
     def delete(self, variable_expressions: List[str], detach: Optional[bool] = False) -> "DeclarativeBase":
-        """Creates a DELETE statement Cypher partial query."""
+        """Delete nodes and relationships from the database.
+        
+        Args:
+            variable_expressions: A list of strings indicating which nodes
+              and/or relationships should be removed.
+            detach: A bool indicating if relationships should be deleted along
+              with a node.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(DeletePartialQuery(variable_expressions, detach))
 
         return self
 
     def remove(self, items: List[str]) -> "DeclarativeBase":
-        """Creates a REMOVE statement Cypher partial query."""
+        """Remove labels and properties from nodes and relationships.
+        
+        Args:
+            items: A list of strings indicating which labels and/or properties
+              should be removed.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(RemovePartialQuery(items))
 
         return self
 
     def yield_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
-        """Creates a YIELD statement Cypher partial query."""
+        """Yield data from the query.
+        
+        Args:
+            results: A dictionary mapping items that are returned with alias
+              names.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(YieldPartialQuery(results))
 
         return self
 
     def return_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
-        """Creates a RETURN statement Cypher partial query."""
+        """Return data from the query.
+        
+        Args:
+            results: A dictionary mapping items that are returned with alias
+              names.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(ReturnPartialQuery(results))
         self._fetch_results = True
 
         return self
 
     def order_by(self, properties: str) -> "DeclarativeBase":
-        """Creates a ORDER BY statement Cypher partial query."""
+        """Order the results of the query.
+
+        Args:
+            properties: A string representing how to order the results.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(OrderByPartialQuery(properties))
 
         return self
 
     def limit(self, integer_expression: str) -> "DeclarativeBase":
-        """Creates a LIMIT statement Cypher partial query."""
+        """Limit the number of records when returning results.
+
+        Args:
+            integer_expression: An integer indicating how many records to limit
+              the results to.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(LimitPartialQuery(integer_expression))
 
         return self
 
     def skip(self, integer_expression: str) -> "DeclarativeBase":
-        """Creates a SKIP statement Cypher partial query."""
+        """Skip a number of records when returning results.
+        
+        Args:
+            integer_expression: An integer indicating how many records to skip
+              in the results.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(SkipPartialQuery(integer_expression))
 
         return self
 
     def add_custom_cypher(self, custom_cypher: str) -> "DeclarativeBase":
+        """Inject custom Cypher code into the query.
+        
+        Args:
+            custom_cypher: A string representing the Cypher code to be injected
+              into the query.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(AddStringPartialQuery(custom_cypher))
         if " RETURN " in custom_cypher:
             self._fetch_results = True
 
         return self
 
-    def load_csv(self, path: str, header: bool, row: str):
+    def load_csv(self, path: str, header: bool, row: str) -> "DeclarativeBase":
+        """Load data from a CSV file by executing a Cypher query for each row.
+        
+        Args:
+            path: A string representing the path to the CSV file.
+            header: A bool indicating if the CSV file starts with a header row. 
+            row: A string representing the name of the variable for iterating
+              over each row.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
         self._query.append(LoadCsvPartialQuery(path, header, row))
 
         return self
 
     def get_single(self, retrieve: str) -> Any:
-        """Returns a single result with a `retrieve` variable name."""
+        """Returns a single result with a `retrieve` variable name.
+        
+        Args:
+            retrieve: A string representing the results variable to be returned.
+
+        Returns:
+            An iterator of dictionaries containing the results of the query.
+        """
         query = self._construct_query()
 
         result = next(self._connection.execute_and_fetch(query), None)
@@ -594,7 +767,11 @@ class DeclarativeBase(ABC):
         return result
 
     def execute(self) -> Iterator[Dict[str, Any]]:
-        """Executes the Cypher query."""
+        """Executes the Cypher query and returns the results.
+
+        Returns:
+            An iterator of dictionaries containing the results of the query.
+        """
         query = self._construct_query()
         if self._fetch_results:
             return self._connection.execute_and_fetch(query)
