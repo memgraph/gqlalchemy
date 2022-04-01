@@ -242,8 +242,8 @@ class MemgraphInstanceDocker(MemgraphInstance):
 
         self.stop()
         self._container = self._client.containers.run(
-            image=self.docker_image.value + ":" + self.docker_image_tag,
-            command=MEMGRAPH_DEFAULT_BINARY_PATH + " " + (" ").join([f"{k}={v}" for k, v in self.config.items()]),
+            image=f"{self.docker_image.value}:{self.docker_image_tag}",
+            command=f"{MEMGRAPH_DEFAULT_BINARY_PATH} {(' ').join([f'{k}={v}' for k, v in self.config.items()])}",
             detach=True,
             ports={f"{self.port}/tcp": self.port},
         )
