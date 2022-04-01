@@ -23,7 +23,7 @@ from .models import Node, Relationship
 from .exceptions import (
     GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyExtraKeywordArgumentsInWhere,
-    GQLAlchemyMissingOrdering,
+    GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
 )
 
@@ -340,37 +340,15 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]):
+    def __init__(self, query: str):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
-        self.properties = properties
+        self.query = query
 
     def construct_query(self) -> str:
         """Creates a ORDER BY statement Cypher partial query."""
 
-        return f""" {self.type} {(self._read_list(self.properties))
-                                if isinstance(self.properties, list)
-                                else self._read_item(self.properties)} """
-
-    def _read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
-        if isinstance(item, str):
-            return f"{self._read_str(item)}"
-        elif isinstance(item, tuple):
-            return f"{self._read_tuple(item)}"
-        else:
-            raise GQLAlchemyOrderByTypeError
-
-    def _read_list(self, property: List[Union[str, Tuple[str, Order]]]):
-        return ", ".join(self._read_item(item=item) for item in property)
-
-    def _read_str(self, property: str) -> str:
-        return f"{property}"
-
-    def _read_tuple(self, tuple: Tuple[str, Order]) -> str:
-        if not isinstance(tuple[1], Order):
-            raise GQLAlchemyMissingOrdering
-
-        return f"{tuple[0]} {tuple[1].name}"
+        return f""" {self.type} {self.query} """
 
 
 class LimitPartialQuery(PartialQuery):
@@ -503,7 +481,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def _build_where_query(self, statement: str, item: str, operator: str, **kwargs):
+    def _build_where_query(self, statement: str, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Builds parts of a WHERE Cypher query divided by the boolean operators."""
         literal = kwargs.get("literal")
         value = kwargs.get("expression")
@@ -642,11 +620,49 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def _order_by_read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
+        if isinstance(item, str):
+            return f"{self._order_by_read_str(item)}"
+        elif isinstance(item, tuple):
+            return f"{self._order_by_read_tuple(item)}"
+        else:
+            raise GQLAlchemyOrderByTypeError
+
+    def _order_by_read_list(self, property: List[Union[str, Tuple[str, Order]]]):
+        return ", ".join(self._order_by_read_item(item=item) for item in property)
+
+    def _order_by_read_str(self, property: str) -> str:
+        return f"{property}"
+
+    def _order_by_read_tuple(self, tuple: Tuple[str, Order]) -> str:
+        if not isinstance(tuple[1], Order):
+            raise GQLAlchemyMissingOrder
+
+        return f"{tuple[0]} {tuple[1].name}"
+
     def order_by(
         self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]
     ) -> "DeclarativeBase":
-        """Creates a ORDER BY statement Cypher partial query."""
-        self._query.append(OrderByPartialQuery(properties))
+        """Creates an ORDER BY statement Cypher partial query.
+
+        Args:
+            properties: Properties and order by which the query results will be ordered.
+
+        Raises:
+            GQLAlchemyOrderByTypeError: Raises an error when the given ordering is of the wrong type.
+            GQLAlchemyMissingOrdering: Raises an error when the given property is neither string nor tuple.
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+        """
+
+        self._query.append(
+            OrderByPartialQuery(
+                (self._order_by_read_list(properties))
+                if isinstance(properties, list)
+                else self._order_by_read_item(properties)
+            )
+        )
 
         return self
 

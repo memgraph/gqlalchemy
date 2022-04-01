@@ -32,7 +32,7 @@ from gqlalchemy import (
 from gqlalchemy.memgraph import Memgraph
 from typing import Optional
 from unittest.mock import patch
-from gqlalchemy.exceptions import GQLAlchemyMissingOrdering, GQLAlchemyOrderByTypeError
+from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builder import Order
 
 
@@ -780,13 +780,13 @@ def test_order_by_asc(memgraph):
 
 
 def test_order_by_wrong_ordering(memgraph):
-    with pytest.raises(GQLAlchemyMissingOrdering):
-        QueryBuilder().match().node(variable="n").return_().order_by(properties=("n.id", "DESCE")).execute()
+    with pytest.raises(GQLAlchemyMissingOrder):
+        QueryBuilder().match().node(variable="n").return_().order_by(properties=("n.id", "DESCE"))
 
 
 def test_order_by_wrong_type(memgraph):
     with pytest.raises(GQLAlchemyOrderByTypeError):
-        QueryBuilder().match().node(variable="n").return_().order_by(properties=1).execute()
+        QueryBuilder().match().node(variable="n").return_().order_by(properties=1)
 
 
 def test_order_by_properties(memgraph):
