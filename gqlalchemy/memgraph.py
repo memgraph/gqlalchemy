@@ -114,7 +114,8 @@ class Memgraph:
         for missing_index in new_indexes.difference(old_indexes):
             self.create_index(missing_index)
 
-    def drop_all_indexes(self) -> None:
+    def drop_indexes(self) -> None:
+        """Drops all indexes in the database"""
         self.ensure_indexes(indexes=[])
 
     def create_constraint(self, index: MemgraphConstraint) -> None:

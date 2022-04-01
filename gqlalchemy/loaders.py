@@ -173,10 +173,12 @@ class S3DataSource(DataSource):
         """
         super().__init__(file_extension=file_extension)
         self._bucket_name = bucket_name
-        self._s3_access_key = s3_access_key
-        self._s3_secret_key = s3_secret_key
-        self._s3_region = s3_region
-        self._s3_session_token = s3_session_token
+        self._s3_config = {
+            "access_key": s3_access_key,
+            "secret_key": s3_secret_key,
+            "region": s3_region,
+            "session_token": s3_session_token,
+        }
 
     def load_data(
         self,
@@ -191,14 +193,9 @@ class S3DataSource(DataSource):
         :param is_cross_table: Indicate whether or not the collection contains associative table (default=False)
         :param columns: List of columns to be read from the collection (Optional)
         """
-        s3 = fs.S3FileSystem(
-            region=self._s3_region,
-            access_key=self._s3_access_key,
-            secret_key=self._s3_secret_key,
-            session_token=self._s3_session_token,
-        )
+        s3 = fs.S3FileSystem(**self._s3_config)
         source = f"{self._bucket_name}/{collection_name}.{self._file_extension}"
-        print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
+        print("Loading data from " + ("cross " if is_cross_table else "") + f"table {source}...")
 
         # Load dataset via Pyarrow
         dataset = ds.dataset(source=source, filesystem=s3)
@@ -207,8 +204,10 @@ class S3DataSource(DataSource):
         for batch in dataset.to_batches(
             columns=columns,
         ):
-            for batch in batch.to_pylist():
-                yield batch
+            for batch_item in batch.to_pylist():
+                yield batch_item
+
+        print("Data loaded.")
 
 
 class NameMapper:
@@ -257,8 +256,8 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(item="$node_a:$label_2", operator="MATCH", value="($node_b:$label_1)")
-        .where(item="$node_b.$property_1", operator="=", value="$node_a.$property_2")
+        .where(item="$node_a:$label_2", operator="MATCH", expression="($node_b:$label_1)")
+        .where(item="$node_b.$property_1", operator="=", expression="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
         .to(edge_label="$edge_type")
@@ -315,8 +314,8 @@ class TableToGraphImporter:
         """
         if drop_database_on_start:
             self._memgraph.drop_database()
-            self._memgraph.drop_all_indexes()
-            self._memgraph.drop_all_triggers()
+            self._memgraph.drop_indexes()
+            self._memgraph.drop_triggers()
 
         self._create_indexes()
         self._create_triggers()
@@ -414,9 +413,10 @@ class TableToGraphImporter:
                 label1, label2, property1, property2, edge_type, from_entity
             ),
         )
-        print(f"Created trigger {trigger_name}")
 
         self._memgraph.create_trigger(trigger)
+
+        print(f"Created trigger {trigger_name}")
 
     def _create_indexes(self) -> None:
         """
@@ -442,7 +442,7 @@ class TableToGraphImporter:
         :param label: Original label of the new node
         :param row: Row that should be saved to Memgraph as Node
         """
-        list(
+        (
             QueryBuilder(connection=self._memgraph)
             .create()
             .node(
@@ -473,7 +473,7 @@ class TableToGraphImporter:
         :param relation_label: Label for the relationship
         :param row: row to be translated
         """
-        list(
+        (
             QueryBuilder(connection=self._memgraph)
             .match()
             .node(
@@ -499,7 +499,6 @@ class TableToGraphImporter:
             .node(variable=NODE_A)
             .to(relation_label)
             .node(variable=NODE_B)
-            .return_({"1": "1"})
             .execute()
         )
 
