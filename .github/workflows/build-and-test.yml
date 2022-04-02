@@ -1,7 +1,7 @@
 name: Build and Test
 
 env:
-  MG_VERSION: "2.2.1"
+  MG_VERSION: "2.1.1"
   POETRY_VERSION: "1.1.4"
 
 on:
@@ -60,7 +60,7 @@ jobs:
         shell: wsl-bash {0} # root shell
         run: |
           mkdir ~/memgraph
-          curl -L https://download.memgraph.com/memgraph/v2.1.1/ubuntu-20.04/memgraph_2.1.1-1_amd64.deb --output ~/memgraph/memgraph-community.deb
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output ~/memgraph/memgraph-community.deb
           dpkg -i ~/memgraph/memgraph-community.deb
           runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=3600 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false' &
           sleep 1 # Wait for Memgraph a bit.
