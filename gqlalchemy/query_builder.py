@@ -368,15 +368,39 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, query: str):
+    def __init__(self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
-        self.query = query
+        self.query = (
+            self._order_by_read_list(properties)
+            if isinstance(properties, list)
+            else self._order_by_read_item(properties)
+        )
 
     def construct_query(self) -> str:
         """Creates a ORDER BY statement Cypher partial query."""
 
-        return f""" {self.type} {self.query} """
+        return f" {self.type} {self.query} "
+
+    def _order_by_read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
+        if isinstance(item, str):
+            return f"{self._order_by_read_str(item)}"
+        elif isinstance(item, tuple):
+            return f"{self._order_by_read_tuple(item)}"
+        else:
+            raise GQLAlchemyOrderByTypeError
+
+    def _order_by_read_list(self, property: List[Union[str, Tuple[str, Order]]]):
+        return ", ".join(self._order_by_read_item(item=item) for item in property)
+
+    def _order_by_read_str(self, property: str) -> str:
+        return f"{property}"
+
+    def _order_by_read_tuple(self, tuple: Tuple[str, Order]) -> str:
+        if not isinstance(tuple[1], Order):
+            raise GQLAlchemyMissingOrder
+
+        return f"{tuple[0]} {tuple[1].name}"
 
 
 class LimitPartialQuery(PartialQuery):
@@ -413,7 +437,7 @@ class AddStringPartialQuery(PartialQuery):
 
 class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
-        self._query: List[Any] = []
+        self._query: List[PartialQuery] = []
         self._connection = connection if connection is not None else Memgraph()
         self._fetch_results: bool = False
 
@@ -634,26 +658,6 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def _order_by_read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
-        if isinstance(item, str):
-            return f"{self._order_by_read_str(item)}"
-        elif isinstance(item, tuple):
-            return f"{self._order_by_read_tuple(item)}"
-        else:
-            raise GQLAlchemyOrderByTypeError
-
-    def _order_by_read_list(self, property: List[Union[str, Tuple[str, Order]]]):
-        return ", ".join(self._order_by_read_item(item=item) for item in property)
-
-    def _order_by_read_str(self, property: str) -> str:
-        return f"{property}"
-
-    def _order_by_read_tuple(self, tuple: Tuple[str, Order]) -> str:
-        if not isinstance(tuple[1], Order):
-            raise GQLAlchemyMissingOrder
-
-        return f"{tuple[0]} {tuple[1].name}"
-
     def order_by(
         self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]
     ) -> "DeclarativeBase":
@@ -670,13 +674,7 @@ class DeclarativeBase(ABC):
             self: A partial Cypher query built from the given parameters.
         """
 
-        self._query.append(
-            OrderByPartialQuery(
-                (self._order_by_read_list(properties))
-                if isinstance(properties, list)
-                else self._order_by_read_item(properties)
-            )
-        )
+        self._query.append(OrderByPartialQuery(properties=properties))
 
         return self
 
