@@ -146,7 +146,7 @@ class CallPartialQuery(PartialQuery):
 
 
 class WhereConditionPartialQuery(PartialQuery):
-    def __init__(self, item: str, operator: str, keyword: str = "", **kwargs):
+    def __init__(self, item: str, operator: str, keyword: str = None, **kwargs):
         super().__init__(type=DeclarativeBaseTypes.WHERE)
 
         self.keyword = keyword
@@ -154,8 +154,8 @@ class WhereConditionPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a where partial query."""
-        item = self.keyword if self.keyword != "" else self.type
-        return f" {item} {self.query} "
+
+        return f" {self.keyword if self.keyword is not None else self.type} {self.query} "
 
     def _build_where_query(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Builds parts of a WHERE Cypher query divided by the boolean operators."""
