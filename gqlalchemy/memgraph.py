@@ -114,7 +114,8 @@ class Memgraph:
         for missing_index in new_indexes.difference(old_indexes):
             self.create_index(missing_index)
 
-    def drop_all_indexes(self) -> None:
+    def drop_indexes(self) -> None:
+        """Drops all indexes in the database"""
         self.ensure_indexes(indexes=[])
 
     def create_constraint(self, index: MemgraphConstraint) -> None:
@@ -231,10 +232,10 @@ class Memgraph:
         query = f"DROP TRIGGER {trigger.name};"
         self.execute(query)
 
-    def drop_all_triggers(self) -> None:
-        """Drop all triggers"""
+    def drop_triggers(self) -> None:
+        """Drops all triggers in the database"""
         for trigger in self.get_triggers():
-            self.drop_trigger(MemgraphTrigger(trigger["trigger name"], None, None, None, None))
+            self.drop_trigger(trigger)
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
@@ -312,7 +313,7 @@ class Memgraph:
         """
         result = None
         if node._id is not None:
-            result = self._save_node_with_id(node)
+            result = self.save_node_with_id(node)
         elif node.has_unique_fields():
             matching_nodes = list(self._get_nodes_with_unique_fields(node))
             if len(matching_nodes) > 1:
@@ -329,6 +330,11 @@ class Memgraph:
 
         result = self._save_node_properties_on_disk(node, result)
         return result
+
+    def save_nodes(self, nodes: List[Node]) -> None:
+        """Saves a list of nodes to Memgraph."""
+        for i in range(len(nodes)):
+            nodes[i]._id = self.save_node(nodes[i])._id
 
     def _save_node_properties_on_disk(self, node: Node, result: Node) -> Node:
         """Saves all on_disk properties to the on disk database attached to
@@ -491,6 +497,11 @@ class Memgraph:
 
         result = self._save_relationship_properties_on_disk(relationship, result)
         return result
+
+    def save_relationships(self, relationships: List[Relationship]) -> None:
+        """Saves a list of relationships to Memgraph."""
+        for i in range(len(relationships)):
+            relationships[i]._id = self.save_relationship(relationships[i])._id
 
     def _save_relationship_properties_on_disk(self, relationship: Relationship, result: Relationship) -> Relationship:
         """Saves on_disk relationship propeties on the OnDiskPropertyDatabase

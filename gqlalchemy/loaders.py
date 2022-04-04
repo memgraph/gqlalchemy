@@ -15,24 +15,23 @@
 from string import Template
 
 from . import Memgraph
-from .query_builder import QueryBuilder, Unwind
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from dacite import from_dict
-from gqlalchemy.models import (
+from .models import (
     MemgraphIndex,
     MemgraphTrigger,
     TriggerEventObject,
     TriggerEventType,
     TriggerExecutionPhase,
 )
-from pyarrow import fs
 
+from .query_builder import QueryBuilder, Unwind
+from abc import ABC, abstractmethod
+from enum import Enum
+from dataclasses import dataclass, field
+from dacite import from_dict
+from pyarrow import fs
 from typing import List, Dict, Any, Optional, Union
 import pyarrow.dataset as ds
 import adlfs
-
-from enum import Enum
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
@@ -89,13 +88,13 @@ class OneToManyMapping:
         foreign_key: Foreign key used for mapping
         label: Label which will be applied to the relationship created from this object
         from_entity: Direction of the relationship created from mapping object
-        variables: Variables that will be added to the relationship created from this object (Optional)
+        parameters: Parameters that will be added to the relationship created from this object (Optional)
     """
 
     foreign_key: ForeignKeyMapping
     label: str
     from_entity: bool = False
-    variables: Optional[Dict[str, str]] = None
+    parameters: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -107,13 +106,13 @@ class ManyToManyMapping:
         foreign_key_from: Describes the source of the relationship
         foreign_key_to: Describes the destination of the relationship
         label: Label to be applied to the newly created relationship
-        variables: Variables that will be added to the relationship created from this object (Optional)
+        parameters: Parameters that will be added to the relationship created from this object (Optional)
     """
 
     foreign_key_from: ForeignKeyMapping
     foreign_key_to: ForeignKeyMapping
     label: str
-    variables: Optional[Dict[str, str]] = None
+    parameters: Optional[Dict[str, str]] = None
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -420,6 +419,7 @@ def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemH
 class TableToGraphImporter:
     """Implements translation of table data to graph data, and imports it to Memgraph."""
 
+
     _DIRECTION = {
         True: (NODE_A, NODE_B),
         False: (NODE_B, NODE_A),
@@ -428,8 +428,8 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(property="$node_a:$label_2", operator="MATCH", value="($node_b:$label_1)")
-        .where(property="$node_b.$property_1", operator="=", value="$node_a.$property_2")
+        .where(item="$node_a:$label_2", operator="MATCH", expression="($node_b:$label_1)")
+        .where(item="$node_b.$property_1", operator="=", expression="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
         .to(edge_label="$edge_type")
@@ -482,7 +482,7 @@ class TableToGraphImporter:
 
         self.__load_configuration(data_configuration=data_configuration)
 
-    def translate(self, drop_database_on_start: bool) -> None:
+    def translate(self, drop_database_on_start: bool = True) -> None:
         """Performs the translations.
 
         Args:
@@ -490,8 +490,8 @@ class TableToGraphImporter:
         """
         if drop_database_on_start:
             self._memgraph.drop_database()
-            self._memgraph.drop_all_indexes()
-            self._memgraph.drop_all_triggers()
+            self._memgraph.drop__indexes()
+            self._memgraph.drop_triggers()
 
         self._create_indexes()
         self._create_triggers()
@@ -503,7 +503,7 @@ class TableToGraphImporter:
         """Reads all of the data from the single table in the data source, translates it, and writes it to memgraph."""
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = one_to_many_mapping.table_name
-            for row in self._data_loader.load_data(collection_name=collection_name):
+            for row in self._data_source.load_data(collection_name=collection_name):
                 self._save_row_as_node(label=collection_name, row=row)
 
     def _load_cross_relationships(self) -> None:
@@ -531,6 +531,7 @@ class TableToGraphImporter:
         and relationships are written in one go, foreign keys that are represented
         as relationships might not yet be present in memgraph. When they do appear,
         triggers make sure to write relationship at that point in time,
+
         rather than having hanging relationship.
         """
         for one_to_many_mapping in self._one_to_many_mappings:
@@ -587,9 +588,10 @@ class TableToGraphImporter:
                 label1, label2, property1, property2, edge_type, from_entity
             ),
         )
-        print(f"Created trigger {trigger_name}")
 
         self._memgraph.create_trigger(trigger)
+
+        print(f"Created trigger {trigger_name}")
 
     def _create_indexes(self) -> None:
         """Creates indices in Memgraph."""
@@ -613,14 +615,17 @@ class TableToGraphImporter:
             label: Original label of the new node
             row: Row that should be saved to Memgraph as Node
         """
-        #list(
-        QueryBuilder(connection=self._memgraph).create().node(
-            labels=self._name_mapper.get_label(collection_name=label),
-            **{
-                self._name_mapper.get_property_name(collection_name=label, column_name=k): v for k, v in row.items()
-            },
-        ).execute()
-        #)
+        (
+            QueryBuilder(connection=self._memgraph)
+            .create()
+            .node(
+                labels=self._name_mapper.get_label(collection_name=label),
+                **{
+                    self._name_mapper.get_property_name(collection_name=label, column_name=k): v for k, v in row.items()
+                },
+            )
+            .execute()
+        )
 
     def _save_row_as_relationship(
         self,
@@ -641,7 +646,7 @@ class TableToGraphImporter:
             relation_label: Label for the relationship
             row: row to be translated
         """
-        list(
+        (
             QueryBuilder(connection=self._memgraph)
             .match()
             .node(
@@ -667,7 +672,6 @@ class TableToGraphImporter:
             .node(variable=NODE_A)
             .to(relation_label)
             .node(variable=NODE_B)
-            .return_({"1": "1"})
             .execute()
         )
 
