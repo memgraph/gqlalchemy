@@ -550,6 +550,22 @@ class DeclarativeBase(ABC):
 
         Returns:
             self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by the equality of `name` properties of two connected nodes.
+
+            Python: `match().node(variable="n").to().node(variable="m").where(item="n.name", operator="=", expression="m.name").return_()`
+            Cypher: `MATCH (n)-[]->(m) WHERE n.name = m.name RETURN *;`
+
+            Filtering query results by the node label.
+
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").return_()`
+            Cypher: `MATCH (n) WHERE n:User RETURN *;`
+
+            Filtering query results by the comparison of node property and literal.
+
+            Python: `match().node(variable="n").where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n.age > 18 RETURN *;`
         """
         # WHERE item operator (literal | expression)
         # item: variable | property
@@ -672,6 +688,13 @@ class DeclarativeBase(ABC):
 
         Returns:
             self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Ordering query results by the property `n.name` in ascending order
+            and by the property `n.last_name` in descending order:
+
+            Python: `match().node(variable="n").return_().order_by(properties=["n.name", ("n.last_name", Order.DESC)])`
+            Cypher: `MATCH (n) RETURN * ORDER BY n.name, n.last_name DESC;`
         """
 
         self._query.append(OrderByPartialQuery(properties=properties))
