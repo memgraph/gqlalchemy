@@ -72,3 +72,8 @@ jobs:
         run: |
           poetry install
           poetry run pytest -vvv -m "not slow"
+      - name: Use the Upload Artifact GitHub Action
+        uses: actions/upload-artifact@v3
+        with: 
+          name: assets-for-download
+          path: /var/log/memgraph
