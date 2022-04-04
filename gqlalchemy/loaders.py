@@ -334,15 +334,17 @@ class PyarrowDataLoader(DataLoader):
             columns: Table columns to read
         """
         source = self._file_system_handler.get_path(collection_name, self._file_extension)
-        print("Loading " + ("cross table " if is_cross_table else "") + f"data from {source}")
+        print("Loading data from " + ("cross " if is_cross_table else "") + f"table {source}...")
 
         dataset = ds.dataset(source=source, format=self._file_extension, filesystem=self._file_system_handler.fs)
 
         for batch in dataset.to_batches(
             columns=columns,
         ):
-            for batch in batch.to_pylist():
-                yield batch
+            for batch_item in batch.to_pylist():
+                yield batch_item
+
+        print("Data loaded.")
 
 
 class FileSystemTypeEnum(Enum):
