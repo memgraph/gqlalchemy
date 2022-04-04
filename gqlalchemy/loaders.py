@@ -490,7 +490,7 @@ class TableToGraphImporter:
         """
         if drop_database_on_start:
             self._memgraph.drop_database()
-            self._memgraph.drop__indexes()
+            self._memgraph.drop_indexes()
             self._memgraph.drop_triggers()
 
         self._create_indexes()
@@ -503,7 +503,7 @@ class TableToGraphImporter:
         """Reads all of the data from the single table in the data source, translates it, and writes it to memgraph."""
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = one_to_many_mapping.table_name
-            for row in self._data_source.load_data(collection_name=collection_name):
+            for row in self._data_loader.load_data(collection_name=collection_name):
                 self._save_row_as_node(label=collection_name, row=row)
 
     def _load_cross_relationships(self) -> None:
@@ -512,7 +512,7 @@ class TableToGraphImporter:
             mapping_from = many_to_many_mapping.mapping.foreign_key_from
             mapping_to = many_to_many_mapping.mapping.foreign_key_to
 
-            for row in self._data_source.load_data(
+            for row in self._data_loader.load_data(
                 collection_name=many_to_many_mapping.table_name, is_cross_table=True
             ):
                 self._save_row_as_relationship(
