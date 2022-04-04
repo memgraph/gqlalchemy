@@ -421,7 +421,6 @@ def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemH
 class TableToGraphImporter:
     """Implements translation of table data to graph data, and imports it to Memgraph."""
 
-
     _DIRECTION = {
         True: (NODE_A, NODE_B),
         False: (NODE_B, NODE_A),
