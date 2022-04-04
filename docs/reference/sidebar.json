@@ -2,7 +2,6 @@
   "items": [
     {
       "items": [
-        "reference/gqlalchemy/connection",
         "reference/gqlalchemy/disk_storage",
         "reference/gqlalchemy/memgraph",
         "reference/gqlalchemy/models",

@@ -219,6 +219,14 @@ fields from Memgraph and updates it&#x27;s fields.
 Otherwise it creates a new node with the same properties.
 Null properties are ignored.
 
+#### save\_nodes
+
+```python
+def save_nodes(nodes: List[Node]) -> None
+```
+
+Saves a list of nodes to Memgraph.
+
 #### save\_node\_with\_id
 
 ```python
@@ -302,6 +310,14 @@ and updates it&#x27;s properties with the values in `relationship`.
 If relationship._id is None, it creates a new relationship.
 If you want to set a relationship._id instead of creating a new
 relationship, use `load_relationship` first.
+
+#### save\_relationships
+
+```python
+def save_relationships(relationships: List[Relationship]) -> None
+```
+
+Saves a list of relationships to Memgraph.
 
 #### save\_relationship\_with\_id
 

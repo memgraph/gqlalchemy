@@ -3,12 +3,54 @@ sidebar_label: models
 title: gqlalchemy.models
 ---
 
+## TriggerEventType Objects
+
+```python
+class TriggerEventType()
+```
+
+An enum representing types of trigger events.
+
+## TriggerEventObject Objects
+
+```python
+class TriggerEventObject()
+```
+
+An enum representing types of trigger objects.
+
+NODE -&gt; `()`
+RELATIONSHIP -&gt; `--&gt;`
+
+## TriggerExecutionPhase Objects
+
+```python
+class TriggerExecutionPhase()
+```
+
+An enum representing types of trigger objects.
+
+Enum:
+    BEFORE
+    AFTER
+
 ## MemgraphKafkaStream Objects
 
 ```python
-@dataclass(frozen=True, eq=True)
 class MemgraphKafkaStream(MemgraphStream)
 ```
+
+A class for creating and managing Kafka streams in Memgraph.
+
+**Arguments**:
+
+- `name` - A string representing the stream name.
+- `topics` - A list of strings representing the stream topics.
+- `transform` - A string representing the name of the transformation procedure.
+- `consumer_group` - A string representing the consumer group.
+- `name` - A string representing the batch interval.
+- `name` - A string representing the batch size.
+- `name` - A string or list of strings representing bootstrap server addresses.
 
 #### to\_cypher
 
@@ -16,14 +58,25 @@ class MemgraphKafkaStream(MemgraphStream)
 def to_cypher() -> str
 ```
 
-Converts Kafka stream to a cypher clause.
+Converts Kafka stream to a Cypher clause.
 
 ## MemgraphPulsarStream Objects
 
 ```python
-@dataclass(frozen=True, eq=True)
 class MemgraphPulsarStream(MemgraphStream)
 ```
+
+A class for creating and managing Pulsar streams in Memgraph.
+
+**Arguments**:
+
+- `name` - A string representing the stream name.
+- `topics` - A list of strings representing the stream topics.
+- `transform` - A string representing the name of the transformation procedure.
+- `consumer_group` - A string representing the consumer group.
+- `name` - A string representing the batch interval.
+- `name` - A string representing the batch size.
+- `name` - A string or list of strings representing bootstrap server addresses.
 
 #### to\_cypher
 
@@ -31,7 +84,7 @@ class MemgraphPulsarStream(MemgraphStream)
 def to_cypher() -> str
 ```
 
-Converts Pulsar stream to a cypher clause.
+Converts Pulsar stream to a Cypher clause.
 
 ## MemgraphTrigger Objects
 
@@ -57,7 +110,7 @@ class GraphObject(BaseModel)
 #### \_\_init\_subclass\_\_
 
 ```python
-def __init_subclass__(cls, type=None, label=None, labels=None)
+def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None)
 ```
 
 Stores the subclass by type if type is specified, or by class name

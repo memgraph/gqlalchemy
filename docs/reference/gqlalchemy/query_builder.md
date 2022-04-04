@@ -357,7 +357,7 @@ Creates a OR (expression) statement Cypher partial query.
 #### xor\_where
 
 ```python
-def xor_where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+def xor_where(item: str, operator: str, value: Any) -> "DeclarativeBase"
 ```
 
 Creates a XOR (expression) statement Cypher partial query.

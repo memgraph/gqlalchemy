@@ -376,7 +376,7 @@ class DeclarativeBase(ABC):
 
     def match(self, optional: bool = False) -> "DeclarativeBase":
         """Obtain data from the database by matching it to a given pattern.
-        
+
         Args:
             optional: A bool indicating if missing parts of the pattern will be
             filled with null values.
@@ -412,7 +412,7 @@ class DeclarativeBase(ABC):
 
     def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
         """Call a query module procedure.
-        
+
         Args:
             procedure: A string representing the name of the procedure in the
               format `query_module.procedure`.
@@ -434,7 +434,7 @@ class DeclarativeBase(ABC):
         **kwargs,
     ) -> "DeclarativeBase":
         """Add a node pattern to the query.
-        
+
         Args:
             labels: A string or list of strings representing the labels of the
               node.
@@ -469,7 +469,7 @@ class DeclarativeBase(ABC):
         **kwargs,
     ) -> "DeclarativeBase":
         """Add a relationship pattern to the query.
-        
+
         Args:
             edge_label: A string representing the type of the relationship.
             directed: A bool indicating if the relationship is directed.
@@ -504,7 +504,7 @@ class DeclarativeBase(ABC):
         **kwargs,
     ) -> "Match":
         """Add a relationship pattern to the query.
-        
+
         Args:
             edge_label: A string representing the type of the relationship.
             directed: A bool indicating if the relationship is directed.
@@ -596,7 +596,7 @@ class DeclarativeBase(ABC):
 
     def unwind(self, list_expression: str, variable: str) -> "DeclarativeBase":
         """Unwind a list of values as individual rows.
-        
+
         Args:
             list_expression: A list of strings representing the list of values.
             variable: A string representing the variable name for unwinding results.
@@ -611,7 +611,7 @@ class DeclarativeBase(ABC):
     def with_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         """Chain together parts of a query, piping the results from one to be
         used as starting points or criteria in the next.
-        
+
         Args:
             results: A dictionary mapping variables in the first query with
             aliases in the second query.
@@ -625,7 +625,7 @@ class DeclarativeBase(ABC):
 
     def union(self, include_duplicates: Optional[bool] = True) -> "DeclarativeBase":
         """Combine the result of multiple queries.
-        
+
         Args:
             include_duplicates: A bool indicating if duplicates should be
               included.
@@ -639,7 +639,7 @@ class DeclarativeBase(ABC):
 
     def delete(self, variable_expressions: List[str], detach: Optional[bool] = False) -> "DeclarativeBase":
         """Delete nodes and relationships from the database.
-        
+
         Args:
             variable_expressions: A list of strings indicating which nodes
               and/or relationships should be removed.
@@ -655,7 +655,7 @@ class DeclarativeBase(ABC):
 
     def remove(self, items: List[str]) -> "DeclarativeBase":
         """Remove labels and properties from nodes and relationships.
-        
+
         Args:
             items: A list of strings indicating which labels and/or properties
               should be removed.
@@ -669,7 +669,7 @@ class DeclarativeBase(ABC):
 
     def yield_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         """Yield data from the query.
-        
+
         Args:
             results: A dictionary mapping items that are returned with alias
               names.
@@ -683,7 +683,7 @@ class DeclarativeBase(ABC):
 
     def return_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
         """Return data from the query.
-        
+
         Args:
             results: A dictionary mapping items that are returned with alias
               names.
@@ -725,7 +725,7 @@ class DeclarativeBase(ABC):
 
     def skip(self, integer_expression: str) -> "DeclarativeBase":
         """Skip a number of records when returning results.
-        
+
         Args:
             integer_expression: An integer indicating how many records to skip
               in the results.
@@ -739,7 +739,7 @@ class DeclarativeBase(ABC):
 
     def add_custom_cypher(self, custom_cypher: str) -> "DeclarativeBase":
         """Inject custom Cypher code into the query.
-        
+
         Args:
             custom_cypher: A string representing the Cypher code to be injected
               into the query.
@@ -755,10 +755,10 @@ class DeclarativeBase(ABC):
 
     def load_csv(self, path: str, header: bool, row: str) -> "DeclarativeBase":
         """Load data from a CSV file by executing a Cypher query for each row.
-        
+
         Args:
             path: A string representing the path to the CSV file.
-            header: A bool indicating if the CSV file starts with a header row. 
+            header: A bool indicating if the CSV file starts with a header row.
             row: A string representing the name of the variable for iterating
               over each row.
 
@@ -771,7 +771,7 @@ class DeclarativeBase(ABC):
 
     def get_single(self, retrieve: str) -> Any:
         """Returns a single result with a `retrieve` variable name.
-        
+
         Args:
             retrieve: A string representing the results variable to be returned.
 
