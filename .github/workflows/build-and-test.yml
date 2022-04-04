@@ -62,13 +62,13 @@ jobs:
           mkdir ~/memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output ~/memgraph/memgraph-community.deb
           dpkg -i ~/memgraph/memgraph-community.deb
+          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=3600 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=DEBUG --also-log-to-stderr=true' &
+          sleep 1 # Wait for Memgraph a bit.
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Test project
         run: |
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=3600 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --also-log-to-stderr=true' &
-          sleep 1 # Wait for Memgraph a bit.
           poetry install
           poetry run pytest -vvv -m "not slow"
