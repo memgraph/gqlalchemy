@@ -59,11 +59,12 @@ class MatchConstants:
     VARIABLE = "variable"
 
 
-class WhereConditionConstants:
-    WHERE = "WHERE"
-    AND = "AND"
-    OR = "OR"
-    XOR = "XOR"
+class Where(Enum):
+    WHERE = 1
+    AND = 2
+    OR = 3
+    XOR = 4
+    NOT = 5
 
 
 class Order(Enum):
@@ -146,21 +147,23 @@ class CallPartialQuery(PartialQuery):
 
 
 class WhereConditionPartialQuery(PartialQuery):
-    def __init__(self, item: str, operator: str, keyword: str = None, **kwargs):
-        super().__init__(type=DeclarativeBaseTypes.WHERE)
+    _LITERAL = "literal"
+    _EXPRESSION = "expression"
+    _LABEL_FILTER = ":"
 
-        self.keyword = keyword
-        self._build_where_query(item=item, operator=operator, **kwargs)
+    def __init__(self, item: str, operator: str, keyword: Where = Where.WHERE, is_negated: bool = False, **kwargs):
+        super().__init__(type=keyword.name if not is_negated else f"{keyword.name} {Where.NOT.name}")
+        self.query = self._build_where_query(item=item, operator=operator, **kwargs)
 
     def construct_query(self) -> str:
         """Constructs a where partial query."""
 
-        return f" {self.keyword if self.keyword is not None else self.type} {self.query} "
+        return f" {self.type} {self.query} "
 
     def _build_where_query(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Builds parts of a WHERE Cypher query divided by the boolean operators."""
-        literal = kwargs.get("literal")
-        value = kwargs.get("expression")
+        literal = kwargs.get(WhereConditionPartialQuery._LITERAL)
+        value = kwargs.get(WhereConditionPartialQuery._EXPRESSION)
 
         if value is None:
             if literal is None:
@@ -170,22 +173,42 @@ class WhereConditionPartialQuery(PartialQuery):
         elif literal is not None:
             raise GQLAlchemyExtraKeywordArgumentsInWhere
 
-        self.query = ("" if operator == ":" else " ").join([item, operator, value])
+        return ("" if operator == WhereConditionPartialQuery._LABEL_FILTER else " ").join([item, operator, value])
+
+
+class WhereNotConditionPartialQuery(WhereConditionPartialQuery):
+    def __init__(self, item: str, operator: str, keyword: Where = Where.WHERE, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=keyword, is_negated=True, **kwargs)
 
 
 class AndWhereConditionPartialQuery(WhereConditionPartialQuery):
     def __init__(self, item: str, operator: str, **kwargs):
-        super().__init__(item=item, operator=operator, keyword=WhereConditionConstants.AND, **kwargs)
+        super().__init__(item=item, operator=operator, keyword=Where.AND, **kwargs)
+
+
+class AndNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.AND, **kwargs)
 
 
 class OrWhereConditionPartialQuery(WhereConditionPartialQuery):
     def __init__(self, item: str, operator: str, **kwargs):
-        super().__init__(item=item, operator=operator, keyword=WhereConditionConstants.OR, **kwargs)
+        super().__init__(item=item, operator=operator, keyword=Where.OR, **kwargs)
+
+
+class OrNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.OR, **kwargs)
 
 
 class XorWhereConditionPartialQuery(WhereConditionPartialQuery):
     def __init__(self, item: str, operator: str, **kwargs):
-        super().__init__(item=item, operator=operator, keyword=WhereConditionConstants.XOR, **kwargs)
+        super().__init__(item=item, operator=operator, keyword=Where.XOR, **kwargs)
+
+
+class XorNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.XOR, **kwargs)
 
 
 class NodePartialQuery(PartialQuery):
@@ -575,6 +598,11 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def where_not(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        self._query.append(WhereNotConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
     def and_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an AND statement as a part of WHERE Cypher partial query.
 
@@ -590,6 +618,11 @@ class DeclarativeBase(ABC):
             self: A partial Cypher query built from the given parameters.
         """
         self._query.append(AndWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def and_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        self._query.append(AndNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
 
@@ -612,6 +645,11 @@ class DeclarativeBase(ABC):
 
         return self
 
+    def or_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        self._query.append(OrNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
     def xor_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
         """Creates an XOR statement as a part of WHERE Cypher partial query.
 
@@ -628,6 +666,11 @@ class DeclarativeBase(ABC):
         """
 
         self._query.append(XorWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def xor_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        self._query.append(XorNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
 
