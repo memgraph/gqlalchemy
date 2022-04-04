@@ -157,7 +157,6 @@ class WhereConditionPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a where partial query."""
-
         return f" {self.type} {self.query} "
 
     def _build_where_query(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
@@ -402,7 +401,6 @@ class OrderByPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Creates a ORDER BY statement Cypher partial query."""
-
         return f" {self.type} {self.query} "
 
     def _order_by_read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
@@ -593,7 +591,6 @@ class DeclarativeBase(ABC):
         # WHERE item operator (literal | expression)
         # item: variable | property
         # expression: label | property
-
         self._query.append(WhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
@@ -670,7 +667,6 @@ class DeclarativeBase(ABC):
             Python: `match().node(variable="n").where(item="n", operator=":", expression="User").and_not_where(item="n.age", operator=">", literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User AND NOT n.age > 18 RETURN *;`
         """
-
         self._query.append(AndNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
@@ -695,7 +691,6 @@ class DeclarativeBase(ABC):
             Python: `match().node(variable="n").where(item="n", operator=":", expression="User").or_where(item="n.age", operator=">", literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User OR n.age > 18 RETURN *;`
         """
-
         self._query.append(OrWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
@@ -720,7 +715,6 @@ class DeclarativeBase(ABC):
             Python: `match().node(variable="n").where(item="n", operator=":", expression="User").or_not_where(item="n.age", operator=">", literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User OR NOT n.age > 18 RETURN *;`
         """
-
         self._query.append(OrNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
@@ -745,7 +739,6 @@ class DeclarativeBase(ABC):
             Python: `match().node(variable="n").where(item="n", operator=":", expression="User").xor_where(item="n.age", operator=">", literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User XOR n.age > 18 RETURN *;`
         """
-
         self._query.append(XorWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
@@ -770,7 +763,6 @@ class DeclarativeBase(ABC):
             Python: `match().node(variable="n").where(item="n", operator=":", expression="User").xor_not_where(item="n.age", operator=">", literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User XOR NOT n.age > 18 RETURN *;`
         """
-
         self._query.append(XorNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
@@ -840,7 +832,6 @@ class DeclarativeBase(ABC):
             Python: `match().node(variable="n").return_().order_by(properties=["n.name", ("n.last_name", Order.DESC)])`
             Cypher: `MATCH (n) RETURN * ORDER BY n.name, n.last_name DESC;`
         """
-
         self._query.append(OrderByPartialQuery(properties=properties))
 
         return self
