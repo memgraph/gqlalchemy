@@ -539,3 +539,55 @@ class Memgraph:
         )
 
         return self.get_variable_assume_one(results, "relationship")
+
+    def get_procedures(self, module: str = None, update: bool = False) -> List["QueryModule"]:
+        if not hasattr(self, "query_modules") or update:
+            results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
+            self.query_modules = []
+            for module_dict in results:
+                module_dict['arguments'] = self._parse_signature(module_dict['signature'])
+                self.query_modules.append(QueryModule(module_dict))
+
+        if module is not None:
+            return [q for q in self.query_modules if q.name.startswith(module)]
+        else:
+            return self.query_modules            
+        
+    def _parse_signature(self, signature: str):
+        end_arguments_parantheses = signature.index(")")
+        arguments_field = signature[signature.index("(") + 1 : end_arguments_parantheses]
+        arguments_list = arguments_field.split(", ")
+        print("sign: ", signature)
+        print(arguments_field)
+        print(arguments_list)
+        for arg in arguments_list:
+            print("arg: ", arg)
+            arg_default = "d"
+            sides = arg.split(" :: ")
+            if " = " in sides[0]:
+                splt = sides[0].split(" = ")
+                arg_default = splt[1]
+                arg_name = splt[0]
+            else:
+                arg_name = sides[0]
+
+            arg_type = sides[1]
+
+            print(arg_name, arg_type, arg_default)
+
+        returns = signature[signature.index("(", end_arguments_parantheses + 1) + 1 : signature.index(")", end_arguments_parantheses + 1)]
+        returns_list = returns.split(", ")
+
+
+        print("")
+        return ""
+
+
+class QueryModule:
+    def __init__(self, module_dict) -> None:
+        self.name = module_dict['name']
+        self.is_editable = module_dict['is_editable']
+        self.is_write = module_dict['is_write']
+        self.path = module_dict['path']
+        self.signature = module_dict['signature']
+        self.arguments = module_dict['arguments']
