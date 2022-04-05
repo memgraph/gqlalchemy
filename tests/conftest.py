@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydantic import Field
 from pathlib import Path
 
 import pytest
 from gqlalchemy import Memgraph
+from gqlalchemy.models import Node, Relationship
 
 
 def get_data_dir() -> Path:
@@ -58,3 +60,93 @@ def populated_memgraph(dataset_file: str) -> Memgraph:
     yield memgraph
 
     memgraph.drop_database()
+
+
+@pytest.fixture
+def relationship_type():
+    return Relationship
+
+
+@pytest.fixture
+def node_type():
+    return Node
+
+
+@pytest.fixture
+def make_attributes_with_annotations():
+    def _make_attributes_with_annotations(attributes):
+        return {"__annotations__": attributes, **{key: None for key in attributes}}
+
+    return _make_attributes_with_annotations
+
+
+@pytest.fixture
+def make_class(make_attributes_with_annotations):
+    def _make_class(classname, bases, attributes, with_annotations, **kwargs):
+        new_attributes = attributes if with_annotations is False else make_attributes_with_annotations(attributes)
+        return type(classname, bases, new_attributes, **kwargs)
+
+    return _make_class
+
+
+@pytest.fixture
+def make_relationship(make_class, relationship_type):
+    def _make_relationship(classname, attributes, with_annotations, **kwargs):
+        return make_class(classname, (relationship_type,), attributes, with_annotations, **kwargs)
+
+    return _make_relationship
+
+
+@pytest.fixture
+def make_node(make_class, node_type):
+    def _make_node(classname, attributes, with_annotations, **kwargs):
+        return make_class(classname, (node_type,), attributes, with_annotations, **kwargs)
+
+    return _make_node
+
+
+@pytest.fixture
+def make_memgraph_relationship(make_relationship):
+    def _make_memgraph_relationship(classname, **kwargs):
+        return make_relationship(classname, {}, False, **kwargs)
+
+    return _make_memgraph_relationship
+
+
+@pytest.fixture
+def make_memgraph_node_attributes(memgraph):
+    return {"name": Field(default=str(), index=True, unique=True, db=memgraph)}
+
+
+@pytest.fixture
+def make_memgraph_node(make_node, make_memgraph_node_attributes):
+    def _memgraph_node(classname, **kwargs):
+        return make_node(classname, make_memgraph_node_attributes, False, **kwargs)
+
+    return _memgraph_node
+
+
+@pytest.fixture
+def make_user_class(make_memgraph_node):
+    return make_memgraph_node("User")
+
+
+@pytest.fixture
+def make_follows_test_class(make_memgraph_relationship):
+    return make_memgraph_relationship("Follows_test", type="FOLLOWS")
+
+
+@pytest.fixture
+def make_simple_user(make_user_class):
+    def _make_simple_user(**kwargs):
+        return make_user_class(**kwargs)
+
+    return _make_simple_user
+
+
+@pytest.fixture
+def make_simple_follows(make_follows_test_class):
+    def _make_simple_follows(**kwargs):
+        return make_follows_test_class(**kwargs)
+
+    return _make_simple_follows

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, Union
 from gqlalchemy import Node, Relationship, Path
 from gqlalchemy.models import GraphObject
 
@@ -45,17 +45,26 @@ def test_dictionary_deserialisation():
     pass
 
 
-def test_automatic_deserialisation_from_database(memgraph):
-    class Person(Node):
-        id: Optional[int]
-        name: Optional[str]
+def test_automatic_deserialisation_from_database(memgraph, make_node, make_relationship):
+    class_person = make_node(
+        "Person",
+        {
+            "id": Optional[int],
+            "name": Optional[str],
+        },
+        True,
+    )
 
-    class Alice(Node):
-        id: Optional[int]
-        name: Optional[str]
+    class_alice = make_node(
+        "Alice",
+        {
+            "id": Optional[int],
+            "name": Optional[str],
+        },
+        True,
+    )
 
-    class Friends(Relationship, type="FRIENDS"):
-        pass
+    class_friends = make_relationship("Friends", {}, False, type="FRIENDS")
 
     memgraph.execute("create (:Person {id: 1, name: 'person'});")
     memgraph.execute("create (:Alice {id: 8, name: 'alice'});")
@@ -64,7 +73,7 @@ def test_automatic_deserialisation_from_database(memgraph):
     result = list(memgraph.execute_and_fetch("match (a)-[r]->(b) return a, r, b"))
     for node in result:
         a = node["a"]
-        assert isinstance(a, Alice)
+        assert isinstance(a, class_alice)
         assert a.id == 8
         assert a.name == "alice"
         assert a._labels == {"Alice"}
@@ -73,7 +82,7 @@ def test_automatic_deserialisation_from_database(memgraph):
         assert isinstance(a._id, int)
 
         r = node["r"]
-        assert isinstance(r, Friends)
+        assert isinstance(r, class_friends)
         assert r._type == "FRIENDS"
         assert isinstance(r._id, int)
         assert isinstance(r._start_node_id, int)
@@ -82,7 +91,7 @@ def test_automatic_deserialisation_from_database(memgraph):
         assert isinstance(r._id, int)
 
         b = node["b"]
-        assert isinstance(b, Person)
+        assert isinstance(b, class_person)
         assert b.id == 1
         assert b.name == "person"
         assert b._labels == {"Person"}
