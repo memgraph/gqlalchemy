@@ -24,13 +24,30 @@ so we can get all the needed information to resolve the issue.
 > that you're experiencing, open a new issue and include a link to the original
 > issue in the body of your new one.
 
-## Adding new features
+## The codebase and branches
+
+### Branch `main`
+
+The base branch of the project is the **`main`** branch. Whenever there is a change on the `main` branch, a new release of GQLAlchemy is created in the [GitHub repository](https://github.com/memgraph/gqlalchemy/releases) and on [PyPI](https://pypi.org/project/GQLAlchemy/). 
+
+### Branch `develop`
+
+The **`develop`** branch is where new releases of GQLAlchemy are developed. You can track the progress of each release through [GitHub Projects](https://github.com/memgraph/gqlalchemy/projects?type=beta). When the release is finished, the `develop` branch will be merged into `main` and the newly updated `main` branch will be used to create a new release. 
+
+## Contributing new features or bug fixes
 
 Please send a GitHub [Pull
 Request](https://github.com/memgraph/gqlalchemy/pulls) with a clear list of what
 you've done. Make sure all of your commits are atomic (one feature per commit).
 
-Check out the Python driver
-[pymgclient](https://github.com/memgraph/pymgclient), which is used to establish
-a connection to Memgraph. You can find the official documentation
-[here](https://memgraph.github.io/pymgclient/).
+There are two main types of contributions:
+1. **Critical bug fixes**
+2. **New features or low priority bug fixes**
+
+Critical bug fixes should be applied to the `main` branch because a patch release will be created and published once the bug is fixed. Non-critical bug fixes and features can be added to the `develop` branch and will be included in the next planned release.
+
+In order for a pull request to be merged, a review by two code owners is required and the tests need to pass remotely.
+
+## Contact 
+
+If you need help with contributing to the GQLAlchemy project, join our [Discord server](https://discord.gg/memgraph). 
