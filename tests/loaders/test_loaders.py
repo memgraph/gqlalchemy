@@ -20,7 +20,7 @@ from gqlalchemy.loaders import (
     FileSystemHandler,
     FileSystemTypeEnum,
     NameMapper,
-    PyarrowDataLoader,
+    PyArrowDataLoader,
     LocalFileSystemImporter,
     get_data_loader,
 )
@@ -84,11 +84,11 @@ def test_get_data_loader_wrong_filesystem():
 
 
 def test_data_loader():
-    """Test that for csv file extension a PyarrowDataLoader is returned"""
+    """Test that for csv file extension a PyArrowDataLoader is returned"""
     get_filesystem_fake = Mock()
     get_filesystem_fake.return_value = None
     with patch("gqlalchemy.loaders.get_filesystem", wraps=get_filesystem_fake):
-        assert type(get_data_loader("csv", FileSystemTypeEnum.Local)) is PyarrowDataLoader
+        assert type(get_data_loader("csv", FileSystemTypeEnum.Local)) is PyArrowDataLoader
 
 
 @pytest.mark.parametrize(
@@ -96,7 +96,6 @@ def test_data_loader():
     [
         "parquet",
         "csv",
-        "orc",
         "feather",
     ],
 )
@@ -107,9 +106,6 @@ def test_local_table_to_graph_importer(file_extension, memgraph):
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-
-    print(file_extension)
-
     importer = LocalFileSystemImporter(
         file_extension=file_extension,
         data_configuration=my_configuration,
@@ -118,3 +114,9 @@ def test_local_table_to_graph_importer(file_extension, memgraph):
     )
 
     importer.translate(drop_database_on_start=True)
+
+
+def test_orc_on_windows():
+    """PyArrow does not work with orc files on Windows, we raise a ValueError for this"""
+    with pytest.raises(ValueError):
+        LocalFileSystemImporter(file_extension="orc", data_configuration=None)

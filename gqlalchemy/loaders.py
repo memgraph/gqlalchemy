@@ -32,6 +32,7 @@ from pyarrow import fs
 from typing import List, Dict, Any, Optional, Union
 import pyarrow.dataset as ds
 import adlfs
+import platform
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
@@ -194,7 +195,7 @@ class FileSystemHandler(ABC):
 
 
 class S3FileSystemHandler(FileSystemHandler):
-    """Handles connection to Amazon S3 service via pyarrow."""
+    """Handles connection to Amazon S3 service via PyArrow."""
 
     def __init__(self, **kwargs):
         """Initializes connection and data bucket.
@@ -301,10 +302,10 @@ class DataLoader(ABC):
         raise NotImplementedError("Subclasses must override load_data() for use in TableToGraphImporter")
 
 
-class PyarrowDataLoader(DataLoader):
-    """Loads data using Pyarrow.
+class PyArrowDataLoader(DataLoader):
+    """Loads data using PyArrow.
 
-    Pyarrow currently supports "parquet", "ipc"/"arrow"/"feather", "csv",
+    PyArrow currently supports "parquet", "ipc"/"arrow"/"feather", "csv",
     and "orc", see pyarrow.dataset.dataset for up-to-date info.
     ds.dataset in load_data accepts any fsspec subclass, making this DataLoader
     compatible with fsspec-compatible filesystems.
@@ -360,17 +361,17 @@ class DataLoaderTypeEnum(Enum):
     """Enumerates all available data loaders."""
 
     Default = 1
-    Pyarrow = 2
+    PyArrow = 2
 
 
 """collection of supported file type extensions and their corresponding Data Loaders."""
 supported_file_extensions = {
-    PARQUET_EXTENSION: DataLoaderTypeEnum.Pyarrow,
-    CSV_EXTENSION: DataLoaderTypeEnum.Pyarrow,
-    ORC_EXTENSION: DataLoaderTypeEnum.Pyarrow,
-    IPC_EXTENSION: DataLoaderTypeEnum.Pyarrow,
-    FEATHER_EXTENSION: DataLoaderTypeEnum.Pyarrow,
-    ARROW_EXTENSION: DataLoaderTypeEnum.Pyarrow,
+    PARQUET_EXTENSION: DataLoaderTypeEnum.PyArrow,
+    CSV_EXTENSION: DataLoaderTypeEnum.PyArrow,
+    ORC_EXTENSION: DataLoaderTypeEnum.PyArrow,
+    IPC_EXTENSION: DataLoaderTypeEnum.PyArrow,
+    FEATHER_EXTENSION: DataLoaderTypeEnum.PyArrow,
+    ARROW_EXTENSION: DataLoaderTypeEnum.PyArrow,
 }
 
 
@@ -393,8 +394,12 @@ def get_data_loader(file_extension: str, filesystem_type: FileSystemTypeEnum, **
             f"{file_extension} is currently not supported.\nSupported types are: "
             + ", ".join(supported_file_extensions)
         )
-    if supported_file_extensions[file_extension] == DataLoaderTypeEnum.Pyarrow:
-        return PyarrowDataLoader(
+
+    if file_extension == ORC_EXTENSION and platform.system() == "Linux":
+        raise ValueError("ORC filetype is currently not supported by PyArrow on Windows")
+
+    if supported_file_extensions[file_extension] == DataLoaderTypeEnum.PyArrow:
+        return PyArrowDataLoader(
             file_extension=file_extension, file_system_handler=get_filesystem(filesystem_type, **kwargs)
         )
 
