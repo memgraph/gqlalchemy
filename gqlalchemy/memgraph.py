@@ -558,22 +558,20 @@ class Memgraph:
         arguments_field = signature[signature.index("(") + 1 : end_arguments_parantheses]
         arguments_list = arguments_field.split(", ")
         print("sign: ", signature)
-        print(arguments_field)
-        print(arguments_list)
-        for arg in arguments_list:
-            print("arg: ", arg)
-            arg_default = "d"
-            sides = arg.split(" :: ")
-            if " = " in sides[0]:
-                splt = sides[0].split(" = ")
-                arg_default = splt[1]
-                arg_name = splt[0]
-            else:
-                arg_name = sides[0]
+        if arguments_list != [""]:
+            for arg in arguments_list:
+                arg_default = "d"
+                sides = arg.split(" :: ")
+                if " = " in sides[0]:
+                    splt = sides[0].split(" = ")
+                    arg_default = splt[1]
+                    arg_name = splt[0]
+                else:
+                    arg_name = sides[0]
 
-            arg_type = sides[1]
+                arg_type = sides[1]
 
-            print(arg_name, arg_type, arg_default)
+                print(arg_name, arg_type, arg_default)
 
         returns = signature[signature.index("(", end_arguments_parantheses + 1) + 1 : signature.index(")", end_arguments_parantheses + 1)]
         returns_list = returns.split(", ")
