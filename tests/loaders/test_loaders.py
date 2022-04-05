@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import platform
 import pytest
 from unittest.mock import patch, Mock
 
@@ -118,5 +119,6 @@ def test_local_table_to_graph_importer(file_extension, memgraph):
 
 def test_orc_on_windows():
     """PyArrow does not work with orc files on Windows, we raise a ValueError for this"""
-    with pytest.raises(ValueError):
-        LocalFileSystemImporter(file_extension="orc", data_configuration=None)
+    if platform.system() == "Windows":
+        with pytest.raises(ValueError):
+            LocalFileSystemImporter(file_extension="orc", data_configuration=None)

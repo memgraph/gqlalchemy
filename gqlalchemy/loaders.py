@@ -395,7 +395,7 @@ def get_data_loader(file_extension: str, filesystem_type: FileSystemTypeEnum, **
             + ", ".join(supported_file_extensions)
         )
 
-    if file_extension == ORC_EXTENSION and platform.system() == "Linux":
+    if file_extension == ORC_EXTENSION and platform.system() == "Windows":
         raise ValueError("ORC filetype is currently not supported by PyArrow on Windows")
 
     if supported_file_extensions[file_extension] == DataLoaderTypeEnum.PyArrow:
