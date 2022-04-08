@@ -72,7 +72,7 @@ def wait_for_port(
             with socket.create_connection((host, port), timeout=timeout):
                 break
         except OSError as ex:
-            time.sleep(delay * 2**retries)
+            time.sleep(delay * 2 ** retries)
             if time.perf_counter() - start_time >= timeout:
                 raise TimeoutError(TIMEOUT_ERROR_MESSAGE.format(port=port, host=host)) from ex
 
@@ -96,7 +96,7 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
     container.reload()
     retries = 0
     while container.status != DockerContainerStatus.RUNNING.value:
-        time.sleep(delay * 2**retries)
+        time.sleep(delay * 2 ** retries)
         if time.perf_counter() - start_time >= timeout:
             raise TimeoutError(DOCKER_TIMEOUT_ERROR_MESSAGE)
 
