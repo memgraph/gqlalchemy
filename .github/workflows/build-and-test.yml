@@ -34,6 +34,10 @@ jobs:
       - name: Run memgraph instance
         run: |
           docker run -d -p 7687:7687 memgraph/memgraph --telemetry-enabled=False
+      - name: Install Memgraph
+        run: |
+          curl -O https://download.memgraph.com/memgraph/v2.2.1/ubuntu-20.04/memgraph_2.2.1-1_amd64.deb
+          sudo dpkg -i memgraph_2.2.1-1_amd64.deb
       - name: Test project
         run: |
           poetry install
@@ -71,4 +75,4 @@ jobs:
       - name: Test project
         run: |
           poetry install
-          poetry run pytest -vvv -m "not slow"
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
