@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
 from enum import Enum
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
@@ -41,6 +42,7 @@ class DeclarativeBaseTypes:
     ORDER_BY = "ORDER BY"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
+    SET = "SET"
     SKIP = "SKIP"
     UNION = "UNION"
     UNWIND = "UNWIND"
@@ -74,6 +76,12 @@ class Order(Enum):
     DESCENDING = 4
 
 
+class Operator(Enum):
+    NO_OPERATOR = ""
+    ASSIGNMENT = "="
+    INCREMENT = "+="
+
+
 class NoVariablesMatchedException(Exception):
     def __init__(self):
         message = "No variables have been matched in the query"
@@ -84,6 +92,30 @@ class InvalidMatchChainException(Exception):
     def __init__(self):
         message = "Invalid match query when linking!"
         super().__init__(message)
+
+
+class InvalidSetOperatorException(Exception):
+    def __init__(self):
+        message = "Invalid Operator Provided for SET Clause!"
+        super().__init__(message)
+
+
+@dataclass(frozen=True)
+class SetItem:
+    variable: str
+    item: str
+    operator: Operator = Operator.NO_OPERATOR
+
+    def __str__(self) -> str:
+        return f"{self.variable}{self.operator.value}{self.item}"
+
+
+class SetItems:
+    def __init__(self, items: Union[SetItem, Iterable[SetItem]]) -> None:
+        self._items = [items] if items is SetItem else items
+
+    def __str__(self) -> str:
+        return ", ".join(f"{item}" for item in self._items)
 
 
 class PartialQuery(ABC):
@@ -454,6 +486,16 @@ class AddStringPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         return f"{self.custom_cypher}"
+
+
+class SetPartialQuery(PartialQuery):
+    def __init__(self, setItems: SetItems):
+        super().__init__(DeclarativeBaseTypes.SET)
+
+        self._setItems = f"{setItems}"
+
+    def construct_query(self) -> str:
+        return f" {self.type} {self._setItems}"
 
 
 class DeclarativeBase(ABC):
@@ -869,6 +911,11 @@ class DeclarativeBase(ABC):
         if result:
             return result[retrieve]
         return result
+
+    def set_(self, setItems: Union[SetItem, Iterable[SetItem]]):
+        self._query.append(SetPartialQuery(SetItems(setItems)))
+
+        return self
 
     def execute(self) -> Iterator[Dict[str, Any]]:
         """Executes the Cypher query."""
