@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import py
 from gqlalchemy.exceptions import (
+    GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyExtraKeywordArgumentsInWhere,
 )
@@ -33,7 +36,7 @@ from gqlalchemy.memgraph import Memgraph
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
-from gqlalchemy.query_builder import Order
+from gqlalchemy.query_builder import Operator, Order
 
 
 def test_invalid_match_chain_throws_exception():
@@ -1260,6 +1263,52 @@ def test_add_string_complete(memgraph):
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
+
+
+def test_set_label(memgraph):
+    query_builder = QueryBuilder().set_(item="a", operator=Operator.LABEL_FILTER, expression="L1")
+    expected_query = " SET a:L1"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+def test_set_assign_expression(memgraph, operator):
+    query_builder = QueryBuilder().set_(item="a", operator=operator, expression="value")
+    expected_query = f" SET a {operator.value} value"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+def test_set_assign_literal(memgraph, operator):
+    query_builder = QueryBuilder().set_(item="a", operator=operator, literal="value")
+    expected_query = f" SET a {operator.value} 'value'"
+
+    assert query_builder.construct_query() == expected_query
+
+
+def test_multiple_set_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .set_(item="a", operator=Operator.LABEL_FILTER, expression="L1")
+        .set_(item="a", operator=Operator.ASSIGNMENT, expression="L2")
+    )
+    expected_query = " SET a:L1 SET a = L2"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+def test_set_literal_and_expression_missing(memgraph, operator):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInSet):
+        QueryBuilder().set_(item="n.name", operator=operator)
+
+
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+def test_set_extra_values(memgraph, operator):
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInSet):
+        QueryBuilder().set_(item="n.name", operator=operator, literal="best_name", expression="Node")
 
 
 def test_node_instance(memgraph):

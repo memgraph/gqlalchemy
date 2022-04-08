@@ -16,13 +16,15 @@ from dataclasses import dataclass
 from enum import Enum
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 from .exceptions import (
+    GQLAlchemyExtraKeywordArgumentsInSet,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyExtraKeywordArgumentsInWhere,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
@@ -77,9 +79,9 @@ class Order(Enum):
 
 
 class Operator(Enum):
-    NO_OPERATOR = ""
     ASSIGNMENT = "="
     INCREMENT = "+="
+    LABEL_FILTER = ":"
 
 
 class NoVariablesMatchedException(Exception):
@@ -92,30 +94,6 @@ class InvalidMatchChainException(Exception):
     def __init__(self):
         message = "Invalid match query when linking!"
         super().__init__(message)
-
-
-class InvalidSetOperatorException(Exception):
-    def __init__(self):
-        message = "Invalid Operator Provided for SET Clause!"
-        super().__init__(message)
-
-
-@dataclass(frozen=True)
-class SetItem:
-    variable: str
-    item: str
-    operator: Operator = Operator.NO_OPERATOR
-
-    def __str__(self) -> str:
-        return f"{self.variable}{self.operator.value}{self.item}"
-
-
-class SetItems:
-    def __init__(self, items: Union[SetItem, Iterable[SetItem]]) -> None:
-        self._items = [items] if items is SetItem else items
-
-    def __str__(self) -> str:
-        return ", ".join(f"{item}" for item in self._items)
 
 
 class PartialQuery(ABC):
@@ -489,13 +467,32 @@ class AddStringPartialQuery(PartialQuery):
 
 
 class SetPartialQuery(PartialQuery):
-    def __init__(self, setItems: SetItems):
+    _LITERAL = "literal"
+    _EXPRESSION = "expression"
+
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(DeclarativeBaseTypes.SET)
 
-        self._setItems = f"{setItems}"
+        self.query = self._build_set_query(item=item, operator=operator, **kwargs)
 
     def construct_query(self) -> str:
-        return f" {self.type} {self._setItems}"
+        """Constructs a set partial query."""
+        return f" {self.type} {self.query}"
+
+    def _build_set_query(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
+        """Builds parts of a SET Cypher query divided by the boolean operators."""
+        literal = kwargs.get(SetPartialQuery._LITERAL)
+        value = kwargs.get(SetPartialQuery._EXPRESSION)
+
+        if value is None:
+            if literal is None:
+                raise GQLAlchemyLiteralAndExpressionMissingInSet
+
+            value = to_cypher_value(literal)
+        elif literal is not None:
+            raise GQLAlchemyExtraKeywordArgumentsInSet
+
+        return ("" if operator == Operator.LABEL_FILTER else " ").join([item, operator.value, value])
 
 
 class DeclarativeBase(ABC):
@@ -912,8 +909,8 @@ class DeclarativeBase(ABC):
             return result[retrieve]
         return result
 
-    def set_(self, setItems: Union[SetItem, Iterable[SetItem]]):
-        self._query.append(SetPartialQuery(SetItems(setItems)))
+    def set_(self, item: str, operator: Operator, **kwargs):
+        self._query.append(SetPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
 
