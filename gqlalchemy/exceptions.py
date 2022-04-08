@@ -53,15 +53,16 @@ TypeError: The argument provided is of wrong type. Please provide str, tuple[str
 
 LITERAL_AND_EXPRESSION_MISSING = Template(
     """
-    Can't create $clause query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
-    """
+Can't create $clause query without providing either 'literal' or 'expression' keyword arguments, 
+that can be literals, labels or properties.
+"""
 )
 
 EXTRA_KEYWORD_ARGUMENTS = Template(
     """
-    Can't create $clause query with extra keyword arguments:
-    Please provide a value to either 'literal' or 'expression' keyword arguments.
-    """
+Can't create $clause query with extra keyword arguments:
+Please provide a value to either 'literal' or 'expression' keyword arguments.
+"""
 )
 
 
