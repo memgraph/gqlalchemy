@@ -50,7 +50,7 @@ TypeError: The argument provided is of wrong type. Please provide str, tuple[str
 """
 
 LITERAL_AND_EXPRESSION_MISSING = """
-Can't create {clause} query without providing either 'literal' or 'expression' keyword arguments, 
+Can't create {clause} query without providing either 'literal' or 'expression' keyword arguments,
 that can be literals, labels or properties.
 """
 
