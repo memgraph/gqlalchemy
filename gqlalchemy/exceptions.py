@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from string import Template
-
 
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
@@ -51,19 +49,15 @@ ORDER_BY_TYPE_ERROR = """
 TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[tuple[str, str]].
 """
 
-LITERAL_AND_EXPRESSION_MISSING = Template(
-    """
-Can't create $clause query without providing either 'literal' or 'expression' keyword arguments, 
+LITERAL_AND_EXPRESSION_MISSING = """
+Can't create {clause} query without providing either 'literal' or 'expression' keyword arguments, 
 that can be literals, labels or properties.
 """
-)
 
-EXTRA_KEYWORD_ARGUMENTS = Template(
-    """
-Can't create $clause query with extra keyword arguments:
+EXTRA_KEYWORD_ARGUMENTS = """
+Can't create {clause} query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
-)
 
 
 class GQLAlchemyWarning(Warning):
@@ -120,7 +114,7 @@ class GQLAlchemyOrderByTypeError(TypeError):
 class GQLAlchemyLiteralAndExpressionMissingInClause(GQLAlchemyError):
     def __init__(self, clause: str):
         super().__init__()
-        self.message = LITERAL_AND_EXPRESSION_MISSING.substitute(clause=clause)
+        self.message = LITERAL_AND_EXPRESSION_MISSING.format(clause=clause)
 
 
 class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyLiteralAndExpressionMissingInClause):
@@ -136,7 +130,7 @@ class GQLAlchemyLiteralAndExpressionMissingInSet(GQLAlchemyLiteralAndExpressionM
 class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
     def __init__(self, clause: str):
         super().__init__()
-        self.message = EXTRA_KEYWORD_ARGUMENTS.substitute(clause=clause)
+        self.message = EXTRA_KEYWORD_ARGUMENTS.format(clause=clause)
 
 
 class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
