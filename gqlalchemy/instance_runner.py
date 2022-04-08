@@ -75,7 +75,7 @@ def wait_for_port(
             time.sleep(delay * 2**retries)
             if time.perf_counter() - start_time >= timeout:
                 raise TimeoutError(TIMEOUT_ERROR_MESSAGE.format(port=port, host=host)) from ex
-        
+
         retries += 1
 
 
