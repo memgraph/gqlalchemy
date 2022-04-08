@@ -51,14 +51,18 @@ ORDER_BY_TYPE_ERROR = """
 TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[tuple[str, str]].
 """
 
-LITERAL_AND_EXPRESSION_MISSING = Template("""
-Can't create $clause query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
-""")
+LITERAL_AND_EXPRESSION_MISSING = Template(
+    """
+    Can't create $clause query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
+    """
+)
 
-EXTRA_KEYWORD_ARGUMENTS = Template("""
-Can't create $clause query with extra keyword arguments:
-Please provide a value to either 'literal' or 'expression' keyword arguments."
-""")
+EXTRA_KEYWORD_ARGUMENTS = Template(
+    """
+    Can't create $clause query with extra keyword arguments:
+    Please provide a value to either 'literal' or 'expression' keyword arguments.
+    """
+)
 
 
 class GQLAlchemyWarning(Warning):
