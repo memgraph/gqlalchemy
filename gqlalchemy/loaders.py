@@ -213,6 +213,9 @@ class S3FileSystemHandler(FileSystemHandler):
             s3_secret_key: S3 secret key
             s3_region: S3 region
             s3_session_token: S3 session token (Optional)
+
+        Raises:
+            KeyError: kwargs doesn't contain necessary fields
         """
         if S3_ACCESS_KEY not in kwargs:
             raise KeyError(f"{S3_ACCESS_KEY} is needed to connect to S3 storage")
@@ -244,6 +247,9 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
             blob_account_name: Account name from Azure Blob
             blob_account_key: Account key for Azure Blob (Optional - if using sas_token)
             blob_sas_token: Shared access signature token for authentification (Optional)
+
+        Raises:
+            KeyError: kwargs doesn't contain necessary fields
         """
         if BLOB_ACCOUNT_KEY not in kwargs and BLOB_SAS_TOKEN not in kwargs:
             raise KeyError(f"{BLOB_ACCOUNT_KEY} or {BLOB_SAS_TOKEN} is needed to connect to Blob storage")
@@ -676,6 +682,9 @@ class PyArrowImporter(TableToGraphImporter):
             file_extension_enum: File format to be read
             data_configuration: Configuration for the translations
             memgraph: Connection to Memgraph (Optional)
+
+        Raises:
+            ValueError: PyArrow doesn't support ORC on Windows
         """
         if file_extension_enum == PyArrowFileTypeEnum.ORC and platform.system() == "Windows":
             raise ValueError("ORC filetype is currently not supported by PyArrow on Windows")
