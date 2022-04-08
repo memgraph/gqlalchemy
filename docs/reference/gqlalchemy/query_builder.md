@@ -259,7 +259,7 @@ Creates a relationship Cypher partial query with a &#x27;&lt;-&#x27; sign.
 #### where
 
 ```python
-def where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+def where(item: str, operator: str, value: Any) -> "DeclarativeBase"
 ```
 
 Creates a WHERE statement Cypher partial query.
@@ -267,7 +267,7 @@ Creates a WHERE statement Cypher partial query.
 #### and\_where
 
 ```python
-def and_where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+def and_where(item: str, operator: str, value: Any) -> "DeclarativeBase"
 ```
 
 Creates a AND (expression) statement Cypher partial query.
@@ -275,10 +275,18 @@ Creates a AND (expression) statement Cypher partial query.
 #### or\_where
 
 ```python
-def or_where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+def or_where(item: str, operator: str, value: Any) -> "DeclarativeBase"
 ```
 
 Creates a OR (expression) statement Cypher partial query.
+
+#### xor\_where
+
+```python
+def xor_where(property: str, operator: str, value: Any) -> "DeclarativeBase"
+```
+
+Creates a XOR (expression) statement Cypher partial query.
 
 #### unwind
 
