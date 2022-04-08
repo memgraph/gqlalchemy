@@ -66,14 +66,17 @@ def wait_for_port(
     """
     start_time = time.perf_counter()
     time.sleep(delay)
+    retries = 0
     while True:
         try:
             with socket.create_connection((host, port), timeout=timeout):
                 break
         except OSError as ex:
-            time.sleep(delay)
+            time.sleep(delay * 2**retries)
             if time.perf_counter() - start_time >= timeout:
                 raise TimeoutError(TIMEOUT_ERROR_MESSAGE.format(port=port, host=host)) from ex
+        
+        retries += 1
 
 
 def wait_for_docker_container(container: "docker.Container", delay: float = 0.01, timeout: float = 5.0) -> None:
@@ -91,12 +94,14 @@ def wait_for_docker_container(container: "docker.Container", delay: float = 0.01
     start_time = time.perf_counter()
     time.sleep(delay)
     container.reload()
+    retries = 0
     while container.status != DockerContainerStatus.RUNNING.value:
-        time.sleep(delay)
+        time.sleep(delay * 2**retries)
         if time.perf_counter() - start_time >= timeout:
             raise TimeoutError(DOCKER_TIMEOUT_ERROR_MESSAGE)
 
         container.reload()
+        retries += 1
 
 
 class MemgraphInstance(ABC):
