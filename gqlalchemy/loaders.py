@@ -15,6 +15,7 @@
 from string import Template
 
 from . import Memgraph
+from .query_builder import QueryBuilder, Unwind
 from .models import (
     MemgraphIndex,
     MemgraphTrigger,
@@ -23,7 +24,6 @@ from .models import (
     TriggerExecutionPhase,
 )
 
-from .query_builder import QueryBuilder, Unwind
 from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass, field
@@ -183,11 +183,16 @@ class FileSystemHandler(ABC):
     connection.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, fs: Any) -> None:
         super().__init__()
+        self._fs = fs
+
+    @property
+    def fs(self):
+        return self._fs
 
     @abstractmethod
-    def get_path(self):
+    def get_path(self, collection_name: str) -> str:
         """Returns complete path in specific file system. Used to read the file system
         for a specific file.
         """
@@ -197,95 +202,98 @@ class FileSystemHandler(ABC):
 class S3FileSystemHandler(FileSystemHandler):
     """Handles connection to Amazon S3 service via PyArrow."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, bucket_name: str, **kwargs):
         """Initializes connection and data bucket.
 
-        Kwargs:
+        Args:
             bucket_name: Name of the bucket on S3 from which to read the data
+
+        Kwargs:
             s3_access_key: S3 access key
             s3_secret_key: S3 secret key
             s3_region: S3 region
             s3_session_token: S3 session token (Optional)
         """
-        self.fs = fs.S3FileSystem(
-            region=kwargs.get(S3_REGION),
-            access_key=kwargs.get(S3_ACCESS_KEY),
-            secret_key=kwargs.get(S3_SECRET_KEY),
-            session_token=kwargs.get(S3_SESSION_TOKEN, None),
-        )
-        self._bucket_name: str = kwargs.get(S3_BUCKET_NAME_KEY)
+        if S3_ACCESS_KEY not in kwargs:
+            raise KeyError(f"{S3_ACCESS_KEY} is needed to connect to S3 storage")
+        if S3_SECRET_KEY not in kwargs:
+            raise KeyError(f"{S3_SECRET_KEY} is needed to connect to S3 storage")
 
-    def get_path(self, collection_name: str, file_extension: str) -> str:
+        super().__init__(fs=fs.S3FileSystem(**kwargs))
+        self._bucket_name = bucket_name
+
+    def get_path(self, collection_name: str) -> str:
         """Get file path in file system.
 
         Args:
             collection_name: Name of file to read
-            file_extension: File type
         """
-        return f"{self._bucket_name}/{collection_name}.{file_extension}"
+        return f"{self._bucket_name}/{collection_name}"
 
 
 class AzureBlobFileSystemHandler(FileSystemHandler):
     """Handles connection to Azure Blob service via adlfs package."""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, container_name: str, **kwargs) -> None:
         """Initializes connection and data container.
+
+        Args:
+            container_name: Name of Blob container storing data
 
         Kwargs:
             blob_account_name: Account name from Azure Blob
             blob_account_key: Account key for Azure Blob (Optional - if using sas_token)
             blob_sas_token: Shared access signature token for authentification (Optional)
-            container_name: Name of Blob container storing data
         """
-        self.fs = adlfs.AzureBlobFileSystem(
-            account_name=kwargs.get(BLOB_ACCOUNT_NAME),
-            account_key=kwargs.get(BLOB_ACCOUNT_KEY, None),
-            sas_token=kwargs.get(BLOB_SAS_TOKEN, None),
-        )
-        self._container_name = kwargs[BLOB_CONTAINER_NAME_KEY]
+        if BLOB_ACCOUNT_KEY not in kwargs and BLOB_SAS_TOKEN not in kwargs:
+            raise KeyError(f"{BLOB_ACCOUNT_KEY} or {BLOB_SAS_TOKEN} is needed to connect to Blob storage")
+        if BLOB_ACCOUNT_NAME not in kwargs:
+            raise KeyError(f"{BLOB_ACCOUNT_NAME} is needed to connect to Blob storage")
 
-    def get_path(self, collection_name: str, file_extension: str) -> str:
+        super().__init__(fs=adlfs.AzureBlobFileSystem(**kwargs))
+        self._container_name = container_name
+
+    def get_path(self, collection_name: str) -> str:
         """Get file path in file system.
 
         Args:
             collection_name: Name of file to read
-            file_extension: File type
         """
-        return f"{self._container_name}/{collection_name}.{file_extension}"
+        return f"{self._container_name}/{collection_name}"
 
 
 class LocalFileSystemHandler(FileSystemHandler):
     """Handles a local filesystem."""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, path: str) -> None:
         """Initializes an fsspec local file system and sets path to data.
 
-        Kwargs:
-            LOCAL_STORAGE_PATH: path to storage location
-            LOCAL_STORAGE_PATH: str
+        Args:
+            path: path to local storage location
         """
-        self.fs = fs.LocalFileSystem()
-        self._path = kwargs[LOCAL_STORAGE_PATH]
+        super().__init__(fs=fs.LocalFileSystem())
+        self._path = path
 
-    def get_path(self, collection_name: str, file_extension: str) -> str:
+    def get_path(self, collection_name: str) -> str:
         """Get file path in local file system.
 
         Args:
             collection_name: Name of file to read
-            file_extension: File type
         """
-        return f"{self._path}/{collection_name}.{file_extension}"
+        return f"{self._path}/{collection_name}"
 
 
 class DataLoader(ABC):
     """Implements loading of a data type from file system service to TableToGraphImporter."""
 
-    def __init__(self, file_system_handler: FileSystemHandler) -> None:
+    def __init__(self, file_extension: str, file_system_handler: FileSystemHandler) -> None:
         """
         Args:
+            file_extension: File format to be read
             file_system_handler: object for handling of file system service
         """
         super().__init__()
+        self._file_extension = file_extension
         self._file_system_handler = file_system_handler
 
     @abstractmethod
@@ -302,6 +310,16 @@ class DataLoader(ABC):
         raise NotImplementedError("Subclasses must override load_data() for use in TableToGraphImporter")
 
 
+class PyArrowFileTypeEnum(Enum):
+    """Enumerates file types supported by PyArrow"""
+
+    Default = 1
+    Parquet = 2
+    CSV = 3
+    ORC = 4
+    Feather = 5
+
+
 class PyArrowDataLoader(DataLoader):
     """Loads data using PyArrow.
 
@@ -313,16 +331,15 @@ class PyArrowDataLoader(DataLoader):
 
     def __init__(
         self,
-        file_extension: str,
+        file_extension_enum: PyArrowFileTypeEnum,
         file_system_handler: FileSystemHandler,
     ) -> None:
         """
         Args:
-            file_extension: File format to be read
+            file_extension_enum: File format to be read
             file_system_handler: Object for handling of file system service
         """
-        super().__init__(file_system_handler=file_system_handler)
-        self._file_extension = file_extension
+        super().__init__(file_extension=file_extension_enum.name.lower(), file_system_handler=file_system_handler)
 
     def load_data(
         self, collection_name: str, is_cross_table: bool = False, columns: Optional[List[str]] = None
@@ -334,7 +351,7 @@ class PyArrowDataLoader(DataLoader):
             is_cross_table: Flag signifying whether it is a cross table
             columns: Table columns to read
         """
-        source = self._file_system_handler.get_path(collection_name, self._file_extension)
+        source = self._file_system_handler.get_path(f"{collection_name}.{self._file_extension}")
         print("Loading data from " + ("cross " if is_cross_table else "") + f"table {source}...")
 
         dataset = ds.dataset(source=source, format=self._file_extension, filesystem=self._file_system_handler.fs)
@@ -346,81 +363,6 @@ class PyArrowDataLoader(DataLoader):
                 yield batch_item
 
         print("Data loaded.")
-
-
-class FileSystemTypeEnum(Enum):
-    """Enumerates all available file systems."""
-
-    Default = 1
-    Local = 2
-    AmazonS3 = 3
-    AzureBlob = 4
-
-
-class DataLoaderTypeEnum(Enum):
-    """Enumerates all available data loaders."""
-
-    Default = 1
-    PyArrow = 2
-
-
-"""collection of supported file type extensions and their corresponding Data Loaders."""
-supported_file_extensions = {
-    PARQUET_EXTENSION: DataLoaderTypeEnum.PyArrow,
-    CSV_EXTENSION: DataLoaderTypeEnum.PyArrow,
-    ORC_EXTENSION: DataLoaderTypeEnum.PyArrow,
-    IPC_EXTENSION: DataLoaderTypeEnum.PyArrow,
-    FEATHER_EXTENSION: DataLoaderTypeEnum.PyArrow,
-    ARROW_EXTENSION: DataLoaderTypeEnum.PyArrow,
-}
-
-
-def get_data_loader(file_extension: str, filesystem_type: FileSystemTypeEnum, **kwargs) -> DataLoader:
-    """Fetches a DataLoader object.
-
-    The DataLoader object uses an instance of FileSystemHandler, in order to load data
-    of specific type from a specific File System.
-
-    Args:
-        file_extension: File type to read
-        filesystem_type: Type of filesystem we want to use
-        **kwargs: For filesystem use
-
-    Raises:
-        ValueError: unsupported file extension
-    """
-    if file_extension not in supported_file_extensions:
-        raise ValueError(
-            f"{file_extension} is currently not supported.\nSupported types are: "
-            + ", ".join(supported_file_extensions)
-        )
-
-    if file_extension == ORC_EXTENSION and platform.system() == "Windows":
-        raise ValueError("ORC filetype is currently not supported by PyArrow on Windows")
-
-    if supported_file_extensions[file_extension] == DataLoaderTypeEnum.PyArrow:
-        return PyArrowDataLoader(
-            file_extension=file_extension, file_system_handler=get_filesystem(filesystem_type, **kwargs)
-        )
-
-
-def get_filesystem(filesystem_type: FileSystemTypeEnum, **kwargs) -> FileSystemHandler:
-    """Fetches a FileSystemHandler object.
-
-    Args:
-        filesystem_type: Type of filesystem we want to use
-
-    Raises:
-        ValueError: selected FileSystem is not supported
-    """
-    if filesystem_type == FileSystemTypeEnum.Local:
-        return LocalFileSystemHandler(**kwargs)
-    elif filesystem_type == FileSystemTypeEnum.AmazonS3:
-        return S3FileSystemHandler(**kwargs)
-    elif filesystem_type == FileSystemTypeEnum.AzureBlob:
-        return AzureBlobFileSystemHandler(**kwargs)
-    else:
-        raise ValueError("FileSystemType not supported!")
 
 
 class TableToGraphImporter:
@@ -718,64 +660,361 @@ class TableToGraphImporter:
         ]
 
 
-class AmazonS3Importer(TableToGraphImporter):
-    """TableToGraphImporter wrapper for use with Amazon S3 File System."""
+class PyArrowImporter(TableToGraphImporter):
+    """TableToGraphImporter wrapper for use with PyArrow for reading data."""
 
     def __init__(
-        self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+        self,
+        file_system_handler: str,
+        file_extension_enum: PyArrowFileTypeEnum,
+        data_configuration: Dict[str, Any],
+        memgraph: Optional[Memgraph] = None,
     ) -> None:
         """
         Args:
-            file_extension: file format to be read
+            file_system_handler: File system to read from
+            file_extension_enum: File format to be read
             data_configuration: Configuration for the translations
             memgraph: Connection to Memgraph (Optional)
         """
+        if file_extension_enum == PyArrowFileTypeEnum.ORC and platform.system() == "Windows":
+            raise ValueError("ORC filetype is currently not supported by PyArrow on Windows")
+
         super().__init__(
-            data_loader=get_data_loader(
-                file_extension=file_extension, filesystem_type=FileSystemTypeEnum.AmazonS3, **kwargs
+            data_loader=PyArrowDataLoader(
+                file_extension_enum=file_extension_enum, file_system_handler=file_system_handler
             ),
             data_configuration=data_configuration,
             memgraph=memgraph,
         )
 
 
-class AzureBlobImporter(TableToGraphImporter):
-    """TableToGraphImporter wrapper for use with Azure Blob File System."""
+class PyArrowS3Importer(PyArrowImporter):
+    """PyArrowImporter wrapper for use with Amazon S3 File System."""
 
     def __init__(
-        self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+        self,
+        bucket_name: str,
+        file_extension_enum: PyArrowFileTypeEnum,
+        data_configuration: Dict[str, Any],
+        memgraph: Optional[Memgraph] = None,
+        **kwargs,
     ) -> None:
         """
         Args:
-            file_extension: file format to be read
+            bucket_name: Name of bucket in S3 to read from
+            file_extension_enum: File format to be read
             data_configuration: Configuration for the translations
             memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for S3FileSystem
         """
         super().__init__(
-            data_loader=get_data_loader(
-                file_extension=file_extension, filesystem_type=FileSystemTypeEnum.AzureBlob, **kwargs
-            ),
+            file_system_handler=S3FileSystemHandler(bucket_name=bucket_name, **kwargs),
+            file_extension_enum=file_extension_enum,
             data_configuration=data_configuration,
             memgraph=memgraph,
         )
 
 
-class LocalFileSystemImporter(TableToGraphImporter):
-    """TableToGraphImporter wrapper for use with Local File System."""
+class PyArrowAzureBlobImporter(PyArrowImporter):
+    """PyArrowImporter wrapper for use with Azure Blob File System."""
 
     def __init__(
-        self, file_extension: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+        self,
+        container_name: str,
+        file_extension_enum: PyArrowFileTypeEnum,
+        data_configuration: Dict[str, Any],
+        memgraph: Optional[Memgraph] = None,
+        **kwargs,
     ) -> None:
         """
         Args:
-            file_extension: file format to be read
+            container_name: Name of container in Azure Blob to read from
+            file_extension_enum: File format to be read
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for AzureBlobFileSystem
+        """
+        super().__init__(
+            file_system_handler=AzureBlobFileSystemHandler(container_name=container_name, **kwargs),
+            file_extension_enum=file_extension_enum,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+        )
+
+
+class PyArrowLocalFileSystemImporter(PyArrowImporter):
+    """PyArrowImporter wrapper for use with Local File System."""
+
+    def __init__(
+        self,
+        path: str,
+        file_extension_enum: PyArrowFileTypeEnum,
+        data_configuration: Dict[str, Any],
+        memgraph: Optional[Memgraph] = None,
+    ) -> None:
+        """
+        Args:
+            path: Full path to dir to read from
+            file_extension_enum: File format to be read
             data_configuration: Configuration for the translations
             memgraph: Connection to Memgraph (Optional)
         """
         super().__init__(
-            data_loader=get_data_loader(
-                file_extension=file_extension, filesystem_type=FileSystemTypeEnum.Local, **kwargs
-            ),
+            file_system_handler=LocalFileSystemHandler(path=path),
+            file_extension_enum=file_extension_enum,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+        )
+
+
+class ParquetS3FileSystemImporter(PyArrowS3Importer):
+    """PyArrowS3Importer wrapper for use with S3 file system and parquet file type"""
+
+    def __init__(
+        self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            bucket_name: Name of bucket in S3 to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for S3FileSystem
+        """
+        super().__init__(
+            bucket_name=bucket_name,
+            file_extension_enum=PyArrowFileTypeEnum.Parquet,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class CSVS3FileSystemImporter(PyArrowS3Importer):
+    """PyArrowS3Importer wrapper for use with S3 file system and CSV file type"""
+
+    def __init__(
+        self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            bucket_name: Name of bucket in S3 to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for S3FileSystem
+        """
+        super().__init__(
+            bucket_name=bucket_name,
+            file_extension_enum=PyArrowFileTypeEnum.CSV,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class ORCS3FileSystemImporter(PyArrowS3Importer):
+    """PyArrowS3Importer wrapper for use with S3 file system and ORC file type"""
+
+    def __init__(
+        self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            bucket_name: Name of bucket in S3 to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for S3FileSystem
+        """
+        super().__init__(
+            bucket_name=bucket_name,
+            file_extension_enum=PyArrowFileTypeEnum.ORC,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class FeatherS3FileSystemImporter(PyArrowS3Importer):
+    """PyArrowS3Importer wrapper for use with S3 file system and feather file type"""
+
+    def __init__(
+        self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            bucket_name: Name of bucket in S3 to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for S3FileSystem
+        """
+        super().__init__(
+            bucket_name=bucket_name,
+            file_extension_enum=PyArrowFileTypeEnum.Feather,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class ParquetAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
+    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and parquet file type"""
+
+    def __init__(
+        self, container_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            container_name: Name of container in Blob storage to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for AzureBlobFileSystem
+        """
+        super().__init__(
+            container_name=container_name,
+            file_extension_enum=PyArrowFileTypeEnum.Parquet,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class CSVAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
+    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and CSV file type"""
+
+    def __init__(
+        self, container_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            container_name: Name of container in Blob storage to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for AzureBlobFileSystem
+        """
+        super().__init__(
+            container_name=container_name,
+            file_extension_enum=PyArrowFileTypeEnum.CSV,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class ORCAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
+    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and CSV file type"""
+
+    def __init__(
+        self, container_name, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            container_name: Name of container in Blob storage to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for AzureBlobFileSystem
+        """
+        super().__init__(
+            container_name=container_name,
+            file_extension_enum=PyArrowFileTypeEnum.ORC,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class FeatherAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
+    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and Feather file type"""
+
+    def __init__(
+        self, container_name, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
+    ) -> None:
+        """
+        Args:
+            container_name: Name of container in Blob storage to read from
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for AzureBlobFileSystem
+        """
+        super().__init__(
+            container_name=container_name,
+            file_extension_enum=PyArrowFileTypeEnum.Feather,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+            **kwargs,
+        )
+
+
+class ParquetLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
+    """PyArrowLocalFileSystemImporter wrapper for use with local file system and parquet file type"""
+
+    def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
+        """
+        Args:
+            path: Full path to dir
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for LocalFileSystem
+        """
+        super().__init__(
+            path=path,
+            file_extension_enum=PyArrowFileTypeEnum.Parquet,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+        )
+
+
+class CSVLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
+    """PyArrowLocalFileSystemImporter wrapper for use with local file system and CSV file type"""
+
+    def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
+        """
+        Args:
+            path: Full path to dir
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for LocalFileSystem
+        """
+        super().__init__(
+            path=path,
+            file_extension_enum=PyArrowFileTypeEnum.CSV,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+        )
+
+
+class ORCLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
+    """PyArrowLocalFileSystemImporter wrapper for use with local file system and ORC file type"""
+
+    def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
+        """
+        Args:
+            path: Full path to dir
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for LocalFileSystem
+        """
+        super().__init__(
+            path=path,
+            file_extension_enum=PyArrowFileTypeEnum.ORC,
+            data_configuration=data_configuration,
+            memgraph=memgraph,
+        )
+
+
+class FeatherLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
+    """PyArrowLocalFileSystemImporter wrapper for use with local file system and Feather/IPC/Arrow file type"""
+
+    def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
+        """
+        Args:
+            path: Full path to dir
+            data_configuration: Configuration for the translations
+            memgraph: Connection to Memgraph (Optional)
+            **kwargs: Specified for LocalFileSystem
+        """
+        super().__init__(
+            path=path,
+            file_extension_enum=PyArrowFileTypeEnum.Feather,
             data_configuration=data_configuration,
             memgraph=memgraph,
         )
