@@ -14,22 +14,21 @@
 
 import platform
 import pytest
-from unittest.mock import patch, Mock
 
 from gqlalchemy.loaders import (
+    CSVLocalFileSystemImporter,
     DataLoader,
+    FeatherLocalFileSystemImporter,
     FileSystemHandler,
-    FileSystemTypeEnum,
     NameMapper,
-    PyArrowDataLoader,
-    LocalFileSystemImporter,
-    get_data_loader,
+    ORCLocalFileSystemImporter,
+    ParquetLocalFileSystemImporter,
 )
 
 
 class TestFileSystemHandler(FileSystemHandler):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(fs=None)
 
     def get_path(self):
         pass
@@ -37,7 +36,7 @@ class TestFileSystemHandler(FileSystemHandler):
 
 class TestDataLoader(DataLoader):
     def __init__(self, file_system_handler: FileSystemHandler) -> None:
-        super().__init__(file_system_handler)
+        super().__init__(file_extension="none", file_system_handler=file_system_handler)
         self.num = 5
 
     def load_data(self, collection_name: str, is_cross_table: bool = False) -> None:
@@ -72,53 +71,61 @@ def test_custom_data_loader(dummy_loader):
     assert dummy_loader.num == 42
 
 
-def test_get_data_loader_error():
-    """Test get_data_loader when the file_extension is not supported"""
-    with pytest.raises(ValueError):
-        get_data_loader("fail", FileSystemTypeEnum.AmazonS3)
-
-
-def test_get_data_loader_wrong_filesystem():
-    """Test get_data_loader when the filesystem is not supported"""
-    with pytest.raises(ValueError):
-        get_data_loader("csv", 1)
-
-
-def test_data_loader():
-    """Test that for csv file extension a PyArrowDataLoader is returned"""
-    get_filesystem_fake = Mock()
-    get_filesystem_fake.return_value = None
-    with patch("gqlalchemy.loaders.get_filesystem", wraps=get_filesystem_fake):
-        assert type(get_data_loader("csv", FileSystemTypeEnum.Local)) is PyArrowDataLoader
-
-
-@pytest.mark.parametrize(
-    "file_extension",
-    [
-        "parquet",
-        "csv",
-        "feather",
-    ],
-)
-def test_local_table_to_graph_importer(file_extension, memgraph):
+def test_local_table_to_graph_importer_parquet(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-    importer = LocalFileSystemImporter(
-        file_extension=file_extension,
-        data_configuration=my_configuration,
-        local_storage_path="./tests/loaders/data",
-        memgraph=memgraph,
+    importer = ParquetLocalFileSystemImporter(
+        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
     )
 
     importer.translate(drop_database_on_start=True)
 
 
-def test_orc_on_windows():
-    """PyArrow does not work with orc files on Windows, we raise a ValueError for this"""
+def test_local_table_to_graph_importer_csv(memgraph):
+    """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+    my_configuration = {
+        "indices": {"example": ["name"]},
+        "name_mappings": {"example": {"label": "PERSON"}},
+        "one_to_many_relations": {"example": []},
+    }
+    importer = CSVLocalFileSystemImporter(
+        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
+    )
+
+    importer.translate(drop_database_on_start=True)
+
+
+def test_local_table_to_graph_importer_orc(memgraph):
+    """e2e test, using Local File System to import into memgraph, tests available file extensions"""
     if platform.system() == "Windows":
         with pytest.raises(ValueError):
-            LocalFileSystemImporter(file_extension="orc", data_configuration=None)
+            ORCLocalFileSystemImporter(path="", data_configuration=None)
+    else:
+        my_configuration = {
+            "indices": {"example": ["name"]},
+            "name_mappings": {"example": {"label": "PERSON"}},
+            "one_to_many_relations": {"example": []},
+        }
+        importer = ORCLocalFileSystemImporter(
+            path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
+        )
+
+        importer.translate(drop_database_on_start=True)
+
+
+def test_local_table_to_graph_importer_feather(memgraph):
+    """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+    my_configuration = {
+        "indices": {"example": ["name"]},
+        "name_mappings": {"example": {"label": "PERSON"}},
+        "one_to_many_relations": {"example": []},
+    }
+    importer = FeatherLocalFileSystemImporter(
+        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
+    )
+
+    importer.translate(drop_database_on_start=True)
