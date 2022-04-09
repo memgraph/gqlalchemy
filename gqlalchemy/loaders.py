@@ -71,9 +71,9 @@ class ForeignKeyMapping:
     """Class that contains the full description of a single foreign key in a table.
 
     Attributes:
-        column_name: Column name that holds the foreign key
-        reference_table: Name of a table from which the foreign key is taken
-        reference_key: Column name in referenced table from which the foreign key is taken
+        column_name: Column name that holds the foreign key.
+        reference_table: Name of a table from which the foreign key is taken.
+        reference_key: Column name in the referenced table from which the foreign key is taken.
     """
 
     column_name: str
@@ -86,10 +86,10 @@ class OneToManyMapping:
     """Class that holds the full description of a single one to many mapping in a table.
 
     Attributes:
-        foreign_key: Foreign key used for mapping
-        label: Label which will be applied to the relationship created from this object
-        from_entity: Direction of the relationship created from mapping object
-        parameters: Parameters that will be added to the relationship created from this object (Optional)
+        foreign_key: Foreign key used for mapping.
+        label: Label which will be applied to the relationship created from this object.
+        from_entity: Direction of the relationship created from the mapping object.
+        parameters: Parameters that will be added to the relationship created from this object (Optional).
     """
 
     foreign_key: ForeignKeyMapping
@@ -101,13 +101,13 @@ class OneToManyMapping:
 @dataclass(frozen=True)
 class ManyToManyMapping:
     """Class that holds the full description of a single many to many mapping in a table.
-    Many to many mapping is intended to be used in case of associative tables
+    Many to many mapping is intended to be used in case of associative tables.
 
     Attributes:
-        foreign_key_from: Describes the source of the relationship
-        foreign_key_to: Describes the destination of the relationship
-        label: Label to be applied to the newly created relationship
-        parameters: Parameters that will be added to the relationship created from this object (Optional)
+        foreign_key_from: Describes the source of the relationship.
+        foreign_key_to: Describes the destination of the relationship.
+        label: Label to be applied to the newly created relationship.
+        parameters: Parameters that will be added to the relationship created from this object (Optional).
     """
 
     foreign_key_from: ForeignKeyMapping
@@ -124,9 +124,9 @@ class TableMapping:
     """Class that holds the full description of all of the mappings for a single table.
 
     Attributes:
-        table_name: Name of the table
-        mapping: All of the mappings in the table (Optional)
-        indices: List of the indices to be created for this table (Optional)
+        table_name: Name of the table.
+        mapping: All of the mappings in the table (Optional).
+        indices: List of the indices to be created for this table (Optional).
     """
 
     table_name: str
@@ -139,8 +139,8 @@ class NameMappings:
     """Class that contains new label name and all of the column name mappings for a single table.
 
     Attributes:
-        label: New label (Optional)
-        column_names_mapping: Dictionary containing key-value pairs in form ("column name", "property name") (Optional)
+        label: New label (Optional).
+        column_names_mapping: Dictionary containing key-value pairs in form ("column name", "property name") (Optional).
     """
 
     label: Optional[str] = None
@@ -160,18 +160,18 @@ class NameMapper:
         """Returns label for given collection.
 
         Args:
-            collection_name: Original collection name
+            collection_name: Original collection name.
         """
         label = self._name_mappings[collection_name].label
 
         return label if label is not None else collection_name
 
     def get_property_name(self, collection_name: str, column_name: str) -> str:
-        """Returns property name for column from collection
+        """Returns property name for column from collection.
 
         Args:
-            collection_name: Original collection name
-            column_name: Original column name
+            collection_name: Original collection name.
+            column_name: Original column name.
         """
         return self._name_mappings[collection_name].get_property_name(column_name=column_name)
 
@@ -209,13 +209,13 @@ class S3FileSystemHandler(FileSystemHandler):
             bucket_name: Name of the bucket on S3 from which to read the data
 
         Kwargs:
-            s3_access_key: S3 access key
-            s3_secret_key: S3 secret key
-            s3_region: S3 region
-            s3_session_token: S3 session token (Optional)
+            s3_access_key: S3 access key.
+            s3_secret_key: S3 secret key.
+            s3_region: S3 region.
+            s3_session_token: S3 session token (Optional).
 
         Raises:
-            KeyError: kwargs doesn't contain necessary fields
+            KeyError: kwargs doesn't contain necessary fields.
         """
         if S3_ACCESS_KEY not in kwargs:
             raise KeyError(f"{S3_ACCESS_KEY} is needed to connect to S3 storage")
@@ -229,7 +229,7 @@ class S3FileSystemHandler(FileSystemHandler):
         """Get file path in file system.
 
         Args:
-            collection_name: Name of file to read
+            collection_name: Name of the file to read.
         """
         return f"{self._bucket_name}/{collection_name}"
 
@@ -241,15 +241,15 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         """Initializes connection and data container.
 
         Args:
-            container_name: Name of Blob container storing data
+            container_name: Name of the Blob container storing data.
 
         Kwargs:
-            blob_account_name: Account name from Azure Blob
-            blob_account_key: Account key for Azure Blob (Optional - if using sas_token)
-            blob_sas_token: Shared access signature token for authentification (Optional)
+            blob_account_name: Account name from Azure Blob.
+            blob_account_key: Account key for Azure Blob (Optional - if using sas_token).
+            blob_sas_token: Shared access signature token for authentification (Optional).
 
         Raises:
-            KeyError: kwargs doesn't contain necessary fields
+            KeyError: kwargs doesn't contain necessary fields.
         """
         if BLOB_ACCOUNT_KEY not in kwargs and BLOB_SAS_TOKEN not in kwargs:
             raise KeyError(f"{BLOB_ACCOUNT_KEY} or {BLOB_SAS_TOKEN} is needed to connect to Blob storage")
@@ -263,7 +263,7 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         """Get file path in file system.
 
         Args:
-            collection_name: Name of file to read
+            collection_name: Name of the file to read.
         """
         return f"{self._container_name}/{collection_name}"
 
@@ -275,16 +275,16 @@ class LocalFileSystemHandler(FileSystemHandler):
         """Initializes an fsspec local file system and sets path to data.
 
         Args:
-            path: path to local storage location
+            path: path to the local storage location.
         """
         super().__init__(fs=fs.LocalFileSystem())
         self._path = path
 
     def get_path(self, collection_name: str) -> str:
-        """Get file path in local file system.
+        """Get file path in the local file system.
 
         Args:
-            collection_name: Name of file to read
+            collection_name: Name of the file to read.
         """
         return f"{self._path}/{collection_name}"
 
@@ -295,8 +295,8 @@ class DataLoader(ABC):
     def __init__(self, file_extension: str, file_system_handler: FileSystemHandler) -> None:
         """
         Args:
-            file_extension: File format to be read
-            file_system_handler: object for handling of file system service
+            file_extension: File format to be read.
+            file_system_handler: Object for handling of the file system service.
         """
         super().__init__()
         self._file_extension = file_extension
@@ -307,8 +307,8 @@ class DataLoader(ABC):
         """Override this method in the derived class. Intended to be used for reading data from data format.
 
         Args:
-            collection_name: name of file to read
-            is_cross_table: Indicate whether or not the collection contains associative table (default=False)
+            collection_name: Name of the file to read.
+            is_cross_table: Indicate whether or not the collection contains associative table (default=False).
 
         Raises:
             NotImplementedError: The method is not implemented in the extended class.
@@ -342,20 +342,20 @@ class PyArrowDataLoader(DataLoader):
     ) -> None:
         """
         Args:
-            file_extension_enum: File format to be read
-            file_system_handler: Object for handling of file system service
+            file_extension_enum: The file format to be read.
+            file_system_handler: Object for handling of the file system service.
         """
         super().__init__(file_extension=file_extension_enum.name.lower(), file_system_handler=file_system_handler)
 
     def load_data(
         self, collection_name: str, is_cross_table: bool = False, columns: Optional[List[str]] = None
     ) -> None:
-        """Generator for loading data to.
+        """Generator for loading data.
 
         Args:
-            collection_name: Name of file to read
-            is_cross_table: Flag signifying whether it is a cross table
-            columns: Table columns to read
+            collection_name: Name of the file to read.
+            is_cross_table: Flag signifying whether it is a cross table.
+            columns: Table columns to read.
         """
         source = self._file_system_handler.get_path(f"{collection_name}.{self._file_extension}")
         print("Loading data from " + ("cross " if is_cross_table else "") + f"table {source}...")
@@ -395,15 +395,15 @@ class TableToGraphImporter:
     def _create_trigger_cypher_query(
         label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool
     ) -> str:
-        """Creates Cypher Query for translation Trigger.
+        """Creates a Cypher query for the translation trigger.
 
         Args:
-            label1: Label of the first Node
-            label2: Label of the second Node
-            property1: Property of the first Node
-            property2: Property of the second Node
-            edge_type: Label for the relationship that the trigger creates
-            from_entity: Indicate whether relationship goes from or to first entity
+            label1: Label of the first node.
+            label2: Label of the second node.
+            property1: Property of the first node.
+            property2: Property of the second node.
+            edge_type: Label for the relationship that the trigger creates.
+            from_entity: Indicate whether the relationship goes from or to the first entity.
         """
         from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
 
@@ -427,9 +427,9 @@ class TableToGraphImporter:
     ) -> None:
         """
         Args:
-            data_loader: object for loading data
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
+            data_loader: Object for loading data.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
         """
         self._data_loader: DataLoader = data_loader
         self._memgraph: Memgraph = memgraph if memgraph is not None else Memgraph()
@@ -440,7 +440,7 @@ class TableToGraphImporter:
         """Performs the translations.
 
         Args:
-            drop_database_on_start: Indicate whether or not the database should be dropped prior to the start of the translations
+            drop_database_on_start: Indicate whether or not the database should be dropped prior to the start of the translations.
         """
         if drop_database_on_start:
             self._memgraph.drop_database()
@@ -454,14 +454,14 @@ class TableToGraphImporter:
         self._load_cross_relationships()
 
     def _load_nodes(self) -> None:
-        """Reads all of the data from the single table in the data source, translates it, and writes it to memgraph."""
+        """Reads all of the data from the single table in the data source, translates it, and writes it to Memgraph."""
         for one_to_many_mapping in self._one_to_many_mappings:
             collection_name = one_to_many_mapping.table_name
             for row in self._data_loader.load_data(collection_name=collection_name):
                 self._save_row_as_node(label=collection_name, row=row)
 
     def _load_cross_relationships(self) -> None:
-        """Reads all of the data from the single associative table in the data source, translates it, and writes it to memgraph."""
+        """Reads all of the data from the single associative table in the data source, translates it, and writes it to Memgraph."""
         for many_to_many_mapping in self._many_to_many_mappings:
             mapping_from = many_to_many_mapping.mapping.foreign_key_from
             mapping_to = many_to_many_mapping.mapping.foreign_key_to
@@ -479,14 +479,13 @@ class TableToGraphImporter:
                 )
 
     def _create_triggers(self) -> None:
-        """Creates all of the Triggers in the Memgraph.
+        """Creates all of the Triggers in Memgraph.
 
         Triggers are used as a part of speeding up the translation. Since nodes
         and relationships are written in one go, foreign keys that are represented
         as relationships might not yet be present in memgraph. When they do appear,
-        triggers make sure to write relationship at that point in time,
-
-        rather than having hanging relationship.
+        triggers make sure to create the relationship at that point in time, rather
+        than having hanging relationship.
         """
         for one_to_many_mapping in self._one_to_many_mappings:
             label1 = self._name_mapper.get_label(collection_name=one_to_many_mapping.table_name)
@@ -521,15 +520,15 @@ class TableToGraphImporter:
     def _create_trigger(
         self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool
     ) -> None:
-        """Creates translation trigger in Memgraph.
+        """Creates a translation trigger in Memgraph.
 
         Args:
-            label1: Label of the first Node
-            label2: Label of the second Node
-            property1: Property of the first Node
-            property2: Property of the second Node
-            edge_type: Label for the relationship that the trigger creates
-            from_entity: Indicate whether relationship goes from or to first entity
+            label1: Label of the first node.
+            label2: Label of the second node.
+            property1: Property of the first node.
+            property2: Property of the second node.
+            edge_type: Label for the relationship that the trigger creates.
+            from_entity: Indicate whether the relationship goes from or to the first entity.
         """
         trigger_name = "__".join([label1, property1, label2, property2])
 
@@ -563,11 +562,11 @@ class TableToGraphImporter:
         label: str,
         row: Dict[str, Any],
     ) -> None:
-        """Translates row to Node and writes it to Memgraph.
+        """Translates a row to a node and writes it to Memgraph.
 
         Args:
-            label: Original label of the new node
-            row: Row that should be saved to Memgraph as Node
+            label: Original label of the new node.
+            row: The row that should be saved to Memgraph as a node.
         """
         (
             QueryBuilder(connection=self._memgraph)
@@ -590,15 +589,15 @@ class TableToGraphImporter:
         relation_label: str,
         row: Dict[str, Any],
     ) -> None:
-        """Translates row to Relationship and writes it to Memgraph.
+        """Translates a row to a relationship and writes it to Memgraph.
 
         Args:
-            collection_name_from: Collection name of the source node
-            collection_name_to: Collection name of the destination node
-            property_from: Property of the source Node
-            property_to: Property of the destination Node
-            relation_label: Label for the relationship
-            row: row to be translated
+            collection_name_from: Collection name of the source node.
+            collection_name_to: Collection name of the destination node.
+            property_from: Property of the source node.
+            property_to: Property of the destination node.
+            relation_label: Label for the relationship.
+            row: The row to be translated.
         """
         (
             QueryBuilder(connection=self._memgraph)
@@ -678,13 +677,13 @@ class PyArrowImporter(TableToGraphImporter):
     ) -> None:
         """
         Args:
-            file_system_handler: File system to read from
-            file_extension_enum: File format to be read
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
+            file_system_handler: File system to read from.
+            file_extension_enum: File format to be read.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
 
         Raises:
-            ValueError: PyArrow doesn't support ORC on Windows
+            ValueError: PyArrow doesn't support ORC on Windows.
         """
         if file_extension_enum == PyArrowFileTypeEnum.ORC and platform.system() == "Windows":
             raise ValueError("ORC filetype is currently not supported by PyArrow on Windows")
@@ -699,7 +698,7 @@ class PyArrowImporter(TableToGraphImporter):
 
 
 class PyArrowS3Importer(PyArrowImporter):
-    """PyArrowImporter wrapper for use with Amazon S3 File System."""
+    """PyArrowImporter wrapper for use with the Amazon S3 File System."""
 
     def __init__(
         self,
@@ -711,11 +710,11 @@ class PyArrowS3Importer(PyArrowImporter):
     ) -> None:
         """
         Args:
-            bucket_name: Name of bucket in S3 to read from
-            file_extension_enum: File format to be read
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for S3FileSystem
+            bucket_name: Name of the bucket in S3 to read from.
+            file_extension_enum: File format to be read.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for S3FileSystem.
         """
         super().__init__(
             file_system_handler=S3FileSystemHandler(bucket_name=bucket_name, **kwargs),
@@ -726,7 +725,7 @@ class PyArrowS3Importer(PyArrowImporter):
 
 
 class PyArrowAzureBlobImporter(PyArrowImporter):
-    """PyArrowImporter wrapper for use with Azure Blob File System."""
+    """PyArrowImporter wrapper for use with the Azure Blob File System."""
 
     def __init__(
         self,
@@ -738,11 +737,11 @@ class PyArrowAzureBlobImporter(PyArrowImporter):
     ) -> None:
         """
         Args:
-            container_name: Name of container in Azure Blob to read from
-            file_extension_enum: File format to be read
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for AzureBlobFileSystem
+            container_name: Name of the container in Azure Blob to read from.
+            file_extension_enum: File format to be read.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for AzureBlobFileSystem.
         """
         super().__init__(
             file_system_handler=AzureBlobFileSystemHandler(container_name=container_name, **kwargs),
@@ -753,7 +752,7 @@ class PyArrowAzureBlobImporter(PyArrowImporter):
 
 
 class PyArrowLocalFileSystemImporter(PyArrowImporter):
-    """PyArrowImporter wrapper for use with Local File System."""
+    """PyArrowImporter wrapper for use with the Local File System."""
 
     def __init__(
         self,
@@ -764,10 +763,10 @@ class PyArrowLocalFileSystemImporter(PyArrowImporter):
     ) -> None:
         """
         Args:
-            path: Full path to dir to read from
-            file_extension_enum: File format to be read
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
+            path: Full path to the directory to read from.
+            file_extension_enum: File format to be read.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
         """
         super().__init__(
             file_system_handler=LocalFileSystemHandler(path=path),
@@ -778,17 +777,17 @@ class PyArrowLocalFileSystemImporter(PyArrowImporter):
 
 
 class ParquetS3FileSystemImporter(PyArrowS3Importer):
-    """PyArrowS3Importer wrapper for use with S3 file system and parquet file type"""
+    """PyArrowS3Importer wrapper for use with the S3 file system and the parquet file type."""
 
     def __init__(
         self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            bucket_name: Name of bucket in S3 to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for S3FileSystem
+            bucket_name: Name of the bucket in S3 to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for S3FileSystem.
         """
         super().__init__(
             bucket_name=bucket_name,
@@ -800,17 +799,17 @@ class ParquetS3FileSystemImporter(PyArrowS3Importer):
 
 
 class CSVS3FileSystemImporter(PyArrowS3Importer):
-    """PyArrowS3Importer wrapper for use with S3 file system and CSV file type"""
+    """PyArrowS3Importer wrapper for use with the S3 file system and the CSV file type."""
 
     def __init__(
         self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            bucket_name: Name of bucket in S3 to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for S3FileSystem
+            bucket_name: Name of the bucket in S3 to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for S3FileSystem.
         """
         super().__init__(
             bucket_name=bucket_name,
@@ -822,17 +821,17 @@ class CSVS3FileSystemImporter(PyArrowS3Importer):
 
 
 class ORCS3FileSystemImporter(PyArrowS3Importer):
-    """PyArrowS3Importer wrapper for use with S3 file system and ORC file type"""
+    """PyArrowS3Importer wrapper for use with the S3 file system and the ORC file type."""
 
     def __init__(
         self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            bucket_name: Name of bucket in S3 to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for S3FileSystem
+            bucket_name: Name of the bucket in S3 to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for S3FileSystem.
         """
         super().__init__(
             bucket_name=bucket_name,
@@ -844,17 +843,17 @@ class ORCS3FileSystemImporter(PyArrowS3Importer):
 
 
 class FeatherS3FileSystemImporter(PyArrowS3Importer):
-    """PyArrowS3Importer wrapper for use with S3 file system and feather file type"""
+    """PyArrowS3Importer wrapper for use with the S3 file system and the feather file type."""
 
     def __init__(
         self, bucket_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            bucket_name: Name of bucket in S3 to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for S3FileSystem
+            bucket_name: Name of the bucket in S3 to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for S3FileSystem.
         """
         super().__init__(
             bucket_name=bucket_name,
@@ -866,17 +865,17 @@ class FeatherS3FileSystemImporter(PyArrowS3Importer):
 
 
 class ParquetAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
-    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and parquet file type"""
+    """PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the parquet file type."""
 
     def __init__(
         self, container_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            container_name: Name of container in Blob storage to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for AzureBlobFileSystem
+            container_name: Name of the container in Azure Blob storage to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for AzureBlobFileSystem.
         """
         super().__init__(
             container_name=container_name,
@@ -888,17 +887,17 @@ class ParquetAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
 
 
 class CSVAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
-    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and CSV file type"""
+    """PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the CSV file type."""
 
     def __init__(
         self, container_name: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            container_name: Name of container in Blob storage to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for AzureBlobFileSystem
+            container_name: Name of the container in Azure Blob storage to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for AzureBlobFileSystem.
         """
         super().__init__(
             container_name=container_name,
@@ -910,17 +909,17 @@ class CSVAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
 
 
 class ORCAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
-    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and CSV file type"""
+    """PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the CSV file type."""
 
     def __init__(
         self, container_name, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            container_name: Name of container in Blob storage to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for AzureBlobFileSystem
+            container_name: Name of the container in Blob storage to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for AzureBlobFileSystem.
         """
         super().__init__(
             container_name=container_name,
@@ -932,17 +931,17 @@ class ORCAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
 
 
 class FeatherAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
-    """PyArrowAzureBlobImporter wrapper for use with azure blob file system and Feather file type"""
+    """PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the Feather file type."""
 
     def __init__(
         self, container_name, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None, **kwargs
     ) -> None:
         """
         Args:
-            container_name: Name of container in Blob storage to read from
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for AzureBlobFileSystem
+            container_name: Name of the container in Blob storage to read from.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for AzureBlobFileSystem.
         """
         super().__init__(
             container_name=container_name,
@@ -954,15 +953,15 @@ class FeatherAzureBlobFileSystemImporter(PyArrowAzureBlobImporter):
 
 
 class ParquetLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
-    """PyArrowLocalFileSystemImporter wrapper for use with local file system and parquet file type"""
+    """PyArrowLocalFileSystemImporter wrapper for use with the local file system and the parquet file type."""
 
     def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
         """
         Args:
-            path: Full path to dir
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for LocalFileSystem
+            path: Full path to directory.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for LocalFileSystem.
         """
         super().__init__(
             path=path,
@@ -973,15 +972,15 @@ class ParquetLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
 
 
 class CSVLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
-    """PyArrowLocalFileSystemImporter wrapper for use with local file system and CSV file type"""
+    """PyArrowLocalFileSystemImporter wrapper for use with the local file system and the CSV file type."""
 
     def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
         """
         Args:
-            path: Full path to dir
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for LocalFileSystem
+            path: Full path to directory.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for LocalFileSystem.
         """
         super().__init__(
             path=path,
@@ -992,15 +991,15 @@ class CSVLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
 
 
 class ORCLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
-    """PyArrowLocalFileSystemImporter wrapper for use with local file system and ORC file type"""
+    """PyArrowLocalFileSystemImporter wrapper for use with the local file system and the ORC file type."""
 
     def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
         """
         Args:
-            path: Full path to dir
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for LocalFileSystem
+            path: Full path to directory.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for LocalFileSystem.
         """
         super().__init__(
             path=path,
@@ -1011,15 +1010,15 @@ class ORCLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
 
 
 class FeatherLocalFileSystemImporter(PyArrowLocalFileSystemImporter):
-    """PyArrowLocalFileSystemImporter wrapper for use with local file system and Feather/IPC/Arrow file type"""
+    """PyArrowLocalFileSystemImporter wrapper for use with the local file system and the Feather/IPC/Arrow file type."""
 
     def __init__(self, path: str, data_configuration: Dict[str, Any], memgraph: Optional[Memgraph] = None) -> None:
         """
         Args:
-            path: Full path to dir
-            data_configuration: Configuration for the translations
-            memgraph: Connection to Memgraph (Optional)
-            **kwargs: Specified for LocalFileSystem
+            path: Full path to directory.
+            data_configuration: Configuration for the translations.
+            memgraph: Connection to Memgraph (Optional).
+            **kwargs: Specified for LocalFileSystem.
         """
         super().__init__(
             path=path,
