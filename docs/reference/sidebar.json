@@ -3,6 +3,7 @@
     {
       "items": [
         "reference/gqlalchemy/disk_storage",
+        "reference/gqlalchemy/instance_runner",
         "reference/gqlalchemy/memgraph",
         "reference/gqlalchemy/models",
         "reference/gqlalchemy/query_builder",

@@ -40,6 +40,23 @@ db = Memgraph()
 SQLitePropertyDatabase("path-to-sqlite-db", db)
 """
 
+MISSING_ORDER = """
+The second argument of the tuple must be order: ASC, ASCENDING, DESC or DESCENDING.
+"""
+
+ORDER_BY_TYPE_ERROR = """
+TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[tuple[str, str]].
+"""
+
+LITERAL_AND_EXPRESSION_MISSING_IN_WHERE = """
+Can't create WHERE query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
+"""
+
+EXTRA_KEYWORD_ARGUMENTS_IN_WHERE = """
+Can't create WHERE query with extra keyword arguments:
+Please provide a value to either 'literal' or 'expression' keyword arguments."
+"""
+
 
 class GQLAlchemyWarning(Warning):
     pass
@@ -78,3 +95,27 @@ class GQLAlchemyOnDiskPropertyDatabaseNotDefinedError(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = ON_DISK_PROPERTY_DATABASE_NOT_DEFINED_ERROR
+
+
+class GQLAlchemyMissingOrder(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = MISSING_ORDER
+
+
+class GQLAlchemyOrderByTypeError(TypeError):
+    def __init__(self):
+        super().__init__()
+        self.message = ORDER_BY_TYPE_ERROR
+
+
+class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = LITERAL_AND_EXPRESSION_MISSING_IN_WHERE
+
+
+class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = EXTRA_KEYWORD_ARGUMENTS_IN_WHERE

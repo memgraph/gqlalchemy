@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
+from .exceptions import (
+    GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyExtraKeywordArgumentsInWhere,
+    GQLAlchemyMissingOrder,
+    GQLAlchemyOrderByTypeError,
+)
 
 
 class DeclarativeBaseTypes:
-    AND_WHERE = "AND_WHERE"
     CALL = "CALL"
     CREATE = "CREATE"
     DELETE = "DELETE"
@@ -32,8 +38,7 @@ class DeclarativeBaseTypes:
     MATCH = "MATCH"
     MERGE = "MERGE"
     NODE = "NODE"
-    ORDER_BY = "ORDER_BY"
-    OR_WHERE = "OR_WHERE"
+    ORDER_BY = "ORDER BY"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
     SKIP = "SKIP"
@@ -42,7 +47,6 @@ class DeclarativeBaseTypes:
     WHERE = "WHERE"
     WITH = "WITH"
     YIELD = "YIELD"
-    XOR_WHERE = "XOR_WHERE"
 
 
 class MatchConstants:
@@ -55,11 +59,19 @@ class MatchConstants:
     VARIABLE = "variable"
 
 
-class WhereConditionConstants:
-    WHERE = "WHERE"
-    AND = "AND"
-    OR = "OR"
-    XOR = "XOR"
+class Where(Enum):
+    WHERE = 1
+    AND = 2
+    OR = 3
+    XOR = 4
+    NOT = 5
+
+
+class Order(Enum):
+    ASC = 1
+    ASCENDING = 2
+    DESC = 3
+    DESCENDING = 4
 
 
 class NoVariablesMatchedException(Exception):
@@ -135,15 +147,67 @@ class CallPartialQuery(PartialQuery):
 
 
 class WhereConditionPartialQuery(PartialQuery):
-    def __init__(self, keyword: str, query: str):
-        super().__init__(DeclarativeBaseTypes.WHERE)
+    _LITERAL = "literal"
+    _EXPRESSION = "expression"
+    _LABEL_FILTER = ":"
 
-        self.keyword = keyword
-        self.query = query
+    def __init__(self, item: str, operator: str, keyword: Where = Where.WHERE, is_negated: bool = False, **kwargs):
+        super().__init__(type=keyword.name if not is_negated else f"{keyword.name} {Where.NOT.name}")
+        self.query = self._build_where_query(item=item, operator=operator, **kwargs)
 
     def construct_query(self) -> str:
         """Constructs a where partial query."""
-        return f" {self.keyword} {self.query} "
+        return f" {self.type} {self.query} "
+
+    def _build_where_query(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Builds parts of a WHERE Cypher query divided by the boolean operators."""
+        literal = kwargs.get(WhereConditionPartialQuery._LITERAL)
+        value = kwargs.get(WhereConditionPartialQuery._EXPRESSION)
+
+        if value is None:
+            if literal is None:
+                raise GQLAlchemyLiteralAndExpressionMissingInWhere
+
+            value = to_cypher_value(literal)
+        elif literal is not None:
+            raise GQLAlchemyExtraKeywordArgumentsInWhere
+
+        return ("" if operator == WhereConditionPartialQuery._LABEL_FILTER else " ").join([item, operator, value])
+
+
+class WhereNotConditionPartialQuery(WhereConditionPartialQuery):
+    def __init__(self, item: str, operator: str, keyword: Where = Where.WHERE, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=keyword, is_negated=True, **kwargs)
+
+
+class AndWhereConditionPartialQuery(WhereConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.AND, **kwargs)
+
+
+class AndNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.AND, **kwargs)
+
+
+class OrWhereConditionPartialQuery(WhereConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.OR, **kwargs)
+
+
+class OrNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.OR, **kwargs)
+
+
+class XorWhereConditionPartialQuery(WhereConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.XOR, **kwargs)
+
+
+class XorNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
+    def __init__(self, item: str, operator: str, **kwargs):
+        super().__init__(item=item, operator=operator, keyword=Where.XOR, **kwargs)
 
 
 class NodePartialQuery(PartialQuery):
@@ -326,14 +390,38 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, properties: str):
+    def __init__(self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
-        self.properties = properties
+        self.query = (
+            self._order_by_read_list(properties)
+            if isinstance(properties, list)
+            else self._order_by_read_item(properties)
+        )
 
     def construct_query(self) -> str:
         """Creates a ORDER BY statement Cypher partial query."""
-        return f" ORDER BY {self.properties} "
+        return f" {self.type} {self.query} "
+
+    def _order_by_read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
+        if isinstance(item, str):
+            return f"{self._order_by_read_str(item)}"
+        elif isinstance(item, tuple):
+            return f"{self._order_by_read_tuple(item)}"
+        else:
+            raise GQLAlchemyOrderByTypeError
+
+    def _order_by_read_list(self, property: List[Union[str, Tuple[str, Order]]]):
+        return ", ".join(self._order_by_read_item(item=item) for item in property)
+
+    def _order_by_read_str(self, property: str) -> str:
+        return f"{property}"
+
+    def _order_by_read_tuple(self, tuple: Tuple[str, Order]) -> str:
+        if not isinstance(tuple[1], Order):
+            raise GQLAlchemyMissingOrder
+
+        return f"{tuple[0]} {tuple[1].name}"
 
 
 class LimitPartialQuery(PartialQuery):
@@ -370,7 +458,7 @@ class AddStringPartialQuery(PartialQuery):
 
 class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
-        self._query: List[Any] = []
+        self._query: List[PartialQuery] = []
         self._connection = connection if connection is not None else Memgraph()
         self._fetch_results: bool = False
 
@@ -530,67 +618,216 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a WHERE statement Cypher partial query."""
+    def where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates a WHERE statement Cypher partial query.
 
-        if operator == ":":
-            separator = ""
-            cypher_value = value
-        else:
-            separator = " "
-            cypher_value = to_cypher_value(value)
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
 
-        self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.WHERE, separator.join([item, operator, cypher_value]))
-        )
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
 
-        return self
+        Raises:
+            GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error when neither literal nor expression keyword arguments were provided.
+            GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both literal and expression keyword arguments were provided.
 
-    def and_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a AND (expression) statement Cypher partial query."""
+        Returns:
+            self: A partial Cypher query built from the given parameters.
 
-        if operator == ":":
-            separator = ""
-            cypher_value = value
-        else:
-            separator = " "
-            cypher_value = to_cypher_value(value)
+        Examples:
+            Filtering query results by the equality of `name` properties of two connected nodes.
 
-        self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.AND, separator.join([item, operator, cypher_value]))
-        )
+            Python: `match().node(variable="n").to().node(variable="m").where(item="n.name", operator="=", expression="m.name").return_()`
+            Cypher: `MATCH (n)-[]->(m) WHERE n.name = m.name RETURN *;`
 
-        return self
+            Filtering query results by the node label.
 
-    def or_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a OR (expression) statement Cypher partial query."""
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").return_()`
+            Cypher: `MATCH (n) WHERE n:User RETURN *;`
 
-        if operator == ":":
-            separator = ""
-            cypher_value = value
-        else:
-            separator = " "
-            cypher_value = to_cypher_value(value)
+            Filtering query results by the comparison of node property and literal.
 
-        self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.OR, separator.join([item, operator, cypher_value]))
-        )
+            Python: `match().node(variable="n").where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n.age > 18 RETURN *;`
+        """
+        # WHERE item operator (literal | expression)
+        # item: variable | property
+        # expression: label | property
+        self._query.append(WhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
 
-    def xor_where(self, item: str, operator: str, value: Any) -> "DeclarativeBase":
-        """Creates a XOR (expression) statement Cypher partial query."""
+    def where_not(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates a WHERE NOT statement Cypher partial query.
 
-        if operator == ":":
-            separator = ""
-            cypher_value = value
-        else:
-            separator = " "
-            cypher_value = to_cypher_value(value)
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
 
-        self._query.append(
-            WhereConditionPartialQuery(WhereConditionConstants.XOR, separator.join([item, operator, cypher_value]))
-        )
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Raises:
+            GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error when neither literal nor expression keyword arguments were provided.
+            GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both literal and expression keyword arguments were provided.
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by the equality of `name` properties of two connected nodes.
+
+            Python: `match().node(variable="n").to().node(variable="m").where_not(item="n.name", operator="=", expression="m.name").return_()`
+            Cypher: `MATCH (n)-[]->(m) WHERE NOT n.name = m.name RETURN *;`
+        """
+        self._query.append(WhereNotConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def and_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates an AND statement as a part of WHERE Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by node label or the comparison of node property and literal.
+
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").and_where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n:User AND n.age > 18 RETURN *;`
+        """
+        self._query.append(AndWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def and_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates an AND NOT statement as a part of WHERE Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by node label or the comparison of node property and literal.
+
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").and_not_where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n:User AND NOT n.age > 18 RETURN *;`
+        """
+        self._query.append(AndNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def or_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates an OR statement as a part of WHERE Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by node label or the comparison of node property and literal.
+
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").or_where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n:User OR n.age > 18 RETURN *;`
+        """
+        self._query.append(OrWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def or_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates an OR NOT statement as a part of WHERE Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by node label or the comparison of node property and literal.
+
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").or_not_where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n:User OR NOT n.age > 18 RETURN *;`
+        """
+        self._query.append(OrNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def xor_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates an XOR statement as a part of WHERE Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by node label or the comparison of node property and literal.
+
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").xor_where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n:User XOR n.age > 18 RETURN *;`
+        """
+        self._query.append(XorWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
+    def xor_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+        """Creates an XOR NOT statement as a part of WHERE Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: A string representing the operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Filtering query results by node label or the comparison of node property and literal.
+
+            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").xor_not_where(item="n.age", operator=">", literal=18).return_()`
+            Cypher: `MATCH (n) WHERE n:User XOR NOT n.age > 18 RETURN *;`
+        """
+        self._query.append(XorNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
 
         return self
 
@@ -696,16 +933,29 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def order_by(self, properties: str) -> "DeclarativeBase":
-        """Order the results of the query.
+    def order_by(
+        self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]
+    ) -> "DeclarativeBase":
+        """Creates an ORDER BY statement Cypher partial query.
 
         Args:
-            properties: A string representing how to order the results.
+            properties: Properties and order by which the query results will be ordered.
+
+        Raises:
+            GQLAlchemyOrderByTypeError: Raises an error when the given ordering is of the wrong type.
+            GQLAlchemyMissingOrdering: Raises an error when the given property is neither string nor tuple.
 
         Returns:
-            A `DeclarativeBase` instance for constructing queries.
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Ordering query results by the property `n.name` in ascending order
+            and by the property `n.last_name` in descending order:
+
+            Python: `match().node(variable="n").return_().order_by(properties=["n.name", ("n.last_name", Order.DESC)])`
+            Cypher: `MATCH (n) RETURN * ORDER BY n.name, n.last_name DESC;`
         """
-        self._query.append(OrderByPartialQuery(properties))
+        self._query.append(OrderByPartialQuery(properties=properties))
 
         return self
 
@@ -811,6 +1061,9 @@ class DeclarativeBase(ABC):
         joined_query = "".join(query)
         joined_query = re.sub("\\s\\s+", " ", joined_query)
         return joined_query
+
+    def construct_query(self) -> str:
+        return self._construct_query()
 
     def _any_variables_matched(self) -> bool:
         """Checks if any variables are present in the result."""
