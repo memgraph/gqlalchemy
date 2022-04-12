@@ -114,6 +114,10 @@ class Memgraph:
         for missing_index in new_indexes.difference(old_indexes):
             self.create_index(missing_index)
 
+    def drop_indexes(self) -> None:
+        """Drops all indexes in the database"""
+        self.ensure_indexes(indexes=[])
+
     def create_constraint(self, index: MemgraphConstraint) -> None:
         """Creates a constraint (label or label-property type) in the database"""
         query = f"CREATE CONSTRAINT ON {index.to_cypher()};"
@@ -223,7 +227,7 @@ class Memgraph:
             )
         return memgraph_triggers_list
 
-    def drop_trigger(self, trigger) -> None:
+    def drop_trigger(self, trigger: MemgraphTrigger) -> None:
         """Drop a trigger"""
         query = f"DROP TRIGGER {trigger.name};"
         self.execute(query)
