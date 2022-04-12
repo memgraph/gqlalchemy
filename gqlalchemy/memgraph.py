@@ -16,8 +16,6 @@ import os
 import sqlite3
 from typing import Any, Dict, Iterator, List, Optional, Union
 
-from gqlalchemy.query_builder import QueryBuilder
-
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
 from .models import (
@@ -542,7 +540,18 @@ class Memgraph:
 
         return self.get_variable_assume_one(results, "relationship")
 
-    def get_procedures(self, module: str = None, update: bool = False) -> List["QueryModule"]:
+    def get_procedures(self, startswith: str = None, update: bool = False) -> List["QueryModule"]:
+        """Return query procedures.
+
+        Maintains a list of query modules in the Memgraph object. If startswith
+        is defined then return those modules that start with startswith string.
+
+        Args:
+            startswith: Return those modules that start with this string.
+            (Optional)
+            update: Whether to update the list of modules in
+            self.query_modules. (Optional)
+        """
         if not hasattr(self, "query_modules") or update:
             results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
             self.query_modules = []
@@ -550,52 +559,91 @@ class Memgraph:
                 module_dict['arguments'] = self._parse_signature(module_dict['signature'])
                 self.query_modules.append(QueryModule(module_dict))
 
-        if module is not None:
+        if startswith is not None:
             # works for current modules, nxalg, mg..., is it bad that it works for nxa, nxal?
             # like this, the method can be used for getting a single procedure; get_procedures(max_flow)
-            return [q for q in self.query_modules if q.name.startswith(module)]
+            return [q for q in self.query_modules if q.name.startswith(startswith)]
         else:
             return self.query_modules            
 
-    def _parse_signature(self, signature: str):
-        # returns arguments in form of: list of dict, dict has keys "name", "type", "default" if necessary
+    def _parse_signature(self, signature: str) -> List:
+        """Parse signature and make a dictionary for every argument.
+
+        Dictionary consists of fields: "name" - argument name, "type" - data
+        type of argument and "default" where default argument value is given
+
+        Args:
+            signature: module signature as returned by Cypher CALL operation
+        """
         end_arguments_parantheses = signature.index(")")
         arguments_field = signature[signature.index("(") + 1 : end_arguments_parantheses]
         arguments_list = arguments_field.split(", ")
-        print("sign: ", signature)
 
         arguments = []
         if arguments_list != [""]:
             for arg in arguments_list:
                 arg_dict = {}
                 sides = arg.split(" :: ")
+                arg_dict['type'] = sides[1]
                 if " = " in sides[0]:
                     splt = sides[0].split(" = ")
                     arg_dict['name'] = splt[0]
-                    arg_dict['default'] = splt[1]
+                    arg_dict['default'] = splt[1].strip('"')
                 else:
                     arg_dict['name'] = sides[0]
 
-                arg_dict['type'] = sides[1]
                 arguments.append(arg_dict)
 
         return arguments
 
 class QueryModule:
-    def __init__(self, module_dict) -> None:
+    """Class representing a single query module."""
+
+    def __init__(self, module_dict: Dict) -> None:
         self.name = module_dict['name']
         self.is_editable = module_dict['is_editable']
         self.is_write = module_dict['is_write']
         self.path = module_dict['path']
         self.signature = module_dict['signature']
-        # from parse_signature
         self.arguments = module_dict['arguments']
 
-    def get_inputs(self):
-        pass
-
-    def set_inputs(self):
-        pass
-
     def __str__(self) -> str:
-        return self.signature
+        return self.name
+
+    def set_inputs(self, **kwargs) -> None:
+        """Set values for QueryModule arguments so the module can be called.
+
+        Kwargs:
+            Named arguments in self.arguments.
+
+        Raises:
+            KeyError: Passed an argument not in the self.arguments list.
+        """
+        for kwarg in kwargs.keys():
+            has_arg = False
+            for dict in self.arguments:
+                if dict['name'] == kwarg:
+                    dict['value'] = str(kwargs[kwarg])
+                    has_arg = True
+            if not has_arg:
+                raise KeyError(f"{kwarg} is not an argument in this query module.")
+
+    def get_inputs(self) -> str:
+        """return inputs in form "value1, value2, ..." for QueryBuilder call() method
+        
+        Raises:
+            KeyError: Cannot get all values of arguments because one or more is not set.
+        """
+        arguments_str = ""
+        for arg in self.arguments:
+            if "value" in arg:
+                arguments_str += arg["value"]
+            elif "default" in arg:
+                arguments_str += arg["default"]
+            else:
+                raise KeyError(f"{arg['name']} has no value set.")
+            arguments_str += ", "
+
+        arguments_str = arguments_str[:-2]
+
+        return arguments_str 
