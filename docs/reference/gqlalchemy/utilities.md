@@ -8,6 +8,7 @@ title: gqlalchemy.utilities
 ```python
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str
 ```
+
 Converts value to a valid Cypher type.
 
 #### to\_cypher\_properties
@@ -25,3 +26,4 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str
 ```
 
 Converts labels to a Cypher label definition.
+

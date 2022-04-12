@@ -114,6 +114,10 @@ class Memgraph:
         for missing_index in new_indexes.difference(old_indexes):
             self.create_index(missing_index)
 
+    def drop_indexes(self) -> None:
+        """Drops all indexes in the database"""
+        self.ensure_indexes(indexes=[])
+
     def create_constraint(self, index: MemgraphConstraint) -> None:
         """Creates a constraint (label or label-property type) in the database"""
         query = f"CREATE CONSTRAINT ON {index.to_cypher()};"
@@ -145,6 +149,16 @@ class Memgraph:
                     )
                 )
         return constraints
+
+    def get_exists_constraints(
+        self,
+    ) -> List[MemgraphConstraintExists]:
+        return [x for x in self.get_constraints() if isinstance(x, MemgraphConstraintExists)]
+
+    def get_unique_constraints(
+        self,
+    ) -> List[MemgraphConstraintUnique]:
+        return [x for x in self.get_constraints() if isinstance(x, MemgraphConstraintUnique)]
 
     def ensure_constraints(
         self,
@@ -190,13 +204,38 @@ class Memgraph:
         self.execute(query)
 
     def get_triggers(self) -> List[str]:
-        """Creates a trigger"""
-        return list(self.execute_and_fetch("SHOW TRIGGERS;"))
+        """Returns a list of all database triggers"""
+        triggers_list = list(self.execute_and_fetch("SHOW TRIGGERS;"))
+        memgraph_triggers_list = []
+        for trigger in triggers_list:
+            event_type = trigger["event type"]
+            event_object = None
 
-    def drop_trigger(self, trigger) -> None:
+            if event_type == "ANY":
+                event_type = None
+            elif len(event_type.split()) > 1:
+                [event_object, event_type] = [part for part in event_type.split()]
+
+            memgraph_triggers_list.append(
+                MemgraphTrigger(
+                    name=trigger["trigger name"],
+                    event_type=event_type,
+                    event_object=event_object,
+                    execution_phase=trigger["phase"].split()[0],
+                    statement=trigger["statement"],
+                )
+            )
+        return memgraph_triggers_list
+
+    def drop_trigger(self, trigger: MemgraphTrigger) -> None:
         """Drop a trigger"""
         query = f"DROP TRIGGER {trigger.name};"
         self.execute(query)
+
+    def drop_triggers(self) -> None:
+        """Drops all triggers in the database"""
+        for trigger in self.get_triggers():
+            self.drop_trigger(trigger)
 
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
@@ -291,6 +330,11 @@ class Memgraph:
 
         result = self._save_node_properties_on_disk(node, result)
         return result
+
+    def save_nodes(self, nodes: List[Node]) -> None:
+        """Saves a list of nodes to Memgraph."""
+        for i in range(len(nodes)):
+            nodes[i]._id = self.save_node(nodes[i])._id
 
     def _save_node_properties_on_disk(self, node: Node, result: Node) -> Node:
         """Saves all on_disk properties to the on disk database attached to
@@ -453,6 +497,11 @@ class Memgraph:
 
         result = self._save_relationship_properties_on_disk(relationship, result)
         return result
+
+    def save_relationships(self, relationships: List[Relationship]) -> None:
+        """Saves a list of relationships to Memgraph."""
+        for i in range(len(relationships)):
+            relationships[i]._id = self.save_relationship(relationships[i])._id
 
     def _save_relationship_properties_on_disk(self, relationship: Relationship, result: Relationship) -> Relationship:
         """Saves on_disk relationship propeties on the OnDiskPropertyDatabase

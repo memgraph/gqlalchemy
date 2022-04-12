@@ -20,6 +20,8 @@ from typing import Optional, List
 
 
 class OnDiskPropertyDatabase(ABC):
+    """An abstract class for implementing on-disk storage features with specific databases."""
+
     def save_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
         """Saves a node property to an on disk database."""
         pass
@@ -60,7 +62,14 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
             memgraph.init_disk_storage(self)
 
     def execute_query(self, query: str) -> List[str]:
-        """Executes an SQL query on the on disk property database."""
+        """Executes an SQL query on the on disk property database.
+
+        Args:
+            query: A string representing an SQL query.
+
+        Returns:
+            A list of strings representing the results of the query.
+        """
         with contextlib.closing(sqlite3.connect(self.database_name)) as conn:
             with conn:  # autocommit changes
                 with contextlib.closing(conn.cursor()) as cursor:
@@ -95,7 +104,13 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         self.execute_query("DELETE FROM relationship_properties;")
 
     def save_node_property(self, node_id: int, property_name: str, property_value: str) -> None:
-        """Saves a node property to an on disk database."""
+        """Saves a node property to an on disk database.
+
+        Args:
+            node_id: An integer representing the internal id of the node.
+            property_name: A string representing the name of the property.
+            property_value: A string representing the value of the property.
+        """
         self.execute_query(
             "INSERT INTO node_properties (node_id, property_name, property_value) "
             f"VALUES({node_id}, '{property_name}', '{property_value}') "
@@ -104,7 +119,15 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         )
 
     def load_node_property(self, node_id: int, property_name: str) -> Optional[str]:
-        """Loads a node property from an on disk database."""
+        """Loads a node property from an on disk database.
+
+        Args:
+            node_id: An integer representing the internal id of the node.
+            property_name: A string representing the name of the property.
+
+        Returns:
+            An optional string representing the property value.
+        """
         result = self.execute_query(
             "SELECT property_value "
             "FROM node_properties AS db "
@@ -121,7 +144,12 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         return result[0][0]
 
     def delete_node_property(self, node_id: int, property_name: str) -> None:
-        """Deletes a node property from an on disk database."""
+        """Deletes a node property from an on disk database.
+
+        Args:
+            node_id: An integer representing the internal id of the node.
+            property_name: A string representing the name of the property.
+        """
         self.execute_query(
             "DELETE "
             "FROM node_properties AS db "
@@ -130,7 +158,13 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         )
 
     def save_relationship_property(self, relationship_id: int, property_name: str, property_value: str) -> None:
-        """Saves a relationship property to an on disk database."""
+        """Saves a relationship property to an on disk database.
+
+        Args:
+            relationship_id: An integer representing the internal id of the relationship.
+            property_name: A string representing the name of the property.
+            property_value: A string representing the value of the property.
+        """
         self.execute_query(
             "INSERT INTO relationship_properties (relationship_id, property_name, property_value) "
             f"VALUES({relationship_id}, '{property_name}', '{property_value}') "
@@ -139,7 +173,15 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         )
 
     def load_relationship_property(self, relationship_id: int, property_name: str) -> Optional[str]:
-        """Loads a relationship property from an on disk database."""
+        """Loads a relationship property from an on disk database.
+
+        Args:
+            relationship_id: An integer representing the internal id of the relationship.
+            property_name: A string representing the name of the property.
+
+        Returns:
+            An optional string representing the property value.
+        """
         result = self.execute_query(
             "SELECT property_value "
             "FROM relationship_properties AS db "
@@ -156,7 +198,12 @@ class SQLitePropertyDatabase(OnDiskPropertyDatabase):
         return result[0][0]
 
     def delete_relationship_property(self, relationship_id: int, property_name: str) -> None:
-        """Deletes a node property from an on disk database."""
+        """Deletes a node property from an on disk database.
+
+        Args:
+            relationship_id: An integer representing the internal id of the relationship.
+            property_name: A string representing the name of the property.
+        """
         self.execute_query(
             "DELETE "
             "FROM relationship_properties AS db "

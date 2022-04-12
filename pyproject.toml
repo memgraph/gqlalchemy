@@ -36,6 +36,11 @@ python = "^3.7"
 pymgclient = "1.2.0"
 networkx = "^2.5.1"
 pydantic = "^1.8.2"
+docker = "^5.0.3"
+psutil = "^5.9.0"
+pyarrow = "^7.0.0"
+dacite = "^1.6.0"
+adlfs = "^2022.2.0"
 
 [tool.poetry.dev-dependencies]
 black = "^21.5b1"

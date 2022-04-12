@@ -24,24 +24,57 @@ from .exceptions import (
     GQLAlchemyError,
     GQLAlchemySubclassNotFoundWarning,
     GQLAlchemyDatabaseMissingInFieldError,
+    GQLAlchemyDatabaseMissingInNodeClassError,
 )
 
 
 class TriggerEventType:
+    """An enum representing types of trigger events."""
+
     CREATE = "CREATE"
     UPDATE = "UPDATE"
     DELETE = "DELETE"
 
+    @classmethod
+    def list(cls):
+        return [cls.CREATE, cls.UPDATE, cls.DELETE]
+
 
 class TriggerEventObject:
-    ALL = ""
+    """An enum representing types of trigger objects.
+
+    NODE -> `()`
+    RELATIONSHIP -> `-->`
+    """
+
     NODE = "()"
     RELATIONSHIP = "-->"
 
+    @classmethod
+    def list(cls):
+        return [cls.NODE, cls.RELATIONSHIP]
+
 
 class TriggerExecutionPhase:
+    """An enum representing types of trigger objects.
+
+    Enum:
+        BEFORE
+        AFTER
+    """
+
     BEFORE = "BEFORE"
     AFTER = "AFTER"
+
+
+class FieldAttrsConstants:
+    INDEX = "index"
+    EXISTS = "exists"
+    UNIQUE = "unique"
+
+    @classmethod
+    def list(cls):
+        return [cls.INDEX, cls.EXISTS, cls.UNIQUE]
 
 
 @dataclass(frozen=True, eq=True)
@@ -95,15 +128,37 @@ class MemgraphStream(ABC):
         pass
 
 
-@dataclass(frozen=True, eq=True)
 class MemgraphKafkaStream(MemgraphStream):
-    consumer_group: str = None
-    batch_interval: str = None
-    batch_size: str = None
-    bootstrap_servers: str = None
+    """A class for creating and managing Kafka streams in Memgraph.
+
+    Args:
+        name: A string representing the stream name.
+        topics: A list of strings representing the stream topics.
+        transform: A string representing the name of the transformation procedure.
+        consumer_group: A string representing the consumer group.
+        name: A string representing the batch interval.
+        name: A string representing the batch size.
+        name: A string or list of strings representing bootstrap server addresses.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        topics: List[str],
+        transform: str,
+        consumer_group: str = None,
+        batch_interval: str = None,
+        batch_size: str = None,
+        bootstrap_servers: Union[str, List[str]] = None,
+    ):
+        super().__init__(name, topics, transform)
+        self.consumer_group = consumer_group
+        self.batch_interval = batch_interval
+        self.batch_size = batch_size
+        self.bootstrap_servers = bootstrap_servers
 
     def to_cypher(self) -> str:
-        """Converts Kafka stream to a cypher clause."""
+        """Converts Kafka stream to a Cypher clause."""
         topics = ",".join(self.topics)
         query = f"CREATE KAFKA STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
         if self.consumer_group is not None:
@@ -113,19 +168,44 @@ class MemgraphKafkaStream(MemgraphStream):
         if self.batch_size is not None:
             query += f" BATCH_SIZE {self.batch_size}"
         if self.bootstrap_servers is not None:
-            query += f" BOOTSTRAP_SERVERS {self.bootstrap_servers}"
+            if isinstance(self.bootstrap_servers, str):
+                servers_field = f"'{self.bootstrap_servers}'"
+            else:
+                servers_field = str(self.bootstrap_servers)[1:-1]
+            query += f" BOOTSTRAP_SERVERS {servers_field}"
         query += ";"
         return query
 
 
-@dataclass(frozen=True, eq=True)
 class MemgraphPulsarStream(MemgraphStream):
-    batch_interval: str = None
-    batch_size: str = None
-    service_url: str = None
+    """A class for creating and managing Pulsar streams in Memgraph.
+
+    Args:
+        name: A string representing the stream name.
+        topics: A list of strings representing the stream topics.
+        transform: A string representing the name of the transformation procedure.
+        consumer_group: A string representing the consumer group.
+        name: A string representing the batch interval.
+        name: A string representing the batch size.
+        name: A string or list of strings representing bootstrap server addresses.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        topics: List[str],
+        transform: str,
+        batch_interval: str = None,
+        batch_size: str = None,
+        service_url: str = None,
+    ):
+        super().__init__(name, topics, transform)
+        self.batch_interval = batch_interval
+        self.batch_size = batch_size
+        self.service_url = service_url
 
     def to_cypher(self) -> str:
-        """Converts Pulsar stream to a cypher clause."""
+        """Converts Pulsar stream to a Cypher clause."""
         topics = ",".join(self.topics)
         query = f"CREATE PULSAR STREAM {self.name} TOPICS {topics} TRANSFORM {self.transform}"
         if self.batch_interval is not None:
@@ -141,16 +221,20 @@ class MemgraphPulsarStream(MemgraphStream):
 @dataclass(frozen=True, eq=True)
 class MemgraphTrigger:
     name: str
-    event_type: TriggerEventType
-    event_object: TriggerEventObject
     execution_phase: TriggerExecutionPhase
     statement: str
+    event_type: Optional[TriggerEventType] = None
+    event_object: Optional[TriggerEventObject] = None
 
     def to_cypher(self) -> str:
         """Converts a Trigger to a cypher clause."""
         query = f"CREATE TRIGGER {self.name} "
-        # when self.event_object is TriggerEventObject.ALL there is a double space
-        query += f"ON {self.event_object} {self.event_type} "
+        if self.event_type in TriggerEventType.list():
+            query += f"ON " + (
+                f"{self.event_object} {self.event_type} "
+                if self.event_object in TriggerEventObject.list()
+                else f"{self.event_type} "
+            )
         query += f"{self.execution_phase} COMMIT EXECUTE "
         query += f"{self.statement};"
         return query
@@ -162,7 +246,7 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
-    def __init_subclass__(cls, type=None, label=None, labels=None):
+    def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
         """
@@ -211,9 +295,7 @@ class GraphObject(BaseModel):
         """
         return cls._convert_to_real_type_(obj)
 
-    def escape_value(
-        self, value: Union[None, bool, int, float, str, list, dict, datetime.datetime], in_list_or_dict=False
-    ) -> str:
+    def escape_value(self, value: Union[None, bool, int, float, str, list, dict, datetime.datetime]) -> str:
         if value is None:
             "Null"
         elif isinstance(value, bool):
@@ -268,6 +350,14 @@ class GraphObject(BaseModel):
         """
         return self._get_cypher_field_assignment_block(variable_name, " AND ")
 
+    def _get_cypher_fields_xor_block(self, variable_name: str) -> str:
+        """Returns a cypher field assignment block separated by an XOR
+        statement.
+        """
+        return self._get_cypher_field_assignment_block(variable_name, " XOR ")
+
+    # TODO: add NOT
+
     def _get_cypher_set_properties(self, variable_name: str) -> str:
         """Returns a cypher set properties block."""
         cypher_set_properties = []
@@ -297,7 +387,7 @@ class UniqueGraphObject(GraphObject):
 
     @property
     def _properties(self) -> Dict[str, Any]:
-        return {k: v for k, v in dict(self).items() if not k.startswith("_")}
+        return {k: v for k, v in dict(self).items() if not k.startswith("_") and k != "labels"}
 
     def __str__(self) -> str:
         return f"<GraphObject id={self._id} properties={self._properties}>"
@@ -323,31 +413,46 @@ class NodeMetaclass(BaseModel.__class__):
 
             return None
 
+        def get_base_labels() -> Set[str]:
+            base_labels = set()
+            nonlocal bases
+            for base in bases:
+                if hasattr(base, "labels"):
+                    base_labels = base_labels.union(base.labels)
+
+            return base_labels
+
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+        cls.index = kwargs.get("index")
         cls.label = kwargs.get("label", name)
-        if name == "Node":
-            pass
-        elif "labels" in kwargs:  # overrides superclass labels
-            cls.labels = kwargs["labels"]
-        elif hasattr(cls, "labels"):
-            cls.labels = cls.labels | {cls.label}
-        else:
-            cls.labels = {cls.label}
+        if name != "Node":
+            cls.labels = get_base_labels().union({cls.label}, kwargs.get("labels", set()))
+
+        db = kwargs.get("db")
+        if cls.index is True:
+            if db is None:
+                raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+
+            index = MemgraphIndex(cls.label)
+            db.create_index(index)
 
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
-
             label = attrs.get("label", cls.label)
-            db = attrs.get("db", None)
             skip_constraints = False
-            for constraint in ["index", "unique", "exists"]:
+
+            if db is None:
+                db = attrs.get("db")
+
+            for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
                     base = field_in_superclass(field, constraint)
                     if base is not None:
                         cls.__fields__[field].field_info.extra = base.__fields__[field].field_info.extra
                         skip_constraints = True
                         break
+
                     raise GQLAlchemyDatabaseMissingInFieldError(
                         constraint=constraint,
                         field=field,
@@ -357,20 +462,21 @@ class NodeMetaclass(BaseModel.__class__):
             if skip_constraints:
                 continue
 
-            if "index" in attrs:
+            if FieldAttrsConstants.INDEX in attrs and attrs[FieldAttrsConstants.INDEX] is True:
                 index = MemgraphIndex(label, field)
                 db.create_index(index)
 
-            if "exists" in attrs:
+            if FieldAttrsConstants.EXISTS in attrs and attrs[FieldAttrsConstants.EXISTS] is True:
                 constraint = MemgraphConstraintExists(label, field)
                 db.create_constraint(constraint)
 
-            if "unique" in attrs:
+            if FieldAttrsConstants.UNIQUE in attrs and attrs[FieldAttrsConstants.UNIQUE] is True:
                 constraint = MemgraphConstraintUnique(label, field)
                 db.create_constraint(constraint)
 
             if attrs and "db" in attrs:
                 del attrs["db"]
+
         return cls
 
 
