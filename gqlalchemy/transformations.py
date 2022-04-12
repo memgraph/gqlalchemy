@@ -33,7 +33,7 @@ class NetworkXGraphConstants:
 
 
 def nx_to_cypher(graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]:
-    """Generates a Cypher queries for creating graph."""
+    """Generates a Cypher query for creating a graph."""
 
     if config is None:
         config = NetworkXCypherConfig()
@@ -52,7 +52,7 @@ def nx_graph_to_memgraph_parallel(
     encrypted: bool = False,
     config: NetworkXCypherConfig = None,
 ) -> None:
-    """Generates a Cypher queries and inserts data into Memgraph in parallel."""
+    """Generates Cypher queries and inserts data into Memgraph in parallel."""
     if config is None:
         config = NetworkXCypherConfig()
 
@@ -138,7 +138,7 @@ class NetworkXCypherBuilder:
         self._config = config
 
     def yield_queries(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating graph."""
+        """Generates Cypher queries for creating a graph."""
 
         if self._config.create_index:
             yield from self._nx_nodes_to_cypher_with_index(graph)
@@ -147,7 +147,7 @@ class NetworkXCypherBuilder:
         yield from self._nx_edges_to_cypher(graph)
 
     def yield_query_groups(self, graph: nx.Graph) -> List[Iterator[str]]:
-        """Generates a Cypher queries for creating graph by query groups."""
+        """Generates Cypher queries for creating a graph by query groups."""
 
         query_groups = []
 
@@ -161,12 +161,12 @@ class NetworkXCypherBuilder:
         return query_groups
 
     def _nx_nodes_to_cypher(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating nodes."""
+        """Generates Cypher queries for creating nodes."""
         for nx_id, data in graph.nodes(data=True):
             yield self._create_node(nx_id, data)
 
     def _nx_nodes_to_cypher_with_index(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating nodes and indexes."""
+        """Generates Cypher queries for creating nodes and indexes."""
         labels = set()
         for nx_id, data in graph.nodes(data=True):
             node_labels = data.get(NetworkXGraphConstants.LABELS, None)
@@ -180,7 +180,7 @@ class NetworkXCypherBuilder:
             yield self._create_index(label)
 
     def _nx_edges_to_cypher(self, graph: nx.Graph) -> Iterator[str]:
-        """Generates a Cypher queries for creating edges."""
+        """Generates Cypher queries for creating edges."""
         for n1, n2, data in graph.edges(data=True):
             from_label = graph.nodes[n1].get(NetworkXGraphConstants.LABELS, "")
             to_label = graph.nodes[n2].get(NetworkXGraphConstants.LABELS, "")
