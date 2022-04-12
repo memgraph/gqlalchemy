@@ -16,6 +16,8 @@ import os
 import sqlite3
 from typing import Any, Dict, Iterator, List, Optional, Union
 
+from gqlalchemy.query_builder import QueryBuilder
+
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
 from .models import (
@@ -549,37 +551,35 @@ class Memgraph:
                 self.query_modules.append(QueryModule(module_dict))
 
         if module is not None:
+            # works for current modules, nxalg, mg..., is it bad that it works for nxa, nxal?
+            # like this, the method can be used for getting a single procedure; get_procedures(max_flow)
             return [q for q in self.query_modules if q.name.startswith(module)]
         else:
             return self.query_modules            
-        
+
     def _parse_signature(self, signature: str):
+        # returns arguments in form of: list of dict, dict has keys "name", "type", "default" if necessary
         end_arguments_parantheses = signature.index(")")
         arguments_field = signature[signature.index("(") + 1 : end_arguments_parantheses]
         arguments_list = arguments_field.split(", ")
         print("sign: ", signature)
+
+        arguments = []
         if arguments_list != [""]:
             for arg in arguments_list:
-                arg_default = "d"
+                arg_dict = {}
                 sides = arg.split(" :: ")
                 if " = " in sides[0]:
                     splt = sides[0].split(" = ")
-                    arg_default = splt[1]
-                    arg_name = splt[0]
+                    arg_dict['name'] = splt[0]
+                    arg_dict['default'] = splt[1]
                 else:
-                    arg_name = sides[0]
+                    arg_dict['name'] = sides[0]
 
-                arg_type = sides[1]
+                arg_dict['type'] = sides[1]
+                arguments.append(arg_dict)
 
-                print(arg_name, arg_type, arg_default)
-
-        returns = signature[signature.index("(", end_arguments_parantheses + 1) + 1 : signature.index(")", end_arguments_parantheses + 1)]
-        returns_list = returns.split(", ")
-
-
-        print("")
-        return ""
-
+        return arguments
 
 class QueryModule:
     def __init__(self, module_dict) -> None:
@@ -588,4 +588,14 @@ class QueryModule:
         self.is_write = module_dict['is_write']
         self.path = module_dict['path']
         self.signature = module_dict['signature']
+        # from parse_signature
         self.arguments = module_dict['arguments']
+
+    def get_inputs(self):
+        pass
+
+    def set_inputs(self):
+        pass
+
+    def __str__(self) -> str:
+        return self.signature
