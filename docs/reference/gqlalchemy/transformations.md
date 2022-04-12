@@ -9,7 +9,7 @@ title: gqlalchemy.transformations
 def nx_to_cypher(graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]
 ```
 
-Generates a Cypher queries for creating graph.
+Generates a Cypher query for creating a graph.
 
 #### nx\_graph\_to\_memgraph\_parallel
 
@@ -17,7 +17,7 @@ Generates a Cypher queries for creating graph.
 def nx_graph_to_memgraph_parallel(graph: nx.Graph, host: str = "127.0.0.1", port: int = 7687, username: str = "", password: str = "", encrypted: bool = False, config: NetworkXCypherConfig = None) -> None
 ```
 
-Generates a Cypher queries and inserts data into Memgraph in parallel.
+Generates Cypher queries and inserts data into Memgraph in parallel.
 
 ## NetworkXCypherBuilder Objects
 
@@ -31,7 +31,7 @@ class NetworkXCypherBuilder()
 def yield_queries(graph: nx.Graph) -> Iterator[str]
 ```
 
-Generates a Cypher queries for creating graph.
+Generates Cypher queries for creating a graph.
 
 #### yield\_query\_groups
 
@@ -39,5 +39,5 @@ Generates a Cypher queries for creating graph.
 def yield_query_groups(graph: nx.Graph) -> List[Iterator[str]]
 ```
 
-Generates a Cypher queries for creating graph by query groups.
+Generates Cypher queries for creating a graph by query groups.
 
