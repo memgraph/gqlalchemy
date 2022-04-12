@@ -560,7 +560,7 @@ class Memgraph:
             results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
             self.query_modules = []
             for module_dict in results:
-                module_dict['arguments'] = self._parse_signature(module_dict['signature'])
+                module_dict["arguments"] = self._parse_signature(module_dict["signature"])
                 self.query_modules.append(QueryModule(module_dict))
 
         if startswith is not None:
@@ -568,7 +568,7 @@ class Memgraph:
             # like this, the method can be used for getting a single procedure; get_procedures(max_flow)
             return [q for q in self.query_modules if q.name.startswith(startswith)]
         else:
-            return self.query_modules            
+            return self.query_modules
 
     def _parse_signature(self, signature: str) -> List:
         """Parse signature and make a dictionary for every argument.
@@ -588,28 +588,29 @@ class Memgraph:
             for arg in arguments_list:
                 arg_dict = {}
                 sides = arg.split(" :: ")
-                arg_dict['type'] = sides[1]
+                arg_dict["type"] = sides[1]
                 if " = " in sides[0]:
                     splt = sides[0].split(" = ")
-                    arg_dict['name'] = splt[0]
-                    arg_dict['default'] = splt[1].strip('"')
+                    arg_dict["name"] = splt[0]
+                    arg_dict["default"] = splt[1].strip('"')
                 else:
-                    arg_dict['name'] = sides[0]
+                    arg_dict["name"] = sides[0]
 
                 arguments.append(arg_dict)
 
         return arguments
 
+
 class QueryModule:
     """Class representing a single query module."""
 
     def __init__(self, module_dict: Dict) -> None:
-        self.name = module_dict['name']
-        self.is_editable = module_dict['is_editable']
-        self.is_write = module_dict['is_write']
-        self.path = module_dict['path']
-        self.signature = module_dict['signature']
-        self.arguments = module_dict['arguments']
+        self.name = module_dict["name"]
+        self.is_editable = module_dict["is_editable"]
+        self.is_write = module_dict["is_write"]
+        self.path = module_dict["path"]
+        self.signature = module_dict["signature"]
+        self.arguments = module_dict["arguments"]
 
     def __str__(self) -> str:
         return self.name
@@ -626,17 +627,19 @@ class QueryModule:
         for kwarg in kwargs.keys():
             has_arg = False
             for dict in self.arguments:
-                if dict['name'] == kwarg:
-                    dict['value'] = str(kwargs[kwarg])
+                if dict["name"] == kwarg:
+                    dict["value"] = str(kwargs[kwarg])
                     has_arg = True
             if not has_arg:
                 raise KeyError(f"{kwarg} is not an argument in this query module.")
 
     def get_inputs(self) -> str:
-        """return inputs in form "value1, value2, ..." for QueryBuilder call() method
-        
+        """return inputs in form "value1, value2, ..." for QueryBuilder call()
+        method.
+
         Raises:
-            KeyError: Cannot get all values of arguments because one or more is not set.
+            KeyError: Cannot get all values of arguments because one or more is
+            not set.
         """
         arguments_str = ""
         for arg in self.arguments:
@@ -650,4 +653,4 @@ class QueryModule:
 
         arguments_str = arguments_str[:-2]
 
-        return arguments_str 
+        return arguments_str
