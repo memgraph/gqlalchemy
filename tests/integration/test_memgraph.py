@@ -16,6 +16,8 @@ from typing import List
 import pytest
 from gqlalchemy import Memgraph, Node, Relationship
 
+import unittest.mock as mock
+
 
 def compare_nodes(actual: List[Node], expected: List[Node]):
     actual.sort(key=lambda x: x.id)
@@ -155,3 +157,40 @@ def test_path_mapping(populated_memgraph: Memgraph):
 def test_parse_signature(memgraph: Memgraph, signature: str, arguments: List, returns: List):
     """test functionality of parsing a module signature"""
     assert arguments, returns == memgraph._parse_signature(signature)
+
+
+def test_get_procedures(memgraph: Memgraph):
+    """test get procedures with mock execute_and_fetch method, so MAGE query
+    modules are not needed for testing"""
+
+    mock_modules = [
+        {
+            "is_editable": True,
+            "is_write": False,
+            "name": "max_flow.get_flow",
+            "path": "/home/bruno/mage/python/max_flow.py",
+            "signature": 'max_flow.get_flow(start_v :: NODE, end_v :: NODE, edge_property = "weight" :: STRING) :: (max_flow :: NUMBER)',
+        },
+        {
+            "is_editable": True,
+            "is_write": False,
+            "name": "max_flow.get_paths",
+            "path": "/home/bruno/mage/python/max_flow.py",
+            "signature": 'max_flow.get_paths(start_v :: NODE, end_v :: NODE, edge_property = "weight" :: STRING) :: (flow :: NUMBER, path :: PATH)',
+        },
+    ]
+
+    mock_execute_and_fetch = mock.Mock()
+    mock_execute_and_fetch.return_value = mock_modules
+
+    real_execute_and_fetch = memgraph.execute_and_fetch
+
+    def mock_execute_and_fetch_wrapper(query):
+        if query == "CALL mg.procedures() YIELD *;":
+            return mock_execute_and_fetch(query)
+        else:
+            return real_execute_and_fetch(query)
+
+    memgraph.execute_and_fetch = mock_execute_and_fetch_wrapper
+
+    assert str(memgraph.get_procedures()[0]) == "max_flow.get_flow"

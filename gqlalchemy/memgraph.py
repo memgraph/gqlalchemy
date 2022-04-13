@@ -639,7 +639,6 @@ class QueryModule:
     """Class representing a single query module."""
 
     def __init__(self, module_dict: Dict) -> None:
-        print(module_dict)
         self.name = module_dict[QM_FIELD_NAME]
         self.is_editable = module_dict[QM_FIELD_IS_EDITABLE]
         self.is_write = module_dict[QM_FIELD_IS_WRITE]
