@@ -14,7 +14,7 @@
 
 import os
 import sqlite3
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union, Tuple
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
@@ -43,6 +43,19 @@ MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
+
+QM_FIELD_NAME = "name"
+QM_FIELD_IS_EDITABLE = "is_editable"
+QM_FIELD_IS_WRITE = "is_write"
+QM_FIELD_PATH = "path"
+QM_FIELD_SIGNATURE = "signature"
+QM_FIELD_ARGUMENTS = "arguments"
+QM_FIELD_RETURNS = "returns"
+
+QM_KEY_NAME = "name"
+QM_KEY_VALUE = "value"
+QM_KEY_DEFAULT = "defalut"
+QM_KEY_TYPE = "type"
 
 
 class MemgraphConstants:
@@ -560,18 +573,25 @@ class Memgraph:
             results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
             self.query_modules = []
             for module_dict in results:
-                module_dict["arguments"] = self._parse_signature(module_dict["signature"])
+                arguments, returns = self._parse_signature(module_dict[QM_FIELD_SIGNATURE])
+                module_dict[QM_FIELD_ARGUMENTS] = arguments
+                module_dict[QM_FIELD_RETURNS] = returns
                 self.query_modules.append(QueryModule(module_dict))
 
         if startswith is not None:
-            # works for current modules, nxalg, mg..., is it bad that it works for nxa, nxal?
-            # like this, the method can be used for getting a single procedure; get_procedures(max_flow)
             return [q for q in self.query_modules if q.name.startswith(startswith)]
         else:
             return self.query_modules
 
-    def _parse_signature(self, signature: str) -> List:
-        """Parse signature and make a dictionary for every argument.
+    def _parse_signature(self, signature: str) -> Tuple[List, List]:
+        """Parse signature and make a dictionary for every argument and return.
+
+        For instance, if a query module signature is:
+        dummy_module.2(lst :: LIST OF STRING, num = 3 :: NUMBER) :: (ret :: STRING)
+        the method should return a list of arguments:
+        [{"name": "lst", "type": "LIST OF STRING"}, {"name": "num", "type": "NUMBER", "default": 3}]
+        and a list of returns:
+        [{"name": "ret", "type": "STRING"}]
 
         Dictionary consists of fields: "name" - argument name, "type" - data
         type of argument and "default" where default argument value is given
@@ -581,36 +601,51 @@ class Memgraph:
         """
         end_arguments_parantheses = signature.index(")")
         arguments_field = signature[signature.index("(") + 1 : end_arguments_parantheses]
-        arguments_list = arguments_field.split(", ")
+        returns_field = signature[
+            signature.index("(", end_arguments_parantheses) + 1 : signature.index(")", end_arguments_parantheses + 1)
+        ]
 
-        arguments = []
-        if arguments_list != [""]:
-            for arg in arguments_list:
-                arg_dict = {}
-                sides = arg.split(" :: ")
-                arg_dict["type"] = sides[1]
+        arguments = self._parse_field(arguments_field)
+        returns = self._parse_field(returns_field)
+
+        return arguments, returns
+
+    def _parse_field(self, vars_field: str) -> List[Dict]:
+        """Parse a field of arguments or returns from module signature
+
+        Args:
+            vars_field: signature field inside parantheses
+        """
+        list_of_vars = vars_field.split(", ")
+        vars = []
+        if list_of_vars != [""]:
+            for var in list_of_vars:
+                var_dict = {}
+                sides = var.split(" :: ")
+                var_dict[QM_KEY_TYPE] = sides[1]
                 if " = " in sides[0]:
                     splt = sides[0].split(" = ")
-                    arg_dict["name"] = splt[0]
-                    arg_dict["default"] = splt[1].strip('"')
+                    var_dict[QM_KEY_NAME] = splt[0]
+                    var_dict[QM_KEY_DEFAULT] = splt[1].strip('"')
                 else:
-                    arg_dict["name"] = sides[0]
+                    var_dict[QM_KEY_NAME] = sides[0]
 
-                arguments.append(arg_dict)
+                vars.append(var_dict)
 
-        return arguments
+        return vars
 
 
 class QueryModule:
     """Class representing a single query module."""
 
     def __init__(self, module_dict: Dict) -> None:
-        self.name = module_dict["name"]
-        self.is_editable = module_dict["is_editable"]
-        self.is_write = module_dict["is_write"]
-        self.path = module_dict["path"]
-        self.signature = module_dict["signature"]
-        self.arguments = module_dict["arguments"]
+        self.name = module_dict[QM_FIELD_NAME]
+        self.is_editable = module_dict[QM_FIELD_IS_EDITABLE]
+        self.is_write = module_dict[QM_FIELD_IS_WRITE]
+        self.path = module_dict[QM_FIELD_PATH]
+        self.signature = module_dict[QM_FIELD_SIGNATURE]
+        self.arguments = module_dict[QM_FIELD_ARGUMENTS]
+        self.returns = module_dict[QM_FIELD_RETURNS]
 
     def __str__(self) -> str:
         return self.name
@@ -627,8 +662,8 @@ class QueryModule:
         for kwarg in kwargs.keys():
             has_arg = False
             for dict in self.arguments:
-                if dict["name"] == kwarg:
-                    dict["value"] = str(kwargs[kwarg])
+                if dict[QM_KEY_NAME] == kwarg:
+                    dict[QM_KEY_VALUE] = str(kwargs[kwarg])
                     has_arg = True
             if not has_arg:
                 raise KeyError(f"{kwarg} is not an argument in this query module.")
@@ -643,12 +678,18 @@ class QueryModule:
         """
         arguments_str = ""
         for arg in self.arguments:
-            if "value" in arg:
-                arguments_str += arg["value"]
-            elif "default" in arg:
-                arguments_str += arg["default"]
+            if QM_KEY_VALUE in arg:
+                val = arg[QM_KEY_VALUE]
+            elif QM_KEY_DEFAULT in arg:
+                val = arg[QM_KEY_DEFAULT]
             else:
-                raise KeyError(f"{arg['name']} has no value set.")
+                raise KeyError(f"{arg[QM_KEY_NAME]} has no value set.")
+
+            if arg[QM_KEY_TYPE] == "STRING":
+                arguments_str += '"' + val + '"'
+            else:
+                arguments_str += val
+
             arguments_str += ", "
 
         arguments_str = arguments_str[:-2]
