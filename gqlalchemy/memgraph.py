@@ -54,7 +54,7 @@ QM_FIELD_RETURNS = "returns"
 
 QM_KEY_NAME = "name"
 QM_KEY_VALUE = "value"
-QM_KEY_DEFAULT = "defalut"
+QM_KEY_DEFAULT = "default"
 QM_KEY_TYPE = "type"
 
 
@@ -639,6 +639,7 @@ class QueryModule:
     """Class representing a single query module."""
 
     def __init__(self, module_dict: Dict) -> None:
+        print(module_dict)
         self.name = module_dict[QM_FIELD_NAME]
         self.is_editable = module_dict[QM_FIELD_IS_EDITABLE]
         self.is_write = module_dict[QM_FIELD_IS_WRITE]

@@ -155,24 +155,3 @@ def test_path_mapping(populated_memgraph: Memgraph):
 def test_parse_signature(memgraph: Memgraph, signature: str, arguments: List, returns: List):
     """test functionality of parsing a module signature"""
     assert arguments, returns == memgraph._parse_signature(signature)
-
-
-def test_get_procedures_module(memgraph: Memgraph):
-    """test retrieval of procedures, using startswith because of the changing
-    nature of total query modules number"""
-    procedures = memgraph.get_procedures(startswith="graph_analyzer")
-    assert len(procedures) == 3
-
-
-def test_set_inputs_exception(memgraph: Memgraph):
-    """setting an argument that doesn't exist shouldn't be possible"""
-    procedure = memgraph.get_procedures(startswith="tsp.solve")[0]
-    with pytest.raises(KeyError):
-        procedure.set_inputs(dummy=0)
-
-
-def test_set_and_get_inputs(memgraph: Memgraph):
-    """use QueryModule class to set inputs and return in form for call()"""
-    procedure = memgraph.get_procedures(startswith="graph_coloring.color_graph")[0]
-    procedure.set_inputs(edge_property="none")
-    assert procedure.get_inputs() == '{}, "none"'
