@@ -1340,3 +1340,59 @@ def test_unsaved_node_relationship_instances(memgraph):
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
+
+
+def test_foreach(memgraph):
+    # TODO there is a problem here, it should be "{prop: j}", without apostrophes, which is currently impossible to do with querybuilder
+    update_clause = QueryBuilder().create().node(variable="n", id="i")
+    query_builder = QueryBuilder().foreach("i", "[1, 2, 3]", update_clause.construct_query())
+    expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: 'i'}) ) "
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_foreach_multiple_update_clauses(memgraph):
+    # TODO there is a problem here, it should be "{prop: j}", without apostrophes, which is currently impossible to do with querybuilder
+    update_clause_1 = QueryBuilder().create().node(labels="F4", prop="li")
+    update_clause_2 = QueryBuilder().create().node(variable="m", labels="F5", prop2="li")
+    query = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .foreach(
+            variable="li",
+            expression="n.prop",
+            update_clauses=[update_clause_1.construct_query(), update_clause_2.construct_query()],
+        )
+        .return_({"n": ""})
+    )
+    expected_query = (
+        " MATCH (n) FOREACH ( li IN n.prop | CREATE (:F4 {prop: 'li'}) CREATE (m:F5 {prop2: 'li'}) ) RETURN n "
+    )
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_foreach_nested(memgraph):
+    # TODO there is a problem here, it should be "{prop: j}", without apostrophes, which is currently impossible to do with querybuilder
+    create_query = QueryBuilder().create().node(variable="u", prop="j")
+    nested_query = QueryBuilder().foreach(variable="j", expression="i", update_clauses=create_query.construct_query())
+    query = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .foreach(variable="i", expression="n.prop", update_clauses=nested_query.construct_query())
+    )
+
+    expected_query = " MATCH (n) FOREACH ( i IN n.prop | FOREACH ( j IN i | CREATE (u {prop: 'j'}) ) ) "
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query.execute()
+
+    mock.assert_called_with(expected_query)

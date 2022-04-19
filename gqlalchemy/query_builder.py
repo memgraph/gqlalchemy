@@ -33,6 +33,7 @@ class DeclarativeBaseTypes:
     CREATE = "CREATE"
     DELETE = "DELETE"
     EDGE = "EDGE"
+    FOREACH = "FOREACH"
     LIMIT = "LIMIT"
     LOAD_CSV = "LOAD_CSV"
     MATCH = "MATCH"
@@ -454,6 +455,30 @@ class AddStringPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         return f"{self.custom_cypher}"
+
+
+class ForeachPartialQuery(PartialQuery):
+    # TODO make update_clause to be Union[List[str], str]
+    def __init__(self, variable: str, expression: str, update_clause: str):
+        super().__init__(DeclarativeBaseTypes.FOREACH)
+        self._variable = variable
+        self._expression = expression
+        self._update_clause = update_clause
+
+    @property
+    def variable(self) -> str:
+        return self._variable if self._variable is not None else ""
+
+    @property
+    def expression(self) -> str:
+        return self._expression if self._expression is not None else ""
+
+    @property
+    def update_clause(self) -> str:
+        return self._update_clause if self._update_clause is not None else ""
+
+    def construct_query(self) -> str:
+        return f" FOREACH ( {self.variable} IN {self.expression} | {self.update_clause} ) "
 
 
 class DeclarativeBase(ABC):
@@ -1035,6 +1060,25 @@ class DeclarativeBase(ABC):
         if result:
             return result[retrieve]
         return result
+
+    def foreach(self, variable: str, expression: str, update_clauses: Union[str, List[str]]) -> "DeclarativeBase":
+        """Iterate over a list of elements and for every iteration run every update clause.
+
+        Args:
+            variable: variable name that stores each element
+            expression: Any expression that results to a list
+            update_clauses: One or more cypher update clauses:
+                SET, REMOVE, CREATE, MERGE, DELETE, FOREACH
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+        """
+        if isinstance(update_clauses, list):
+            update_clauses = " ".join(update_clauses)
+
+        self._query.append(ForeachPartialQuery(variable, expression, update_clauses))
+
+        return self
 
     def execute(self) -> Iterator[Dict[str, Any]]:
         """Executes the Cypher query and returns the results.
