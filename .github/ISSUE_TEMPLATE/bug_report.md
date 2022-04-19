@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: "[BUG] "
 labels: bug
-assignees: gitbuda, antonio2368
+assignees: g-despot, Josipmrden, BorisTasevski, katarinasupe, brunos252
 ---
 
 **Memgraph version** Which version did you use?
