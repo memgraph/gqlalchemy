@@ -458,7 +458,6 @@ class AddStringPartialQuery(PartialQuery):
 
 
 class ForeachPartialQuery(PartialQuery):
-    # TODO make update_clause to be Union[List[str], str]
     def __init__(self, variable: str, expression: str, update_clause: str):
         super().__init__(DeclarativeBaseTypes.FOREACH)
         self._variable = variable
@@ -478,6 +477,7 @@ class ForeachPartialQuery(PartialQuery):
         return self._update_clause if self._update_clause is not None else ""
 
     def construct_query(self) -> str:
+        """Creates a FOREACH statement Cypher partial query."""
         return f" FOREACH ( {self.variable} IN {self.expression} | {self.update_clause} ) "
 
 
