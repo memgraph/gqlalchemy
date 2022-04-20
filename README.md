@@ -221,6 +221,7 @@ print(triggers)
 <details>
 <summary>On-disk storage 💽</summary>
 <br>
+
 Since Memgraph is an in-memory graph database, the GQLAlchemy library provides an on-disk storage solution for large properties not used in graph algorithms. This is useful when nodes or relationships have metadata that doesn’t need to be used in any of the graph algorithms that need to be carried out in Memgraph, but can be fetched after. Learn all about it in the [on-disk storage how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/on-disk-storage).
 </details>
 
