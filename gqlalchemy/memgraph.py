@@ -557,7 +557,7 @@ class Memgraph:
 
         return self.get_variable_assume_one(results, "relationship")
 
-    def get_procedures(self, startswith: str = None, update: bool = False) -> List["QueryModule"]:
+    def get_procedures(self, starts_with: str = None, update: bool = False) -> List["QueryModule"]:
         """Return query procedures.
 
         Maintains a list of query modules in the Memgraph object. If startswith
@@ -578,8 +578,8 @@ class Memgraph:
                 module_dict[QM_FIELD_RETURNS] = returns
                 self.query_modules.append(QueryModule(module_dict))
 
-        if startswith is not None:
-            return [q for q in self.query_modules if q.name.startswith(startswith)]
+        if starts_with is not None:
+            return [q for q in self.query_modules if q.name.startswith(starts_with)]
         else:
             return self.query_modules
 
