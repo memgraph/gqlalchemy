@@ -560,8 +560,8 @@ class Memgraph:
     def get_procedures(self, starts_with: str = None, update: bool = False) -> List["QueryModule"]:
         """Return query procedures.
 
-        Maintains a list of query modules in the Memgraph object. If startswith
-        is defined then return those modules that start with startswith string.
+        Maintains a list of query modules in the Memgraph object. If starts_with
+        is defined then return those modules that start with starts_with string.
 
         Args:
             starts_with: Return those modules that start with this string.
