@@ -587,7 +587,7 @@ class Memgraph:
         """Parse signature and make a dictionary for every argument and return.
 
         For instance, if a query module signature is:
-        dummy_module.2(lst :: LIST OF STRING, num = 3 :: NUMBER) :: (ret :: STRING)
+        dummy_module.dummy(lst :: LIST OF STRING, num = 3 :: NUMBER) :: (ret :: STRING)
         the method should return a list of arguments:
         [{"name": "lst", "type": "LIST OF STRING"}, {"name": "num", "type": "NUMBER", "default": 3}]
         and a list of returns:
@@ -605,8 +605,8 @@ class Memgraph:
             signature.index("(", end_arguments_parantheses) + 1 : signature.index(")", end_arguments_parantheses + 1)
         ]
 
-        arguments = self._parse_field(arguments_field)
-        returns = self._parse_field(returns_field)
+        arguments = self._parse_field(arguments_field.strip())
+        returns = self._parse_field(returns_field.strip())
 
         return arguments, returns
 
@@ -616,21 +616,25 @@ class Memgraph:
         Args:
             vars_field: signature field inside parantheses
         """
-        list_of_vars = vars_field.split(", ")
         vars = []
-        if list_of_vars != [""]:
-            for var in list_of_vars:
-                var_dict = {}
-                sides = var.split(" :: ")
-                var_dict[QM_KEY_TYPE] = sides[1]
-                if " = " in sides[0]:
-                    splt = sides[0].split(" = ")
-                    var_dict[QM_KEY_NAME] = splt[0]
-                    var_dict[QM_KEY_DEFAULT] = splt[1].strip('"')
-                else:
-                    var_dict[QM_KEY_NAME] = sides[0]
 
-                vars.append(var_dict)
+        if len(vars_field) == 0:
+            return vars
+
+        list_of_vars = vars_field.split(", ")
+
+        for var in list_of_vars:
+            var_dict = {}
+            sides = var.split(" :: ")
+            var_dict[QM_KEY_TYPE] = sides[1]
+            if " = " in sides[0]:
+                splt = sides[0].split(" = ")
+                var_dict[QM_KEY_NAME] = splt[0]
+                var_dict[QM_KEY_DEFAULT] = splt[1].strip('"')
+            else:
+                var_dict[QM_KEY_NAME] = sides[0]
+
+            vars.append(var_dict)
 
         return vars
 
