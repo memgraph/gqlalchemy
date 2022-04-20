@@ -564,7 +564,7 @@ class Memgraph:
         is defined then return those modules that start with startswith string.
 
         Args:
-            startswith: Return those modules that start with this string.
+            starts_with: Return those modules that start with this string.
             (Optional)
             update: Whether to update the list of modules in
             self.query_modules. (Optional)
