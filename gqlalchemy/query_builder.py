@@ -458,11 +458,11 @@ class AddStringPartialQuery(PartialQuery):
 
 
 class ForeachPartialQuery(PartialQuery):
-    def __init__(self, variable: str, expression: str, update_clause: str):
+    def __init__(self, variable: str, expression: str, update_clauses: str):
         super().__init__(DeclarativeBaseTypes.FOREACH)
         self._variable = variable
         self._expression = expression
-        self._update_clause = update_clause
+        self._update_clauses = update_clauses
 
     @property
     def variable(self) -> str:
@@ -473,12 +473,12 @@ class ForeachPartialQuery(PartialQuery):
         return self._expression if self._expression is not None else ""
 
     @property
-    def update_clause(self) -> str:
-        return self._update_clause if self._update_clause is not None else ""
+    def update_clauses(self) -> str:
+        return self._update_clauses if self._update_clauses is not None else ""
 
     def construct_query(self) -> str:
         """Creates a FOREACH statement Cypher partial query."""
-        return f" FOREACH ( {self.variable} IN {self.expression} | {self.update_clause} ) "
+        return f" FOREACH ( {self.variable} IN {self.expression} | {self.update_clauses} ) "
 
 
 class DeclarativeBase(ABC):
@@ -1164,3 +1164,15 @@ class With(DeclarativeBase):
     ):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
+
+
+class Foreach(DeclarativeBase):
+    def __init__(
+        self,
+        variable: str,
+        expression: str,
+        update_clauses: Union[str, List[str]],
+        connection: Optional[Union[Connection, Memgraph]] = None,
+    ):
+        super().__init__(connection)
+        self._query.append(ForeachPartialQuery(variable, expression, update_clauses))

@@ -22,6 +22,7 @@ from gqlalchemy import (
     QueryBuilder,
     match,
     call,
+    foreach,
     unwind,
     with_,
     merge,
@@ -1227,6 +1228,17 @@ def test_base_class_with(memgraph):
     expected_query = " WITH 10 AS n RETURN n "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_base_class_foreach(memgraph):
+    update_clause = QueryBuilder().create().node(variable="n", id="i")
+    query_builder = foreach("i", "[1, 2, 3]", update_clause.construct_query())
+    expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: 'i'}) ) "
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)

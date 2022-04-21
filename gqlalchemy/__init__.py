@@ -28,6 +28,7 @@ from .disk_storage import SQLitePropertyDatabase  # noqa F401
 from .query_builder import (  # noqa F401
     Call,
     Create,
+    Foreach,
     InvalidMatchChainException,
     Match,
     Merge,
@@ -57,3 +58,4 @@ match = Match
 merge = Merge
 unwind = Unwind
 with_ = With
+foreach = Foreach
