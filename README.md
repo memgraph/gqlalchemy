@@ -43,7 +43,7 @@ Before starting the tests, make sure you have an active Memgraph instance runnin
 ## GQLAlchemy capabilities
 
 <details>
-<summary>Object graph mapper 🗺️</summary>
+<summary>🗺️ Object graph mapper</summary>
 <br>
 
 Below you can see an example of how to create `User` and `Language` node classes, and a relationship class of type `SPEAKS`. Along with that, you can see how to create a new node and relationship and how to save them in the database. After that, you can load those nodes and relationship from the database.
@@ -83,7 +83,7 @@ print(loaded_speaks)
 </details>
 
 <details>
-<summary>Query builder 🔨</summary>
+<summary>🔨 Query builder</summary>
 <br>
 When building a Cypher query, you can use a set of methods that are wrappers around Cypher clauses. 
 <br>
@@ -109,7 +109,7 @@ query_match = match()
 </details>
 
 <details>
-<summary>Manage streams 🚰</summary>
+<summary>🚰 Manage streams</summary>
 <br>
 
 You can create and start Kafka or Pulsar stream using GQLAlchemy. 
@@ -135,7 +135,7 @@ db.start_stream(stream)
 </details>
 
 <details>
-<summary>Import data from different sources 🗄️</summary>
+<summary>🗄️ Import data from different sources</summary>
 <br>
 
 **Import table data to a graph database**
@@ -153,7 +153,7 @@ Read all about it in [custom file system importer how-to guide](https://memgraph
 </details>
 
 <details>
-<summary>Manage Memgraph instances ⚙️</summary>
+<summary>⚙️ Manage Memgraph instances</summary>
 <br>
 
 You can start, stop, connect to and monitor Memgraph instances with GQLAlchemy.
@@ -189,7 +189,7 @@ memgraph.execute_and_fetch("RETURN 'Memgraph is running' AS result"))[0]["result
 </details>
 
 <details>
-<summary>Manage database triggers 🔫</summary>
+<summary>🔫 Manage database triggers</summary>
 <br>
 
 Because Memgraph supports database triggers on `CREATE`, `UPDATE` and `DELETE` operations, GQLAlchemy also implements a simple interface for maintaining these triggers.
@@ -219,7 +219,7 @@ print(triggers)
 </details>
 
 <details>
-<summary>On-disk storage 💽</summary>
+<summary>💽 On-disk storage</summary>
 <br>
 
 Since Memgraph is an in-memory graph database, the GQLAlchemy library provides an on-disk storage solution for large properties not used in graph algorithms. This is useful when nodes or relationships have metadata that doesn’t need to be used in any of the graph algorithms that need to be carried out in Memgraph, but can be fetched after. Learn all about it in the [on-disk storage how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/on-disk-storage).
