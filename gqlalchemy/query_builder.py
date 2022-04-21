@@ -1120,3 +1120,9 @@ class With(DeclarativeBase):
     ):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
+
+
+class LoadCSV(DeclarativeBase):
+    def __init__(self, path: str, header: bool, row: str, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+        self._query.append(LoadCsvPartialQuery(path, header, row))
