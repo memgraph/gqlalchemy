@@ -14,7 +14,10 @@
 
 import os
 import sqlite3
-from typing import Any, Dict, Iterator, List, Optional, Union, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Union
+
+from gqlalchemy.utilities import parse_query_module_signature
+from gqlalchemy.utilities import QM_KEY_DEFAULT, QM_KEY_NAME, QM_KEY_TYPE, QM_KEY_VALUE
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
@@ -49,13 +52,6 @@ QM_FIELD_IS_EDITABLE = "is_editable"
 QM_FIELD_IS_WRITE = "is_write"
 QM_FIELD_PATH = "path"
 QM_FIELD_SIGNATURE = "signature"
-QM_FIELD_ARGUMENTS = "arguments"
-QM_FIELD_RETURNS = "returns"
-
-QM_KEY_NAME = "name"
-QM_KEY_VALUE = "value"
-QM_KEY_DEFAULT = "default"
-QM_KEY_TYPE = "type"
 
 
 class MemgraphConstants:
@@ -573,9 +569,6 @@ class Memgraph:
             results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
             self.query_modules = []
             for module_dict in results:
-                arguments, returns = self._parse_signature(module_dict[QM_FIELD_SIGNATURE])
-                module_dict[QM_FIELD_ARGUMENTS] = arguments
-                module_dict[QM_FIELD_RETURNS] = returns
                 self.query_modules.append(QueryModule(module_dict))
 
         if starts_with is not None:
@@ -583,73 +576,20 @@ class Memgraph:
         else:
             return self.query_modules
 
-    def _parse_signature(self, signature: str) -> Tuple[List, List]:
-        """Parse signature and make a dictionary for every argument and return.
-
-        For instance, if a query module signature is:
-        dummy_module.dummy(lst :: LIST OF STRING, num = 3 :: NUMBER) :: (ret :: STRING)
-        the method should return a list of arguments:
-        [{"name": "lst", "type": "LIST OF STRING"}, {"name": "num", "type": "NUMBER", "default": 3}]
-        and a list of returns:
-        [{"name": "ret", "type": "STRING"}]
-
-        Dictionary consists of fields: "name" - argument name, "type" - data
-        type of argument and "default" where default argument value is given
-
-        Args:
-            signature: module signature as returned by Cypher CALL operation
-        """
-        end_arguments_parantheses = signature.index(")")
-        arguments_field = signature[signature.index("(") + 1 : end_arguments_parantheses]
-        returns_field = signature[
-            signature.index("(", end_arguments_parantheses) + 1 : signature.index(")", end_arguments_parantheses + 1)
-        ]
-
-        arguments = self._parse_field(arguments_field.strip())
-        returns = self._parse_field(returns_field.strip())
-
-        return arguments, returns
-
-    def _parse_field(self, vars_field: str) -> List[Dict]:
-        """Parse a field of arguments or returns from module signature
-
-        Args:
-            vars_field: signature field inside parantheses
-        """
-        vars = []
-
-        if len(vars_field) == 0:
-            return vars
-
-        list_of_vars = vars_field.split(", ")
-
-        for var in list_of_vars:
-            var_dict = {}
-            sides = var.split(" :: ")
-            var_dict[QM_KEY_TYPE] = sides[1]
-            if " = " in sides[0]:
-                splt = sides[0].split(" = ")
-                var_dict[QM_KEY_NAME] = splt[0]
-                var_dict[QM_KEY_DEFAULT] = splt[1].strip('"')
-            else:
-                var_dict[QM_KEY_NAME] = sides[0]
-
-            vars.append(var_dict)
-
-        return vars
-
 
 class QueryModule:
     """Class representing a single query module."""
 
     def __init__(self, module_dict: Dict) -> None:
+        arguments, returns = parse_query_module_signature(module_dict[QM_FIELD_SIGNATURE])
+
         self.name = module_dict[QM_FIELD_NAME]
         self.is_editable = module_dict[QM_FIELD_IS_EDITABLE]
         self.is_write = module_dict[QM_FIELD_IS_WRITE]
         self.path = module_dict[QM_FIELD_PATH]
         self.signature = module_dict[QM_FIELD_SIGNATURE]
-        self.arguments = module_dict[QM_FIELD_ARGUMENTS]
-        self.returns = module_dict[QM_FIELD_RETURNS]
+        self.arguments = arguments
+        self.returns = returns
 
     def __str__(self) -> str:
         return self.name
@@ -663,14 +603,14 @@ class QueryModule:
         Raises:
             KeyError: Passed an argument not in the self.arguments list.
         """
-        for kwarg in kwargs.keys():
+        for argument_name in kwargs.keys():
             has_arg = False
-            for dict in self.arguments:
-                if dict[QM_KEY_NAME] == kwarg:
-                    dict[QM_KEY_VALUE] = str(kwargs[kwarg])
+            for argument_dict in self.arguments:
+                if argument_dict[QM_KEY_NAME] == argument_name:
+                    argument_dict[QM_KEY_VALUE] = str(kwargs[argument_name])
                     has_arg = True
             if not has_arg:
-                raise KeyError(f"{kwarg} is not an argument in this query module.")
+                raise KeyError(f"{argument_name} is not an argument in this query module.")
 
     def get_inputs(self) -> str:
         """return inputs in form "value1, value2, ..." for QueryBuilder call()
@@ -681,15 +621,15 @@ class QueryModule:
             not set.
         """
         arguments_str = ""
-        for arg in self.arguments:
-            if QM_KEY_VALUE in arg:
-                val = arg[QM_KEY_VALUE]
-            elif QM_KEY_DEFAULT in arg:
-                val = arg[QM_KEY_DEFAULT]
+        for argument_dict in self.arguments:
+            if QM_KEY_VALUE in argument_dict:
+                val = argument_dict[QM_KEY_VALUE]
+            elif QM_KEY_DEFAULT in argument_dict:
+                val = argument_dict[QM_KEY_DEFAULT]
             else:
-                raise KeyError(f"{arg[QM_KEY_NAME]} has no value set.")
+                raise KeyError(f"{argument_dict[QM_KEY_NAME]} has no value set.")
 
-            if arg[QM_KEY_TYPE] == "STRING":
+            if argument_dict[QM_KEY_TYPE] == "STRING":
                 arguments_str += '"' + val + '"'
             else:
                 arguments_str += val

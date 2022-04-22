@@ -17,6 +17,9 @@ import pytest
 from gqlalchemy import Memgraph, Node, Relationship
 
 import unittest.mock as mock
+from gqlalchemy.memgraph import QueryModule
+
+from gqlalchemy.query_builder import QueryBuilder
 
 
 def compare_nodes(actual: List[Node], expected: List[Node]):
@@ -194,3 +197,25 @@ def test_get_procedures(memgraph: Memgraph):
     memgraph.execute_and_fetch = mock_execute_and_fetch_wrapper
 
     assert str(memgraph.get_procedures()[0]) == "max_flow.get_flow"
+
+
+def test_query_module_with_query_builder(memgraph):
+    mock_module = {
+        "is_editable": True,
+        "is_write": False,
+        "name": "max_flow.get_flow",
+        "path": "/home/bruno/mage/python/max_flow.py",
+        "signature": 'max_flow.get_flow(start_v :: NODE, end_v :: NODE, edge_property = "weight" :: STRING) :: (max_flow :: NUMBER)',
+    }
+
+    query_module = QueryModule(mock_module)
+
+    query_module.set_inputs(start_v=None, end_v=None)
+
+    query_builder = QueryBuilder().call(procedure=query_module, arguments=query_module.get_inputs())
+    expected_query = ' CALL max_flow.get_flow(None, None, "weight") '
+
+    with mock.patch.object(Memgraph, "execute", return_value=None) as m:
+        query_builder.execute()
+
+    m.assert_called_with(expected_query)
