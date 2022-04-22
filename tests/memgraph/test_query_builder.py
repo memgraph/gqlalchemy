@@ -27,6 +27,7 @@ from gqlalchemy import (
     unwind,
     with_,
     merge,
+    return_,
     Node,
     Relationship,
     Field,
@@ -1247,6 +1248,16 @@ def test_base_class_with(memgraph):
 def test_base_class_load_csv(memgraph):
     query_builder = load_csv("path/to/my/file.csv", True, "row").return_()
     expected_query = " LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_base_class_return(memgraph):
+    query_builder = return_({"n": "n"})
+    expected_query = " RETURN n "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
