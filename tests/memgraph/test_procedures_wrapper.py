@@ -23,7 +23,7 @@ def test_set_inputs_exception():
         "is_write": False,
         "name": "dummy",
         "path": "",
-        "signature": "",
+        "signature": "dummy() :: ()",
         "arguments": [{}, {}],
         "returns": [{}, {}],
     }
