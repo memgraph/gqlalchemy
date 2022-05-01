@@ -135,7 +135,7 @@ db.start_stream(stream)
 </details>
 
 <details>
-<summary>🗄️ Import data from different sources</summary>
+<summary>🗄️ Import table data from different sources</summary>
 <br>
 
 **Import table data to a graph database**
