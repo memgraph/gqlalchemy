@@ -587,7 +587,7 @@ class IntegratedAlgorithm(ABC):
             return f"(e, v | {expression})"
 
 
-class ShortestPath(IntegratedAlgorithm):
+class BreadthFirstSearch(IntegratedAlgorithm):
     """Build a BFS call for a Cypher query.
 
     The Breadth-First Search can be called in Memgraph with Cypher queries

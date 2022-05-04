@@ -29,7 +29,7 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-from gqlalchemy.memgraph import Memgraph, ShortestPath
+from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
@@ -1343,7 +1343,7 @@ def test_unsaved_node_relationship_instances(memgraph):
 
 
 def test_bfs():
-    bfs_alg = ShortestPath()
+    bfs_alg = BreadthFirstSearch()
 
     query_builder = (
         QueryBuilder()
@@ -1362,7 +1362,7 @@ def test_bfs():
 
 
 def test_bfs_filter_label():
-    bfs_alg = ShortestPath(condition="e.length <= 200 AND v.name != 'Metz'")
+    bfs_alg = BreadthFirstSearch(condition="e.length <= 200 AND v.name != 'Metz'")
 
     query_builder = (
         QueryBuilder()
@@ -1382,7 +1382,7 @@ def test_bfs_filter_label():
 
 
 def test_bfs_bounds():
-    bfs_alg = ShortestPath(upper_bound=10, condition="e.x > 12 AND v.y < 3")
+    bfs_alg = BreadthFirstSearch(upper_bound=10, condition="e.x > 12 AND v.y < 3")
 
     query_builder = (
         QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=bfs_alg).node().return_()
