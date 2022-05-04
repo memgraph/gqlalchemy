@@ -29,7 +29,7 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.memgraph import Memgraph, ShortestPath
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
@@ -1335,6 +1335,60 @@ def test_unsaved_node_relationship_instances(memgraph):
         .return_()
     )
     expected_query = " MATCH (user_1:User {name: 'Ron'})-[:FOLLOWS]->(user_2:User {name: 'Leslie'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_bfs():
+    bfs_alg = ShortestPath()
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Zagreb")
+        .to(edge_label="Road", algorithm=bfs_alg)
+        .node(labels="City", name="Paris")
+        .return_()
+    )
+    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road * BFS]->(:City {name: 'Paris'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_bfs_filter_label():
+    bfs_alg = ShortestPath(condition="e.length <= 200 AND v.name != 'Metz'")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Paris")
+        .to(edge_label="Road", algorithm=bfs_alg)
+        .node(labels="City", name="Berlin")
+        .return_()
+    )
+
+    expected_query = " MATCH (:City {name: 'Paris'})-[:Road * BFS (e, v | e.length <= 200 AND v.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_bfs_bounds():
+    bfs_alg = ShortestPath(upper_bound=10, condition="e.x > 12 AND v.y < 3")
+
+    query_builder = (
+        QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=bfs_alg).node().return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[ * BFS ..10 (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
