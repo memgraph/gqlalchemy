@@ -585,3 +585,36 @@ class IntegratedAlgorithm(ABC):
             return ""
         else:
             return f"(e, v | {expression})"
+
+
+class WeightedShortestPath(IntegratedAlgorithm):
+    """Build a Djikstra shortest path call for a Cypher query"""
+
+    def __init__(
+        self,
+        upper_bound: Union[int, str] = None,
+        condition: str = None,
+        total_weight_name: str = "total_weight",
+        weight_property: str = "e.weight",
+    ) -> None:
+        super().__init__()
+        if "." not in weight_property:
+            self.weight_property = "e." + weight_property
+        else:
+            self.weight_property = weight_property
+        self.total_weight_name = total_weight_name
+        self.condition = condition
+        self.upper_bound = upper_bound
+
+    def __str__(self) -> str:
+        algo_str = " * wShortest"
+        if self.upper_bound is not None:
+            algo_str += f" {self.upper_bound}"
+
+        algo_str += f" {super().get_lambda(self.weight_property)} {self.total_weight_name}"
+
+        filter_lambda = super().get_lambda(self.condition)
+        if filter_lambda != "":
+            algo_str += f" {filter_lambda}"
+
+        return algo_str
