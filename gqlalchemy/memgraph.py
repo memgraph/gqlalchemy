@@ -585,3 +585,50 @@ class IntegratedAlgorithm(ABC):
             return ""
         else:
             return f"(e, v | {expression})"
+
+
+class DepthFirstSearch(IntegratedAlgorithm):
+    """Build a DFS call for a Cypher query.
+    The Depth-First Search can be called in Memgraph with Cypher queries
+    such as:
+    MATCH (a {id: 723})-[* ..10 (e, v | e.x > 12 AND v.y < 3)]-() RETURN *;
+    It is called inside the relationship clause, "*" naming the algorithm
+    ("*" without "DFS" because it is defined like such in openCypher),
+    "..10" specifying depth bounds, and "(e, v | <expression>)" is a filter
+    lambda.
+    """
+
+    def __init__(
+        self,
+        lower_bound: int = None,
+        upper_bound: int = None,
+        condition: str = None,
+    ) -> None:
+        super().__init__()
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.condition = condition
+
+    def __str__(self) -> str:
+        """get Cypher query string for this algorithm."""
+        algo_str = " *"
+
+        bounds = self.get_bounds_str()
+        if bounds != "":
+            algo_str += f" {bounds}"
+
+        filter_lambda = super().get_lambda(self.condition)
+        if filter_lambda != "":
+            algo_str += f" {filter_lambda}"
+
+        return algo_str
+
+    def get_bounds_str(self) -> str:
+        """If bounds are specified, returns them in grammar-defined form."""
+        if self.lower_bound is None and self.upper_bound is None:
+            return ""
+
+        lower = str(self.lower_bound) if self.lower_bound is not None else ""
+        upper = str(self.upper_bound) if self.upper_bound is not None else ""
+
+        return f"{lower}..{upper}"
