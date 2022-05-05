@@ -15,12 +15,7 @@
 import math
 
 from enum import Enum
-from typing import Any, Dict, List, Tuple, Optional, Union
-
-QM_KEY_NAME = "name"
-QM_KEY_VALUE = "value"
-QM_KEY_DEFAULT = "default"
-QM_KEY_TYPE = "type"
+from typing import Any, Dict, List, Optional, Union
 
 
 class NanValuesHandle(Enum):
@@ -104,62 +99,3 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
 
 class NanException(Exception):
     pass
-
-
-def parse_query_module_signature(signature: str) -> Tuple[List, List]:
-    """Query Modules signatures received from Memgraph are parsed into a
-    list of dictionaries.
-
-    One list is for arguments and another for returns.
-    For instance, if a query module signature is:
-    dummy_module.dummy(lst :: LIST OF STRING, num = 3 :: NUMBER) :: (ret :: STRING)
-    the method should return a list of arguments:
-    [{"name": "lst", "type": "LIST OF STRING"}, {"name": "num", "type": "NUMBER", "default": 3}]
-    and a list of returns:
-    [{"name": "ret", "type": "STRING"}]
-
-    Dictionary consists of fields: "name" - argument name, "type" - data
-    type of argument and "default" where default argument value is given
-
-    Args:
-        signature: module signature as returned by Cypher CALL operation
-    """
-    end_arguments_parentheses = signature.index(")")
-    arguments_field = signature[signature.index("(") + 1 : end_arguments_parentheses]
-    returns_field = signature[
-        signature.index("(", end_arguments_parentheses) + 1 : signature.index(")", end_arguments_parentheses + 1)
-    ]
-
-    arguments = parse_field(arguments_field.strip())
-    returns = parse_field(returns_field.strip())
-
-    return arguments, returns
-
-
-def parse_field(vars_field: str) -> List[Dict]:
-    """Parse a field of arguments or returns from Query Module signature.
-
-    Args:
-        vars_field: signature field inside parentheses
-    """
-    vars = []
-
-    if len(vars_field) == 0:
-        return vars
-
-    list_of_vars = vars_field.split(", ")
-
-    for var in list_of_vars:
-        var_dict = {}
-        sides = var.split(" :: ")
-        var_dict[QM_KEY_TYPE] = sides[1]
-        if " = " in sides[0]:
-            splt = sides[0].split(" = ")
-            var_dict[QM_KEY_NAME] = splt[0]
-            var_dict[QM_KEY_DEFAULT] = splt[1].strip('"')
-        else:
-            var_dict[QM_KEY_NAME] = sides[0]
-
-        vars.append(var_dict)
-
-    return vars

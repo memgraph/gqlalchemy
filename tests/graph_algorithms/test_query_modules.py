@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.memgraph import QueryModule
+from gqlalchemy.graph_algorithms.query_modules import QueryModule
 import pytest
 
 
@@ -30,16 +30,16 @@ def test_set_inputs_exception():
 
     qm = QueryModule(dummy_dict)
     with pytest.raises(KeyError):
-        qm.set_inputs(dummy=0)
+        qm.set_argument_values(dummy=0)
 
 
-def test_set_and_get_inputs():
+def test_set_and_get_arguments():
     """use QueryModule class to set inputs and return in form for call()"""
     color_graph_yield = {
         "is_editable": True,
         "is_write": False,
         "name": "graph_coloring.color_graph",
-        "path": "/home/bruno/mage/python/graph_coloring.py",
+        "path": "/home/user/mage/python/graph_coloring.py",
         "signature": 'graph_coloring.color_graph(parameters = {} :: MAP, edge_property = "weight" :: STRING) :: (color :: STRING, node :: STRING)',
         "arguments": [
             {"type": "MAP", "name": "parameters", "default": "{}"},
@@ -49,5 +49,5 @@ def test_set_and_get_inputs():
     }
 
     qm = QueryModule(color_graph_yield)
-    qm.set_inputs(edge_property="none")
-    assert qm.get_inputs() == '{}, "none"'
+    qm.set_argument_values(edge_property="none")
+    assert qm.get_arguments_for_call() == '{}, "none"'

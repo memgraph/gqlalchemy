@@ -16,11 +16,9 @@ import os
 import sqlite3
 from typing import Any, Dict, Iterator, List, Optional, Union
 
-from gqlalchemy.utilities import parse_query_module_signature
-from gqlalchemy.utilities import QM_KEY_DEFAULT, QM_KEY_NAME, QM_KEY_TYPE, QM_KEY_VALUE
-
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
+from .graph_algorithms.query_modules import QueryModule
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -46,12 +44,6 @@ MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
-
-QM_FIELD_NAME = "name"
-QM_FIELD_IS_EDITABLE = "is_editable"
-QM_FIELD_IS_WRITE = "is_write"
-QM_FIELD_PATH = "path"
-QM_FIELD_SIGNATURE = "signature"
 
 
 class MemgraphConstants:
@@ -553,7 +545,7 @@ class Memgraph:
 
         return self.get_variable_assume_one(results, "relationship")
 
-    def get_procedures(self, starts_with: str = None, update: bool = False) -> List["QueryModule"]:
+    def get_procedures(self, starts_with: Optional[str] = None, update: bool = False) -> List["QueryModule"]:
         """Return query procedures.
 
         Maintains a list of query modules in the Memgraph object. If starts_with
@@ -575,67 +567,3 @@ class Memgraph:
             return [q for q in self.query_modules if q.name.startswith(starts_with)]
         else:
             return self.query_modules
-
-
-class QueryModule:
-    """Class representing a single query module."""
-
-    def __init__(self, module_dict: Dict) -> None:
-        arguments, returns = parse_query_module_signature(module_dict[QM_FIELD_SIGNATURE])
-
-        self.name = module_dict[QM_FIELD_NAME]
-        self.is_editable = module_dict[QM_FIELD_IS_EDITABLE]
-        self.is_write = module_dict[QM_FIELD_IS_WRITE]
-        self.path = module_dict[QM_FIELD_PATH]
-        self.signature = module_dict[QM_FIELD_SIGNATURE]
-        self.arguments = arguments
-        self.returns = returns
-
-    def __str__(self) -> str:
-        return self.name
-
-    def set_inputs(self, **kwargs) -> None:
-        """Set values for QueryModule arguments so the module can be called.
-
-        Kwargs:
-            Named arguments in self.arguments.
-
-        Raises:
-            KeyError: Passed an argument not in the self.arguments list.
-        """
-        for argument_name in kwargs.keys():
-            has_arg = False
-            for argument_dict in self.arguments:
-                if argument_dict[QM_KEY_NAME] == argument_name:
-                    argument_dict[QM_KEY_VALUE] = str(kwargs[argument_name])
-                    has_arg = True
-            if not has_arg:
-                raise KeyError(f"{argument_name} is not an argument in this query module.")
-
-    def get_inputs(self) -> str:
-        """return inputs in form "value1, value2, ..." for QueryBuilder call()
-        method.
-
-        Raises:
-            KeyError: Cannot get all values of arguments because one or more is
-            not set.
-        """
-        arguments_str = ""
-        for argument_dict in self.arguments:
-            if QM_KEY_VALUE in argument_dict:
-                val = argument_dict[QM_KEY_VALUE]
-            elif QM_KEY_DEFAULT in argument_dict:
-                val = argument_dict[QM_KEY_DEFAULT]
-            else:
-                raise KeyError(f"{argument_dict[QM_KEY_NAME]} has no value set.")
-
-            if argument_dict[QM_KEY_TYPE] == "STRING":
-                arguments_str += '"' + val + '"'
-            else:
-                arguments_str += val
-
-            arguments_str += ", "
-
-        arguments_str = arguments_str[:-2]
-
-        return arguments_str
