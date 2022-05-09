@@ -42,7 +42,7 @@ jobs:
       - name: Test project
         run: |
           poetry install
-          poetry run pytest -vvv -m "not slow"
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v3
         if: always()
@@ -89,4 +89,4 @@ jobs:
         if: always()
         with:
           name: assets-for-download
-          path: C:\memgraph\logs
+          path: ~/memgraph/logs
