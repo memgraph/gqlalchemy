@@ -48,7 +48,7 @@ jobs:
         if: always()
         with:
           name: assets-for-download
-          path: C:\memgraph\logs
+          path: ~/memgraph/logs
 
   build_and_test_windows:
     if: github.event.pull_request.draft == false
