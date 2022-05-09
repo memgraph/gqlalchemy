@@ -1,5 +1,13 @@
 loaders:
   - type: python
+    search_path: [.]
+    modules:
+      - gqlalchemy.disk_storage
+      - gqlalchemy.memgraph
+      - gqlalchemy.models
+      - gqlalchemy.query_builder
+      - gqlalchemy.transformations
+      - gqlalchemy.utilities
 processors:
   - type: filter
     skip_empty_modules: true
