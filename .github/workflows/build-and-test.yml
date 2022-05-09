@@ -35,14 +35,20 @@ jobs:
         run: |
           mkdir ~/memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output ~/memgraph/memgraph-community.deb
-          dpkg -i ~/memgraph/memgraph-community.deb
-          mkdir /mnt/c/memgraph
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph.log' &
+          sudo dpkg -i ~/memgraph/memgraph-community.deb
+          mkdir ~/memgraph/logs
+          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=~/memgraph/logs/memgraph.log' &
           sleep 1 # Wait for Memgraph a bit.
       - name: Test project
         run: |
           poetry install
           poetry run pytest -vvv -m "not slow"
+      - name: Use the Upload Artifact GitHub Action
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: assets-for-download
+          path: C:\memgraph\logs
 
   build_and_test_windows:
     if: github.event.pull_request.draft == false
@@ -67,8 +73,8 @@ jobs:
           mkdir ~/memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output ~/memgraph/memgraph-community.deb
           dpkg -i ~/memgraph/memgraph-community.deb
-          mkdir /mnt/c/memgraph
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph.log' &
+          mkdir ~/memgraph/logs
+          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=~/memgraph/logs/memgraph.log' &
           sleep 1 # Wait for Memgraph a bit.
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
@@ -83,4 +89,4 @@ jobs:
         if: always()
         with:
           name: assets-for-download
-          path: C:\memgraph
+          path: C:\memgraph\logs
