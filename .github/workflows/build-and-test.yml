@@ -36,8 +36,9 @@ jobs:
           mkdir /home/runner/memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
           sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
+          sudo systemctl stop memgraph
           mkdir /home/runner/memgraph/logs
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/home/runner/memgraph/logs/memgraph.log' &
+          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/home/runner/memgraph/logs/memgraph.log' &
           sleep 1 # Wait for Memgraph a bit.
       - name: Test project
         run: |
