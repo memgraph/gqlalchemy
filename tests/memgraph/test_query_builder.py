@@ -1362,7 +1362,7 @@ def test_dfs():
 
 
 def test_dfs_filter_label():
-    dfs_alg = DepthFirstSearch(condition="e.length <= 200 AND v.name != 'Metz'")
+    dfs_alg = DepthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
 
     query_builder = (
         QueryBuilder()
@@ -1373,7 +1373,7 @@ def test_dfs_filter_label():
         .return_()
     )
 
-    expected_query = " MATCH (:City {name: 'Paris'})-[:Road * (e, v | e.length <= 200 AND v.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+    expected_query = " MATCH (:City {name: 'Paris'})-[:Road * (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -1381,14 +1381,20 @@ def test_dfs_filter_label():
     mock.assert_called_with(expected_query)
 
 
-def test_dfs_bounds():
-    dfs_alg = DepthFirstSearch(upper_bound=10, condition="e.x > 12 AND v.y < 3")
+@pytest.mark.parametrize(
+    "lower_bound, upper_bound, expected_query",
+    [
+        (1, 15, " MATCH (a {id: 723})-[ * 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (3, None, " MATCH (a {id: 723})-[ * 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, 10, " MATCH (a {id: 723})-[ * ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+    ],
+)
+def test_dfs_bounds(lower_bound, upper_bound, expected_query):
+    dfs_alg = DepthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="r.x > 12 AND n.y < 3")
 
     query_builder = (
         QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=dfs_alg).node().return_()
     )
-
-    expected_query = " MATCH (a {id: 723})-[ * ..10 (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()

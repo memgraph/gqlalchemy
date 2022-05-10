@@ -614,7 +614,7 @@ class DepthFirstSearch(IntegratedAlgorithm):
         """get Cypher query string for this algorithm."""
         algo_str = " *"
 
-        bounds = self.get_bounds_str()
+        bounds = self.to_cypher_bounds()
         if bounds != "":
             algo_str += f" {bounds}"
 
@@ -624,7 +624,7 @@ class DepthFirstSearch(IntegratedAlgorithm):
 
         return algo_str
 
-    def get_bounds_str(self) -> str:
+    def to_cypher_bounds(self) -> str:
         """If bounds are specified, returns them in grammar-defined form."""
         if self.lower_bound is None and self.upper_bound is None:
             return ""
