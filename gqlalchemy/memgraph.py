@@ -550,9 +550,9 @@ class IntegratedAlgorithm(ABC):
     """Abstract class modeling in-Memgraph graph algorithms.
 
     These algorithms are integrated into Memgraph codebase and are called
-    within an edge part of a query. For instance:
+    within a relationship part of a query. For instance:
     MATCH p = (:City {name: "Paris"})
-          -[:Road * bfs (e, v | e.length <= 200 AND v.name != "Metz")]->
+          -[:Road * bfs (r, n | r.length <= 200 AND n.name != "Metz")]->
           (:City {name: "Berlin"})
     """
 
@@ -569,14 +569,15 @@ class IntegratedAlgorithm(ABC):
         raise NotImplementedError("Algorithm should define its str representation")
 
     @staticmethod
-    def get_lambda(expression: str) -> str:
+    def to_cypher_lambda(expression: str) -> str:
         """Method for creating a general lambda expression.
 
-        Variables e and v stand for edge and vertex. The expression is used
-        e.g. for a filter lambda, to use only edges of length less than 200:
-            expression="e.length < 200"
+        Variables e and v stand for relationship and node. The expression is
+        used e.g. for a filter lambda, to use only relationships of length less
+        than 200:
+            expression="r.length < 200"
         with the filter lambda being:
-            (e, v | e.length < 200)
+            (r, n | r.length < 200)
 
         Args:
             expression: lambda conditions or statements
@@ -584,4 +585,4 @@ class IntegratedAlgorithm(ABC):
         if expression is None:
             return ""
         else:
-            return f"(e, v | {expression})"
+            return f"(r, n | {expression})"
