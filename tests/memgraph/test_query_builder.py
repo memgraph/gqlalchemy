@@ -1381,14 +1381,20 @@ def test_bfs_filter_label():
     mock.assert_called_with(expected_query)
 
 
-def test_bfs_bounds():
-    bfs_alg = BreadthFirstSearch(upper_bound=10, condition="e.x > 12 AND v.y < 3")
+@pytest.mark.parametrize(
+    "lower_bound, upper_bound, expected_query",
+    [
+        (1, 15, " MATCH (a {id: 723})-[ * BFS 1..15 (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "),
+        (3, None, " MATCH (a {id: 723})-[ * BFS 3.. (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "),
+        (None, 10, " MATCH (a {id: 723})-[ * BFS ..10 (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "),
+    ],
+)
+def test_bfs_bounds(lower_bound, upper_bound, expected_query):
+    bfs_alg = BreadthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="e.x > 12 AND v.y < 3")
 
     query_builder = (
         QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=bfs_alg).node().return_()
     )
-
-    expected_query = " MATCH (a {id: 723})-[ * BFS ..10 (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
