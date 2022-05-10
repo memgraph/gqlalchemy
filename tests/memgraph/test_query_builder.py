@@ -1353,7 +1353,7 @@ def test_bfs():
         .node(labels="City", name="Paris")
         .return_()
     )
-    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road * BFS]->(:City {name: 'Paris'}) RETURN * "
+    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road *BFS]->(:City {name: 'Paris'}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -1362,7 +1362,7 @@ def test_bfs():
 
 
 def test_bfs_filter_label():
-    bfs_alg = BreadthFirstSearch(condition="e.length <= 200 AND v.name != 'Metz'")
+    bfs_alg = BreadthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
 
     query_builder = (
         QueryBuilder()
@@ -1373,7 +1373,7 @@ def test_bfs_filter_label():
         .return_()
     )
 
-    expected_query = " MATCH (:City {name: 'Paris'})-[:Road * BFS (e, v | e.length <= 200 AND v.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+    expected_query = " MATCH (:City {name: 'Paris'})-[:Road *BFS (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -1384,13 +1384,13 @@ def test_bfs_filter_label():
 @pytest.mark.parametrize(
     "lower_bound, upper_bound, expected_query",
     [
-        (1, 15, " MATCH (a {id: 723})-[ * BFS 1..15 (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "),
-        (3, None, " MATCH (a {id: 723})-[ * BFS 3.. (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "),
-        (None, 10, " MATCH (a {id: 723})-[ * BFS ..10 (e, v | e.x > 12 AND v.y < 3)]-() RETURN * "),
+        (1, 15, " MATCH (a {id: 723})-[ *BFS 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (3, None, " MATCH (a {id: 723})-[ *BFS 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, 10, " MATCH (a {id: 723})-[ *BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
     ],
 )
 def test_bfs_bounds(lower_bound, upper_bound, expected_query):
-    bfs_alg = BreadthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="e.x > 12 AND v.y < 3")
+    bfs_alg = BreadthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="r.x > 12 AND n.y < 3")
 
     query_builder = (
         QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=bfs_alg).node().return_()
