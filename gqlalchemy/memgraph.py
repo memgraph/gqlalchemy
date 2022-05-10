@@ -550,9 +550,9 @@ class IntegratedAlgorithm(ABC):
     """Abstract class modeling in-Memgraph graph algorithms.
 
     These algorithms are integrated into Memgraph codebase and are called
-    within an edge part of a query. For instance:
+    within a relationship part of a query. For instance:
     MATCH p = (:City {name: "Paris"})
-          -[:Road * bfs (e, v | e.length <= 200 AND v.name != "Metz")]->
+          -[:Road * bfs (r, n | r.length <= 200 AND n.name != "Metz")]->
           (:City {name: "Berlin"})
     """
 
@@ -569,14 +569,15 @@ class IntegratedAlgorithm(ABC):
         raise NotImplementedError("Algorithm should define its str representation")
 
     @staticmethod
-    def get_lambda(expression: str) -> str:
+    def to_cypher_lambda(expression: str) -> str:
         """Method for creating a general lambda expression.
 
-        Variables e and v stand for edge and vertex. The expression is used
-        e.g. for a filter lambda, to use only edges of length less than 200:
-            expression="e.length < 200"
+        Variables e and v stand for relationship and node. The expression is
+        used e.g. for a filter lambda, to use only relationships of length less
+        than 200:
+            expression="r.length < 200"
         with the filter lambda being:
-            (e, v | e.length < 200)
+            (r, n | r.length < 200)
 
         Args:
             expression: lambda conditions or statements
@@ -584,36 +585,45 @@ class IntegratedAlgorithm(ABC):
         if expression is None:
             return ""
         else:
-            return f"(e, v | {expression})"
+            return f"(r, n | {expression})"
 
 
 class WeightedShortestPath(IntegratedAlgorithm):
-    """Build a Djikstra shortest path call for a Cypher query"""
+    """Build a Djikstra shortest path call for a Cypher query
+
+    The weighted shortest path algorithm can be called in Memgraph with Cypher
+    queries such as:
+    " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum
+            (r, n | r.x > 12 AND r.y < 3)]-(b {id: 882}) RETURN * "
+    It is called inside the relationship clause, "*WSHORTEST" naming the
+    algorithm, "10" specifying search depth bounds, and "(r, n | <expression>)"
+    is a filter lambda, used to filter which relationships and nodes to use.
+    """
 
     def __init__(
         self,
-        upper_bound: Union[int, str] = None,
+        upper_bound: int = None,
         condition: str = None,
-        total_weight_name: str = "total_weight",
-        weight_property: str = "e.weight",
+        total_weight_var: str = "total_weight",
+        weight_property: str = "r.weight",
     ) -> None:
         super().__init__()
         if "." not in weight_property:
-            self.weight_property = "e." + weight_property
+            self.weight_property = "r." + weight_property
         else:
             self.weight_property = weight_property
-        self.total_weight_name = total_weight_name
+        self.total_weight_var = total_weight_var
         self.condition = condition
         self.upper_bound = upper_bound
 
     def __str__(self) -> str:
-        algo_str = " * wShortest"
+        algo_str = " *WSHORTEST"
         if self.upper_bound is not None:
             algo_str += f" {self.upper_bound}"
 
-        algo_str += f" {super().get_lambda(self.weight_property)} {self.total_weight_name}"
+        algo_str += f" {super().to_cypher_lambda(self.weight_property)} {self.total_weight_var}"
 
-        filter_lambda = super().get_lambda(self.condition)
+        filter_lambda = super().to_cypher_lambda(self.condition)
         if filter_lambda != "":
             algo_str += f" {filter_lambda}"
 

@@ -1342,6 +1342,26 @@ def test_unsaved_node_relationship_instances(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_wshortest():
+    weighted_shortest = WeightedShortestPath(weight_property="r.weight")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_wShortest_bound():
     weighted_shortest = WeightedShortestPath(upper_bound=10, weight_property="weight")
 
@@ -1349,14 +1369,12 @@ def test_wShortest_bound():
         QueryBuilder()
         .match()
         .node(variable="a", id=723)
-        .to(variable="edge_list", directed=False, algorithm=weighted_shortest)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
         .node(variable="b", id=882)
         .return_()
     )
 
-    expected_query = (
-        " MATCH (a {id: 723})-[edge_list * wShortest 10 (e, v | e.weight) total_weight]-(b {id: 882}) RETURN * "
-    )
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -1366,19 +1384,19 @@ def test_wShortest_bound():
 
 def test_wShortest_filter_label():
     weighted_shortest = WeightedShortestPath(
-        upper_bound=10, weight_property="weight", condition="e.x > 12 AND v.y < 3", total_weight_name="weight_sum"
+        upper_bound=10, weight_property="weight", condition="r.x > 12 AND n.y < 3", total_weight_var="weight_sum"
     )
 
     query_builder = (
         QueryBuilder()
         .match()
         .node(variable="a", id=723)
-        .to(variable="e", directed=False, algorithm=weighted_shortest)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
         .node(variable="b", id=882)
         .return_()
     )
 
-    expected_query = " MATCH (a {id: 723})-[e * wShortest 10 (e, v | e.weight) weight_sum (e, v | e.x > 12 AND v.y < 3)]-(b {id: 882}) RETURN * "
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum (r, n | r.x > 12 AND n.y < 3)]-(b {id: 882}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
