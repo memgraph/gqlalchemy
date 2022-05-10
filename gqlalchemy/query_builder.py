@@ -586,10 +586,10 @@ class DeclarativeBase(ABC):
             raise InvalidMatchChainException()
 
         if relationship is None:
-            labels_str = to_cypher_labels(edge_label)
+            type_str = to_cypher_labels(edge_label)
             properties_str = to_cypher_properties(kwargs)
         else:
-            labels_str = to_cypher_labels(relationship._type)
+            type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
         if algorithm is not None:
@@ -600,7 +600,7 @@ class DeclarativeBase(ABC):
         self._query.append(
             EdgePartialQuery(
                 variable=variable,
-                labels=labels_str,
+                labels=type_str,
                 algorithm=algorithm_str,
                 properties=properties_str,
                 directed=bool(directed),
