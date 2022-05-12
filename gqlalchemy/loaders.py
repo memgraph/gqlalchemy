@@ -386,7 +386,7 @@ class TableToGraphImporter:
         .where(item="$node_b.$property_1", operator="=", expression="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
-        .to(edge_label="$edge_type")
+        .to(relationship_type="$edge_type")
         .node(variable="$to_node")
         .construct_query()
     )
