@@ -264,7 +264,7 @@ class EdgePartialQuery(PartialQuery):
 
     @property
     def algorithm(self) -> str:
-        return self._algorithm if self._algorithm is not None else ""
+        return "" if self._algorithm is None else self._algorithm
 
     @property
     def properties(self) -> str:
@@ -592,10 +592,7 @@ class DeclarativeBase(ABC):
             type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        if algorithm is not None:
-            algorithm_str = str(algorithm)
-        else:
-            algorithm_str = ""
+        algorithm_str = "" if algorithm is None else str(algorithm)
 
         self._query.append(
             EdgePartialQuery(
@@ -642,10 +639,7 @@ class DeclarativeBase(ABC):
             labels_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        if algorithm is not None:
-            algorithm_str = str(algorithm)
-        else:
-            algorithm_str = ""
+        algorithm_str = "" if algorithm is None else str(algorithm)
 
         self._query.append(
             EdgePartialQuery(
