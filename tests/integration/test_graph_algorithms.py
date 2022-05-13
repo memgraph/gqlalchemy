@@ -84,7 +84,7 @@ def test_query_module_with_query_builder():
         "signature": 'max_flow.get_flow(start_v :: NODE, end_v :: NODE, edge_property = "weight" :: STRING) :: (max_flow :: NUMBER)',
     }
 
-    query_module = QueryModule(mock_module)
+    query_module = QueryModule(**mock_module)
 
     query_module.set_argument_values(start_v=None, end_v=None)
 

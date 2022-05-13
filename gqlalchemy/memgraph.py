@@ -559,11 +559,10 @@ class Memgraph:
         """
         if not hasattr(self, "query_modules") or update:
             results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
-            self.query_modules = []
-            for module_dict in results:
-                self.query_modules.append(QueryModule(module_dict))
+            self.query_modules = [QueryModule(**module_dict) for module_dict in results]
 
-        if starts_with is not None:
-            return [q for q in self.query_modules if q.name.startswith(starts_with)]
-        else:
-            return self.query_modules
+        return (
+            self.query_modules
+            if starts_with is None
+            else [q for q in self.query_modules if q.name.startswith(starts_with)]
+        )

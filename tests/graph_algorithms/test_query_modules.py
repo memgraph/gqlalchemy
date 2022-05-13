@@ -28,7 +28,7 @@ def test_set_inputs_exception():
         "returns": [{}, {}],
     }
 
-    qm = QueryModule(dummy_dict)
+    qm = QueryModule(**dummy_dict)
     with pytest.raises(KeyError):
         qm.set_argument_values(dummy=0)
 
@@ -48,6 +48,6 @@ def test_set_and_get_arguments():
         "returns": [{"type": "STRING", "name": "color"}, {"type": "STRING", "name": "node"}],
     }
 
-    qm = QueryModule(color_graph_yield)
+    qm = QueryModule(**color_graph_yield)
     qm.set_argument_values(edge_property="none")
     assert qm.get_arguments_for_call() == '{}, "none"'
