@@ -556,9 +556,6 @@ class IntegratedAlgorithm(ABC):
           (:City {name: "Berlin"})
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def __str__(self) -> str:
         """Instance of IntegratedAlgorithm extended object is used as a string.
 
@@ -582,10 +579,7 @@ class IntegratedAlgorithm(ABC):
         Args:
             expression: lambda conditions or statements
         """
-        if expression is None:
-            return ""
-        else:
-            return f"(r, n | {expression})"
+        return "" if expression is None else f"(r, n | {expression})"
 
 
 class WeightedShortestPath(IntegratedAlgorithm):
