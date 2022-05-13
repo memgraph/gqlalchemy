@@ -584,7 +584,6 @@ class IntegratedAlgorithm(ABC):
         return "" if expression is None else f"(r, n | {expression})"
 
 
-
 class DepthFirstSearch(IntegratedAlgorithm):
     """Build a DFS call for a Cypher query.
     The Depth-First Search can be called in Memgraph with Cypher queries
