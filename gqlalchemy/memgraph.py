@@ -45,6 +45,8 @@ MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
+DFS_EXPANSION = " *"
+
 
 class MemgraphConstants:
     CONSTRAINT_TYPE = "constraint type"
@@ -605,6 +607,13 @@ class DepthFirstSearch(IntegratedAlgorithm):
         upper_bound: int = None,
         condition: str = None,
     ) -> None:
+        """
+        Args:
+            lower_bound: lower bound for path depth. Defaults to None.
+            upper_bound: upper bound for path depth. Defaults to None.
+            condition: filter through nodes and relationships that pass this
+            condition. Defaults to None.
+        """
         super().__init__()
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -612,15 +621,15 @@ class DepthFirstSearch(IntegratedAlgorithm):
 
     def __str__(self) -> str:
         """get Cypher query string for this algorithm."""
-        algo_str = " *"
+        algo_str = DFS_EXPANSION
 
         bounds = self.to_cypher_bounds()
         if bounds != "":
-            algo_str += f" {bounds}"
+            algo_str = f"{algo_str} {bounds}"
 
         filter_lambda = super().to_cypher_lambda(self.condition)
         if filter_lambda != "":
-            algo_str += f" {filter_lambda}"
+            algo_str = f"{algo_str} {filter_lambda}"
 
         return algo_str
 
