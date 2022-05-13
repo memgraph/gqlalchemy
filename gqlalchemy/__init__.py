@@ -29,6 +29,8 @@ from .query_builder import (  # noqa F401
     Call,
     Create,
     InvalidMatchChainException,
+    Return,
+    LoadCsv,
     Match,
     Merge,
     NoVariablesMatchedException,
@@ -57,3 +59,5 @@ match = Match
 merge = Merge
 unwind = Unwind
 with_ = With
+return_ = Return
+load_csv = LoadCsv
