@@ -45,6 +45,11 @@ MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
+DEFAULT_TOTAL_WEIGHT = "total_weight"
+DEFAULT_WEIGHT_PROPERTY = "r.weight"
+
+WSHORTEST_EXPANSION = " *WSHORTEST"
+
 
 class MemgraphConstants:
     CONSTRAINT_TYPE = "constraint type"
@@ -598,12 +603,23 @@ class WeightedShortestPath(IntegratedAlgorithm):
         self,
         upper_bound: int = None,
         condition: str = None,
-        total_weight_var: str = "total_weight",
-        weight_property: str = "r.weight",
+        total_weight_var: str = DEFAULT_TOTAL_WEIGHT,
+        weight_property: str = DEFAULT_WEIGHT_PROPERTY,
     ) -> None:
+        """
+        Args:
+            upper_bound: Upper bound for path depth. Defaults to None.
+            condition: Filter through nodes and relationships that pass this
+            condition. Defaults to None.
+            total_weight_var: Variable defined as the sum of all weights on
+            path being returned. Defaults to "total_weight".
+            weight_property: property being used as weight. Defaults to
+            "r.weight".
+        """
         super().__init__()
+        self.weight_property = f"r.{weight_property}" if "." not in weight_property else weight_property
         if "." not in weight_property:
-            self.weight_property = "r." + weight_property
+            self.weight_property = f"r.{weight_property}"
         else:
             self.weight_property = weight_property
         self.total_weight_var = total_weight_var
@@ -611,14 +627,14 @@ class WeightedShortestPath(IntegratedAlgorithm):
         self.upper_bound = upper_bound
 
     def __str__(self) -> str:
-        algo_str = " *WSHORTEST"
+        algo_str = WSHORTEST_EXPANSION
         if self.upper_bound is not None:
-            algo_str += f" {self.upper_bound}"
+            algo_str = f"{algo_str} {self.upper_bound}"
 
-        algo_str += f" {super().to_cypher_lambda(self.weight_property)} {self.total_weight_var}"
+        algo_str = f"{algo_str} {super().to_cypher_lambda(self.weight_property)} {self.total_weight_var}"
 
         filter_lambda = super().to_cypher_lambda(self.condition)
         if filter_lambda != "":
-            algo_str += f" {filter_lambda}"
+            algo_str = f"{algo_str} {filter_lambda}"
 
         return algo_str
