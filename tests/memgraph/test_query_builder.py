@@ -35,7 +35,7 @@ from gqlalchemy.memgraph import Memgraph
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
-from gqlalchemy.query_builder import Operator, Order
+from gqlalchemy.query_builder import SetOperator, Order
 
 
 def test_invalid_match_chain_throws_exception():
@@ -1265,13 +1265,13 @@ def test_add_string_complete(memgraph):
 
 
 def test_set_label(memgraph):
-    query_builder = QueryBuilder().set_(item="a", operator=Operator.LABEL_FILTER, expression="L1")
+    query_builder = QueryBuilder().set_(item="a", operator=SetOperator.LABEL_FILTER, expression="L1")
     expected_query = " SET a:L1"
 
     assert query_builder.construct_query() == expected_query
 
 
-@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
 def test_set_assign_expression(memgraph, operator):
     query_builder = QueryBuilder().set_(item="a", operator=operator, expression="value")
     expected_query = f" SET a {operator.value} value"
@@ -1279,7 +1279,7 @@ def test_set_assign_expression(memgraph, operator):
     assert query_builder.construct_query() == expected_query
 
 
-@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
 def test_set_assign_literal(memgraph, operator):
     query_builder = QueryBuilder().set_(item="a", operator=operator, literal="value")
     expected_query = f" SET a {operator.value} 'value'"
@@ -1290,24 +1290,93 @@ def test_set_assign_literal(memgraph, operator):
 def test_multiple_set_label(memgraph):
     query_builder = (
         QueryBuilder()
-        .set_(item="a", operator=Operator.LABEL_FILTER, expression="L1")
-        .set_(item="a", operator=Operator.ASSIGNMENT, expression="L2")
+        .set_(item="a", operator=SetOperator.LABEL_FILTER, expression="L1")
+        .set_(item="a", operator=SetOperator.ASSIGNMENT, expression="L2")
     )
     expected_query = " SET a:L1 SET a = L2"
 
     assert query_builder.construct_query() == expected_query
 
 
-@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
 def test_set_literal_and_expression_missing(memgraph, operator):
     with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInSet):
         QueryBuilder().set_(item="n.name", operator=operator)
 
 
-@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
 def test_set_extra_values(memgraph, operator):
     with pytest.raises(GQLAlchemyExtraKeywordArgumentsInSet):
         QueryBuilder().set_(item="n.name", operator=operator, literal="best_name", expression="Node")
+
+
+def test_set_docstring_example_1(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .where(item="n.name", operator="=", literal="Germany")
+        .set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001)
+        .return_()
+    )
+    expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN * "
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_set_docstring_example_2(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .where(item="n.name", operator="=", literal="Germany")
+        .set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001)
+        .set_(item="n.capital", operator=SetOperator.ASSIGNMENT, literal="Berlin")
+        .return_()
+    )
+    expected_query = (
+        " MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN * "
+    )
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_set_docstring_example_3(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .where(item="n.name", operator="=", literal="Germany")
+        .set_(item="n", operator=SetOperator.LABEL_FILTER, expression="Land")
+        .return_()
+    )
+    expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN * "
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_set_docstring_example_4(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="c", labels="Country")
+        .where(item="c.name", operator="=", literal="Germany")
+        .set_(item="c", operator=SetOperator.INCREMENT, literal={"name": "Germany", "population": "85000000"})
+        .return_()
+    )
+    expected_query = (
+        " MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN * "
+    )
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
 
 
 def test_node_instance(memgraph):
