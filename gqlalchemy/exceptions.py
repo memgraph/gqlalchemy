@@ -57,6 +57,14 @@ Can't create WHERE query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments."
 """
 
+MISSING_ALIAS_IN_RETURN = """
+The second argument of the tuple must be string representing an alias name.
+"""
+
+RETURN_TYPE_ERROR = """
+TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[Union[tuple[str, str], str]].
+"""
+
 
 class GQLAlchemyWarning(Warning):
     pass
@@ -119,3 +127,15 @@ class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = EXTRA_KEYWORD_ARGUMENTS_IN_WHERE
+
+
+class GQLAlchemyMissingAliasInReturn(GQLAlchemyError):
+    def __init__(self):
+        super().__init__()
+        self.message = MISSING_ALIAS_IN_RETURN
+
+
+class GQLAlchemyReturnTypeError(TypeError):
+    def __init__(self):
+        super().__init__()
+        self.message = RETURN_TYPE_ERROR

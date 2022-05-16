@@ -25,6 +25,8 @@ from .exceptions import (
     GQLAlchemyExtraKeywordArgumentsInWhere,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
+    GQLAlchemyMissingAliasInReturn,
+    GQLAlchemyReturnTypeError,
 )
 
 
@@ -373,10 +375,16 @@ class YieldPartialQuery(PartialQuery):
 
 
 class ReturnPartialQuery(PartialQuery):
-    def __init__(self, results: Dict[str, str]):
+    def __init__(self, results: Optional[Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]] = None):
         super().__init__(DeclarativeBaseTypes.RETURN)
 
-        self._results = results
+        self.query = (
+            None
+            if results is None
+            else self._return_read_list(results)
+            if isinstance(results, list)
+            else self._return_read_item(results)
+        )
 
     @property
     def results(self) -> str:
@@ -384,9 +392,35 @@ class ReturnPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Creates a RETURN statement Cypher partial query."""
-        if len(self.results) == 0:
+        if self.query is None:
             return " RETURN * "
-        return f" RETURN {dict_to_alias_statement(self.results)} "
+        return f" {self.type} {self.query} "
+
+    def _return_read_item(self, item: Union[str, Tuple[str, str]]) -> str:
+        if isinstance(item, str):
+            return f"{self._return_read_str(item)}"
+        elif isinstance(item, tuple):
+            return f"{self._return_read_tuple(item)}"
+        else:
+            raise GQLAlchemyReturnTypeError
+
+    def _return_read_list(self, results: List[Union[str, Tuple[str, str]]]):
+        return ", ".join(self._return_read_item(item=item) for item in results)
+
+    def _return_read_str(self, item: str) -> str:
+        return f"{item}"
+
+    def _return_read_tuple(self, tuple: Tuple[str, str]) -> str:
+        if not isinstance(tuple[1], str):
+            raise GQLAlchemyMissingAliasInReturn
+
+        if tuple[0] == tuple[1]:
+            return f"{tuple[0]}"
+
+        if tuple[1] == "":
+            return f"{tuple[0]}"
+
+        return f"{tuple[0]} AS {tuple[1]}"
 
 
 class OrderByPartialQuery(PartialQuery):
@@ -918,17 +952,18 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def return_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
+    def return_(
+        self, results: Optional[Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]] = None
+    ) -> "DeclarativeBase":
         """Return data from the query.
 
         Args:
-            results: A dictionary mapping items that are returned with alias
-              names.
+            results: An optional string, tuple or list of strings and tuples for alias names.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
         """
-        self._query.append(ReturnPartialQuery(results))
+        self._query.append(ReturnPartialQuery(results=results))
         self._fetch_results = True
 
         return self
