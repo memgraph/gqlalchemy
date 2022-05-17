@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
 
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
@@ -58,6 +59,11 @@ EXTRA_KEYWORD_ARGUMENTS = """
 Can't create {clause} query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
+
+
+class QueryClause(Enum):
+    WHERE = "WHERE"
+    SET = "SET"
 
 
 class GQLAlchemyWarning(Warning):
@@ -119,12 +125,12 @@ class GQLAlchemyLiteralAndExpressionMissingInClause(GQLAlchemyError):
 
 class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyLiteralAndExpressionMissingInClause):
     def __init__(self):
-        super().__init__(clause="WHERE")
+        super().__init__(clause=QueryClause.WHERE)
 
 
 class GQLAlchemyLiteralAndExpressionMissingInSet(GQLAlchemyLiteralAndExpressionMissingInClause):
     def __init__(self):
-        super().__init__(clause="SET")
+        super().__init__(clause=QueryClause.SET)
 
 
 class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
@@ -135,9 +141,9 @@ class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
 
 class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
     def __init__(self):
-        super().__init__(clause="WHERE")
+        super().__init__(clause=QueryClause.WHERE)
 
 
 class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
     def __init__(self):
-        super().__init__(clause="SET")
+        super().__init__(clause=QueryClause.SET)
