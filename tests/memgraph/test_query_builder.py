@@ -1387,6 +1387,7 @@ def test_dfs_filter_label():
         (1, 15, " MATCH (a {id: 723})-[ * 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
         (3, None, " MATCH (a {id: 723})-[ * 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
         (None, 10, " MATCH (a {id: 723})-[ * ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, None, " MATCH (a {id: 723})-[ * (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
     ],
 )
 def test_dfs_bounds(lower_bound, upper_bound, expected_query):
