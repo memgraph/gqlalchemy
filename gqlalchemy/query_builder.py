@@ -15,8 +15,7 @@
 import re
 
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
@@ -377,7 +376,8 @@ class YieldPartialQuery(PartialQuery):
 
 class ReturnPartialQuery(PartialQuery):
     def __init__(
-        self, results: Optional[Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]], Dict[str, str]]] = None
+        self,
+        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
     ):
         super().__init__(DeclarativeBaseTypes.RETURN)
 
@@ -405,7 +405,7 @@ class ReturnPartialQuery(PartialQuery):
         else:
             raise GQLAlchemyReturnTypeError
 
-    def _return_read_list(self, results: List[Union[str, Tuple[str, str]]]):
+    def _return_read_list(self, results: Iterable[Union[str, Tuple[str, str]]]):
         return ", ".join(self._return_read_item(item=item) for item in results)
 
     def _return_read_str(self, item: str) -> str:
@@ -415,10 +415,7 @@ class ReturnPartialQuery(PartialQuery):
         if not isinstance(tuple[1], str):
             raise GQLAlchemyMissingAliasInReturn
 
-        if tuple[0] == tuple[1]:
-            return f"{tuple[0]}"
-
-        if tuple[1] == "":
+        if tuple[0] == tuple[1] or tuple[1] == "":
             return f"{tuple[0]}"
 
         return f"{tuple[0]} AS {tuple[1]}"
@@ -957,7 +954,7 @@ class DeclarativeBase(ABC):
         return self
 
     def return_(
-        self, results: Optional[Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]] = None
+        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
     ) -> "DeclarativeBase":
         """Return data from the query.
 
