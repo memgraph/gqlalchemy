@@ -48,6 +48,10 @@ MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
 BFS_EXPANSION = " *BFS"
 DFS_EXPANSION = " *"
+WSHORTEST_EXPANSION = " *WSHORTEST"
+
+DEFAULT_TOTAL_WEIGHT = "total_weight"
+DEFAULT_WEIGHT_PROPERTY = "r.weight"
 
 
 class MemgraphConstants:
@@ -681,3 +685,51 @@ class DepthFirstSearch(IntegratedAlgorithm):
             return ""
 
         return f"{self.lower_bound}..{self.upper_bound}"
+
+
+class WeightedShortestPath(IntegratedAlgorithm):
+    """Build a Djikstra shortest path call for a Cypher query
+    The weighted shortest path algorithm can be called in Memgraph with Cypher
+    queries such as:
+    " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum
+            (r, n | r.x > 12 AND r.y < 3)]-(b {id: 882}) RETURN * "
+    It is called inside the relationship clause, "*WSHORTEST" naming the
+    algorithm, "10" specifying search depth bounds, and "(r, n | <expression>)"
+    is a filter lambda, used to filter which relationships and nodes to use.
+    """
+
+    def __init__(
+        self,
+        upper_bound: int = None,
+        condition: str = None,
+        total_weight_var: str = DEFAULT_TOTAL_WEIGHT,
+        weight_property: str = DEFAULT_WEIGHT_PROPERTY,
+    ) -> None:
+        """
+        Args:
+            upper_bound: Upper bound for path depth. Defaults to None.
+            condition: Filter through nodes and relationships that pass this
+            condition. Defaults to None.
+            total_weight_var: Variable defined as the sum of all weights on
+            path being returned. Defaults to "total_weight".
+            weight_property: property being used as weight. Defaults to
+            "r.weight".
+        """
+        super().__init__()
+        self.weight_property = f"r.{weight_property}" if "." not in weight_property else weight_property
+        self.total_weight_var = total_weight_var
+        self.condition = condition
+        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
+
+    def __str__(self) -> str:
+        algo_str = WSHORTEST_EXPANSION
+        if self.upper_bound != "":
+            algo_str = f"{algo_str} {self.upper_bound}"
+
+        algo_str = f"{algo_str} {super().to_cypher_lambda(self.weight_property)} {self.total_weight_var}"
+
+        filter_lambda = super().to_cypher_lambda(self.condition)
+        if filter_lambda != "":
+            algo_str = f"{algo_str} {filter_lambda}"
+
+        return algo_str
