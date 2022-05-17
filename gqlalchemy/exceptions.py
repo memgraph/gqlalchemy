@@ -74,6 +74,11 @@ class QueryClause(Enum):
     SET = "SET"
 
 
+class QueryClause(Enum):
+    WHERE = "WHERE"
+    SET = "SET"
+
+
 class GQLAlchemyWarning(Warning):
     pass
 
