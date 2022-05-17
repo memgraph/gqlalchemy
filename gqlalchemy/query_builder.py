@@ -62,6 +62,12 @@ class MatchConstants:
     VARIABLE = "variable"
 
 
+class Result(Enum):
+    RETURN = 1
+    YIELD = 2
+    WITH = 3
+
+
 class Where(Enum):
     WHERE = 1
     AND = 2
@@ -299,21 +305,60 @@ def dict_to_alias_statement(alias_dict: Dict[str, str]) -> str:
     )
 
 
-class WithPartialQuery(PartialQuery):
-    def __init__(self, results: Dict[str, str]):
-        super().__init__(DeclarativeBaseTypes.WITH)
+class ResultPartialQuery(PartialQuery):
+    def __init__(
+        self,
+        keyword: Result,
+        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
+    ):
+        super().__init__(type=keyword.name)
 
-        self._results = results
-
-    @property
-    def results(self) -> str:
-        return self._results if self._results is not None else ""
+        if results is None:
+            self.query = None
+        elif isinstance(results, list):
+            self.query = self._return_read_list(results)
+        elif isinstance(results, dict):
+            self.query = self._return_read_dict(results)
+        else:
+            self.query = self._return_read_item(results)
 
     def construct_query(self) -> str:
-        """Creates a WITH statement Cypher partial query."""
-        if len(self.results) == 0:
-            return " WITH * "
-        return f" WITH {dict_to_alias_statement(self.results)} "
+        """Creates a RETURN/YIELD/WITH statement Cypher partial query."""
+        if self.query is None:
+            return f" {self.type} * "
+
+        return f" {self.type} {self.query} "
+
+    def _return_read_item(self, item: Union[str, Tuple[str, str]]) -> str:
+        if isinstance(item, str):
+            return f"{item}"
+        elif isinstance(item, tuple):
+            return f"{self._return_read_tuple(item)}"
+        else:
+            raise GQLAlchemyReturnTypeError
+
+    def _return_read_list(self, results: Iterable[Union[str, Tuple[str, str]]]):
+        return ", ".join(self._return_read_item(item=item) for item in results)
+
+    def _return_read_tuple(self, tuple: Tuple[str, str]) -> str:
+        if not isinstance(tuple[1], str):
+            raise GQLAlchemyMissingAliasInReturn
+
+        if tuple[0] == tuple[1] or tuple[1] == "":
+            return f"{tuple[0]}"
+
+        return f"{tuple[0]} AS {tuple[1]}"
+
+    def _return_read_dict(self, results: Dict[str, str]):
+        return f"{dict_to_alias_statement(results)}"
+
+
+class WithPartialQuery(ResultPartialQuery):
+    def __init__(
+        self,
+        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
+    ):
+        super().__init__(keyword=Result.WITH, results=results)
 
 
 class UnionPartialQuery(PartialQuery):
@@ -358,68 +403,20 @@ class RemovePartialQuery(PartialQuery):
         return f" REMOVE {', '.join(self.items)} "
 
 
-class YieldPartialQuery(PartialQuery):
-    def __init__(self, results: Dict[str, str]):
-        super().__init__(DeclarativeBaseTypes.YIELD)
-
-        self._results = results
-
-    @property
-    def results(self) -> str:
-        return self._results if self._results is not None else ""
-
-    def construct_query(self) -> str:
-        """Creates a YIELD statement Cypher partial query."""
-        if len(self.results) == 0:
-            return " YIELD * "
-        return f" YIELD {dict_to_alias_statement(self.results)} "
-
-
-class ReturnPartialQuery(PartialQuery):
+class YieldPartialQuery(ResultPartialQuery):
     def __init__(
         self,
         results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
     ):
-        super().__init__(DeclarativeBaseTypes.RETURN)
+        super().__init__(keyword=Result.YIELD, results=results)
 
-        if results is None:
-            self.query = None
-        elif isinstance(results, list):
-            self.query = self._return_read_list(results)
-        elif isinstance(results, dict):
-            self.query = self._return_read_dict(results)
-        else:
-            self.query = self._return_read_item(results)
 
-    def construct_query(self) -> str:
-        """Creates a RETURN statement Cypher partial query."""
-        if self.query is None:
-            return " RETURN * "
-
-        return f" {self.type} {self.query} "
-
-    def _return_read_item(self, item: Union[str, Tuple[str, str]]) -> str:
-        if isinstance(item, str):
-            return f"{item}"
-        elif isinstance(item, tuple):
-            return f"{self._return_read_tuple(item)}"
-        else:
-            raise GQLAlchemyReturnTypeError
-
-    def _return_read_list(self, results: Iterable[Union[str, Tuple[str, str]]]):
-        return ", ".join(self._return_read_item(item=item) for item in results)
-
-    def _return_read_tuple(self, tuple: Tuple[str, str]) -> str:
-        if not isinstance(tuple[1], str):
-            raise GQLAlchemyMissingAliasInReturn
-
-        if tuple[0] == tuple[1] or tuple[1] == "":
-            return f"{tuple[0]}"
-
-        return f"{tuple[0]} AS {tuple[1]}"
-
-    def _return_read_dict(self, results: Dict[str, str]):
-        return f"{dict_to_alias_statement(results)}"
+class ReturnPartialQuery(ResultPartialQuery):
+    def __init__(
+        self,
+        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
+    ):
+        super().__init__(keyword=Result.RETURN, results=results)
 
 
 class OrderByPartialQuery(PartialQuery):
@@ -875,7 +872,9 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def with_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
+    def with_(
+        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+    ) -> "DeclarativeBase":
         """Chain together parts of a query, piping the results from one to be
         used as starting points or criteria in the next.
 
@@ -934,7 +933,9 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def yield_(self, results: Optional[Dict[str, str]] = {}) -> "DeclarativeBase":
+    def yield_(
+        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+    ) -> "DeclarativeBase":
         """Yield data from the query.
 
         Args:

@@ -1129,6 +1129,20 @@ def test_call_procedure_nxalg_betweenness_centrality(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_yield_multiple_alias(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .call(procedure="nxalg.betweenness_centrality", arguments="20, True")
+        .yield_([("node", "n"), "betweenness"])
+        .return_(["n", "betweenness"])
+    )
+    expected_query = " CALL nxalg.betweenness_centrality(20, True) YIELD node AS n, betweenness RETURN n, betweenness "
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_unwind(memgraph):
     query_builder = (
         QueryBuilder().unwind(list_expression="[1, 2, 3, null]", variable="x").return_([("x", ""), ("'val'", "y")])
@@ -1303,8 +1317,18 @@ def test_base_class_unwind(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_base_class_with(memgraph):
-    query_builder = with_({"10": "n"}).return_(("n", ""))
+def test_base_class_with_dict(memgraph):
+    query_builder = with_({"10": "n"}).return_({"n": ""})
+    expected_query = " WITH 10 AS n RETURN n "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_base_class_with_tuple(memgraph):
+    query_builder = with_(("10", "n")).return_(("n", ""))
     expected_query = " WITH 10 AS n RETURN n "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
