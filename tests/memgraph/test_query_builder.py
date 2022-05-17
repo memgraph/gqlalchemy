@@ -32,7 +32,7 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
@@ -1460,6 +1460,67 @@ def test_unsaved_node_relationship_instances(memgraph):
         .return_()
     )
     expected_query = " MATCH (user_1:User {name: 'Ron'})-[:FOLLOWS]->(user_2:User {name: 'Leslie'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_bfs():
+    bfs_alg = BreadthFirstSearch()
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Zagreb")
+        .to(edge_label="Road", algorithm=bfs_alg)
+        .node(labels="City", name="Paris")
+        .return_()
+    )
+    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road *BFS]->(:City {name: 'Paris'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_bfs_filter_label():
+    bfs_alg = BreadthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Paris")
+        .to(edge_label="Road", algorithm=bfs_alg)
+        .node(labels="City", name="Berlin")
+        .return_()
+    )
+
+    expected_query = " MATCH (:City {name: 'Paris'})-[:Road *BFS (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+@pytest.mark.parametrize(
+    "lower_bound, upper_bound, expected_query",
+    [
+        (1, 15, " MATCH (a {id: 723})-[ *BFS 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (3, None, " MATCH (a {id: 723})-[ *BFS 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, 10, " MATCH (a {id: 723})-[ *BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, None, " MATCH (a {id: 723})-[ *BFS (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+    ],
+)
+def test_bfs_bounds(lower_bound, upper_bound, expected_query):
+    bfs_alg = BreadthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="r.x > 12 AND n.y < 3")
+
+    query_builder = (
+        QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=bfs_alg).node().return_()
+    )
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
