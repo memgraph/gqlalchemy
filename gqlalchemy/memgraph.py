@@ -15,7 +15,7 @@
 import os
 import sqlite3
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
@@ -557,14 +557,9 @@ class IntegratedAlgorithm(ABC):
           (:City {name: "Berlin"})
     """
 
+    @abstractmethod
     def __str__(self) -> str:
-        """Instance of IntegratedAlgorithm extended object is used as a string.
-
-        Raises:
-            NotImplementedError: Inheriting class did not define its string
-            representation.
-        """
-        raise NotImplementedError("Algorithm should define its string representation.")
+        """Instance of IntegratedAlgorithm subclass is used as a string"""
 
     @staticmethod
     def to_cypher_lambda(expression: str) -> str:
