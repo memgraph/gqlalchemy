@@ -14,10 +14,17 @@
 
 import os
 import sqlite3
+
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -29,11 +36,6 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import (
-    GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
-    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
-)
 
 __all__ = ("Memgraph",)
 
@@ -543,3 +545,35 @@ class Memgraph:
         )
 
         return self.get_variable_assume_one(results, "relationship")
+
+
+class IntegratedAlgorithm(ABC):
+    """Abstract class modeling Memgraph's built-in graph algorithms.
+
+    These algorithms are integrated into Memgraph's codebase and are called
+    within a relationship part of a query. For instance:
+    MATCH p = (:City {name: "Paris"})
+          -[:Road * bfs (r, n | r.length <= 200 AND n.name != "Metz")]->
+          (:City {name: "Berlin"})
+    """
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """Instance of IntegratedAlgorithm subclass is used as a string"""
+        pass
+
+    @staticmethod
+    def to_cypher_lambda(expression: str) -> str:
+        """Method for creating a general lambda expression.
+
+        Variables `e` and `v` stand for relationship and node. The expression is
+        used e.g. for a filter lambda, to use only relationships of length less
+        than 200:
+            expression="r.length < 200"
+        with the filter lambda being:
+            (r, n | r.length < 200)
+
+        Args:
+            expression: Lambda conditions or statements.
+        """
+        return "" if expression is None else f"(r, n | {expression})"

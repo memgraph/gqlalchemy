@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
-from .memgraph import Connection, Memgraph
+from .memgraph import Connection, Memgraph, IntegratedAlgorithm
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 from .exceptions import (
@@ -246,31 +246,42 @@ class NodePartialQuery(PartialQuery):
 
 class EdgePartialQuery(PartialQuery):
     def __init__(
-        self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool, from_: bool
+        self,
+        variable: Optional[str],
+        labels: Optional[str],
+        algorithm: Optional[str],
+        properties: Optional[str],
+        directed: bool,
+        from_: bool,
     ):
         super().__init__(DeclarativeBaseTypes.EDGE)
 
         self.directed = directed
         self._variable = variable
         self._labels = labels
+        self._algorithm = algorithm
         self._properties = properties
         self._from = from_
 
     @property
     def variable(self) -> str:
-        return self._variable if self._variable is not None else ""
+        return "" if self._variable is None else self._variable
 
     @property
     def labels(self) -> str:
-        return self._labels if self._labels is not None else ""
+        return "" if self._labels is None else self._labels
+
+    @property
+    def algorithm(self) -> str:
+        return "" if self._algorithm is None else self._algorithm
 
     @property
     def properties(self) -> str:
-        return self._properties if self._properties is not None else ""
+        return "" if self._properties is None else self._properties
 
     def construct_query(self) -> str:
         """Constructs an edge partial query."""
-        relationship_query = f"{self.variable}{self.labels}{self.properties}"
+        relationship_query = f"{self.variable}{self.labels}{self.algorithm}{self.properties}"
 
         if not self.directed:
             relationship_query = f"-[{relationship_query}]-"
@@ -581,6 +592,7 @@ class DeclarativeBase(ABC):
         directed: Optional[bool] = True,
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
+        algorithm: Optional[IntegratedAlgorithm] = None,
         **kwargs,
     ) -> "DeclarativeBase":
         """Add a relationship pattern to the query.
@@ -591,6 +603,7 @@ class DeclarativeBase(ABC):
             variable: A string representing the name of the variable for storing
               results of the relationship pattern.
             relationship: A `Relationship` object to construct the pattern from.
+            algorithm: algorithm object to use over graph data.
             **kwargs: Arguments representing the properties of the relationship.
 
         Returns:
@@ -606,7 +619,16 @@ class DeclarativeBase(ABC):
             type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, type_str, properties_str, bool(directed), False))
+        self._query.append(
+            EdgePartialQuery(
+                variable=variable,
+                labels=type_str,
+                algorithm="" if algorithm is None else str(algorithm),
+                properties=properties_str,
+                directed=bool(directed),
+                from_=False,
+            )
+        )
 
         return self
 
@@ -616,6 +638,7 @@ class DeclarativeBase(ABC):
         directed: Optional[bool] = True,
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
+        algorithm: Optional[IntegratedAlgorithm] = None,
         **kwargs,
     ) -> "Match":
         """Add a relationship pattern to the query.
@@ -641,7 +664,16 @@ class DeclarativeBase(ABC):
             labels_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), True))
+        self._query.append(
+            EdgePartialQuery(
+                variable=variable,
+                labels=labels_str,
+                algorithm="" if algorithm is None else str(algorithm),
+                properties=properties_str,
+                directed=bool(directed),
+                from_=True,
+            )
+        )
 
         return self
 
