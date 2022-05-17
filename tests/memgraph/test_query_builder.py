@@ -1000,6 +1000,52 @@ def test_return_alias(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_return_alias_dict(memgraph):
+    query_builder = (
+        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "first"})
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_return_multiple_alias(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .return_([("L1", "first"), "L2", ("L3", "third")])
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first, L2, L3 AS third "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_return_multiple_alias_dict(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .return_({"L1": "first", "L2": "", "L3": "third"})
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first, L2, L3 AS third "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_return_alias_same_as_variable(memgraph):
     query_builder = (
         QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(("L1", "L1"))
@@ -1012,8 +1058,32 @@ def test_return_alias_same_as_variable(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_return_alias_same_as_variable_dict(memgraph):
+    query_builder = (
+        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "L1"})
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_return_alias_empty(memgraph):
     query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_("L1")
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_return_alias_empty_dict(memgraph):
+    query_builder = (
+        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": ""})
+    )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:

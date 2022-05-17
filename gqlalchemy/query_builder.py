@@ -375,20 +375,18 @@ class YieldPartialQuery(PartialQuery):
 
 
 class ReturnPartialQuery(PartialQuery):
-    def __init__(self, results: Optional[Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]] = None):
+    def __init__(
+        self, results: Optional[Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]], Dict[str, str]]] = None
+    ):
         super().__init__(DeclarativeBaseTypes.RETURN)
-
-        self.query = (
-            None
-            if results is None
-            else self._return_read_list(results)
-            if isinstance(results, list)
-            else self._return_read_item(results)
-        )
-
-    @property
-    def results(self) -> str:
-        return self._results if self._results is not None else ""
+        if results is None:
+            self.query = None
+        elif isinstance(results, list):
+            self.query = self._return_read_list(results)
+        elif isinstance(results, dict):
+            self.query = self._return_read_dict(results)
+        else:
+            self.query = self._return_read_item(results)
 
     def construct_query(self) -> str:
         """Creates a RETURN statement Cypher partial query."""
@@ -421,6 +419,9 @@ class ReturnPartialQuery(PartialQuery):
             return f"{tuple[0]}"
 
         return f"{tuple[0]} AS {tuple[1]}"
+
+    def _return_read_dict(self, results: Dict[str, str]):
+        return f"{dict_to_alias_statement(results)}"
 
 
 class OrderByPartialQuery(PartialQuery):
