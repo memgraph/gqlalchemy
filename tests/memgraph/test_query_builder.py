@@ -1387,6 +1387,7 @@ def test_bfs_filter_label():
         (1, 15, " MATCH (a {id: 723})-[ *BFS 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
         (3, None, " MATCH (a {id: 723})-[ *BFS 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
         (None, 10, " MATCH (a {id: 723})-[ *BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, None, " MATCH (a {id: 723})-[ *BFS (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
     ],
 )
 def test_bfs_bounds(lower_bound, upper_bound, expected_query):

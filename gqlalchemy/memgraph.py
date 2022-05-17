@@ -608,8 +608,8 @@ class BreadthFirstSearch(IntegratedAlgorithm):
             condition. Defaults to `None`.
         """
         super().__init__()
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
+        self.lower_bound = str(lower_bound) if lower_bound is not None else ""
+        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
         self.condition = condition
 
     def __str__(self) -> str:
@@ -628,10 +628,7 @@ class BreadthFirstSearch(IntegratedAlgorithm):
 
     def to_cypher_bounds(self) -> str:
         """If bounds are specified, returns them in grammar-defined form."""
-        if self.lower_bound is None and self.upper_bound is None:
+        if self.lower_bound == "" and self.upper_bound == "":
             return ""
 
-        lower = str(self.lower_bound) if self.lower_bound is not None else ""
-        upper = str(self.upper_bound) if self.upper_bound is not None else ""
-
-        return f"{lower}..{upper}"
+        return f"{self.lower_bound}..{self.upper_bound}"
