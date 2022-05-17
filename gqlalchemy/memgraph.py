@@ -560,6 +560,7 @@ class IntegratedAlgorithm(ABC):
     @abstractmethod
     def __str__(self) -> str:
         """Instance of IntegratedAlgorithm subclass is used as a string"""
+        pass
 
     @staticmethod
     def to_cypher_lambda(expression: str) -> str:
