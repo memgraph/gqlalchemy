@@ -379,6 +379,7 @@ class ReturnPartialQuery(PartialQuery):
         self, results: Optional[Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]], Dict[str, str]]] = None
     ):
         super().__init__(DeclarativeBaseTypes.RETURN)
+
         if results is None:
             self.query = None
         elif isinstance(results, list):
@@ -392,6 +393,7 @@ class ReturnPartialQuery(PartialQuery):
         """Creates a RETURN statement Cypher partial query."""
         if self.query is None:
             return " RETURN * "
+
         return f" {self.type} {self.query} "
 
     def _return_read_item(self, item: Union[str, Tuple[str, str]]) -> str:
