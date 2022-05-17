@@ -12,13 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABC
 import os
 import sqlite3
+
+from abc import ABC
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -30,11 +36,6 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import (
-    GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
-    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
-)
 
 __all__ = ("Memgraph",)
 
