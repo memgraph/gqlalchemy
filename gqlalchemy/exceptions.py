@@ -85,7 +85,6 @@ class GQLAlchemyUniquenessConstraintError(GQLAlchemyError):
 
 class GQLAlchemyDatabaseMissingInFieldError(GQLAlchemyError):
     def __init__(self, constraint: str, field: str, field_type: str):
-        super().__init__()
         self.message = DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE.format(
             constraint=constraint,
             field=field,
@@ -95,43 +94,36 @@ class GQLAlchemyDatabaseMissingInFieldError(GQLAlchemyError):
 
 class GQLAlchemyDatabaseMissingInNodeClassError(GQLAlchemyError):
     def __init__(self, cls):
-        super().__init__()
         self.message = DATABASE_MISSING_IN_NODE_CLASS_ERROR_MESSAGE.format(cls=cls)
 
 
 class GQLAlchemyOnDiskPropertyDatabaseNotDefinedError(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = ON_DISK_PROPERTY_DATABASE_NOT_DEFINED_ERROR
 
 
 class GQLAlchemyMissingOrder(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = MISSING_ORDER
 
 
 class GQLAlchemyOrderByTypeError(TypeError):
     def __init__(self):
-        super().__init__()
         self.message = ORDER_BY_TYPE_ERROR
 
 
 class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = LITERAL_AND_EXPRESSION_MISSING_IN_WHERE
 
 
 class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = EXTRA_KEYWORD_ARGUMENTS_IN_WHERE
 
 
 class GQLAlchemyMissingAliasInReturn(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = MISSING_ALIAS_IN_RETURN
 
 

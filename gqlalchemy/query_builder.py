@@ -400,7 +400,7 @@ class ReturnPartialQuery(PartialQuery):
 
     def _return_read_item(self, item: Union[str, Tuple[str, str]]) -> str:
         if isinstance(item, str):
-            return f"{self._return_read_str(item)}"
+            return f"{item}"
         elif isinstance(item, tuple):
             return f"{self._return_read_tuple(item)}"
         else:
@@ -408,9 +408,6 @@ class ReturnPartialQuery(PartialQuery):
 
     def _return_read_list(self, results: Iterable[Union[str, Tuple[str, str]]]):
         return ", ".join(self._return_read_item(item=item) for item in results)
-
-    def _return_read_str(self, item: str) -> str:
-        return f"{item}"
 
     def _return_read_tuple(self, tuple: Tuple[str, str]) -> str:
         if not isinstance(tuple[1], str):
@@ -426,7 +423,7 @@ class ReturnPartialQuery(PartialQuery):
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]):
+    def __init__(self, properties: Union[str, Tuple[str, Order], Iterable[Union[str, Tuple[str, Order]]]]):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
         self.query = (
@@ -441,7 +438,7 @@ class OrderByPartialQuery(PartialQuery):
 
     def _order_by_read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
         if isinstance(item, str):
-            return f"{self._order_by_read_str(item)}"
+            return f"{item}"
         elif isinstance(item, tuple):
             return f"{self._order_by_read_tuple(item)}"
         else:
@@ -449,9 +446,6 @@ class OrderByPartialQuery(PartialQuery):
 
     def _order_by_read_list(self, property: List[Union[str, Tuple[str, Order]]]):
         return ", ".join(self._order_by_read_item(item=item) for item in property)
-
-    def _order_by_read_str(self, property: str) -> str:
-        return f"{property}"
 
     def _order_by_read_tuple(self, tuple: Tuple[str, Order]) -> str:
         if not isinstance(tuple[1], Order):
@@ -971,7 +965,7 @@ class DeclarativeBase(ABC):
         return self
 
     def order_by(
-        self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]
+        self, properties: Union[str, Tuple[str, Order], Iterable[Union[str, Tuple[str, Order]]]]
     ) -> "DeclarativeBase":
         """Creates an ORDER BY statement Cypher partial query.
 
