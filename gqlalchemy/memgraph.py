@@ -47,6 +47,7 @@ MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
 BFS_EXPANSION = " *BFS"
+DFS_EXPANSION = " *"
 
 
 class MemgraphConstants:
@@ -612,6 +613,57 @@ class BreadthFirstSearch(IntegratedAlgorithm):
     def __str__(self) -> str:
         """Get a Cypher query string for this algorithm."""
         algo_str = BFS_EXPANSION
+
+        bounds = self.to_cypher_bounds()
+        if bounds != "":
+            algo_str = f"{algo_str} {bounds}"
+
+        filter_lambda = super().to_cypher_lambda(self.condition)
+        if filter_lambda != "":
+            algo_str = f"{algo_str} {filter_lambda}"
+
+        return algo_str
+
+    def to_cypher_bounds(self) -> str:
+        """If bounds are specified, returns them in grammar-defined form."""
+        if self.lower_bound == "" and self.upper_bound == "":
+            return ""
+
+        return f"{self.lower_bound}..{self.upper_bound}"
+
+
+class DepthFirstSearch(IntegratedAlgorithm):
+    """Build a DFS call for a Cypher query.
+    The Depth-First Search can be called in Memgraph with Cypher queries
+    such as:
+    MATCH (a {id: 723})-[* ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;
+    It is called inside the relationship clause, "*" naming the algorithm
+    ("*" without "DFS" because it is defined like such in openCypher),
+    "..10" specifying depth bounds, and "(r, n | <expression>)" is a filter
+    lambda.
+    """
+
+    def __init__(
+        self,
+        lower_bound: int = None,
+        upper_bound: int = None,
+        condition: str = None,
+    ) -> None:
+        """
+        Args:
+            lower_bound: Lower bound for path depth. Defaults to None.
+            upper_bound: Upper bound for path depth. Defaults to None.
+            condition: Filter through nodes and relationships that pass this
+            condition. Defaults to None.
+        """
+        super().__init__()
+        self.lower_bound = str(lower_bound) if lower_bound is not None else ""
+        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
+        self.condition = condition
+
+    def __str__(self) -> str:
+        """get Cypher query string for this algorithm."""
+        algo_str = DFS_EXPANSION
 
         bounds = self.to_cypher_bounds()
         if bounds != "":

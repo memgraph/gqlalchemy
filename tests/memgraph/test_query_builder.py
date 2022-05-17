@@ -34,7 +34,7 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch
+from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch, DepthFirstSearch
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
@@ -1545,6 +1545,67 @@ def test_bfs_bounds(lower_bound, upper_bound, expected_query):
 
     query_builder = (
         QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=bfs_alg).node().return_()
+    )
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_dfs():
+    dfs_alg = DepthFirstSearch()
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Zagreb")
+        .to(edge_label="Road", algorithm=dfs_alg)
+        .node(labels="City", name="Paris")
+        .return_()
+    )
+    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road *]->(:City {name: 'Paris'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_dfs_filter_label():
+    dfs_alg = DepthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Paris")
+        .to(edge_label="Road", algorithm=dfs_alg)
+        .node(labels="City", name="Berlin")
+        .return_()
+    )
+
+    expected_query = " MATCH (:City {name: 'Paris'})-[:Road * (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+@pytest.mark.parametrize(
+    "lower_bound, upper_bound, expected_query",
+    [
+        (1, 15, " MATCH (a {id: 723})-[ * 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (3, None, " MATCH (a {id: 723})-[ * 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, 10, " MATCH (a {id: 723})-[ * ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, None, " MATCH (a {id: 723})-[ * (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+    ],
+)
+def test_dfs_bounds(lower_bound, upper_bound, expected_query):
+    dfs_alg = DepthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="r.x > 12 AND n.y < 3")
+
+    query_builder = (
+        QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=dfs_alg).node().return_()
     )
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
