@@ -66,16 +66,13 @@ The second argument of the tuple must be a string representing an alias name.
 
 RETURN_TYPE_ERROR = """
 TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[Union[tuple[str, str], str]].
+"""
 
 
 class QueryClause(Enum):
     WHERE = "WHERE"
     SET = "SET"
 
-
-class QueryClause(Enum):
-    WHERE = "WHERE"
-    SET = "SET"
 
 class GQLAlchemyWarning(Warning):
     pass
@@ -164,4 +161,3 @@ class GQLAlchemyReturnTypeError(TypeError):
     def __init__(self):
         self.message = RETURN_TYPE_ERROR
         super().__init__(clause=QueryClause.WHERE)
-
