@@ -592,13 +592,11 @@ class DeclarativeBase(ABC):
             type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        algorithm_str = "" if algorithm is None else str(algorithm)
-
         self._query.append(
             EdgePartialQuery(
                 variable=variable,
                 labels=type_str,
-                algorithm=algorithm_str,
+                algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
                 from_=False,
