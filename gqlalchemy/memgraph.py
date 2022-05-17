@@ -15,10 +15,17 @@
 from abc import ABC
 import os
 import sqlite3
+
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -30,11 +37,6 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import (
-    GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
-    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
-)
 
 __all__ = ("Memgraph",)
 
@@ -549,29 +551,25 @@ class Memgraph:
 
 
 class IntegratedAlgorithm(ABC):
-    """Abstract class modeling in-Memgraph graph algorithms.
+    """Abstract class modeling Memgraph's built-in graph algorithms.
 
-    These algorithms are integrated into Memgraph codebase and are called
+    These algorithms are integrated into Memgraph's codebase and are called
     within a relationship part of a query. For instance:
     MATCH p = (:City {name: "Paris"})
           -[:Road * bfs (r, n | r.length <= 200 AND n.name != "Metz")]->
           (:City {name: "Berlin"})
     """
 
+    @abstractmethod
     def __str__(self) -> str:
-        """Instance of IntegratedAlgorithm extended object is used as a string.
-
-        Raises:
-            NotImplementedError: Inheriting class did not define its string
-            representation
-        """
-        raise NotImplementedError("Algorithm should define its str representation")
+        """Instance of IntegratedAlgorithm subclass is used as a string"""
+        pass
 
     @staticmethod
     def to_cypher_lambda(expression: str) -> str:
         """Method for creating a general lambda expression.
 
-        Variables e and v stand for relationship and node. The expression is
+        Variables `r` and `n` stand for relationship and node. The expression is
         used e.g. for a filter lambda, to use only relationships of length less
         than 200:
             expression="r.length < 200"
@@ -579,7 +577,7 @@ class IntegratedAlgorithm(ABC):
             (r, n | r.length < 200)
 
         Args:
-            expression: lambda conditions or statements
+            expression: lambda conditions or statements.
         """
         return "" if expression is None else f"(r, n | {expression})"
 

@@ -256,11 +256,15 @@ class EdgePartialQuery(PartialQuery):
 
     @property
     def variable(self) -> str:
-        return self._variable if self._variable is not None else ""
+        return "" if self._variable is None else self._variable
 
     @property
     def labels(self) -> str:
-        return self._labels if self._labels is not None else ""
+        return "" if self._labels is None else self._labels
+
+    @property
+    def algorithm(self) -> str:
+        return "" if self._algorithm is None else self._algorithm
 
     @property
     def algorithm(self) -> str:
@@ -268,7 +272,7 @@ class EdgePartialQuery(PartialQuery):
 
     @property
     def properties(self) -> str:
-        return self._properties if self._properties is not None else ""
+        return "" if self._properties is None else self._properties
 
     def construct_query(self) -> str:
         """Constructs an edge partial query."""
@@ -592,13 +596,11 @@ class DeclarativeBase(ABC):
             type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        algorithm_str = "" if algorithm is None else str(algorithm)
-
         self._query.append(
             EdgePartialQuery(
                 variable=variable,
                 labels=type_str,
-                algorithm=algorithm_str,
+                algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
                 from_=False,
@@ -639,13 +641,11 @@ class DeclarativeBase(ABC):
             labels_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        algorithm_str = "" if algorithm is None else str(algorithm)
-
         self._query.append(
             EdgePartialQuery(
                 variable=variable,
                 labels=labels_str,
-                algorithm=algorithm_str,
+                algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
                 from_=True,
@@ -1156,3 +1156,18 @@ class With(DeclarativeBase):
     ):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
+
+
+class LoadCsv(DeclarativeBase):
+    def __init__(self, path: str, header: bool, row: str, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+        self._query.append(LoadCsvPartialQuery(path, header, row))
+
+
+class Return(DeclarativeBase):
+    def __init__(
+        self, results: Optional[Dict[str, str]] = {}, connection: Optional[Union[Connection, Memgraph]] = None
+    ):
+        super().__init__(connection)
+        self._query.append(ReturnPartialQuery(results))
+        self._fetch_results = True
