@@ -129,5 +129,4 @@ class GQLAlchemyMissingAliasInReturn(GQLAlchemyError):
 
 class GQLAlchemyReturnTypeError(TypeError):
     def __init__(self):
-        super().__init__()
         self.message = RETURN_TYPE_ERROR
