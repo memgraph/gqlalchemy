@@ -678,7 +678,7 @@ class DeclarativeBase(ABC):
         self._query.append(
             RelationshipPartialQuery(
                 variable=variable,
-                labels=labels_str,
+                labels=type_str,
                 algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
