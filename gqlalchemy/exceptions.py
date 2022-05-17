@@ -160,4 +160,3 @@ class GQLAlchemyMissingAliasInReturn(GQLAlchemyError):
 class GQLAlchemyReturnTypeError(TypeError):
     def __init__(self):
         self.message = RETURN_TYPE_ERROR
-        super().__init__(clause=QueryClause.WHERE)
