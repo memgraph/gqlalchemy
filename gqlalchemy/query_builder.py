@@ -256,11 +256,11 @@ class EdgePartialQuery(PartialQuery):
 
     @property
     def variable(self) -> str:
-        return self._variable if self._variable is not None else ""
+        return "" if self._variable is None else self._variable
 
     @property
     def labels(self) -> str:
-        return self._labels if self._labels is not None else ""
+        return "" if self._labels is None else self._labels
 
     @property
     def algorithm(self) -> str:
@@ -268,7 +268,7 @@ class EdgePartialQuery(PartialQuery):
 
     @property
     def properties(self) -> str:
-        return self._properties if self._properties is not None else ""
+        return "" if self._properties is None else self._properties
 
     def construct_query(self) -> str:
         """Constructs an edge partial query."""
