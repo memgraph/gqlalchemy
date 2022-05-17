@@ -12,20 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
 import re
+
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 from .exceptions import (
-    GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyExtraKeywordArgumentsInWhere,
+    GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyMissingAliasInReturn,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
-    GQLAlchemyMissingAliasInReturn,
     GQLAlchemyReturnTypeError,
 )
 

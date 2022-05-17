@@ -58,7 +58,7 @@ Please provide a value to either 'literal' or 'expression' keyword arguments."
 """
 
 MISSING_ALIAS_IN_RETURN = """
-The second argument of the tuple must be string representing an alias name.
+The second argument of the tuple must be a string representing an alias name.
 """
 
 RETURN_TYPE_ERROR = """
