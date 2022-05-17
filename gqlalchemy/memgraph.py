@@ -20,15 +20,12 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
-<<<<<<< HEAD
 from .graph_algorithms.query_modules import QueryModule
-=======
 from .exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
 )
->>>>>>> develop
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
