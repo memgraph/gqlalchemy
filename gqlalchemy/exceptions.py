@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
+
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
 Define your property as:
@@ -48,13 +50,14 @@ ORDER_BY_TYPE_ERROR = """
 TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[tuple[str, str]].
 """
 
-LITERAL_AND_EXPRESSION_MISSING_IN_WHERE = """
-Can't create WHERE query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
+LITERAL_AND_EXPRESSION_MISSING = """
+Can't create {clause} query without providing either 'literal' or 'expression' keyword arguments,
+that can be literals, labels or properties.
 """
 
-EXTRA_KEYWORD_ARGUMENTS_IN_WHERE = """
-Can't create WHERE query with extra keyword arguments:
-Please provide a value to either 'literal' or 'expression' keyword arguments."
+EXTRA_KEYWORD_ARGUMENTS = """
+Can't create {clause} query with extra keyword arguments:
+Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
 
 MISSING_ALIAS_IN_RETURN = """
@@ -64,6 +67,11 @@ The second argument of the tuple must be a string representing an alias name.
 RETURN_TYPE_ERROR = """
 TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[Union[tuple[str, str], str]].
 """
+
+
+class QueryClause(Enum):
+    WHERE = "WHERE"
+    SET = "SET"
 
 
 class GQLAlchemyWarning(Warning):
@@ -112,14 +120,36 @@ class GQLAlchemyOrderByTypeError(TypeError):
         self.message = ORDER_BY_TYPE_ERROR
 
 
-class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyError):
-    def __init__(self):
-        self.message = LITERAL_AND_EXPRESSION_MISSING_IN_WHERE
+class GQLAlchemyLiteralAndExpressionMissingInClause(GQLAlchemyError):
+    def __init__(self, clause: str):
+        super().__init__()
+        self.message = LITERAL_AND_EXPRESSION_MISSING.format(clause=clause)
 
 
-class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyError):
+class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyLiteralAndExpressionMissingInClause):
     def __init__(self):
-        self.message = EXTRA_KEYWORD_ARGUMENTS_IN_WHERE
+        super().__init__(clause=QueryClause.WHERE)
+
+
+class GQLAlchemyLiteralAndExpressionMissingInSet(GQLAlchemyLiteralAndExpressionMissingInClause):
+    def __init__(self):
+        super().__init__(clause=QueryClause.SET)
+
+
+class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
+    def __init__(self, clause: str):
+        super().__init__()
+        self.message = EXTRA_KEYWORD_ARGUMENTS.format(clause=clause)
+
+
+class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
+    def __init__(self):
+        super().__init__(clause=QueryClause.WHERE)
+
+
+class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
+    def __init__(self):
+        super().__init__(clause=QueryClause.SET)
 
 
 class GQLAlchemyMissingAliasInReturn(GQLAlchemyError):
@@ -130,3 +160,4 @@ class GQLAlchemyMissingAliasInReturn(GQLAlchemyError):
 class GQLAlchemyReturnTypeError(TypeError):
     def __init__(self):
         self.message = RETURN_TYPE_ERROR
+        super().__init__(clause=QueryClause.WHERE)

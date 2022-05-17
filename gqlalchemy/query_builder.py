@@ -22,6 +22,8 @@ from .memgraph import Connection, Memgraph, IntegratedAlgorithm
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 from .exceptions import (
+    GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyExtraKeywordArgumentsInWhere,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyMissingAliasInReturn,
@@ -44,6 +46,7 @@ class DeclarativeBaseTypes:
     ORDER_BY = "ORDER BY"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
+    SET = "SET"
     SKIP = "SKIP"
     UNION = "UNION"
     UNWIND = "UNWIND"
@@ -81,6 +84,12 @@ class Order(Enum):
     ASCENDING = 2
     DESC = 3
     DESCENDING = 4
+
+
+class SetOperator(Enum):
+    ASSIGNMENT = "="
+    INCREMENT = "+="
+    LABEL_FILTER = ":"
 
 
 class NoVariablesMatchedException(Exception):
@@ -492,6 +501,35 @@ class AddStringPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         return f"{self.custom_cypher}"
+
+
+class SetPartialQuery(PartialQuery):
+    _LITERAL = "literal"
+    _EXPRESSION = "expression"
+
+    def __init__(self, item: str, operator: SetOperator, **kwargs):
+        super().__init__(DeclarativeBaseTypes.SET)
+
+        self.query = self._build_set_query(item=item, operator=operator, **kwargs)
+
+    def construct_query(self) -> str:
+        """Constructs a set partial query."""
+        return f" {self.type} {self.query}"
+
+    def _build_set_query(self, item: str, operator: SetOperator, **kwargs) -> "DeclarativeBase":
+        """Builds parts of a SET Cypher query divided by the boolean operators."""
+        literal = kwargs.get(SetPartialQuery._LITERAL)
+        value = kwargs.get(SetPartialQuery._EXPRESSION)
+
+        if value is None:
+            if literal is None:
+                raise GQLAlchemyLiteralAndExpressionMissingInSet
+
+            value = to_cypher_value(literal)
+        elif literal is not None:
+            raise GQLAlchemyExtraKeywordArgumentsInSet
+
+        return ("" if operator == SetOperator.LABEL_FILTER else " ").join([item, operator.value, value])
 
 
 class DeclarativeBase(ABC):
@@ -1099,6 +1137,50 @@ class DeclarativeBase(ABC):
         if result:
             return result[retrieve]
         return result
+
+    def set_(self, item: str, operator: SetOperator, **kwargs):
+        """Creates a SET statement Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: An assignment, increment or label filter operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Raises:
+            GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error when neither literal nor expression keyword arguments were provided.
+            GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both literal and expression keyword arguments were provided.
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Setting or updating a property.
+
+            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001).return_()`
+            Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN *;`
+
+            Setting or updating multiple properties.
+
+            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001).set_(item="n.capital", operator=SetOperator.ASSIGNMENT, literal="Berlin").return_()`
+            Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN *;`
+
+            Setting node label.
+
+            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n", operator=SetOperator.LABEL_FILTER, expression="Land").return_()`
+            Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN *;`
+
+            Setting or updating all properties using map.
+
+            Python: `match().node(variable="c", labels="Country").where(item="c.name", operator="=", literal="Germany").set_(item="c", operator=SetOperator.INCREMENT, literal={"name": "Germany", "population": "85000000"}).return_()`
+            Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN *;`
+
+        """
+        self._query.append(SetPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
 
     def execute(self) -> Iterator[Dict[str, Any]]:
         """Executes the Cypher query and returns the results.
