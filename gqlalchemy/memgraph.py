@@ -587,11 +587,10 @@ class IntegratedAlgorithm(ABC):
 class BreadthFirstSearch(IntegratedAlgorithm):
     """Build a BFS call for a Cypher query.
 
-    The Breadth-first search can be called in Memgraph with Cypher queries
-    such as:
-    MATCH (a {id: 723})-[*BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;
-    It is called inside the relationship clause, "*BFS" naming the algorithm,
-    "..10" specifying depth bounds, and "(r, n | <expression>)" is a filter
+    The Breadth-first search can be called in Memgraph with Cypher queries such
+    as: `MATCH (a {id: 723})-[*BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;`
+    It is called inside the relationship clause, `*BFS` naming the algorithm,
+    `..10` specifying depth bounds, and `(r, n | <expression>)` is a filter
     lambda.
     """
 
@@ -603,10 +602,10 @@ class BreadthFirstSearch(IntegratedAlgorithm):
     ) -> None:
         """
         Args:
-            lower_bound: lower bound for path depth. Defaults to None.
-            upper_bound: upper bound for path depth. Defaults to None.
-            condition: filter through nodes and relationships that pass this
-            condition. Defaults to None.
+            lower_bound: Lower bound for path depth. Defaults to `None`.
+            upper_bound: Upper bound for path depth. Defaults to `None`.
+            condition: Filter through nodes and relationships that pass this
+            condition. Defaults to `None`.
         """
         super().__init__()
         self.lower_bound = lower_bound
@@ -614,7 +613,7 @@ class BreadthFirstSearch(IntegratedAlgorithm):
         self.condition = condition
 
     def __str__(self) -> str:
-        """get Cypher query string for this algorithm."""
+        """Get a Cypher query string for this algorithm."""
         algo_str = BFS_EXPANSION
 
         bounds = self.to_cypher_bounds()
