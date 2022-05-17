@@ -351,7 +351,7 @@ class ResultPartialQuery(PartialQuery):
 
     def _return_read_item(self, item: Union[str, Tuple[str, str]]) -> str:
         if isinstance(item, str):
-            return f"{item}"
+            return item
         elif isinstance(item, tuple):
             return f"{self._return_read_tuple(item)}"
         else:
@@ -455,13 +455,13 @@ class OrderByPartialQuery(PartialQuery):
 
     def _order_by_read_item(self, item: Union[str, Tuple[str, Order]]) -> str:
         if isinstance(item, str):
-            return f"{item}"
+            return item
         elif isinstance(item, tuple):
             return f"{self._order_by_read_tuple(item)}"
         else:
             raise GQLAlchemyOrderByTypeError
 
-    def _order_by_read_list(self, property: List[Union[str, Tuple[str, Order]]]):
+    def _order_by_read_list(self, property: Iterable[Union[str, Tuple[str, Order]]]):
         return ", ".join(self._order_by_read_item(item=item) for item in property)
 
     def _order_by_read_tuple(self, tuple: Tuple[str, Order]) -> str:
