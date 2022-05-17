@@ -34,11 +34,7 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-<<<<<<< HEAD
-from gqlalchemy.memgraph import Memgraph, WeightedShortestPath
-=======
 from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch, DepthFirstSearch
->>>>>>> develop
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
