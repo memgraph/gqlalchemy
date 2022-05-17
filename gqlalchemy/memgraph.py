@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABC
 import os
 import sqlite3
 
@@ -720,11 +719,11 @@ class WeightedShortestPath(IntegratedAlgorithm):
         self.weight_property = f"r.{weight_property}" if "." not in weight_property else weight_property
         self.total_weight_var = total_weight_var
         self.condition = condition
-        self.upper_bound = upper_bound
+        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
 
     def __str__(self) -> str:
         algo_str = WSHORTEST_EXPANSION
-        if self.upper_bound is not None:
+        if self.upper_bound != "":
             algo_str = f"{algo_str} {self.upper_bound}"
 
         algo_str = f"{algo_str} {super().to_cypher_lambda(self.weight_property)} {self.total_weight_var}"
