@@ -267,10 +267,6 @@ class EdgePartialQuery(PartialQuery):
         return "" if self._algorithm is None else self._algorithm
 
     @property
-    def algorithm(self) -> str:
-        return "" if self._algorithm is None else self._algorithm
-
-    @property
     def properties(self) -> str:
         return "" if self._properties is None else self._properties
 
