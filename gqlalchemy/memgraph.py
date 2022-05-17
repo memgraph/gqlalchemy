@@ -677,7 +677,7 @@ class DepthFirstSearch(IntegratedAlgorithm):
 
     def to_cypher_bounds(self) -> str:
         """If bounds are specified, returns them in grammar-defined form."""
-        if self.lower_bound is None and self.upper_bound is None:
+        if self.lower_bound == "" and self.upper_bound == "":
             return ""
 
         return f"{self.lower_bound}..{self.upper_bound}"
