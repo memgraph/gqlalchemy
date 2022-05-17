@@ -15,10 +15,17 @@
 from abc import ABC
 import os
 import sqlite3
+
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -30,11 +37,6 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import (
-    GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
-    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
-)
 
 __all__ = ("Memgraph",)
 
@@ -45,10 +47,12 @@ MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
+BFS_EXPANSION = " *BFS"
+DFS_EXPANSION = " *"
+WSHORTEST_EXPANSION = " *WSHORTEST"
+
 DEFAULT_TOTAL_WEIGHT = "total_weight"
 DEFAULT_WEIGHT_PROPERTY = "r.weight"
-
-WSHORTEST_EXPANSION = " *WSHORTEST"
 
 
 class MemgraphConstants:
@@ -552,29 +556,25 @@ class Memgraph:
 
 
 class IntegratedAlgorithm(ABC):
-    """Abstract class modeling in-Memgraph graph algorithms.
+    """Abstract class modeling Memgraph's built-in graph algorithms.
 
-    These algorithms are integrated into Memgraph codebase and are called
+    These algorithms are integrated into Memgraph's codebase and are called
     within a relationship part of a query. For instance:
     MATCH p = (:City {name: "Paris"})
           -[:Road * bfs (r, n | r.length <= 200 AND n.name != "Metz")]->
           (:City {name: "Berlin"})
     """
 
+    @abstractmethod
     def __str__(self) -> str:
-        """Instance of IntegratedAlgorithm extended object is used as a string.
-
-        Raises:
-            NotImplementedError: Inheriting class did not define its string
-            representation
-        """
-        raise NotImplementedError("Algorithm should define its str representation")
+        """Instance of IntegratedAlgorithm subclass is used as a string"""
+        pass
 
     @staticmethod
     def to_cypher_lambda(expression: str) -> str:
         """Method for creating a general lambda expression.
 
-        Variables e and v stand for relationship and node. The expression is
+        Variables `r` and `n` stand for relationship and node. The expression is
         used e.g. for a filter lambda, to use only relationships of length less
         than 200:
             expression="r.length < 200"
@@ -582,14 +582,114 @@ class IntegratedAlgorithm(ABC):
             (r, n | r.length < 200)
 
         Args:
-            expression: lambda conditions or statements
+            expression: Lambda conditions or statements.
         """
         return "" if expression is None else f"(r, n | {expression})"
 
 
+class BreadthFirstSearch(IntegratedAlgorithm):
+    """Build a BFS call for a Cypher query.
+
+    The Breadth-first search can be called in Memgraph with Cypher queries such
+    as: `MATCH (a {id: 723})-[*BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;`
+    It is called inside the relationship clause, `*BFS` naming the algorithm,
+    `..10` specifying depth bounds, and `(r, n | <expression>)` is a filter
+    lambda.
+    """
+
+    def __init__(
+        self,
+        lower_bound: int = None,
+        upper_bound: int = None,
+        condition: str = None,
+    ) -> None:
+        """
+        Args:
+            lower_bound: Lower bound for path depth. Defaults to `None`.
+            upper_bound: Upper bound for path depth. Defaults to `None`.
+            condition: Filter through nodes and relationships that pass this
+            condition. Defaults to `None`.
+        """
+        super().__init__()
+        self.lower_bound = str(lower_bound) if lower_bound is not None else ""
+        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
+        self.condition = condition
+
+    def __str__(self) -> str:
+        """Get a Cypher query string for this algorithm."""
+        algo_str = BFS_EXPANSION
+
+        bounds = self.to_cypher_bounds()
+        if bounds != "":
+            algo_str = f"{algo_str} {bounds}"
+
+        filter_lambda = super().to_cypher_lambda(self.condition)
+        if filter_lambda != "":
+            algo_str = f"{algo_str} {filter_lambda}"
+
+        return algo_str
+
+    def to_cypher_bounds(self) -> str:
+        """If bounds are specified, returns them in grammar-defined form."""
+        if self.lower_bound == "" and self.upper_bound == "":
+            return ""
+
+        return f"{self.lower_bound}..{self.upper_bound}"
+
+
+class DepthFirstSearch(IntegratedAlgorithm):
+    """Build a DFS call for a Cypher query.
+    The Depth-First Search can be called in Memgraph with Cypher queries
+    such as:
+    MATCH (a {id: 723})-[* ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;
+    It is called inside the relationship clause, "*" naming the algorithm
+    ("*" without "DFS" because it is defined like such in openCypher),
+    "..10" specifying depth bounds, and "(r, n | <expression>)" is a filter
+    lambda.
+    """
+
+    def __init__(
+        self,
+        lower_bound: int = None,
+        upper_bound: int = None,
+        condition: str = None,
+    ) -> None:
+        """
+        Args:
+            lower_bound: Lower bound for path depth. Defaults to None.
+            upper_bound: Upper bound for path depth. Defaults to None.
+            condition: Filter through nodes and relationships that pass this
+            condition. Defaults to None.
+        """
+        super().__init__()
+        self.lower_bound = str(lower_bound) if lower_bound is not None else ""
+        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
+        self.condition = condition
+
+    def __str__(self) -> str:
+        """get Cypher query string for this algorithm."""
+        algo_str = DFS_EXPANSION
+
+        bounds = self.to_cypher_bounds()
+        if bounds != "":
+            algo_str = f"{algo_str} {bounds}"
+
+        filter_lambda = super().to_cypher_lambda(self.condition)
+        if filter_lambda != "":
+            algo_str = f"{algo_str} {filter_lambda}"
+
+        return algo_str
+
+    def to_cypher_bounds(self) -> str:
+        """If bounds are specified, returns them in grammar-defined form."""
+        if self.lower_bound == "" and self.upper_bound == "":
+            return ""
+
+        return f"{self.lower_bound}..{self.upper_bound}"
+
+
 class WeightedShortestPath(IntegratedAlgorithm):
     """Build a Djikstra shortest path call for a Cypher query
-
     The weighted shortest path algorithm can be called in Memgraph with Cypher
     queries such as:
     " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum
@@ -618,10 +718,6 @@ class WeightedShortestPath(IntegratedAlgorithm):
         """
         super().__init__()
         self.weight_property = f"r.{weight_property}" if "." not in weight_property else weight_property
-        if "." not in weight_property:
-            self.weight_property = f"r.{weight_property}"
-        else:
-            self.weight_property = weight_property
         self.total_weight_var = total_weight_var
         self.condition = condition
         self.upper_bound = upper_bound
