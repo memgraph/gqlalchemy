@@ -577,7 +577,7 @@ class IntegratedAlgorithm(ABC):
             (r, n | r.length < 200)
 
         Args:
-            expression: lambda conditions or statements.
+            expression: Lambda conditions or statements.
         """
         return "" if expression is None else f"(r, n | {expression})"
 
