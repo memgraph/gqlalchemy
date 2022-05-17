@@ -46,6 +46,8 @@ MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
+BFS_EXPANSION = " *BFS"
+
 
 class MemgraphConstants:
     CONSTRAINT_TYPE = "constraint type"
@@ -566,7 +568,7 @@ class IntegratedAlgorithm(ABC):
     def to_cypher_lambda(expression: str) -> str:
         """Method for creating a general lambda expression.
 
-        Variables `e` and `v` stand for relationship and node. The expression is
+        Variables `r` and `n` stand for relationship and node. The expression is
         used e.g. for a filter lambda, to use only relationships of length less
         than 200:
             expression="r.length < 200"
@@ -577,3 +579,53 @@ class IntegratedAlgorithm(ABC):
             expression: Lambda conditions or statements.
         """
         return "" if expression is None else f"(r, n | {expression})"
+
+
+class BreadthFirstSearch(IntegratedAlgorithm):
+    """Build a BFS call for a Cypher query.
+
+    The Breadth-first search can be called in Memgraph with Cypher queries such
+    as: `MATCH (a {id: 723})-[*BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;`
+    It is called inside the relationship clause, `*BFS` naming the algorithm,
+    `..10` specifying depth bounds, and `(r, n | <expression>)` is a filter
+    lambda.
+    """
+
+    def __init__(
+        self,
+        lower_bound: int = None,
+        upper_bound: int = None,
+        condition: str = None,
+    ) -> None:
+        """
+        Args:
+            lower_bound: Lower bound for path depth. Defaults to `None`.
+            upper_bound: Upper bound for path depth. Defaults to `None`.
+            condition: Filter through nodes and relationships that pass this
+            condition. Defaults to `None`.
+        """
+        super().__init__()
+        self.lower_bound = str(lower_bound) if lower_bound is not None else ""
+        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
+        self.condition = condition
+
+    def __str__(self) -> str:
+        """Get a Cypher query string for this algorithm."""
+        algo_str = BFS_EXPANSION
+
+        bounds = self.to_cypher_bounds()
+        if bounds != "":
+            algo_str = f"{algo_str} {bounds}"
+
+        filter_lambda = super().to_cypher_lambda(self.condition)
+        if filter_lambda != "":
+            algo_str = f"{algo_str} {filter_lambda}"
+
+        return algo_str
+
+    def to_cypher_bounds(self) -> str:
+        """If bounds are specified, returns them in grammar-defined form."""
+        if self.lower_bound == "" and self.upper_bound == "":
+            return ""
+
+        return f"{self.lower_bound}..{self.upper_bound}"
