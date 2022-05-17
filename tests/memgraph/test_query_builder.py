@@ -34,7 +34,7 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch, DepthFirstSearch
+from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
@@ -1699,6 +1699,68 @@ def test_dfs_bounds(lower_bound, upper_bound, expected_query):
     query_builder = (
         QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=dfs_alg).node().return_()
     )
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_wshortest():
+    weighted_shortest = WeightedShortestPath(weight_property="r.weight")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_wShortest_bound():
+    weighted_shortest = WeightedShortestPath(upper_bound=10, weight_property="weight")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_wShortest_filter_label():
+    weighted_shortest = WeightedShortestPath(
+        upper_bound=10, weight_property="weight", condition="r.x > 12 AND n.y < 3", total_weight_var="weight_sum"
+    )
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum (r, n | r.x > 12 AND n.y < 3)]-(b {id: 882}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
