@@ -38,7 +38,7 @@ class DeclarativeBaseTypes:
     CALL = "CALL"
     CREATE = "CREATE"
     DELETE = "DELETE"
-    EDGE = "EDGE"
+    RELATIONSHIP = "RELATIONSHIP"
     LIMIT = "LIMIT"
     LOAD_CSV = "LOAD_CSV"
     MATCH = "MATCH"
@@ -254,7 +254,7 @@ class NodePartialQuery(PartialQuery):
         return f"({self.variable}{self.labels}{' ' + self.properties if self.properties else ''})"
 
 
-class EdgePartialQuery(PartialQuery):
+class RelationshipPartialQuery(PartialQuery):
     def __init__(
         self,
         variable: Optional[str],
@@ -264,7 +264,7 @@ class EdgePartialQuery(PartialQuery):
         directed: bool,
         from_: bool,
     ):
-        super().__init__(DeclarativeBaseTypes.EDGE)
+        super().__init__(DeclarativeBaseTypes.RELATIONSHIP)
 
         self.directed = directed
         self._variable = variable
@@ -290,7 +290,7 @@ class EdgePartialQuery(PartialQuery):
         return "" if self._properties is None else self._properties
 
     def construct_query(self) -> str:
-        """Constructs an edge partial query."""
+        """Constructs an relationship partial query."""
         relationship_query = f"{self.variable}{self.labels}{self.algorithm}{self.properties}"
 
         if not self.directed:
@@ -672,7 +672,7 @@ class DeclarativeBase(ABC):
 
     def to(
         self,
-        edge_label: Optional[str] = "",
+        relationship_type: Optional[str] = "",
         directed: Optional[bool] = True,
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
@@ -682,7 +682,7 @@ class DeclarativeBase(ABC):
         """Add a relationship pattern to the query.
 
         Args:
-            edge_label: A string representing the type of the relationship.
+            relationship_type: A string representing the type of the relationship.
             directed: A bool indicating if the relationship is directed.
             variable: A string representing the name of the variable for storing
               results of the relationship pattern.
@@ -693,18 +693,18 @@ class DeclarativeBase(ABC):
         Returns:
             A `DeclarativeBase` instance for constructing queries.
         """
-        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
+        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.RELATIONSHIP):
             raise InvalidMatchChainException()
 
         if relationship is None:
-            type_str = to_cypher_labels(edge_label)
+            type_str = to_cypher_labels(relationship_type)
             properties_str = to_cypher_properties(kwargs)
         else:
             type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
         self._query.append(
-            EdgePartialQuery(
+            RelationshipPartialQuery(
                 variable=variable,
                 labels=type_str,
                 algorithm="" if algorithm is None else str(algorithm),
@@ -718,7 +718,7 @@ class DeclarativeBase(ABC):
 
     def from_(
         self,
-        edge_label: Optional[str] = "",
+        relationship_type: Optional[str] = "",
         directed: Optional[bool] = True,
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
@@ -728,7 +728,7 @@ class DeclarativeBase(ABC):
         """Add a relationship pattern to the query.
 
         Args:
-            edge_label: A string representing the type of the relationship.
+            relationship_type: A string representing the type of the relationship.
             directed: A bool indicating if the relationship is directed.
             variable: A string representing the name of the variable for storing
               results of the relationship pattern.
@@ -738,20 +738,20 @@ class DeclarativeBase(ABC):
         Returns:
             A `DeclarativeBase` instance for constructing queries.
         """
-        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
+        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.RELATIONSHIP):
             raise InvalidMatchChainException()
 
         if relationship is None:
-            labels_str = to_cypher_labels(edge_label)
+            type_str = to_cypher_labels(relationship_type)
             properties_str = to_cypher_properties(kwargs)
         else:
-            labels_str = to_cypher_labels(relationship._type)
+            type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
         self._query.append(
-            EdgePartialQuery(
+            RelationshipPartialQuery(
                 variable=variable,
-                labels=labels_str,
+                labels=type_str,
                 algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
@@ -1260,7 +1260,7 @@ class DeclarativeBase(ABC):
     def _any_variables_matched(self) -> bool:
         """Checks if any variables are present in the result."""
         return any(
-            q.type in [DeclarativeBaseTypes.EDGE, DeclarativeBaseTypes.NODE] and q.variable not in [None, ""]
+            q.type in [DeclarativeBaseTypes.RELATIONSHIP, DeclarativeBaseTypes.NODE] and q.variable not in [None, ""]
             for q in self._query
         )
 
