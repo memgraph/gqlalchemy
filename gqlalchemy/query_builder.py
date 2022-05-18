@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import re
-
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union, Set
-
 from .memgraph import Connection, Memgraph
 from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
