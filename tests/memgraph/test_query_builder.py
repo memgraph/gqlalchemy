@@ -38,7 +38,8 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
+from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
