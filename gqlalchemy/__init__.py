@@ -23,6 +23,7 @@ from .models import (  # noqa F401
     Node,
     Path,
     Relationship,
+    Field,
 )
 from .disk_storage import SQLitePropertyDatabase  # noqa F401
 from .query_builder import (  # noqa F401
@@ -38,7 +39,7 @@ from .query_builder import (  # noqa F401
 )
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
-from pydantic import Field, validator  # noqa F401
+from pydantic import validator  # noqa F401
 import warnings
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
