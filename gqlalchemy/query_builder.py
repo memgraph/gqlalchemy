@@ -17,7 +17,8 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from .memgraph import Connection, Memgraph, IntegratedAlgorithm
+from .memgraph import Connection, Memgraph
+from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 from .exceptions import (
