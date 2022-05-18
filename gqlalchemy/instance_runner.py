@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import docker
-import os
 import psutil
 import socket
 import subprocess
