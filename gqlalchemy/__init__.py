@@ -30,12 +30,21 @@ from .query_builder import (  # noqa F401
     Call,
     Create,
     InvalidMatchChainException,
+    Return,
+    LoadCsv,
     Match,
     Merge,
     NoVariablesMatchedException,
     QueryBuilder,
     Unwind,
     With,
+)
+from .instance_runner import (  # noqa F401
+    DockerImage,
+    MemgraphInstanceBinary,
+    MemgraphInstanceDocker,
+    wait_for_docker_container,
+    wait_for_port,
 )
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
@@ -51,3 +60,5 @@ match = Match
 merge = Merge
 unwind = Unwind
 with_ = With
+return_ = Return
+load_csv = LoadCsv
