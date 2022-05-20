@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, List, Iterable, Optional, Set, Tuple, Union
-from pydantic import BaseModel, PrivateAttr, Extra
+from pydantic import BaseModel, PrivateAttr, Extra, Field  # noqa F401
 
 from .exceptions import (
     GQLAlchemyError,
