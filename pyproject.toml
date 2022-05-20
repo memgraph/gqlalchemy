@@ -41,6 +41,7 @@ psutil = "^5.9.0"
 pyarrow = "^7.0.0"
 dacite = "^1.6.0"
 adlfs = "^2022.2.0"
+neo4j = "^4.4.3"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"

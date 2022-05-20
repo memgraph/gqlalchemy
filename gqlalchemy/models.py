@@ -118,6 +118,48 @@ class MemgraphConstraintExists(MemgraphConstraint):
 
 
 @dataclass(frozen=True, eq=True)
+class Neo4jIndex:
+    label: str
+    property: Optional[str] = None
+    type: Optional[str] = None
+    uniqueness: Optional[str] = None
+
+    def to_cypher(self) -> str:
+        property_cypher = f"({self.property})" if self.property else ""
+        return f":{self.label}{property_cypher}"
+
+
+@dataclass(frozen=True, eq=True)
+class Neo4jConstraint(ABC):
+    label: str
+
+    @abstractmethod
+    def to_cypher(self) -> str:
+        pass
+
+
+@dataclass(frozen=True, eq=True)
+class Neo4jConstraintUnique(Neo4jConstraint):
+    property: Union[str, Tuple]
+
+    def to_cypher(self) -> str:
+        properties_str = ""
+        if isinstance(self.property, (tuple, set, list)):
+            properties_str = ", ".join([f"n.{prop}" for prop in self.property])
+        else:
+            properties_str = f"n.{self.property}"
+        return f"(n:{self.label}) ASSERT {properties_str} IS UNIQUE"
+
+
+@dataclass(frozen=True, eq=True)
+class Neo4jConstraintExists(Neo4jConstraint):
+    property: str
+
+    def to_cypher(self) -> str:
+        return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
+
+
+@dataclass(frozen=True, eq=True)
 class MemgraphStream(ABC):
     name: str
     topics: List[str]

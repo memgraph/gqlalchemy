@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .disk_storage import SQLitePropertyDatabase  # noqa F401
+from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
+from .instance_runner import (  # noqa F401
+    DockerImage,
+    MemgraphInstanceBinary,
+    MemgraphInstanceDocker,
+    wait_for_docker_container,
+    wait_for_port,
+)
 from .memgraph import Memgraph  # noqa F401
 from .models import (  # noqa F401
     MemgraphConstraintExists,
@@ -20,11 +29,13 @@ from .models import (  # noqa F401
     MemgraphKafkaStream,
     MemgraphPulsarStream,
     MemgraphTrigger,
+    Neo4jConstraintUnique,
+    Neo4jIndex,
     Node,
     Path,
     Relationship,
 )
-from .disk_storage import SQLitePropertyDatabase  # noqa F401
+from .neo4j import Neo4j  # noqa F401
 from .query_builder import (  # noqa F401
     Call,
     Create,
@@ -38,15 +49,7 @@ from .query_builder import (  # noqa F401
     Unwind,
     With,
 )
-from .instance_runner import (  # noqa F401
-    DockerImage,
-    MemgraphInstanceBinary,
-    MemgraphInstanceDocker,
-    wait_for_docker_container,
-    wait_for_port,
-)
 
-from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import Field, validator  # noqa F401
 import warnings
 
