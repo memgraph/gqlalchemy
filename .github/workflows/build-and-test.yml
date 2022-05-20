@@ -80,6 +80,7 @@ jobs:
           runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.py-version }}.log' &
           sleep 1 # Wait for Memgraph a bit.
       - name: Install Neo4j
+        shell: wsl-bash {0} # root shell
         run: |
           docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test --platform linux/amd64 neo4j:4.4.7
       - name: Setup poetry
