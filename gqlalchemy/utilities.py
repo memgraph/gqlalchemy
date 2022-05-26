@@ -44,6 +44,9 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     value_type = type(value)
 
+    if value_type == VariableProperty:
+        return str(value)
+
     if value_type == str and value.lower() == "null":
         return value
 
@@ -82,10 +85,7 @@ def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=Non
 
     properties_str = []
     for key, value in properties.items():
-        if type(value) == VariableProperty:
-            value_str = str(value)
-        else:
-            value_str = to_cypher_value(value, config)
+        value_str = to_cypher_value(value, config)
         properties_str.append(f"{key}: {value_str}")
 
     return "{{{}}}".format(", ".join(properties_str))
