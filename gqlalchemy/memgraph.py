@@ -579,8 +579,27 @@ class Memgraph:
         )
 
     def with_kafka_stream(self):
-        file_text = open('gqlalchemy/query_modules/push_streams/kafka.py','r').read()
-        query = f"CALL mg.create_module_file('gov.py','kk');"
+        """Load kafka stream module
+
+        Returns:
+            Memgraph: Memgraph instance
+        """
+        file_text = open('gqlalchemy/query_modules/push_streams/kafka.py','r').read().replace("'", '"')
+        query = f"CALL mg.create_module_file('kafka.py','{file_text}') YIELD *"
         self.execute_and_fetch(query)
 
         return self
+    
+    def with_power_bi(self):
+        """Load power_bi stream module
+
+        Returns:
+            Memgraph: Memgraph instance
+        """
+        file_text = open('gqlalchemy/query_modules/push_streams/power_bi.py','r').read().replace("'", '"')
+        query = f"CALL mg.create_module_file('power_bi.py','{file_text}') YIELD *"
+        self.execute_and_fetch(query)
+
+        return self
+    
+
