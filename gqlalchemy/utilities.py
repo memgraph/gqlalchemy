@@ -104,12 +104,11 @@ class PropertyVariable:
     """Class for support of using a variable as a node or edge property. Used
     to avoid the quotes given to property values.
     """
-
-    def __init__(self, value: str) -> None:
-        self._value = value
+    def __init__(self, name: str) -> None:
+        self._name = name
 
     def __str__(self) -> str:
-        return self._value
+        return self._name
 
 
 class NanException(Exception):

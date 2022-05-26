@@ -1765,7 +1765,7 @@ def test_property_variable():
         .with_({"[1,2,3]": "list"})
         .unwind("list", "element")
         .create()
-        .node(num=PropertyVariable(value="element"))
+        .node(num=PropertyVariable(name="element"))
     )
 
     expected_query = " WITH [1,2,3] AS list UNWIND list AS element CREATE ( {num: element})"
@@ -1782,7 +1782,7 @@ def test_property_variable_edge():
         .with_({"15": "number"})
         .create()
         .node(variable="n")
-        .to(relationship_type="REL", num=PropertyVariable(value="number"))
+        .to(relationship_type="REL", num=PropertyVariable(name="number"))
         .node(variable="m")
     )
 
