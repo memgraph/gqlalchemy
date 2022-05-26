@@ -51,8 +51,11 @@ def test_to_cypher_properties():
         "prop2": 123.321,
         "prop3": {"k1": [1, 2, 3], "k2": {"subkey1": 1, "subkey2": [3, 2, 1]}},
         "prop4": datetime.date(1970, 1, 19),
+        "prop5": datetime.time(12, 12, 12),
+        "prop6": datetime.datetime(1999, 12, 12, 12, 12, 12),
+        "prop7": datetime.timedelta(0, 2, 33, 0, 2),
     }
-    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}, prop4: date('1970-01-19')}"
+    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}, prop4: date('1970-01-19'), prop5: localTime('12:12:12'), prop6: localDateTime('1999-12-12T12:12:12'), prop7: duration('PT2M2.33S')}"
 
     actual_properties = to_cypher_properties(properties)
 
