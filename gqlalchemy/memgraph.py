@@ -14,10 +14,17 @@
 
 import os
 import sqlite3
+
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
+from .graph_algorithms.query_modules import QueryModule
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -29,11 +36,6 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import (
-    GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
-    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
-)
 
 __all__ = ("Memgraph",)
 
@@ -551,3 +553,25 @@ class Memgraph:
         )
 
         return self.get_variable_assume_one(results, "relationship")
+
+    def get_procedures(self, starts_with: Optional[str] = None, update: bool = False) -> List["QueryModule"]:
+        """Return query procedures.
+
+        Maintains a list of query modules in the Memgraph object. If starts_with
+        is defined then return those modules that start with starts_with string.
+
+        Args:
+            starts_with: Return those modules that start with this string.
+            (Optional)
+            update: Whether to update the list of modules in
+            self.query_modules. (Optional)
+        """
+        if not hasattr(self, "query_modules") or update:
+            results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
+            self.query_modules = [QueryModule(**module_dict) for module_dict in results]
+
+        return (
+            self.query_modules
+            if starts_with is None
+            else [q for q in self.query_modules if q.name.startswith(starts_with)]
+        )
