@@ -16,6 +16,10 @@ import os
 import sqlite3
 
 from typing import Any, Dict, Iterator, List, Optional, Union
+<<<<<<< HEAD
+=======
+from gqlalchemy import QueryBuilder
+>>>>>>> with kafka stream
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
 from .graph_algorithms.query_modules import QueryModule
