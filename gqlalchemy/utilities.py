@@ -13,9 +13,17 @@
 # limitations under the License.
 
 import math
-
+from datetime import datetime, date, time, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
+
+
+class DatetimeKeywords(Enum):
+    DURATION = "duration("
+    LOCALTIME = "localTime("
+    LOCALDATETIME = "localDateTime("
+    DATE = "date("
+    CLOSING_PARENTHESES = ")"
 
 
 class NanValuesHandle(Enum):
@@ -47,7 +55,19 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value_type == PropertyVariable:
         return str(value)
 
-    if value_type == str and value.lower() == "null":
+    if isinstance(value_type, timedelta):
+        return DatetimeKeywords.DURATION.value + str(value) + DatetimeKeywords.CLOSING_PARENTHESES.value
+
+    if isinstance(value_type, time):
+        return DatetimeKeywords.LOCALTIME.value + value.isoformat() + DatetimeKeywords.CLOSING_PARENTHESES.value
+
+    if isinstance(value_type, datetime):
+        return DatetimeKeywords.LOCALDATETIME.value + value.isoformat() + DatetimeKeywords.CLOSING_PARENTHESES.value
+
+    if isinstance(value_type, date):
+        return DatetimeKeywords.DATE.value + value.isoformat() + DatetimeKeywords.CLOSING_PARENTHESES.value
+
+    if value_type == str and value.lower() in ["true", "false", "null"]:
         return value
 
     if value_type == float and math.isnan(value):
@@ -68,9 +88,6 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     if value is None:
         return "null"
-
-    if value.lower() in ["true", "false"]:
-        return value
 
     return f"'{value}'"
 
