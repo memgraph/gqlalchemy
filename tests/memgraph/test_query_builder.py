@@ -1694,7 +1694,7 @@ def test_wShortest_filter_label():
     mock.assert_called_with(expected_query)
 
 
-def test_variable_property():
+def test_property_variable():
     query = (
         QueryBuilder()
         .with_({"[1,2,3]": "list"})
@@ -1711,7 +1711,7 @@ def test_variable_property():
     mock.assert_called_with(expected_query)
 
 
-def test_variable_property_edge():
+def test_property_variable_edge():
     query = (
         QueryBuilder()
         .with_({"15": "number"})
