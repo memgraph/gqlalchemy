@@ -71,7 +71,7 @@ class MemgraphConnection(Connection):
         password: str,
         encrypted: bool,
         client_name: Optional[str] = None,
-        lazy: bool = True,
+        lazy: bool = False,
     ):
         super().__init__(host, port, username, password, encrypted, client_name=client_name)
         self.lazy = lazy
@@ -103,7 +103,7 @@ class MemgraphConnection(Connection):
     def _create_connection(self) -> Connection:
         """Creates and returns a connection with Memgraph."""
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE
-        return mgclient.connect(
+        connection = mgclient.connect(
             host=self.host,
             port=self.port,
             username=self.username,
@@ -112,6 +112,8 @@ class MemgraphConnection(Connection):
             lazy=self.lazy,
             client_name=self.client_name,
         )
+        connection.autocommit = True
+        return connection
 
 
 def _convert_memgraph_value(value: Any) -> Any:

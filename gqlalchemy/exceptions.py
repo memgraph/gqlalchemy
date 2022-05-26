@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from enum import Enum
+
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
 Define your property as:
@@ -47,14 +50,20 @@ ORDER_BY_TYPE_ERROR = """
 TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[tuple[str, str]].
 """
 
-LITERAL_AND_EXPRESSION_MISSING_IN_WHERE = """
-Can't create WHERE query without providing either 'literal' or 'expression' keyword arguments, that can be literals, labels or properties.
+LITERAL_AND_EXPRESSION_MISSING = """
+Can't create {clause} query without providing either 'literal' or 'expression' keyword arguments,
+that can be literals, labels or properties.
 """
 
-EXTRA_KEYWORD_ARGUMENTS_IN_WHERE = """
-Can't create WHERE query with extra keyword arguments:
-Please provide a value to either 'literal' or 'expression' keyword arguments."
+EXTRA_KEYWORD_ARGUMENTS = """
+Can't create {clause} query with extra keyword arguments:
+Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
+
+
+class QueryClause(Enum):
+    WHERE = "WHERE"
+    SET = "SET"
 
 
 class GQLAlchemyWarning(Warning):
@@ -108,16 +117,26 @@ class GQLAlchemyOrderByTypeError(GQLAlchemyError):
         self.message = ORDER_BY_TYPE_ERROR
 
 
-class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyError):
-    def __init__(self):
+class GQLAlchemyLiteralAndExpressionMissingInClause(GQLAlchemyError):
+    def __init__(self, clause: str):
         super().__init__()
-        self.message = LITERAL_AND_EXPRESSION_MISSING_IN_WHERE
+        self.message = LITERAL_AND_EXPRESSION_MISSING.format(clause=clause)
 
 
-class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyError):
+class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyLiteralAndExpressionMissingInClause):
     def __init__(self):
+        super().__init__(clause=QueryClause.WHERE)
+
+
+class GQLAlchemyLiteralAndExpressionMissingInSet(GQLAlchemyLiteralAndExpressionMissingInClause):
+    def __init__(self):
+        super().__init__(clause=QueryClause.SET)
+
+
+class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
+    def __init__(self, clause: str):
         super().__init__()
-        self.message = EXTRA_KEYWORD_ARGUMENTS_IN_WHERE
+        self.message = EXTRA_KEYWORD_ARGUMENTS.format(clause=clause)
 
 
 class GQLAlchemyDatabaseError(GQLAlchemyError):
@@ -134,3 +153,13 @@ def exception_handler(func):
             raise GQLAlchemyDatabaseError(e)
 
     return inner_function
+
+
+class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
+    def __init__(self):
+        super().__init__(clause=QueryClause.WHERE)
+
+
+class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
+    def __init__(self):
+        super().__init__(clause=QueryClause.SET)
