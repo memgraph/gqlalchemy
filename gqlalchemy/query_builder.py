@@ -1132,7 +1132,7 @@ class DeclarativeBase(ABC):
             return result[retrieve]
         return result
 
-    def foreach(self, variable: str, expression: str, update_clauses: Union[str, List[str]]) -> "DeclarativeBase":
+    def foreach(self, variable: str, expression: str, update_clauses: Union[str, List[str], Set[str]) -> "DeclarativeBase":
         """Iterate over a list of elements and for every iteration run every update clause.
 
         Args:
