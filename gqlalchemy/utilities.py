@@ -105,7 +105,7 @@ class PropertyVariable:
     to avoid the quotes given to property values.
     """
 
-    def __init__(self, value) -> None:
+    def __init__(self, value: str) -> None:
         self._value = value
 
     def __str__(self) -> str:
