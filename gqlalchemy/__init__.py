@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from gqlalchemy import memgraph, models, disk_storage, query_builder, instance_runner, exceptions
+
 from memgraph import Memgraph  # noqa F401
 from models import (  # noqa F401
     MemgraphConstraintExists,
