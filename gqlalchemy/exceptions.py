@@ -120,7 +120,7 @@ class GQLAlchemyMissingOrder(GQLAlchemyError):
         self.message = MISSING_ORDER
 
 
-class GQLAlchemyOrderByTypeError(TypeError):
+class GQLAlchemyOrderByTypeError(GQLAlchemyError):
     def __init__(self):
         self.message = ORDER_BY_TYPE_ERROR
 
@@ -170,3 +170,19 @@ class GQLAlchemyResultQueryTypeError(TypeError):
 class GQLAlchemyInstantiationError(GQLAlchemyError):
     def __init__(self, class_name) -> None:
         self.message = INSTANTIATION_ERROR.format(class_name=class_name)
+
+
+class GQLAlchemyDatabaseError(GQLAlchemyError):
+    def __init__(self, message):
+        super().__init__()
+        self.message = message
+
+
+def gqlalchemy_error_handler(func):
+    def inner_function(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise GQLAlchemyDatabaseError(e)
+
+    return inner_function
