@@ -1,7 +1,7 @@
 name: Build and Test
 
 env:
-  MG_VERSION: "2.1.1"
+  MG_VERSION: "2.3.0"
   POETRY_VERSION: "1.1.4"
 
 on:
@@ -31,13 +31,24 @@ jobs:
         uses: abatilo/actions-poetry@v2.0.0
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
-      - name: Run memgraph instance
+      - name: Install Memgraph
         run: |
-          docker run -d -p 7687:7687 memgraph/memgraph --telemetry-enabled=False
+          mkdir /home/runner/memgraph
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
+          sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
+          sudo systemctl stop memgraph
+          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.py-version }}.log' &
+          sleep 1 # Wait for Memgraph a bit.
       - name: Test project
         run: |
           poetry install
-          poetry run pytest -vvv -m "not slow"
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+      - name: Use the Upload Artifact GitHub Action
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: assets-for-download
+          path: /var/log/memgraph
 
   build_and_test_windows:
     if: github.event.pull_request.draft == false
@@ -59,10 +70,11 @@ jobs:
       - name: Download, install and run Memgraph under WSL
         shell: wsl-bash {0} # root shell
         run: |
-          mkdir ~/memgraph
-          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output ~/memgraph/memgraph-community.deb
-          dpkg -i ~/memgraph/memgraph-community.deb
-          nohup /usr/lib/memgraph/memgraph --bolt-port 7687 --data-directory="~/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-file='' &
+          mkdir /memgraph
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /memgraph/memgraph-community.deb
+          dpkg -i /memgraph/memgraph-community.deb
+          mkdir /mnt/c/memgraph
+          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.py-version }}.log' &
           sleep 1 # Wait for Memgraph a bit.
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
@@ -71,4 +83,10 @@ jobs:
       - name: Test project
         run: |
           poetry install
-          poetry run pytest -vvv -m "not slow"
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+      - name: Use the Upload Artifact GitHub Action
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: assets-for-download
+          path: C:\memgraph

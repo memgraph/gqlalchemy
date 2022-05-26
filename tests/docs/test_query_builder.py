@@ -67,7 +67,10 @@ def test_create_nodes_relationships_2(memgraph):
 
 def test_create_nodes_relationships_3(memgraph):
     query_builder = (
-        create().node(labels="Person", name="Leslie").to(edge_label="FRIENDS_WITH").node(labels="Person", name="Ron")
+        create()
+        .node(labels="Person", name="Leslie")
+        .to(relationship_type="FRIENDS_WITH")
+        .node(labels="Person", name="Ron")
     )
 
     expected_query = " CREATE (:Person {name: 'Leslie'})-[:FRIENDS_WITH]->(:Person {name: 'Ron'})"
