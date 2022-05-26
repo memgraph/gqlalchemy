@@ -170,7 +170,7 @@ class GQLAlchemyDatabaseError(GQLAlchemyError):
         self.message = message
 
 
-def exception_handler(func):
+def gqlalchemy_error_handler(func):
     def inner_function(*args, **kwargs):
         try:
             return func(*args, **kwargs)
