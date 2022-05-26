@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from enum import Enum
+
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
 Define your property as:
@@ -144,6 +146,7 @@ class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
 class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
     def __init__(self):
         super().__init__(clause=QueryClause.SET)
+
 
 class GQLAlchemyDatabaseError(GQLAlchemyError):
     def __init__(self, message):
