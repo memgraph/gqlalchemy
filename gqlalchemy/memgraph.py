@@ -16,7 +16,7 @@ import os
 import sqlite3
 
 from typing import Any, Dict, Iterator, List, Optional, Union
-
+from gqlalchemy import QueryBuilder
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
 from .graph_algorithms.query_modules import QueryModule
@@ -567,3 +567,8 @@ class Memgraph:
             if starts_with is None
             else [q for q in self.query_modules if q.name.startswith(starts_with)]
         )
+
+    def with_kafka_stream(self):
+        qb = QueryBuilder()
+        query = qb.call("mg.create_module_file", "'govnich.py', 'Hello soul sister!'").yield_().construct_query()
+
