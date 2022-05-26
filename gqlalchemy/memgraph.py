@@ -81,6 +81,15 @@ class Memgraph(Database):
             )
         return indexes
 
+    def ensure_indexes(self, indexes: List[MemgraphIndex]) -> None:
+        """Ensures that database indexes match input indexes"""
+        old_indexes = set(self.get_indexes())
+        new_indexes = set(indexes)
+        for obsolete_index in old_indexes.difference(new_indexes):
+            self.drop_index(obsolete_index)
+        for missing_index in new_indexes.difference(old_indexes):
+            self.create_index(missing_index)
+
     def get_constraints(
         self,
     ) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:

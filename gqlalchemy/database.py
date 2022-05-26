@@ -79,14 +79,10 @@ class Database(ABC):
         """Returns a list of all database indexes (label and label-property types)"""
         pass
 
+    @abstractmethod
     def ensure_indexes(self, indexes: List[Index]) -> None:
         """Ensures that database indexes match input indexes"""
-        old_indexes = set(self.get_indexes())
-        new_indexes = set(indexes)
-        for obsolete_index in old_indexes.difference(new_indexes):
-            self.drop_index(obsolete_index)
-        for missing_index in new_indexes.difference(old_indexes):
-            self.create_index(missing_index)
+        pass
 
     def drop_indexes(self) -> None:
         """Drops all indexes in the database"""

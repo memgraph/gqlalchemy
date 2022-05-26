@@ -91,6 +91,16 @@ class Neo4j(Database):
                 )
         return indexes
 
+    def ensure_indexes(self, indexes: List[Neo4jIndex]) -> None:
+        """Ensures that database indexes match input indexes"""
+        old_indexes = set(self.get_indexes())
+        new_indexes = set(indexes)
+        for obsolete_index in old_indexes.difference(new_indexes):
+            if obsolete_index.type != Neo4jConstants.LOOKUP and obsolete_index.uniqueness != Neo4jConstants.UNIQUE:
+                self.drop_index(obsolete_index)
+        for missing_index in new_indexes.difference(old_indexes):
+            self.create_index(missing_index)
+
     def get_constraints(
         self,
     ) -> List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]]:
