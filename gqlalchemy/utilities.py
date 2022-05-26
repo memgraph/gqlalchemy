@@ -45,6 +45,17 @@ class NetworkXCypherConfig:
         return self._nan_handler
 
 
+def _format_timedelta(duration: timedelta) -> str:
+    days = int(duration.total_seconds() // 86400)
+    remainder_sec = duration.total_seconds() - days * 86400
+    hours = int(remainder_sec // 3600)
+    remainder_sec -= hours * 3600
+    minutes = int(remainder_sec // 60)
+    remainder_sec -= minutes * 60
+
+    return f"'P{days}DT{hours}H{minutes}M{remainder_sec}S'"
+
+
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid Cypher type."""
     if config is None:
@@ -56,7 +67,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
         return str(value)
 
     if isinstance(value, timedelta):
-        return DatetimeKeywords.DURATION.value + str(value) + DatetimeKeywords.CLOSING_PARENTHESES.value
+        return DatetimeKeywords.DURATION.value + _format_timedelta(value) + DatetimeKeywords.CLOSING_PARENTHESES.value
 
     if isinstance(value, time):
         return (

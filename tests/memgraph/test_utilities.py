@@ -50,16 +50,24 @@ def test_to_cypher_properties():
         "prop1": "abc",
         "prop2": 123.321,
         "prop3": {"k1": [1, 2, 3], "k2": {"subkey1": 1, "subkey2": [3, 2, 1]}},
-        "prop4": datetime.date(1970, 1, 19),
-        "prop5": datetime.time(12, 12, 12),
-        "prop6": datetime.datetime(1999, 12, 12, 12, 12, 12),
-        "prop7": datetime.timedelta(0, 2, 33, 0, 2),
     }
-    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}, prop4: date('1970-01-19'), prop5: localTime('12:12:12'), prop6: localDateTime('1999-12-12T12:12:12'), prop7: duration('PT2M2.33S')}"
+    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}}"
 
     actual_properties = to_cypher_properties(properties)
 
     assert actual_properties == expected_properties
+
+
+def test_to_cypher_datetime():
+    date = datetime.date(1970, 1, 19)
+    localtime = datetime.time(12, 12, 12)
+    localdatetime = datetime.datetime(1999, 12, 12, 12, 12, 12)
+    duration = datetime.timedelta(days=1, hours=5, minutes=16, seconds=12)
+
+    assert to_cypher_value(date) == "date('1970-01-19')"
+    assert to_cypher_value(localtime) == "localTime('12:12:12')"
+    assert to_cypher_value(localdatetime) == "localDateTime('1999-12-12T12:12:12')"
+    assert to_cypher_value(duration) == "duration('P1DT5H16M12.0S')"
 
 
 def test_to_cypher_labels_single_label():
