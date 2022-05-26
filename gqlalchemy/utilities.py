@@ -44,7 +44,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     value_type = type(value)
 
-    if value_type == VariableProperty:
+    if value_type == PropertyVariable:
         return str(value)
 
     if value_type == str and value.lower() == "null":
@@ -100,7 +100,7 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
     return ""
 
 
-class VariableProperty:
+class PropertyVariable:
     """Class for support of using a variable as a node or edge property. Used
     to avoid the quotes given to property values.
     """

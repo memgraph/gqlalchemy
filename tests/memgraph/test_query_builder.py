@@ -40,7 +40,7 @@ from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builder import SetOperator, Order
-from gqlalchemy.utilities import VariableProperty
+from gqlalchemy.utilities import PropertyVariable
 
 
 def test_invalid_match_chain_throws_exception():
@@ -1695,8 +1695,13 @@ def test_wShortest_filter_label():
 
 
 def test_variable_property():
-    element_var = VariableProperty(value="element")
-    query = QueryBuilder().with_({"[1,2,3]": "list"}).unwind("list", "element").create().node(num=element_var)
+    query = (
+        QueryBuilder()
+        .with_({"[1,2,3]": "list"})
+        .unwind("list", "element")
+        .create()
+        .node(num=PropertyVariable(value="element"))
+    )
 
     expected_query = " WITH [1,2,3] AS list UNWIND list AS element CREATE ( {num: element})"
 
@@ -1707,13 +1712,12 @@ def test_variable_property():
 
 
 def test_variable_property_edge():
-    number_var = VariableProperty(value="number")
     query = (
         QueryBuilder()
         .with_({"15": "number"})
         .create()
         .node(variable="n")
-        .to(relationship_type="REL", num=number_var)
+        .to(relationship_type="REL", num=PropertyVariable(value="number"))
         .node(variable="m")
     )
 
