@@ -16,12 +16,12 @@ import os
 
 from typing import Any, Dict, Iterator, List, Optional, Union
 
-from .connection import Connection, Neo4jConnection
-from .exceptions import (
+from ..connection import Connection, Neo4jConnection
+from ..exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,
 )
-from .models import (
+from ..models import (
     Neo4jConstraint,
     Neo4jConstraintExists,
     Neo4jConstraintUnique,

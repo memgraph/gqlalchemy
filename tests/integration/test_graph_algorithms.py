@@ -14,7 +14,7 @@
 
 from gqlalchemy.graph_algorithms.query_modules import QueryModule, parse_query_module_signature
 from gqlalchemy.query_builder import QueryBuilder
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.database.memgraph import Memgraph
 
 from typing import List
 

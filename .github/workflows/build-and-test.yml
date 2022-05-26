@@ -82,7 +82,10 @@ jobs:
       - name: Install Neo4j
         shell: wsl-bash {0} # root shell
         run: |
-          docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test --platform linux/amd64 neo4j:4.4.7
+          curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+          add-apt-repository "deb https://debian.neo4j.com stable 4.1"
+          apt install neo4j -y
+          systemctl enable neo4j.service
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
