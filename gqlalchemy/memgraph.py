@@ -16,7 +16,6 @@ import os
 import sqlite3
 
 from typing import Any, Dict, Iterator, List, Optional, Union
-from gqlalchemy import QueryBuilder
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
 from .graph_algorithms.query_modules import QueryModule
@@ -580,6 +579,8 @@ class Memgraph:
         )
 
     def with_kafka_stream(self):
-        qb = QueryBuilder()
-        query = qb.call("mg.create_module_file", "'govnich.py', 'Hello soul sister!'").yield_().construct_query()
+        file_text = open('gqlalchemy/query_modules/push_streams/kafka.py','r').read()
+        query = f"CALL mg.create_module_file('gov.py','kk');"
+        self.execute_and_fetch(query)
 
+        return self
