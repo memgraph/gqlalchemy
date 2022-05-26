@@ -507,7 +507,7 @@ class OrderByPartialQuery(PartialQuery):
         else:
             raise GQLAlchemyOrderByTypeError
 
-    def _order_by_read_list(self, property: Iterable[Union[str, Tuple[str, Order]]]):
+    def _order_by_read_list(self, property: List[Union[str, Tuple[str, Order]]]):
         return ", ".join(self._order_by_read_item(item=item) for item in property)
 
     def _order_by_read_tuple(self, tuple: Tuple[str, Order]) -> str:
