@@ -21,7 +21,7 @@ from .instance_runner import (  # noqa F401
     wait_for_docker_container,
     wait_for_port,
 )
-from .memgraph import Memgraph  # noqa F401
+from .vendors.memgraph import Memgraph  # noqa F401
 from .models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
@@ -36,7 +36,7 @@ from .models import (  # noqa F401
     Relationship,
     Field,
 )
-from .neo4j import Neo4j  # noqa F401
+from .vendors.neo4j import Neo4j  # noqa F401
 from .query_builder import (  # noqa F401
     Call,
     Create,

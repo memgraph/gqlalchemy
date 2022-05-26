@@ -16,13 +16,13 @@ import os
 
 from typing import List, Optional, Union
 
-from .connection import Connection, Neo4jConnection
+from ..connection import Connection, Neo4jConnection
 from .database import Database
-from .exceptions import (
+from ..exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,
 )
-from .models import (
+from ..models import (
     Neo4jConstraintExists,
     Neo4jConstraintUnique,
     Neo4jIndex,

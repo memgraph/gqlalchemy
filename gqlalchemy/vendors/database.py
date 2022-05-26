@@ -17,10 +17,10 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional
 
-from .connection import Connection
-from .graph_algorithms.query_modules import QueryModule
-from .exceptions import GQLAlchemyError
-from .models import (
+from ..connection import Connection
+from ..graph_algorithms.query_modules import QueryModule
+from ..exceptions import GQLAlchemyError
+from ..models import (
     Index,
     Constraint,
     Node,

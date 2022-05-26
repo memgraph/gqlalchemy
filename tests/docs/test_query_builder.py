@@ -15,7 +15,7 @@
 from unittest.mock import patch
 
 from gqlalchemy import match, call, create, merge
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy import Memgraph
 
 
 def test_call_procedures_1(memgraph):

@@ -21,7 +21,7 @@ import time
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Union
-from .memgraph import Memgraph
+from .vendors.memgraph import Memgraph
 
 
 MEMGRAPH_DEFAULT_BINARY_PATH = "/usr/lib/memgraph/memgraph"

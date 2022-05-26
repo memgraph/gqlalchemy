@@ -34,7 +34,7 @@ from gqlalchemy import (
     Relationship,
     Field,
 )
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy import Memgraph
 from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
 from typing import Optional
 from unittest.mock import patch
