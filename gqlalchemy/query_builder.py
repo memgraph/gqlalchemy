@@ -1286,7 +1286,7 @@ class Foreach(DeclarativeBase):
         self,
         variable: str,
         expression: str,
-        update_clauses: Union[str, List[str]],
+        update_clauses: Union[str, List[str], Set[str]],
         connection: Optional[Union[Connection, Memgraph]] = None,
     ):
         super().__init__(connection)
