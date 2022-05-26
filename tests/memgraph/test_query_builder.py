@@ -40,6 +40,7 @@ from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builder import SetOperator, Order
+from gqlalchemy.utilities import VariableProperty
 
 
 def test_invalid_match_chain_throws_exception():
@@ -1689,5 +1690,17 @@ def test_wShortest_filter_label():
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_variable_property():
+    element_var = VariableProperty(value="element")
+    query = QueryBuilder().with_({"[1,2,3]": "list"}).unwind("list", "element").create().node(num=element_var)
+
+    expected_query = " WITH [1,2,3] AS list UNWIND list AS element CREATE ( {num: element})"
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query.execute()
 
     mock.assert_called_with(expected_query)

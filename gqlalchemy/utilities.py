@@ -82,7 +82,10 @@ def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=Non
 
     properties_str = []
     for key, value in properties.items():
-        value_str = to_cypher_value(value, config)
+        if type(value) == VariableProperty:
+            value_str = str(value)
+        else:
+            value_str = to_cypher_value(value, config)
         properties_str.append(f"{key}: {value_str}")
 
     return "{{{}}}".format(", ".join(properties_str))
@@ -95,6 +98,14 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
             return f":{labels}"
         return f":{':'.join(labels)}"
     return ""
+
+
+class VariableProperty:
+    def __init__(self, value) -> None:
+        self._value = value
+
+    def __str__(self) -> str:
+        return self._value
 
 
 class NanException(Exception):

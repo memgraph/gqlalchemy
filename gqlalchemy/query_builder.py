@@ -569,6 +569,7 @@ class DeclarativeBase(ABC):
         labels: Union[str, List[str], None] = "",
         variable: Optional[str] = None,
         node: Optional["Node"] = None,
+        *args,
         **kwargs,
     ) -> "DeclarativeBase":
         """Add a node pattern to the query.
