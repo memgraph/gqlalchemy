@@ -15,7 +15,18 @@
 from unittest.mock import patch
 
 from gqlalchemy import match, call, create, merge
+from gqlalchemy.query_builder import CallPartialQuery
 from gqlalchemy.memgraph import Memgraph
+
+
+def test_call_procedure_arguments_string():
+    call_procedure = CallPartialQuery("dummy.procedure", "'a', 'b'").construct_query()
+    assert call_procedure == " CALL dummy.procedure('a', 'b') "
+
+
+def test_call_procedure_arguments_tuple():
+    call_procedure = CallPartialQuery("dummy.procedure", ("a", "b")).construct_query()
+    assert call_procedure == " CALL dummy.procedure('a', 'b') "
 
 
 def test_call_procedures_1(memgraph):

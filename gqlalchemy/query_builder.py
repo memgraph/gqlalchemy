@@ -146,14 +146,20 @@ class CreatePartialQuery(PartialQuery):
 
 
 class CallPartialQuery(PartialQuery):
-    def __init__(self, procedure: str, arguments: str):
+    def __init__(self, procedure: str, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]):
         super().__init__(DeclarativeBaseTypes.CALL)
 
         self.procedure = procedure
-        self.arguments = arguments
+        self.arguments = self._parse_query_arguments(arguments)
 
     def construct_query(self) -> str:
         return f" CALL {self.procedure}({self.arguments if self.arguments else ''}) "
+
+    def _parse_query_arguments(self, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]) -> str:
+        if isinstance(arguments, tuple):
+            return ", ".join([to_cypher_value(x) for x in arguments])
+
+        return arguments
 
 
 class WhereConditionPartialQuery(PartialQuery):
@@ -548,7 +554,9 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
+    def call(
+        self, procedure: str, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]] = None
+    ) -> "DeclarativeBase":
         """Call a query module procedure.
 
         Args:
