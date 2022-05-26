@@ -14,6 +14,7 @@
 
 import pytest
 import math
+import datetime
 
 from gqlalchemy.utilities import (
     NanValuesHandle,
@@ -49,8 +50,9 @@ def test_to_cypher_properties():
         "prop1": "abc",
         "prop2": 123.321,
         "prop3": {"k1": [1, 2, 3], "k2": {"subkey1": 1, "subkey2": [3, 2, 1]}},
+        "prop4": datetime.date(1970, 1, 19),
     }
-    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}}"
+    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}, prop4: date('1970-01-19')}"
 
     actual_properties = to_cypher_properties(properties)
 

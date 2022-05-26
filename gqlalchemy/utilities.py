@@ -55,17 +55,29 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value_type == PropertyVariable:
         return str(value)
 
-    if isinstance(value_type, timedelta):
+    if isinstance(value, timedelta):
         return DatetimeKeywords.DURATION.value + str(value) + DatetimeKeywords.CLOSING_PARENTHESES.value
 
-    if isinstance(value_type, time):
-        return DatetimeKeywords.LOCALTIME.value + value.isoformat() + DatetimeKeywords.CLOSING_PARENTHESES.value
+    if isinstance(value, time):
+        return (
+            DatetimeKeywords.LOCALTIME.value
+            + "'"
+            + value.isoformat()
+            + "'"
+            + DatetimeKeywords.CLOSING_PARENTHESES.value
+        )
 
-    if isinstance(value_type, datetime):
-        return DatetimeKeywords.LOCALDATETIME.value + value.isoformat() + DatetimeKeywords.CLOSING_PARENTHESES.value
+    if isinstance(value, datetime):
+        return (
+            DatetimeKeywords.LOCALDATETIME.value
+            + "'"
+            + value.isoformat()
+            + "'"
+            + DatetimeKeywords.CLOSING_PARENTHESES.value
+        )
 
-    if isinstance(value_type, date):
-        return DatetimeKeywords.DATE.value + value.isoformat() + DatetimeKeywords.CLOSING_PARENTHESES.value
+    if isinstance(value, date):
+        return DatetimeKeywords.DATE.value + "'" + value.isoformat() + "'" + DatetimeKeywords.CLOSING_PARENTHESES.value
 
     if value_type == str and value.lower() in ["true", "false", "null"]:
         return value
