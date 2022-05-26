@@ -92,7 +92,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 name = "attrs"
 version = "21.4.0"
 description = "Classes Without Boilerplate"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -104,7 +104,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "azure-core"
-version = "1.23.0"
+version = "1.23.1"
 description = "Microsoft Azure Core Library for Python"
 category = "main"
 optional = false
@@ -130,7 +130,7 @@ requests = ">=2.20.0"
 
 [[package]]
 name = "azure-identity"
-version = "1.8.0"
+version = "1.9.0"
 description = "Microsoft Azure Identity Library for Python"
 category = "main"
 optional = false
@@ -145,7 +145,7 @@ six = ">=1.12.0"
 
 [[package]]
 name = "azure-storage-blob"
-version = "12.10.0"
+version = "12.11.0"
 description = "Microsoft Azure Blob Storage Client Library for Python"
 category = "main"
 optional = false
@@ -268,7 +268,6 @@ ssh = ["bcrypt (>=3.1.5)"]
 test = ["pytest (>=6.2.0)", "pytest-cov", "pytest-subtests", "pytest-xdist", "pretend", "iso8601", "pytz", "hypothesis (>=1.11.4,!=3.79.2)"]
 
 [[package]]
-
 name = "dacite"
 version = "1.6.0"
 description = "Simple creation of data classes from dictionaries."
@@ -340,7 +339,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "fsspec"
-version = "2022.2.0"
+version = "2022.3.0"
 description = "File-system specification"
 category = "main"
 optional = false
@@ -367,6 +366,7 @@ s3 = ["s3fs"]
 sftp = ["paramiko"]
 smb = ["smbprotocol"]
 ssh = ["paramiko"]
+tqdm = ["tqdm"]
 
 [[package]]
 name = "identify"
@@ -536,7 +536,6 @@ signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
-
 name = "packaging"
 version = "21.3"
 description = "Core utilities for Python packages"
@@ -600,11 +599,11 @@ tests = ["pytest (>=5.4.1)", "pytest-cov (>=2.8.1)", "sphinx (>=3.0.3)", "pytest
 
 [[package]]
 name = "pre-commit"
-version = "2.17.0"
+version = "2.18.1"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 category = "dev"
 optional = false
-python-versions = ">=3.6.1"
+python-versions = ">=3.7"
 
 [package.dependencies]
 cfgv = ">=2.0.0"
@@ -711,14 +710,14 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyparsing"
-version = "3.0.7"
-description = "Python parsing module"
+version = "3.0.8"
+description = "pyparsing module - Classes and methods to define and execute parsing grammars"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.6.8"
 
 [package.extras]
-diagrams = ["jinja2", "railroad-diagrams"]
+diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
 name = "pytest"
@@ -773,7 +772,11 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "pytest-flake8"
+<<<<<<< HEAD
 version = "1.1.1"
+=======
+version = "1.1.0"
+>>>>>>> Added query modules from gqlalchemy
 description = "pytest plugin to check FLAKE8 requirements"
 category = "dev"
 optional = false
@@ -858,7 +861,7 @@ rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -909,7 +912,11 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "virtualenv"
+<<<<<<< HEAD
 version = "20.14.0"
+=======
+version = "20.14.1"
+>>>>>>> Added query modules from gqlalchemy
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
@@ -927,17 +934,22 @@ docs = ["proselint (>=0.10.2)", "sphinx (>=3)", "sphinx-argparse (>=0.2.5)", "sp
 testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", "pytest (>=4)", "pytest-env (>=0.6.2)", "pytest-freezegun (>=0.4.1)", "pytest-mock (>=2)", "pytest-randomly (>=1)", "pytest-timeout (>=1)", "packaging (>=20.0)"]
 
 [[package]]
+name = "websocket-client"
+version = "1.3.2"
+description = "WebSocket client for Python with low level API options"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+docs = ["Sphinx (>=3.4)", "sphinx-rtd-theme (>=0.5)"]
+optional = ["python-socks", "wsaccel"]
+test = ["websockets"]
+
+[[package]]
 name = "yarl"
 version = "1.7.2"
 description = "Yet another URL library"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
-name = "websocket-client"
-version = "1.2.3"
-description = "WebSocket client for Python with low level API options"
 category = "main"
 optional = false
 python-versions = ">=3.6"
@@ -947,27 +959,22 @@ idna = ">=2.0"
 multidict = ">=4.0"
 typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 
-[package.extras]
-docs = ["Sphinx (>=3.4)", "sphinx-rtd-theme (>=0.5)"]
-optional = ["python-socks", "wsaccel"]
-test = ["websockets"]
-
 [[package]]
 name = "zipp"
-version = "3.7.0"
+version = "3.8.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
-testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
+docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "a0f72e4b4eb5755212b6ee6cfdf36f58c69020d10d7b1d1ac0a7d172f152f6d2"
+content-hash = "53a72b5adbee338b41951128a0aca4cc314e86c5f64d3185db9d96538d8cba1c"
 
 [metadata.files]
 adal = [
@@ -1072,20 +1079,20 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 azure-core = [
-    {file = "azure-core-1.23.0.zip", hash = "sha256:a56a6f720d0948d3f3e4a25a5fe46df2f1b7f865c358d74e2ce47dbb49262608"},
-    {file = "azure_core-1.23.0-py3-none-any.whl", hash = "sha256:23c1389a115c328878c4eface3ca3899c2468313ea6f883f2347d6924cd887b2"},
+    {file = "azure-core-1.23.1.zip", hash = "sha256:28a01dfbaf0a6812c4e2a82d1642ea30956a9739f25bc77c9b23b91f4ea68f0f"},
+    {file = "azure_core-1.23.1-py3-none-any.whl", hash = "sha256:c3e8a9a3ec9d89f59b5d5b2f19d19a30d76a5b5c0cee3788ecad3cb72b9bd028"},
 ]
 azure-datalake-store = [
     {file = "azure-datalake-store-0.0.52.tar.gz", hash = "sha256:4198ddb32614d16d4502b43d5c9739f81432b7e0e4d75d30e05149fe6007fea2"},
     {file = "azure_datalake_store-0.0.52-py2.py3-none-any.whl", hash = "sha256:aaed72b9c856824aeab554f4dbe0ef2c6d0ff36700bdd8b93d8298793117c48e"},
 ]
 azure-identity = [
-    {file = "azure-identity-1.8.0.zip", hash = "sha256:020ff0e47157852e4aac8a3adb06841827147f27a94cbe74a904425d8e62d93c"},
-    {file = "azure_identity-1.8.0-py3-none-any.whl", hash = "sha256:8d87aff09b8dabe3c99bb934798dcdeb2f2d49614ecc4f0425cc888faafd64ae"},
+    {file = "azure-identity-1.9.0.zip", hash = "sha256:0854d19da4c5644641814dc4f951c42e01400b5792f09dfb6bffa726d8b9160d"},
+    {file = "azure_identity-1.9.0-py3-none-any.whl", hash = "sha256:2e75bbf0a72309b8f95f6769214b90bf271f3662d28d962bcddf4d2406157b51"},
 ]
 azure-storage-blob = [
-    {file = "azure-storage-blob-12.10.0.zip", hash = "sha256:3c7dc2c93e7ff2a731acd66a36a1f0a6266072b4154deba4894dab891285ea3a"},
-    {file = "azure_storage_blob-12.10.0-py3-none-any.whl", hash = "sha256:a70995c4f9310eb704594f30505d1499286b4caac5543a2ebfe84431c4a38b0b"},
+    {file = "azure-storage-blob-12.11.0.zip", hash = "sha256:49535b3190bb69d0d9ff7a383246b14da4d2b1bdff60cae5f9173920c67ca7ee"},
+    {file = "azure_storage_blob-12.11.0-py3-none-any.whl", hash = "sha256:f3dfa605aefb453e7489328b76811a937a411761d7a1613a58c3975c556ec778"},
 ]
 black = [
     {file = "black-22.3.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2497f9c2386572e28921fa8bec7be3e51de6801f7459dffd6e62492531c47e09"},
@@ -1331,8 +1338,8 @@ frozenlist = [
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
 ]
 fsspec = [
-    {file = "fsspec-2022.2.0-py3-none-any.whl", hash = "sha256:eb9c9d9aee49d23028deefffe53e87c55d3515512c63f57e893710301001449a"},
-    {file = "fsspec-2022.2.0.tar.gz", hash = "sha256:20322c659538501f52f6caa73b08b2ff570b7e8ea30a86559721d090e473ad5c"},
+    {file = "fsspec-2022.3.0-py3-none-any.whl", hash = "sha256:a53491b003210fce6911dd8f2d37e20c41a27ce52a655eef11b885d1578ed4cf"},
+    {file = "fsspec-2022.3.0.tar.gz", hash = "sha256:fd582cc4aa0db5968bad9317cae513450eddd08b2193c4428d9349265a995523"},
 ]
 identify = [
     {file = "identify-2.4.12-py2.py3-none-any.whl", hash = "sha256:5f06b14366bd1facb88b00540a1de05b69b310cbc2654db3c7e07fa3a4339323"},
@@ -1498,8 +1505,8 @@ portalocker = [
     {file = "portalocker-2.4.0.tar.gz", hash = "sha256:a648ad761b8ea27370cb5915350122cd807b820d2193ed5c9cc28f163df637f4"},
 ]
 pre-commit = [
-    {file = "pre_commit-2.17.0-py2.py3-none-any.whl", hash = "sha256:725fa7459782d7bec5ead072810e47351de01709be838c2ce1726b9591dad616"},
-    {file = "pre_commit-2.17.0.tar.gz", hash = "sha256:c1a8040ff15ad3d648c70cc3e55b93e4d2d5b687320955505587fd79bbaed06a"},
+    {file = "pre_commit-2.18.1-py2.py3-none-any.whl", hash = "sha256:02226e69564ebca1a070bd1f046af866aa1c318dbc430027c50ab832ed2b73f2"},
+    {file = "pre_commit-2.18.1.tar.gz", hash = "sha256:5d445ee1fa8738d506881c5d84f83c62bb5be6b2838e32207433647e8e5ebe10"},
 ]
 psutil = [
     {file = "psutil-5.9.0-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:55ce319452e3d139e25d6c3f85a1acf12d1607ddedea5e35fb47a552c051161b"},
@@ -1639,8 +1646,8 @@ pymgclient = [
     {file = "pymgclient-1.2.0.tar.gz", hash = "sha256:50143bd138880dd32218d17dada37ade12f7a7b35d7903605e76a1149fd8bb3e"},
 ]
 pyparsing = [
-    {file = "pyparsing-3.0.7-py3-none-any.whl", hash = "sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"},
-    {file = "pyparsing-3.0.7.tar.gz", hash = "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea"},
+    {file = "pyparsing-3.0.8-py3-none-any.whl", hash = "sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06"},
+    {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
 ]
 pytest = [
     {file = "pytest-7.1.1-py3-none-any.whl", hash = "sha256:92f723789a8fdd7180b6b06483874feca4c48a5c76968e03bb3e7f806a1869ea"},
@@ -1654,8 +1661,13 @@ pytest-cov = [
     {file = "pytest_cov-2.12.1-py2.py3-none-any.whl", hash = "sha256:261bb9e47e65bd099c89c3edf92972865210c36813f80ede5277dceb77a4a62a"},
 ]
 pytest-flake8 = [
+<<<<<<< HEAD
     {file = "pytest-flake8-1.1.1.tar.gz", hash = "sha256:ba4f243de3cb4c2486ed9e70752c80dd4b636f7ccb27d4eba763c35ed0cd316e"},
     {file = "pytest_flake8-1.1.1-py2.py3-none-any.whl", hash = "sha256:e0661a786f8cbf976c185f706fdaf5d6df0b1667c3bcff8e823ba263618627e7"},
+=======
+    {file = "pytest-flake8-1.1.0.tar.gz", hash = "sha256:358d449ca06b80dbadcb43506cd3e38685d273b4968ac825da871bd4cc436202"},
+    {file = "pytest_flake8-1.1.0-py2.py3-none-any.whl", hash = "sha256:f1b19dad0b9f0aa651d391c9527ebc20ac1a0f847aa78581094c747462bfa182"},
+>>>>>>> Added query modules from gqlalchemy
 ]
 pytest-timeout = [
     {file = "pytest-timeout-1.4.2.tar.gz", hash = "sha256:20b3113cf6e4e80ce2d403b6fb56e9e1b871b510259206d40ff8d609f48bda76"},
@@ -1769,8 +1781,17 @@ urllib3 = [
     {file = "urllib3-1.26.9.tar.gz", hash = "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"},
 ]
 virtualenv = [
+<<<<<<< HEAD
     {file = "virtualenv-20.14.0-py2.py3-none-any.whl", hash = "sha256:1e8588f35e8b42c6ec6841a13c5e88239de1e6e4e4cedfd3916b306dc826ec66"},
     {file = "virtualenv-20.14.0.tar.gz", hash = "sha256:8e5b402037287126e81ccde9432b95a8be5b19d36584f64957060a3488c11ca8"},
+=======
+    {file = "virtualenv-20.14.1-py2.py3-none-any.whl", hash = "sha256:e617f16e25b42eb4f6e74096b9c9e37713cf10bf30168fb4a739f3fa8f898a3a"},
+    {file = "virtualenv-20.14.1.tar.gz", hash = "sha256:ef589a79795589aada0c1c5b319486797c03b67ac3984c48c669c0e4f50df3a5"},
+]
+websocket-client = [
+    {file = "websocket-client-1.3.2.tar.gz", hash = "sha256:50b21db0058f7a953d67cc0445be4b948d7fc196ecbeb8083d68d94628e4abf6"},
+    {file = "websocket_client-1.3.2-py3-none-any.whl", hash = "sha256:722b171be00f2b90e1d4fb2f2b53146a536ca38db1da8ff49c972a4e1365d0ef"},
+>>>>>>> Added query modules from gqlalchemy
 ]
 yarl = [
     {file = "yarl-1.7.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:f2a8508f7350512434e41065684076f640ecce176d262a7d54f0da41d99c5a95"},
@@ -1846,11 +1867,7 @@ yarl = [
     {file = "yarl-1.7.2-cp39-cp39-win_amd64.whl", hash = "sha256:797c2c412b04403d2da075fb93c123df35239cd7b4cc4e0cd9e5839b73f52c58"},
     {file = "yarl-1.7.2.tar.gz", hash = "sha256:45399b46d60c253327a460e99856752009fcee5f5d3c80b2f7c0cae1c38d56dd"},
 ]
-websocket-client = [
-    {file = "websocket-client-1.2.3.tar.gz", hash = "sha256:1315816c0acc508997eb3ae03b9d3ff619c9d12d544c9a9b553704b1cc4f6af5"},
-    {file = "websocket_client-1.2.3-py3-none-any.whl", hash = "sha256:2eed4cc58e4d65613ed6114af2f380f7910ff416fc8c46947f6e76b6815f56c0"},
-]
 zipp = [
-    {file = "zipp-3.7.0-py3-none-any.whl", hash = "sha256:b47250dd24f92b7dd6a0a8fc5244da14608f3ca90a5efcd37a3b1642fac9a375"},
-    {file = "zipp-3.7.0.tar.gz", hash = "sha256:9f50f446828eb9d45b267433fd3e9da8d801f614129124863f9c51ebceafb87d"},
+    {file = "zipp-3.8.0-py3-none-any.whl", hash = "sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099"},
+    {file = "zipp-3.8.0.tar.gz", hash = "sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad"},
 ]
