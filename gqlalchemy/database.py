@@ -14,55 +14,37 @@
 
 import os
 
-from typing import Any, Dict, Iterator, List, Optional, Union
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Iterator, List, Optional
 
-from ..connection import Connection, Neo4jConnection
-from ..exceptions import (
-    GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
-)
-from ..models import (
-    Neo4jConstraint,
-    Neo4jConstraintExists,
-    Neo4jConstraintUnique,
-    Neo4jIndex,
+from .connection import Connection
+from .graph_algorithms.query_modules import QueryModule
+from .exceptions import GQLAlchemyError
+from .models import (
+    Index,
+    Constraint,
     Node,
     Relationship,
 )
 
 
-__all__ = ("Neo4j",)
-
-NEO4J_HOST = os.getenv("NEO4J_HOST", "localhost")
-NEO4J_PORT = int(os.getenv("NEO4J_PORT", "7687"))
-NEO4J_USERNAME = os.getenv("NEO4J_USERNAME", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "test")
-NEO4J_ENCRYPTED = os.getenv("NEO4J_ENCRYPT", "false").lower() == "true"
-NEO4J_CLIENT_NAME = os.getenv("NEO4J_CLIENT_NAME", "neo4j")
+MG_HOST = os.getenv("MG_HOST", "127.0.0.1")
+MG_PORT = int(os.getenv("MG_PORT", "7687"))
+MG_USERNAME = os.getenv("MG_USERNAME", "")
+MG_PASSWORD = os.getenv("MG_PASSWORD", "")
+MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
+MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
 
 
-class Neo4jConstants:
-    CONSTRAINT_TYPE = "constraint type"
-    EXISTS = "exists"
-    LABEL = "labelsOrTypes"
-    PROPERTY = "property"
-    PROPERTIES = "properties"
-    UNIQUE = "unique"
-    LOOKUP = "LOOKUP"
-    TYPE = "type"
-    UNIQUE = "UNIQUE"
-    UNIQUENESS = "uniqueness"
-
-
-class Neo4j:
+class Database(ABC):
     def __init__(
         self,
-        host: str = NEO4J_HOST,
-        port: int = NEO4J_PORT,
-        username: str = NEO4J_USERNAME,
-        password: str = NEO4J_PASSWORD,
-        encrypted: bool = NEO4J_ENCRYPTED,
-        client_name: str = NEO4J_CLIENT_NAME,
+        host: str = MG_HOST,
+        port: int = MG_PORT,
+        username: str = MG_USERNAME,
+        password: str = MG_PASSWORD,
+        encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
     ):
         self._host = host
         self._port = port
@@ -82,47 +64,27 @@ class Neo4j:
         connection = connection or self._get_cached_connection()
         connection.execute(query)
 
-    def create_index(self, index: Neo4jIndex) -> None:
+    def create_index(self, index: Index) -> None:
         """Creates an index (label or label-property type) in the database"""
         query = f"CREATE INDEX ON {index.to_cypher()};"
         self.execute(query)
 
-    def drop_index(self, index: Neo4jIndex) -> None:
+    def drop_index(self, index: Index) -> None:
         """Drops an index (label or label-property type) in the database"""
         query = f"DROP INDEX ON {index.to_cypher()};"
         self.execute(query)
 
-    def get_indexes(self) -> List[Neo4jIndex]:
+    @abstractmethod
+    def get_indexes(self) -> List[Index]:
         """Returns a list of all database indexes (label and label-property types)"""
-        indexes = []
-        for result in self.execute_and_fetch("SHOW INDEX;"):
-            if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP:
-                indexes.append(
-                    Neo4jIndex(
-                        result[Neo4jConstants.LABEL][0],
-                        result[Neo4jConstants.PROPERTIES][0],
-                        result[Neo4jConstants.TYPE],
-                        result[Neo4jConstants.UNIQUENESS],
-                    )
-                )
-            else:
-                indexes.append(
-                    Neo4jIndex(
-                        result[Neo4jConstants.LABEL],
-                        result[Neo4jConstants.PROPERTIES],
-                        result[Neo4jConstants.TYPE],
-                        result[Neo4jConstants.UNIQUENESS],
-                    )
-                )
-        return indexes
+        pass
 
-    def ensure_indexes(self, indexes: List[Neo4jIndex]) -> None:
+    def ensure_indexes(self, indexes: List[Index]) -> None:
         """Ensures that database indexes match input indexes"""
         old_indexes = set(self.get_indexes())
         new_indexes = set(indexes)
         for obsolete_index in old_indexes.difference(new_indexes):
-            if obsolete_index.type != Neo4jConstants.LOOKUP and obsolete_index.uniqueness != Neo4jConstants.UNIQUE:
-                self.drop_index(obsolete_index)
+            self.drop_index(obsolete_index)
         for missing_index in new_indexes.difference(old_indexes):
             self.create_index(missing_index)
 
@@ -130,44 +92,38 @@ class Neo4j:
         """Drops all indexes in the database"""
         self.ensure_indexes(indexes=[])
 
-    def create_constraint(self, index: Neo4jConstraint) -> None:
+    def create_constraint(self, index: Constraint) -> None:
         """Creates a constraint (label or label-property type) in the database"""
         query = f"CREATE CONSTRAINT ON {index.to_cypher()};"
         self.execute(query)
 
-    def drop_constraint(self, index: Neo4jConstraint) -> None:
+    def drop_constraint(self, index: Constraint) -> None:
         """Drops a constraint (label or label-property type) in the database"""
         query = f"DROP CONSTRAINT ON {index.to_cypher()};"
         self.execute(query)
 
+    @abstractmethod
     def get_constraints(
         self,
-    ) -> List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]]:
+    ) -> List[Constraint]:
         """Returns a list of all database constraints (label and label-property types)"""
-        constraints: List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]] = []
-        for result in self.execute_and_fetch("SHOW CONSTRAINTS;"):
-            if result[Neo4jConstants.TYPE] == "UNIQUENESS":
-                constraints.append(
-                    Neo4jConstraintUnique(
-                        result[Neo4jConstants.LABEL][0],
-                        tuple(result[Neo4jConstants.PROPERTIES]),
-                    )
-                )
-        return constraints
+        pass
 
+    @abstractmethod
     def get_exists_constraints(
         self,
-    ) -> List[Neo4jConstraintExists]:
-        return [x for x in self.get_constraints() if isinstance(x, Neo4jConstraintExists)]
+    ) -> List[Constraint]:
+        pass
 
+    @abstractmethod
     def get_unique_constraints(
         self,
-    ) -> List[Neo4jConstraintUnique]:
-        return [x for x in self.get_constraints() if isinstance(x, Neo4jConstraintUnique)]
+    ) -> List[Constraint]:
+        pass
 
     def ensure_constraints(
         self,
-        constraints: List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]],
+        constraints: List[Constraint],
     ) -> None:
         """Ensures that database constraints match input constraints"""
         old_constraints = set(self.get_constraints())
@@ -188,20 +144,13 @@ class Neo4j:
 
         return self._cached_connection
 
+    @abstractmethod
     def new_connection(self) -> Connection:
-        """Creates new Neo4j connection"""
-        args = dict(
-            host=self._host,
-            port=self._port,
-            username=self._username,
-            password=self._password,
-            encrypted=self._encrypted,
-            client_name=self._client_name,
-        )
-        return Neo4jConnection(**args)
+        """Creates new Memgraph connection"""
+        pass
 
     def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
-        """Get's all nodes from Neo4j that have any of the unique fields
+        """Get's all nodes from Memgraph that have any of the unique fields
         set to the values in the `node` object.
         """
         return self.execute_and_fetch(
@@ -229,47 +178,31 @@ class Neo4j:
         return result[variable_name]
 
     def create_node(self, node: Node) -> Optional[Node]:
-        """Creates a node in Neo4j from the `node` object."""
+        """Creates a node in Memgraph from the `node` object."""
         results = self.execute_and_fetch(
             f"CREATE (node:{node._label}) {node._get_cypher_set_properties('node')} RETURN node;"
         )
         return self.get_variable_assume_one(results, "node")
 
+    @abstractmethod
     def save_node(self, node: Node) -> Node:
-        """Saves node to Neo4j.
+        """Saves node to Memgraph.
         If the node._id is not None it fetches the node with the same id from
-        Neo4j and updates it's fields.
+        Memgraph and updates it's fields.
         If the node has unique fields it fetches the nodes with the same unique
-        fields from Neo4j and updates it's fields.
+        fields from Memgraph and updates it's fields.
         Otherwise it creates a new node with the same properties.
         Null properties are ignored.
         """
-        result = None
-        if node._id is not None:
-            result = self.save_node_with_id(node)
-        elif node.has_unique_fields():
-            matching_nodes = list(self._get_nodes_with_unique_fields(node))
-            if len(matching_nodes) > 1:
-                raise GQLAlchemyUniquenessConstraintError(
-                    f"Uniqueness constraints match multiple nodes: {matching_nodes}"
-                )
-            elif len(matching_nodes) == 1:
-                node._id = matching_nodes[0]["node"]._id
-                result = self.save_node_with_id(node)
-            else:
-                result = self.create_node(node)
-        else:
-            result = self.create_node(node)
-
-        return result
+        pass
 
     def save_nodes(self, nodes: List[Node]) -> None:
-        """Saves a list of nodes to Neo4j."""
+        """Saves a list of nodes to Memgraph."""
         for i in range(len(nodes)):
             nodes[i]._id = self.save_node(nodes[i])._id
 
     def save_node_with_id(self, node: Node) -> Optional[Node]:
-        """Saves a node in Neo4j using the internal Neo4j id."""
+        """Saves a node in Memgraph using the internal Memgraph id."""
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label})"
             + f" WHERE id(node) = {node._id}"
@@ -279,61 +212,47 @@ class Neo4j:
 
         return self.get_variable_assume_one(results, "node")
 
+    @abstractmethod
     def load_node(self, node: Node) -> Optional[Node]:
-        """Loads a node from Neo4j.
-        If the node._id is not None it fetches the node from Neo4j with that
+        """Loads a node from Memgraph.
+        If the node._id is not None it fetches the node from Memgraph with that
         internal id.
-        If the node has unique fields it fetches the node from Neo4j with
+        If the node has unique fields it fetches the node from Memgraph with
         those unique fields set.
-        Otherwise it tries to find any node in Neo4j that has all properties
+        Otherwise it tries to find any node in Memgraph that has all properties
         set to exactly the same values.
         If no node is found or no properties are set it raises a GQLAlchemyError.
         """
-        if node._id is not None:
-            result = self.load_node_with_id(node)
-        elif node.has_unique_fields():
-            matching_node = self.get_variable_assume_one(
-                query_result=self._get_nodes_with_unique_fields(node), variable_name="node"
-            )
-            result = matching_node
-        else:
-            result = self.load_node_with_all_properties(node)
-
-        return result
+        pass
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
-        """Loads a node from Neo4j with all equal property values."""
+        """Loads a node from Memgraph with all equal property values."""
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label}) WHERE {node._get_cypher_fields_and_block('node')} RETURN node;"
         )
         return self.get_variable_assume_one(results, "node")
 
     def load_node_with_id(self, node: Node) -> Optional[Node]:
-        """Loads a node with the same internal Neo4j id."""
+        """Loads a node with the same internal Memgraph id."""
         results = self.execute_and_fetch(f"MATCH (node: {node._label}) WHERE id(node) = {node._id} RETURN node;")
 
         return self.get_variable_assume_one(results, "node")
 
+    @abstractmethod
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Returns a relationship loaded from Neo4j.
+        """Returns a relationship loaded from Memgraph.
         If the relationship._id is not None it fetches the relationship from
-        Neo4j that has the same internal id.
+        Memgraph that has the same internal id.
         Otherwise it returns the relationship whose relationship._start_node_id
         and relationship._end_node_id and all relationship properties that
-        are not None match the relationship in Neo4j.
-        If there is no relationship like that in Neo4j, or if there are
-        multiple relationships like that in Neo4j, throws GQLAlchemyError.
+        are not None match the relationship in Memgraph.
+        If there is no relationship like that in Memgraph, or if there are
+        multiple relationships like that in Memgraph, throws GQLAlchemyError.
         """
-        if relationship._id is not None:
-            result = self.load_relationship_with_id(relationship)
-        elif relationship._start_node_id is not None and relationship._end_node_id is not None:
-            result = self.load_relationship_with_start_node_id_and_end_node_id(relationship)
-        else:
-            raise GQLAlchemyError("Can't load a relationship without a start_node_id and end_node_id.")
-        return result
+        pass
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
-        """Loads a relationship from Neo4j using the internal id."""
+        """Loads a relationship from Memgraph using the internal id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -346,7 +265,7 @@ class Neo4j:
     def load_relationship_with_start_node_id_and_end_node_id(
         self, relationship: Relationship
     ) -> Optional[Relationship]:
-        """Loads a relationship from Neo4j using start node and end node id
+        """Loads a relationship from Memgraph using start node and end node id
         for which all properties of the relationship that are not None match.
         """
         and_block = relationship._get_cypher_fields_and_block("relationship")
@@ -361,30 +280,24 @@ class Neo4j:
         )
         return self.get_variable_assume_one(results, "relationship")
 
+    @abstractmethod
     def save_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Saves a relationship to Neo4j.
-        If relationship._id is not None it finds the relationship in Neo4j
+        """Saves a relationship to Memgraph.
+        If relationship._id is not None it finds the relationship in Memgraph
         and updates it's properties with the values in `relationship`.
         If relationship._id is None, it creates a new relationship.
         If you want to set a relationship._id instead of creating a new
         relationship, use `load_relationship` first.
         """
-        if relationship._id is not None:
-            result = self.save_relationship_with_id(relationship)
-        elif relationship._start_node_id is not None and relationship._end_node_id is not None:
-            result = self.create_relationship(relationship)
-        else:
-            raise GQLAlchemyError("Can't create a relationship without start_node_id and end_node_id.")
-
-        return result
+        pass
 
     def save_relationships(self, relationships: List[Relationship]) -> None:
-        """Saves a list of relationships to Neo4j."""
+        """Saves a list of relationships to Memgraph."""
         for i in range(len(relationships)):
             relationships[i]._id = self.save_relationship(relationships[i])._id
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
-        """Saves a relationship in Neo4j using the relationship._id."""
+        """Saves a relationship in Memgraph using the relationship._id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -397,7 +310,7 @@ class Neo4j:
         return self.get_variable_assume_one(results, "relationship")
 
     def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Creates a new relationship in Neo4j."""
+        """Creates a new relationship in Memgraph."""
         results = self.execute_and_fetch(
             "MATCH (start_node), (end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -408,3 +321,25 @@ class Neo4j:
         )
 
         return self.get_variable_assume_one(results, "relationship")
+
+    def get_procedures(self, starts_with: Optional[str] = None, update: bool = False) -> List["QueryModule"]:
+        """Return query procedures.
+
+        Maintains a list of query modules in the Memgraph object. If starts_with
+        is defined then return those modules that start with starts_with string.
+
+        Args:
+            starts_with: Return those modules that start with this string.
+            (Optional)
+            update: Whether to update the list of modules in
+            self.query_modules. (Optional)
+        """
+        if not hasattr(self, "query_modules") or update:
+            results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
+            self.query_modules = [QueryModule(**module_dict) for module_dict in results]
+
+        return (
+            self.query_modules
+            if starts_with is None
+            else [q for q in self.query_modules if q.name.startswith(starts_with)]
+        )
