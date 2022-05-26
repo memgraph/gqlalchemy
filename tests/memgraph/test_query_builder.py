@@ -44,6 +44,7 @@ from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builder import SetOperator, Order, _ResultPartialQuery
+from gqlalchemy.utilities import PropertyVariable
 
 
 def test_invalid_match_chain_throws_exception():
@@ -1856,5 +1857,40 @@ def test_wShortest_filter_label():
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_property_variable():
+    query = (
+        QueryBuilder()
+        .with_({"[1,2,3]": "list"})
+        .unwind("list", "element")
+        .create()
+        .node(num=PropertyVariable(name="element"))
+    )
+
+    expected_query = " WITH [1,2,3] AS list UNWIND list AS element CREATE ( {num: element})"
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_property_variable_edge():
+    query = (
+        QueryBuilder()
+        .with_({"15": "number"})
+        .create()
+        .node(variable="n")
+        .to(relationship_type="REL", num=PropertyVariable(name="number"))
+        .node(variable="m")
+    )
+
+    expected_query = " WITH 15 AS number CREATE (n)-[:REL{num: number}]->(m)"
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query.execute()
 
     mock.assert_called_with(expected_query)
