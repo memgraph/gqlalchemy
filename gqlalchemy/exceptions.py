@@ -138,6 +138,22 @@ class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
         self.message = EXTRA_KEYWORD_ARGUMENTS.format(clause=clause)
 
 
+class GQLAlchemyDatabaseError(GQLAlchemyError):
+    def __init__(self, message):
+        super().__init__()
+        self.message = message
+
+
+def exception_handler(func):
+    def inner_function(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise GQLAlchemyDatabaseError(e)
+
+    return inner_function
+
+
 class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
     def __init__(self):
         super().__init__(clause=QueryClause.WHERE)
