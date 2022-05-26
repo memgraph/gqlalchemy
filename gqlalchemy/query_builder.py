@@ -495,7 +495,7 @@ class ForeachPartialQuery(PartialQuery):
 
     @property
     def update_clauses(self) -> str:
-        return "" if self._update_clauses is not None else self._update_clauses
+        return "" if self._update_clauses is None else self._update_clauses
 
     def construct_query(self) -> str:
         """Creates a FOREACH statement Cypher partial query."""
