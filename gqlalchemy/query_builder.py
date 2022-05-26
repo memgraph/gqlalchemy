@@ -1138,7 +1138,7 @@ class DeclarativeBase(ABC):
         Args:
             variable: variable name that stores each element
             expression: Any expression that results to a list
-            update_clauses: One or more cypher update clauses:
+            update_clauses: One or more Cypher update clauses:
                 SET, REMOVE, CREATE, MERGE, DELETE, FOREACH
 
         Returns:
