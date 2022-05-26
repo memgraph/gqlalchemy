@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyInstantiationError,
     GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyExtraKeywordArgumentsInWhere,
+    GQLAlchemyResultQueryTypeError,
+    GQLAlchemyTooLargeTupleInResultQuery,
 )
 import pytest
 from gqlalchemy import (
@@ -38,7 +42,7 @@ from gqlalchemy.memgraph import Memgraph, BreadthFirstSearch, DepthFirstSearch, 
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
-from gqlalchemy.query_builder import SetOperator, Order
+from gqlalchemy.query_builder import SetOperator, Order, _ResultPartialQuery
 
 
 def test_invalid_match_chain_throws_exception():
@@ -1014,6 +1018,72 @@ def test_return_alias_dict(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_return_alias_set(memgraph):
+    test_set = set()
+    test_set.add(("L1", "first"))
+    test_set.add("L2")
+
+    query_builder = QueryBuilder().return_(test_set).construct_query()
+    expected_query = [" RETURN L1 AS first, L2 ", " RETURN L2, L1 AS first "]
+
+    assert query_builder in expected_query
+
+
+def test_return_alias_set_int(memgraph):
+    test_set = set()
+    test_set.add(("L1", 1))
+    test_set.add("L2")
+
+    with pytest.raises(GQLAlchemyResultQueryTypeError):
+        QueryBuilder().return_(test_set).construct_query()
+
+
+def test_return_alias_set_datetime(memgraph):
+    test_set = set()
+    test_set.add(("L1", "first"))
+    test_set.add(datetime.date)
+
+    with pytest.raises(GQLAlchemyResultQueryTypeError):
+        QueryBuilder().return_(test_set).construct_query()
+
+
+def test_return_alias_set_too_large_tuple(memgraph):
+    test = ("L1", "first", "L2")
+
+    with pytest.raises(GQLAlchemyTooLargeTupleInResultQuery):
+        QueryBuilder().return_(test).construct_query()
+
+
+def test_return_alias_set_multiple(memgraph):
+    test_set = set()
+    test_set.add(("L1", "first"))
+    test_set.add(("L2", "second"))
+
+    query_builder = QueryBuilder().return_(test_set).construct_query()
+    expected_query = [" RETURN L1 AS first, L2 AS second ", " RETURN L2 AS second, L1 AS first "]
+
+    assert query_builder in expected_query
+
+
+def test_return_alias_set_multiple_2(memgraph):
+    test_set = set()
+    test_set.add(("L1", "first"))
+    test_set.add(("L2", "second"))
+    test_set.add("L3")
+
+    query_builder = QueryBuilder().return_(test_set).construct_query()
+    expected_query = [
+        " RETURN L1 AS first, L2 AS second, L3 ",
+        " RETURN L2 AS second, L3, L1 AS first ",
+        " RETURN L3, L2 AS second, L1 AS first ",
+        " RETURN L1 AS first, L3, L2 AS second ",
+        " RETURN L3, L1 AS first, L2 AS second ",
+        " RETURN L2 AS second, L1 AS first, L3 ",
+    ]
+
+    assert query_builder in expected_query
+
+
 def test_return_multiple_alias(memgraph):
     query_builder = (
         QueryBuilder()
@@ -1029,6 +1099,11 @@ def test_return_multiple_alias(memgraph):
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
+
+
+def test_return_alias_instantiate(memgraph):
+    with pytest.raises(GQLAlchemyInstantiationError):
+        _ResultPartialQuery(keyword="RETURN")
 
 
 def test_return_multiple_alias_dict(memgraph):

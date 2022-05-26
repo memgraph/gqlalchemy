@@ -60,12 +60,17 @@ Can't create {clause} query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
 
-MISSING_ALIAS_IN_RETURN = """
-The second argument of the tuple must be a string representing an alias name.
+RESULT_QUERY_TYPE_ERROR = """
+Can't create {clause} query:
+The argument provided is of wrong type. Please provide str, tuple[str, str], list[Union[tuple[str, str], str]] or set[Union[tuple[str, str], str]].
 """
 
-RETURN_TYPE_ERROR = """
-TypeError: The argument provided is of wrong type. Please provide str, tuple[str, str] or list[Union[tuple[str, str], str]].
+INSTANTIATION_ERROR = """
+{class_name} class shouldn't be instantiatied!
+"""
+
+TOO_LARGE_TUPLE_IN_RESULT_QUERY = """
+Tuple argument in {clause} clause only has two arguments - variable name and alias.
 """
 
 
@@ -152,11 +157,16 @@ class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
         super().__init__(clause=QueryClause.SET)
 
 
-class GQLAlchemyMissingAliasInReturn(GQLAlchemyError):
-    def __init__(self):
-        self.message = MISSING_ALIAS_IN_RETURN
+class GQLAlchemyTooLargeTupleInResultQuery(GQLAlchemyError):
+    def __init__(self, clause) -> None:
+        self.message = TOO_LARGE_TUPLE_IN_RESULT_QUERY.format(clause=clause)
 
 
-class GQLAlchemyReturnTypeError(TypeError):
-    def __init__(self):
-        self.message = RETURN_TYPE_ERROR
+class GQLAlchemyResultQueryTypeError(TypeError):
+    def __init__(self, clause):
+        self.message = RESULT_QUERY_TYPE_ERROR.format(clause=clause)
+
+
+class GQLAlchemyInstantiationError(GQLAlchemyError):
+    def __init__(self, class_name) -> None:
+        self.message = INSTANTIATION_ERROR.format(class_name=class_name)

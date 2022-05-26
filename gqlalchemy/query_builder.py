@@ -16,20 +16,21 @@ import re
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union, Set
 
 from .memgraph import Connection, Memgraph, IntegratedAlgorithm
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 from .exceptions import (
     GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyInstantiationError,
     GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyExtraKeywordArgumentsInWhere,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
-    GQLAlchemyMissingAliasInReturn,
+    GQLAlchemyResultQueryTypeError,
+    GQLAlchemyTooLargeTupleInResultQuery,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
-    GQLAlchemyReturnTypeError,
 )
 
 
@@ -325,22 +326,37 @@ def dict_to_alias_statement(alias_dict: Dict[str, str]) -> str:
     )
 
 
-class ResultPartialQuery(PartialQuery):
+class _ResultPartialQuery(PartialQuery):
     def __init__(
         self,
         keyword: Result,
-        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ):
+        if type(self) is _ResultPartialQuery:
+            raise GQLAlchemyInstantiationError(class_name=type(self).__name__)
+
         super().__init__(type=keyword.name)
 
         if results is None:
             self.query = None
-        elif isinstance(results, list):
-            self.query = self._return_read_list(results)
+        elif isinstance(results, str):
+            self.query = results
         elif isinstance(results, dict):
             self.query = self._return_read_dict(results)
+        elif isinstance(results, tuple):
+            self.query = self._return_read_tuple(results)
+        elif isinstance(results, (list, set)):
+            self.query = self._return_read_iterable(results)
         else:
-            self.query = self._return_read_item(results)
+            raise GQLAlchemyResultQueryTypeError(clause=self.type)
 
     def construct_query(self) -> str:
         """Creates a RETURN/YIELD/WITH statement Cypher partial query."""
@@ -349,20 +365,25 @@ class ResultPartialQuery(PartialQuery):
 
         return f" {self.type} {self.query} "
 
-    def _return_read_item(self, item: Union[str, Tuple[str, str]]) -> str:
+    def _return_read_iterable(
+        self, iterable: Union[List[Union[str, Tuple[str, str]]], Set[Union[str, Tuple[str, str]]]]
+    ):
+        return ", ".join(self._return_read_item(item=item) for item in iterable)
+
+    def _return_read_item(self, item: Union[str, Tuple]) -> str:
         if isinstance(item, str):
             return item
         elif isinstance(item, tuple):
             return f"{self._return_read_tuple(item)}"
         else:
-            raise GQLAlchemyReturnTypeError
-
-    def _return_read_list(self, results: Iterable[Union[str, Tuple[str, str]]]):
-        return ", ".join(self._return_read_item(item=item) for item in results)
+            raise GQLAlchemyResultQueryTypeError(clause=self.type)
 
     def _return_read_tuple(self, tuple: Tuple[str, str]) -> str:
-        if not isinstance(tuple[1], str):
-            raise GQLAlchemyMissingAliasInReturn
+        if len(tuple) > 2:
+            raise GQLAlchemyTooLargeTupleInResultQuery(clause=self.type)
+
+        if not isinstance(tuple[0], str) or not isinstance(tuple[1], str):
+            raise GQLAlchemyResultQueryTypeError(clause=self.type)
 
         if tuple[0] == tuple[1] or tuple[1] == "":
             return f"{tuple[0]}"
@@ -373,10 +394,18 @@ class ResultPartialQuery(PartialQuery):
         return f"{dict_to_alias_statement(results)}"
 
 
-class WithPartialQuery(ResultPartialQuery):
+class WithPartialQuery(_ResultPartialQuery):
     def __init__(
         self,
-        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ):
         super().__init__(keyword=Result.WITH, results=results)
 
@@ -423,24 +452,40 @@ class RemovePartialQuery(PartialQuery):
         return f" REMOVE {', '.join(self.items)} "
 
 
-class YieldPartialQuery(ResultPartialQuery):
+class YieldPartialQuery(_ResultPartialQuery):
     def __init__(
         self,
-        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ):
         super().__init__(keyword=Result.YIELD, results=results)
 
 
-class ReturnPartialQuery(ResultPartialQuery):
+class ReturnPartialQuery(_ResultPartialQuery):
     def __init__(
         self,
-        results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]], Dict[str, str]]] = None,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ):
         super().__init__(keyword=Result.RETURN, results=results)
 
 
 class OrderByPartialQuery(PartialQuery):
-    def __init__(self, properties: Union[str, Tuple[str, Order], Iterable[Union[str, Tuple[str, Order]]]]):
+    def __init__(self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]):
         super().__init__(DeclarativeBaseTypes.ORDER_BY)
 
         self.query = (
