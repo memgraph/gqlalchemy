@@ -373,10 +373,11 @@ class _ResultPartialQuery(PartialQuery):
     def _return_read_item(self, item: Union[str, Tuple]) -> str:
         if isinstance(item, str):
             return item
-        elif isinstance(item, tuple):
+
+        if isinstance(item, tuple):
             return f"{self._return_read_tuple(item)}"
-        else:
-            raise GQLAlchemyResultQueryTypeError(clause=self.type)
+
+        raise GQLAlchemyResultQueryTypeError(clause=self.type)
 
     def _return_read_tuple(self, tuple: Tuple[str, str]) -> str:
         if len(tuple) > 2:
