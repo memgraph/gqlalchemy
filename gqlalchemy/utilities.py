@@ -44,6 +44,9 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     value_type = type(value)
 
+    if value_type == PropertyVariable:
+        return str(value)
+
     if value_type == str and value.lower() == "null":
         return value
 
@@ -95,6 +98,18 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
             return f":{labels}"
         return f":{':'.join(labels)}"
     return ""
+
+
+class PropertyVariable:
+    """Class for support of using a variable as a node or edge property. Used
+    to avoid the quotes given to property values.
+    """
+
+    def __init__(self, value: str) -> None:
+        self._value = value
+
+    def __str__(self) -> str:
+        return self._value
 
 
 class NanException(Exception):
