@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
 Define your property as:
@@ -55,6 +54,14 @@ Can't create WHERE query without providing either 'literal' or 'expression' keyw
 EXTRA_KEYWORD_ARGUMENTS_IN_WHERE = """
 Can't create WHERE query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments."
+"""
+
+CONNECTION_DATABASE_ERROR = """
+Couldn't connect to host: Connection refused.
+"""
+
+EXECUTE_DATABASE_ERROR = """
+mismatched input {query} expecting CHECK, CLEAR, DENY, DROP, DUMP, FREE, GRANT, LOAD, LOCK, REGISTER, REVOKE, START, STOP, UNLOCK, CALL, CREATE, DELETE, DETACH, EXPLAIN, MATCH, MERGE, OPTIONAL, PROFILE, REMOVE, RETURN, SET, SHOW, UNWIND, WITH
 """
 
 
@@ -103,7 +110,7 @@ class GQLAlchemyMissingOrder(GQLAlchemyError):
         self.message = MISSING_ORDER
 
 
-class GQLAlchemyOrderByTypeError(TypeError):
+class GQLAlchemyOrderByTypeError(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = ORDER_BY_TYPE_ERROR
@@ -119,3 +126,19 @@ class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = EXTRA_KEYWORD_ARGUMENTS_IN_WHERE
+
+
+class GQLAlchemyDatabaseError(GQLAlchemyError):
+    def __init__(self, message):
+        super().__init__()
+        self.message = message
+
+
+def exception_handler(func):
+    def inner_function(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise GQLAlchemyDatabaseError(e)
+
+    return inner_function
