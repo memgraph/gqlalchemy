@@ -27,6 +27,9 @@ from .exceptions import (
     GQLAlchemyDatabaseMissingInNodeClassError,
 )
 
+# Suppress the warning GQLAlchemySubclassNotFoundWarning
+IGNORE_SUBCLASSNOTFOUNDWARNING = False
+
 
 class TriggerEventType:
     """An enum representing types of trigger events."""
@@ -283,7 +286,9 @@ class GraphObject(BaseModel):
 
         if sub is None:
             types = data.get("_type", data.get("_labels"))
-            warnings.warn(GQLAlchemySubclassNotFoundWarning(types, cls))
+            if not IGNORE_SUBCLASSNOTFOUNDWARNING:
+                warnings.warn(GQLAlchemySubclassNotFoundWarning(types, cls))
+
             sub = cls
 
         return sub(**data)
