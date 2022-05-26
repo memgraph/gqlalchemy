@@ -1704,3 +1704,22 @@ def test_variable_property():
         query.execute()
 
     mock.assert_called_with(expected_query)
+
+
+def test_variable_property_edge():
+    number_var = VariableProperty(value="number")
+    query = (
+        QueryBuilder()
+        .with_({"15": "number"})
+        .create()
+        .node(variable="n")
+        .to(relationship_type="REL", num=number_var)
+        .node(variable="m")
+    )
+
+    expected_query = " WITH 15 AS number CREATE (n)-[:REL{num: number}]->(m)"
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query.execute()
+
+    mock.assert_called_with(expected_query)
