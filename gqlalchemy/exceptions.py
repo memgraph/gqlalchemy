@@ -57,14 +57,6 @@ Can't create {clause} query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
 
-CONNECTION_DATABASE_ERROR = """
-Couldn't connect to host: Connection refused.
-"""
-
-EXECUTE_DATABASE_ERROR = """
-mismatched input {query} expecting CHECK, CLEAR, DENY, DROP, DUMP, FREE, GRANT, LOAD, LOCK, REGISTER, REVOKE, START, STOP, UNLOCK, CALL, CREATE, DELETE, DETACH, EXPLAIN, MATCH, MERGE, OPTIONAL, PROFILE, REMOVE, RETURN, SET, SHOW, UNWIND, WITH
-"""
-
 
 class QueryClause(Enum):
     WHERE = "WHERE"
