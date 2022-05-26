@@ -2,7 +2,7 @@ from abc import ABCMeta
 from gqlalchemy.query_builder import CallPartialQuery, DeclarativeBase, PartialQuery, QueryBuilder
 from gqlalchemy.memgraph import Connection, Memgraph
 
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class MemgraphQueryBuilder(QueryBuilder):
@@ -346,3 +346,391 @@ class MemgraphQueryBuilder(QueryBuilder):
 
     def wcc_get_components(self, vertices: List[Any], edges: List[Any]) -> DeclarativeBase:
         return self.call("wcc.get_components", (vertices, edges))
+
+
+class MageQueryBuilder(MemgraphQueryBuilder):
+    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+
+    def betweenness_centrality_get(
+        self, directed: bool = True, normalized: bool = True, threads: int = 8
+    ) -> DeclarativeBase:
+        return self.call("betweenness_centrality.get", (directed, normalized, threads))
+
+    def betweenness_centrality_online_get(self, normalize: bool = True) -> DeclarativeBase:
+        return self.call("betweenness_centrality_online.get", (normalize))
+
+    def betweenness_centrality_online_reset(self) -> DeclarativeBase:
+        return self.call("betweenness_centrality_online.reset")
+
+    def betweenness_centrality_online_set(self, normalize: bool = True, threads: int = 8) -> DeclarativeBase:
+        return self.call("betweenness_centrality_online.set", (normalize, threads))
+
+    def betweenness_centrality_online_update(
+        self,
+        created_vertices: List[Any] = [],
+        created_edges: List[Any] = [],
+        deleted_vertices: List[Any] = [],
+        deleted_edges: List[Any] = [],
+        normalize: bool = True,
+        threads: int = 8,
+    ) -> DeclarativeBase:
+        return self.call(
+            "betweenness_centrality_online.update",
+            (created_vertices, created_edges, deleted_vertices, deleted_edges, normalize, threads),
+        )
+
+    def biconnected_components_get(self) -> DeclarativeBase:
+        return self.call("biconnected_components.get")
+
+    def bipartite_matching_max(self) -> DeclarativeBase:
+        return self.call("bipartite_matching.max")
+
+    def bridges_get(self) -> DeclarativeBase:
+        return self.call("bridges.get")
+
+    def community_detection_get(
+        self,
+        weight: str = "weight",
+        coloring: bool = False,
+        min_graph_shrink: int = 100000,
+        community_alg_threshold: float = 1e-06,
+        coloring_alg_threshold: float = 0.01,
+    ) -> DeclarativeBase:
+        return self.call(
+            "community_detection.get",
+            (weight, coloring, min_graph_shrink, community_alg_threshold, coloring_alg_threshold),
+        )
+
+    def community_detection_online_get(self) -> DeclarativeBase:
+        return self.call("community_detection_online.get")
+
+    def community_detection_online_reset(self) -> DeclarativeBase:
+        return self.call("community_detection_online.reset")
+
+    def community_detection_online_set(
+        self,
+        directed: bool = False,
+        weighted: bool = False,
+        similarity_threshold: float = 0.7,
+        exponent: float = 4,
+        min_value: float = 0.1,
+        weight_property: str = "weight",
+        w_selfloop: float = 1.0,
+        max_iterations: int = 100,
+        max_updates: int = 5,
+    ) -> DeclarativeBase:
+        return self.call(
+            "community_detection_online.set",
+            (
+                directed,
+                weighted,
+                similarity_threshold,
+                exponent,
+                min_value,
+                weight_property,
+                w_selfloop,
+                max_iterations,
+                max_updates,
+            ),
+        )
+
+    def community_detection_online_update(
+        self,
+        createdVertices: List[Any] = [],
+        createdEdges: List[Any] = [],
+        updatedVertices: List[Any] = [],
+        updatedEdges: List[Any] = [],
+        deletedVertices: List[Any] = [],
+        deletedEdges: List[Any] = [],
+    ) -> DeclarativeBase:
+        return self.call(
+            "community_detection_online.update",
+            (createdVertices, createdEdges, updatedVertices, updatedEdges, deletedVertices, deletedEdges),
+        )
+
+    def cycles_get(self) -> DeclarativeBase:
+        return self.call("cycles.get")
+
+    def distance_calculator_multiple(
+        self, start_points: List[Any], end_points: List[Any], metrics: str = "m"
+    ) -> DeclarativeBase:
+        return self.call("distance_calculator.multiple", (start_points, end_points, metrics))
+
+    def distance_calculator_single(
+        self, start: Optional[Any], end: Optional[Any], metrics: str = "m"
+    ) -> DeclarativeBase:
+        return self.call("distance_calculator.single", (start, end, metrics))
+
+    def export_util_json(self, path: str) -> DeclarativeBase:
+        return self.call("export_util.json", (path))
+
+    def graph_coloring_color_graph(
+        self, parameters: Dict[str, Union[str, int]], edge_property: str = "weight"
+    ) -> DeclarativeBase:
+        return self.call("graph_coloring.color_graph", (parameters, edge_property))
+
+    def graph_coloring_color_subgraph(
+        self,
+        vertices: List[Any],
+        edges: List[Any],
+        parameters: Dict[str, Union[str, int]],
+        edge_property: str = "weight",
+    ) -> DeclarativeBase:
+        return self.call("graph_coloring.color_subgraph", (vertices, edges, parameters, edge_property))
+
+    def import_util_json(self, path: str) -> DeclarativeBase:
+        return self.call("import_util.json", (path))
+
+    def json_util_load_from_path(self, path: str) -> DeclarativeBase:
+        return self.call("json_util.load_from_path", (path))
+
+    def json_util_load_from_url(self, url: str) -> DeclarativeBase:
+        return self.call("json_util.load_from_url", (url))
+
+    def katz_centrality_get(self, alpha: float = 0.2, epsilon: float = 0.01) -> DeclarativeBase:
+        return self.call("katz_centrality.get", (alpha, epsilon))
+
+    def katz_centrality_online_get(self) -> DeclarativeBase:
+        return self.call("katz_centrality_online.get")
+
+    def katz_centrality_online_reset(self) -> DeclarativeBase:
+        return self.call("katz_centrality_online.reset")
+
+    def katz_centrality_online_set(self, alpha: float = 0.2, epsilon: float = 0.01) -> DeclarativeBase:
+        return self.call("katz_centrality_online.set", (alpha, epsilon))
+
+    def katz_centrality_online_update(
+        self,
+        created_vertices: List[Any] = [],
+        created_edges: List[Any] = [],
+        deleted_vertices: List[Any] = [],
+        deleted_edges: List[Any] = [],
+    ) -> DeclarativeBase:
+        return self.call(
+            "katz_centrality_online.update", (created_vertices, created_edges, deleted_vertices, deleted_edges)
+        )
+
+    def max_flow_get_flow(self, start_v: Any, end_v: Any, edge_property: str = "weight") -> DeclarativeBase:
+        return self.call("max_flow.get_flow", (start_v, end_v, edge_property))
+
+    def max_flow_get_paths(self, start_v: Any, end_v: Any, edge_property: str = "weight") -> DeclarativeBase:
+        return self.call("max_flow.get_paths", (start_v, end_v, edge_property))
+
+    def node2vec_get_embeddings(
+        self,
+        is_directed: bool = False,
+        p: Optional[Any] = 2,
+        q: Optional[Any] = 0.5,
+        num_walks: Optional[Any] = 4,
+        walk_length: Optional[Any] = 5,
+        vector_size: Optional[Any] = 100,
+        alpha: Optional[Any] = 0.025,
+        window: Optional[Any] = 5,
+        min_count: Optional[Any] = 1,
+        seed: Optional[Any] = 1,
+        workers: Optional[Any] = 1,
+        min_alpha: Optional[Any] = 0.0001,
+        sg: Optional[Any] = 1,
+        hs: Optional[Any] = 0,
+        negative: Optional[Any] = 5,
+        epochs: Optional[Any] = 5,
+        edge_weight_property: Optional[Any] = "weight",
+    ) -> DeclarativeBase:
+        return self.call(
+            "node2vec.get_embeddings",
+            (
+                is_directed,
+                p,
+                q,
+                num_walks,
+                walk_length,
+                vector_size,
+                alpha,
+                window,
+                min_count,
+                seed,
+                workers,
+                min_alpha,
+                sg,
+                hs,
+                negative,
+                epochs,
+                edge_weight_property,
+            ),
+        )
+
+    def node2vec_help(self) -> DeclarativeBase:
+        return self.call("node2vec.help")
+
+    def node2vec_set_embeddings(
+        self,
+        is_directed: bool = False,
+        p: Optional[Any] = 2,
+        q: Optional[Any] = 0.5,
+        num_walks: Optional[Any] = 4,
+        walk_length: Optional[Any] = 5,
+        vector_size: Optional[Any] = 100,
+        alpha: Optional[Any] = 0.025,
+        window: Optional[Any] = 5,
+        min_count: Optional[Any] = 1,
+        seed: Optional[Any] = 1,
+        workers: Optional[Any] = 1,
+        min_alpha: Optional[Any] = 0.0001,
+        sg: Optional[Any] = 1,
+        hs: Optional[Any] = 0,
+        negative: Optional[Any] = 5,
+        epochs: Optional[Any] = 5,
+        edge_weight_property: Optional[Any] = "weight",
+    ) -> DeclarativeBase:
+        return self.call(
+            "node2vec.set_embeddings",
+            (
+                is_directed,
+                p,
+                q,
+                num_walks,
+                walk_length,
+                vector_size,
+                alpha,
+                window,
+                min_count,
+                seed,
+                workers,
+                min_alpha,
+                sg,
+                hs,
+                negative,
+                epochs,
+                edge_weight_property,
+            ),
+        )
+
+    def node2vec_online_get(self) -> DeclarativeBase:
+        return self.call("node2vec_online.get")
+
+    def node2vec_online_help(self) -> DeclarativeBase:
+        return self.call("node2vec_online.help")
+
+    def node2vec_online_reset(self) -> DeclarativeBase:
+        return self.call("node2vec_online.reset")
+
+    def node2vec_online_set_streamwalk_updater(
+        self,
+        half_life: int = 7200,
+        max_length: int = 3,
+        beta: float = 0.9,
+        cutoff: int = 604800,
+        sampled_walks: int = 4,
+        full_walks: bool = False,
+    ) -> DeclarativeBase:
+        return self.call(
+            "node2vec_online.set_streamwalk_updater", (half_life, max_length, beta, cutoff, sampled_walks, full_walks)
+        )
+
+    def node2vec_online_set_word2vec_learner(
+        self,
+        embedding_dimension: int = 128,
+        learning_rate: float = 0.01,
+        skip_gram: bool = True,
+        negative_rate: float = 10,
+        threads: Optional[int] = None,
+    ) -> DeclarativeBase:
+        return self.call(
+            "node2vec_online.set_word2vec_learner",
+            (embedding_dimension, learning_rate, skip_gram, negative_rate, threads),
+        )
+
+    def node2vec_online_update(self, edges: List[Any]) -> DeclarativeBase:
+        return self.call("node2vec_online.update", (edges))
+
+    def node_similarity_cosine(self, node1: Any, node2: Any, mode: str = "cartesian") -> DeclarativeBase:
+        return self.call("node_similarity.cosine", (node1, node2, mode))
+
+    def node_similarity_jaccard(self, node1: Any, node2: Any, mode: str = "cartesian") -> DeclarativeBase:
+        return self.call("node_similarity.jaccard", (node1, node2, mode))
+
+    def node_similarity_overlap(self, node1: Any, node2: Any, mode: str = "cartesian") -> DeclarativeBase:
+        return self.call("node_similarity.overlap", (node1, node2, mode))
+
+    def pagerank_get(
+        self, max_iterations: int = 100, damping_factor: float = 0.85, stop_epsilon: float = 1e-05
+    ) -> DeclarativeBase:
+        return self.call("pagerank.get", (max_iterations, damping_factor, stop_epsilon))
+
+    def pagerank_online_get(self) -> DeclarativeBase:
+        return self.call("pagerank_online.get")
+
+    def pagerank_online_reset(self) -> DeclarativeBase:
+        return self.call("pagerank_online.reset")
+
+    def pagerank_online_set(self, walks_per_node: int = 10, walk_stop_epsilon: float = 0.1) -> DeclarativeBase:
+        return self.call("pagerank_online.set", (walks_per_node, walk_stop_epsilon))
+
+    def pagerank_online_update(
+        self,
+        created_vertices: List[Any] = [],
+        created_edges: List[Any] = [],
+        deleted_vertices: List[Any] = [],
+        deleted_edges: List[Any] = [],
+    ) -> DeclarativeBase:
+        return self.call("pagerank_online.update", (created_vertices, created_edges, deleted_vertices, deleted_edges))
+
+    def rust_example_basic(self, input_string: str, optional_input_int: int = 0) -> DeclarativeBase:
+        return self.call("rust_example.basic", (input_string, optional_input_int))
+
+    def rust_example_test_procedure(self) -> DeclarativeBase:
+        return self.call("rust_example.test_procedure")
+
+    def set_cover_cp_solve(self, element_vertexes: List[Any], set_vertexes: List[Any]) -> DeclarativeBase:
+        return self.call("set_cover.cp_solve", (element_vertexes, set_vertexes))
+
+    def set_cover_greedy(self, element_vertexes: List[Any], set_vertexes: List[Any]) -> DeclarativeBase:
+        return self.call("set_cover.greedy", (element_vertexes, set_vertexes))
+
+    def tgn_get(self) -> DeclarativeBase:
+        return self.call("tgn.get")
+
+    def tgn_get_results(self) -> DeclarativeBase:
+        return self.call("tgn.get_results")
+
+    def tgn_predict_link_score(self, src: Any, dest: Any) -> DeclarativeBase:
+        return self.call("tgn.predict_link_score", (src, dest))
+
+    def tgn_reset(self) -> DeclarativeBase:
+        return self.call("tgn.reset")
+
+    def tgn_revert_from_database(self) -> DeclarativeBase:
+        return self.call("tgn.revert_from_database")
+
+    def tgn_save_tgn_params(self) -> DeclarativeBase:
+        return self.call("tgn.save_tgn_params")
+
+    def tgn_set_eval(self) -> DeclarativeBase:
+        return self.call("tgn.set_eval")
+
+    def tgn_set_params(self, params: Dict[str, Union[int, str]]) -> DeclarativeBase:
+        return self.call("tgn.set_params", (params))
+
+    def tgn_train_and_eval(self, num_epochs: int) -> DeclarativeBase:
+        return self.call("tgn.train_and_eval", (num_epochs))
+
+    def tgn_update(self, edges: List[Any]) -> DeclarativeBase:
+        return self.call("tgn.update", (edges))
+
+    def tsp_solve(self, points: List[Any], method: str = "1.5_approx") -> DeclarativeBase:
+        return self.call("tsp.solve", (points, method))
+
+    def union_find_connected(
+        self, nodes1: Optional[Any], nodes2: Optional[Any], mode: str = "pairwise", update: bool = True
+    ) -> DeclarativeBase:
+        return self.call("union_find.connected", (nodes1, nodes2, mode, update))
+
+    def uuid_generator_get(self) -> DeclarativeBase:
+        return self.call("uuid_generator.get")
+
+    def vrp_route(self, depot_node: Any, number_of_vehicles: Optional[int] = None) -> DeclarativeBase:
+        return self.call("vrp.route", (depot_node, number_of_vehicles))
+
+    def weakly_connected_components_get(self) -> DeclarativeBase:
+        return self.call("weakly_connected_components.get")
