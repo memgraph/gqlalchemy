@@ -240,11 +240,11 @@ class Memgraph:
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
         if self._cached_connection is None or not self._cached_connection.is_active():
-            self._cached_connection = self.new_connection()
+            self._cached_connection = self._new_connection()
 
         return self._cached_connection
 
-    def new_connection(self) -> Connection:
+    def _new_connection(self) -> Connection:
         """Creates new Memgraph connection"""
         args = dict(
             host=self._host,
