@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, List, Iterable, Optional, Set, Tuple, Union
-from pydantic import BaseModel, PrivateAttr, Extra
+from pydantic import BaseModel, PrivateAttr, Extra, Field  # noqa F401
 
 from .exceptions import (
     GQLAlchemyError,
@@ -26,6 +26,9 @@ from .exceptions import (
     GQLAlchemyDatabaseMissingInFieldError,
     GQLAlchemyDatabaseMissingInNodeClassError,
 )
+
+# Suppress the warning GQLAlchemySubclassNotFoundWarning
+IGNORE_SUBCLASSNOTFOUNDWARNING = False
 
 
 class TriggerEventType:
@@ -283,7 +286,9 @@ class GraphObject(BaseModel):
 
         if sub is None:
             types = data.get("_type", data.get("_labels"))
-            warnings.warn(GQLAlchemySubclassNotFoundWarning(types, cls))
+            if not IGNORE_SUBCLASSNOTFOUNDWARNING:
+                warnings.warn(GQLAlchemySubclassNotFoundWarning(types, cls))
+
             sub = cls
 
         return sub(**data)

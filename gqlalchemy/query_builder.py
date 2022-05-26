@@ -18,10 +18,13 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
+from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from .models import Node, Relationship
 from .exceptions import (
+    GQLAlchemyExtraKeywordArgumentsInSet,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyExtraKeywordArgumentsInWhere,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
@@ -32,7 +35,7 @@ class DeclarativeBaseTypes:
     CALL = "CALL"
     CREATE = "CREATE"
     DELETE = "DELETE"
-    EDGE = "EDGE"
+    RELATIONSHIP = "RELATIONSHIP"
     LIMIT = "LIMIT"
     LOAD_CSV = "LOAD_CSV"
     MATCH = "MATCH"
@@ -41,6 +44,7 @@ class DeclarativeBaseTypes:
     ORDER_BY = "ORDER BY"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
+    SET = "SET"
     SKIP = "SKIP"
     UNION = "UNION"
     UNWIND = "UNWIND"
@@ -72,6 +76,12 @@ class Order(Enum):
     ASCENDING = 2
     DESC = 3
     DESCENDING = 4
+
+
+class SetOperator(Enum):
+    ASSIGNMENT = "="
+    INCREMENT = "+="
+    LABEL_FILTER = ":"
 
 
 class NoVariablesMatchedException(Exception):
@@ -235,33 +245,44 @@ class NodePartialQuery(PartialQuery):
         return f"({self.variable}{self.labels}{' ' + self.properties if self.properties else ''})"
 
 
-class EdgePartialQuery(PartialQuery):
+class RelationshipPartialQuery(PartialQuery):
     def __init__(
-        self, variable: Optional[str], labels: Optional[str], properties: Optional[str], directed: bool, from_: bool
+        self,
+        variable: Optional[str],
+        labels: Optional[str],
+        algorithm: Optional[str],
+        properties: Optional[str],
+        directed: bool,
+        from_: bool,
     ):
-        super().__init__(DeclarativeBaseTypes.EDGE)
+        super().__init__(DeclarativeBaseTypes.RELATIONSHIP)
 
         self.directed = directed
         self._variable = variable
         self._labels = labels
+        self._algorithm = algorithm
         self._properties = properties
         self._from = from_
 
     @property
     def variable(self) -> str:
-        return self._variable if self._variable is not None else ""
+        return "" if self._variable is None else self._variable
 
     @property
     def labels(self) -> str:
-        return self._labels if self._labels is not None else ""
+        return "" if self._labels is None else self._labels
+
+    @property
+    def algorithm(self) -> str:
+        return "" if self._algorithm is None else self._algorithm
 
     @property
     def properties(self) -> str:
-        return self._properties if self._properties is not None else ""
+        return "" if self._properties is None else self._properties
 
     def construct_query(self) -> str:
-        """Constructs an edge partial query."""
-        relationship_query = f"{self.variable}{self.labels}{self.properties}"
+        """Constructs an relationship partial query."""
+        relationship_query = f"{self.variable}{self.labels}{self.algorithm}{self.properties}"
 
         if not self.directed:
             relationship_query = f"-[{relationship_query}]-"
@@ -456,6 +477,35 @@ class AddStringPartialQuery(PartialQuery):
         return f"{self.custom_cypher}"
 
 
+class SetPartialQuery(PartialQuery):
+    _LITERAL = "literal"
+    _EXPRESSION = "expression"
+
+    def __init__(self, item: str, operator: SetOperator, **kwargs):
+        super().__init__(DeclarativeBaseTypes.SET)
+
+        self.query = self._build_set_query(item=item, operator=operator, **kwargs)
+
+    def construct_query(self) -> str:
+        """Constructs a set partial query."""
+        return f" {self.type} {self.query}"
+
+    def _build_set_query(self, item: str, operator: SetOperator, **kwargs) -> "DeclarativeBase":
+        """Builds parts of a SET Cypher query divided by the boolean operators."""
+        literal = kwargs.get(SetPartialQuery._LITERAL)
+        value = kwargs.get(SetPartialQuery._EXPRESSION)
+
+        if value is None:
+            if literal is None:
+                raise GQLAlchemyLiteralAndExpressionMissingInSet
+
+            value = to_cypher_value(literal)
+        elif literal is not None:
+            raise GQLAlchemyExtraKeywordArgumentsInSet
+
+        return ("" if operator == SetOperator.LABEL_FILTER else " ").join([item, operator.value, value])
+
+
 class DeclarativeBase(ABC):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         self._query: List[PartialQuery] = []
@@ -550,51 +600,63 @@ class DeclarativeBase(ABC):
 
     def to(
         self,
-        edge_label: Optional[str] = "",
+        relationship_type: Optional[str] = "",
         directed: Optional[bool] = True,
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
+        algorithm: Optional[IntegratedAlgorithm] = None,
         **kwargs,
     ) -> "DeclarativeBase":
         """Add a relationship pattern to the query.
 
         Args:
-            edge_label: A string representing the type of the relationship.
+            relationship_type: A string representing the type of the relationship.
             directed: A bool indicating if the relationship is directed.
             variable: A string representing the name of the variable for storing
               results of the relationship pattern.
             relationship: A `Relationship` object to construct the pattern from.
+            algorithm: algorithm object to use over graph data.
             **kwargs: Arguments representing the properties of the relationship.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
         """
-        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
+        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.RELATIONSHIP):
             raise InvalidMatchChainException()
 
         if relationship is None:
-            type_str = to_cypher_labels(edge_label)
+            type_str = to_cypher_labels(relationship_type)
             properties_str = to_cypher_properties(kwargs)
         else:
             type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, type_str, properties_str, bool(directed), False))
+        self._query.append(
+            RelationshipPartialQuery(
+                variable=variable,
+                labels=type_str,
+                algorithm="" if algorithm is None else str(algorithm),
+                properties=properties_str,
+                directed=bool(directed),
+                from_=False,
+            )
+        )
 
         return self
 
     def from_(
         self,
-        edge_label: Optional[str] = "",
+        relationship_type: Optional[str] = "",
         directed: Optional[bool] = True,
         variable: Optional[str] = None,
         relationship: Optional["Relationship"] = None,
+        algorithm: Optional[IntegratedAlgorithm] = None,
         **kwargs,
     ) -> "Match":
         """Add a relationship pattern to the query.
 
         Args:
-            edge_label: A string representing the type of the relationship.
+            relationship_type: A string representing the type of the relationship.
             directed: A bool indicating if the relationship is directed.
             variable: A string representing the name of the variable for storing
               results of the relationship pattern.
@@ -604,17 +666,26 @@ class DeclarativeBase(ABC):
         Returns:
             A `DeclarativeBase` instance for constructing queries.
         """
-        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.EDGE):
+        if not self._is_linking_valid_with_query(DeclarativeBaseTypes.RELATIONSHIP):
             raise InvalidMatchChainException()
 
         if relationship is None:
-            labels_str = to_cypher_labels(edge_label)
+            type_str = to_cypher_labels(relationship_type)
             properties_str = to_cypher_properties(kwargs)
         else:
-            labels_str = to_cypher_labels(relationship._type)
+            type_str = to_cypher_labels(relationship._type)
             properties_str = to_cypher_properties(relationship._properties)
 
-        self._query.append(EdgePartialQuery(variable, labels_str, properties_str, bool(directed), True))
+        self._query.append(
+            RelationshipPartialQuery(
+                variable=variable,
+                labels=type_str,
+                algorithm="" if algorithm is None else str(algorithm),
+                properties=properties_str,
+                directed=bool(directed),
+                from_=True,
+            )
+        )
 
         return self
 
@@ -1036,6 +1107,50 @@ class DeclarativeBase(ABC):
             return result[retrieve]
         return result
 
+    def set_(self, item: str, operator: SetOperator, **kwargs):
+        """Creates a SET statement Cypher partial query.
+
+        Args:
+            item: A string representing variable or property.
+            operator: An assignment, increment or label filter operator.
+
+        Kwargs:
+            literal: A value that will be converted to Cypher value, such as int, float, string, etc.
+            expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+
+        Raises:
+            GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error when neither literal nor expression keyword arguments were provided.
+            GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both literal and expression keyword arguments were provided.
+
+        Returns:
+            self: A partial Cypher query built from the given parameters.
+
+        Examples:
+            Setting or updating a property.
+
+            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001).return_()`
+            Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN *;`
+
+            Setting or updating multiple properties.
+
+            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001).set_(item="n.capital", operator=SetOperator.ASSIGNMENT, literal="Berlin").return_()`
+            Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN *;`
+
+            Setting node label.
+
+            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n", operator=SetOperator.LABEL_FILTER, expression="Land").return_()`
+            Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN *;`
+
+            Setting or updating all properties using map.
+
+            Python: `match().node(variable="c", labels="Country").where(item="c.name", operator="=", literal="Germany").set_(item="c", operator=SetOperator.INCREMENT, literal={"name": "Germany", "population": "85000000"}).return_()`
+            Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN *;`
+
+        """
+        self._query.append(SetPartialQuery(item=item, operator=operator, **kwargs))
+
+        return self
+
     def execute(self) -> Iterator[Dict[str, Any]]:
         """Executes the Cypher query and returns the results.
 
@@ -1068,7 +1183,7 @@ class DeclarativeBase(ABC):
     def _any_variables_matched(self) -> bool:
         """Checks if any variables are present in the result."""
         return any(
-            q.type in [DeclarativeBaseTypes.EDGE, DeclarativeBaseTypes.NODE] and q.variable not in [None, ""]
+            q.type in [DeclarativeBaseTypes.RELATIONSHIP, DeclarativeBaseTypes.NODE] and q.variable not in [None, ""]
             for q in self._query
         )
 
@@ -1120,3 +1235,18 @@ class With(DeclarativeBase):
     ):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
+
+
+class LoadCsv(DeclarativeBase):
+    def __init__(self, path: str, header: bool, row: str, connection: Optional[Union[Connection, Memgraph]] = None):
+        super().__init__(connection)
+        self._query.append(LoadCsvPartialQuery(path, header, row))
+
+
+class Return(DeclarativeBase):
+    def __init__(
+        self, results: Optional[Dict[str, str]] = {}, connection: Optional[Union[Connection, Memgraph]] = None
+    ):
+        super().__init__(connection)
+        self._query.append(ReturnPartialQuery(results))
+        self._fetch_results = True

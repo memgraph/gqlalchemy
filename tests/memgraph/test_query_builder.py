@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from gqlalchemy.exceptions import (
+    GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyExtraKeywordArgumentsInWhere,
 )
@@ -22,27 +24,33 @@ from gqlalchemy import (
     QueryBuilder,
     match,
     call,
+    create,
+    load_csv,
     unwind,
     with_,
     merge,
+    return_,
     Node,
     Relationship,
     Field,
 )
 from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
-from gqlalchemy.query_builder import Order
+from gqlalchemy.query_builder import SetOperator, Order
 
 
 def test_invalid_match_chain_throws_exception():
     with pytest.raises(InvalidMatchChainException):
-        QueryBuilder().node(":Label", "n").node(":Label", "m").return_()
+        QueryBuilder().node(labels=":Label", variable="n").node(labels=":Label", variable="m").return_()
 
 
 def test_simple_create(memgraph):
-    query_builder = QueryBuilder().create().node("L1", variable="n").to("TO").node("L2").return_()
+    query_builder = (
+        QueryBuilder().create().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2").return_()
+    )
     expected_query = " CREATE (n:L1)-[:TO]->(:L2) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -52,7 +60,9 @@ def test_simple_create(memgraph):
 
 
 def test_simple_match(memgraph):
-    query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2").return_()
+    query_builder = (
+        QueryBuilder().match().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2").return_()
+    )
     expected_query = " MATCH (n:L1)-[:TO]->(:L2) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -63,7 +73,12 @@ def test_simple_match(memgraph):
 
 def test_simple_with_multiple_labels(memgraph):
     query_builder = (
-        QueryBuilder().match().node(["L1", "L2", "L3"], variable="n").to("TO").node("L2", variable="m").return_()
+        QueryBuilder()
+        .match()
+        .node(labels=["L1", "L2", "L3"], variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .return_()
     )
     expected_query = " MATCH (n:L1:L2:L3)-[:TO]->(m:L2) RETURN * "
 
@@ -95,7 +110,14 @@ def test_multiple_matches(memgraph):
 
 
 def test_with_empty(memgraph):
-    query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").with_()
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .with_()
+    )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WITH * "
 
     with patch.object(Memgraph, "execute", return_value=None) as mock:
@@ -230,11 +252,11 @@ def test_delete_detach(memgraph):
         QueryBuilder()
         .match()
         .node(variable="n1", labels="Node1")
-        .to(edge_label="EDGE")
+        .to(relationship_type="RELATIONSHIP")
         .node(variable="n2", labels="Node2")
         .delete(["n1", "n2"], True)
     )
-    expected_query = " MATCH (n1:Node1)-[:EDGE]->(n2:Node2) DETACH DELETE n1, n2 "
+    expected_query = " MATCH (n1:Node1)-[:RELATIONSHIP]->(n2:Node2) DETACH DELETE n1, n2 "
 
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
@@ -312,7 +334,7 @@ def test_where_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", expression="m.name")
         .return_()
@@ -330,7 +352,7 @@ def test_where_not_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where_not(item="n.name", operator="=", expression="m.name")
         .return_()
@@ -348,7 +370,7 @@ def test_where_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .return_()
@@ -366,7 +388,7 @@ def test_where_not_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where_not(item="n", operator=":", expression="Node")
         .return_()
@@ -385,7 +407,7 @@ def test_where_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=")
             .return_()
@@ -398,7 +420,7 @@ def test_where_not_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where_not(item="n.name", operator="=")
             .return_()
@@ -411,7 +433,7 @@ def test_where_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=", literal="best_name", expression="Node")
             .return_()
@@ -424,7 +446,7 @@ def test_where_not_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where_not(item="n.name", operator="=", literal="best_name", expression="Node")
             .return_()
@@ -436,7 +458,7 @@ def test_or_where_literal(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", literal="best_name")
         .or_where(item="m.id", operator="<", literal=4)
@@ -455,7 +477,7 @@ def test_or_not_where_literal(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", literal="best_name")
         .or_not_where(item="m.id", operator="<", literal=4)
@@ -474,7 +496,7 @@ def test_or_where_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", expression="m.name")
         .or_where(item="m.name", operator="=", expression="n.last_name")
@@ -493,7 +515,7 @@ def test_or_not_where_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", expression="m.name")
         .or_not_where(item="m.name", operator="=", expression="n.last_name")
@@ -512,7 +534,7 @@ def test_or_where_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .or_where(item="m", operator=":", expression="User")
@@ -531,7 +553,7 @@ def test_or_not_where_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .or_not_where(item="m", operator=":", expression="User")
@@ -551,7 +573,7 @@ def test_or_where_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=", literal="my_name")
             .or_where(item="m.name", operator="=")
@@ -565,7 +587,7 @@ def test_or_not_where_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=", literal="my_name")
             .or_not_where(item="m.name", operator="=")
@@ -579,7 +601,7 @@ def test_or_where_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="m.name", operator="=", literal="best_name")
             .or_where(item="n.name", operator="=", literal="best_name", expression="Node")
@@ -593,7 +615,7 @@ def test_or_not_where_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="m.name", operator="=", literal="best_name")
             .or_not_where(item="n.name", operator="=", literal="best_name", expression="Node")
@@ -606,7 +628,7 @@ def test_and_where_literal(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", literal="best_name")
         .and_where(item="m.id", operator="<", literal=4)
@@ -625,7 +647,7 @@ def test_and_not_where_literal(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", literal="best_name")
         .and_not_where(item="m.id", operator="<", literal=4)
@@ -644,7 +666,7 @@ def test_and_where_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", expression="m.name")
         .and_where(item="m.name", operator="=", expression="n.last_name")
@@ -663,7 +685,7 @@ def test_and_not_where_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", expression="m.name")
         .and_not_where(item="m.name", operator="=", expression="n.last_name")
@@ -682,7 +704,7 @@ def test_and_where_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .and_where(item="m", operator=":", expression="User")
@@ -701,7 +723,7 @@ def test_and_not_where_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node("L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .and_not_where(item="m", operator=":", expression="User")
@@ -721,7 +743,7 @@ def test_and_where_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=", literal="my_name")
             .and_where(item="m.name", operator="=")
@@ -735,7 +757,7 @@ def test_and_not_where_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=", literal="my_name")
             .and_not_where(item="m.name", operator="=")
@@ -749,7 +771,7 @@ def test_and_where_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="m.name", operator="=", literal="best_name")
             .and_where(item="n.name", operator="=", literal="best_name", expression="Node")
@@ -763,7 +785,7 @@ def test_and_not_where_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="m.name", operator="=", literal="best_name")
             .and_not_where(item="n.name", operator="=", literal="best_name", expression="Node")
@@ -776,7 +798,7 @@ def test_xor_where_literal(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", literal="best_name")
         .xor_where(item="m.id", operator="<", literal=4)
@@ -795,7 +817,7 @@ def test_xor_not_where_literal(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", literal="best_name")
         .xor_not_where(item="m.id", operator="<", literal=4)
@@ -814,7 +836,7 @@ def test_xor_where_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", expression="m.name")
         .xor_where(item="m.name", operator="=", expression="n.last_name")
@@ -833,7 +855,7 @@ def test_xor_not_where_property(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", expression="m.name")
         .xor_not_where(item="m.name", operator="=", expression="n.last_name")
@@ -852,7 +874,7 @@ def test_xor_where_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .xor_where(item="m", operator=":", expression="User")
@@ -871,7 +893,7 @@ def test_xor_not_where_label(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .xor_not_where(item="m", operator=":", expression="User")
@@ -891,7 +913,7 @@ def test_xor_where_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=", literal="my_name")
             .xor_where(item="m.name", operator="=")
@@ -905,7 +927,7 @@ def test_xor_not_where_literal_and_expression_missing(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="n.name", operator="=", literal="my_name")
             .xor_not_where(item="m.name", operator="=")
@@ -919,7 +941,7 @@ def test_xor_and_where_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="m.name", operator="=", literal="best_name")
             .xor_where(item="n.name", operator="=", literal="best_name", expression="Node")
@@ -933,7 +955,7 @@ def test_xor_not_and_where_extra_values(memgraph):
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
-            .to(edge_label="TO")
+            .to(relationship_type="TO")
             .node(labels="L2", variable="m")
             .where(item="m.name", operator="=", literal="best_name")
             .xor_not_where(item="n.name", operator="=", literal="best_name", expression="Node")
@@ -946,7 +968,7 @@ def test_and_or_xor_not_where(memgraph):
         QueryBuilder()
         .match()
         .node(labels="L1", variable="n")
-        .to(edge_label="TO")
+        .to(relationship_type="TO")
         .node(labels="L2", variable="m")
         .where(item="n", operator=":", expression="Node")
         .and_where(item="n.age", operator=">", literal=5)
@@ -1212,6 +1234,16 @@ def test_base_class_call(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_base_class_create(memgraph):
+    query_builder = create().node(variable="n", labels="TEST", prop="test").return_(results={"n": "n"})
+    expected_query = " CREATE (n:TEST {prop: 'test'}) RETURN n "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_base_class_unwind(memgraph):
     query_builder = unwind("[1, 2, 3]", "x").return_({"x": "x"})
     expected_query = " UNWIND [1, 2, 3] AS x RETURN x "
@@ -1225,6 +1257,26 @@ def test_base_class_unwind(memgraph):
 def test_base_class_with(memgraph):
     query_builder = with_({"10": "n"}).return_({"n": ""})
     expected_query = " WITH 10 AS n RETURN n "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_base_class_load_csv(memgraph):
+    query_builder = load_csv("path/to/my/file.csv", True, "row").return_()
+    expected_query = " LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_base_class_return(memgraph):
+    query_builder = return_({"n": "n"})
+    expected_query = " RETURN n "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -1256,6 +1308,121 @@ def test_add_string_complete(memgraph):
     query_builder = QueryBuilder().add_custom_cypher("MATCH (n) RETURN n")
     expected_query = "MATCH (n) RETURN n"
 
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_set_label(memgraph):
+    query_builder = QueryBuilder().set_(item="a", operator=SetOperator.LABEL_FILTER, expression="L1")
+    expected_query = " SET a:L1"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+def test_set_assign_expression(memgraph, operator):
+    query_builder = QueryBuilder().set_(item="a", operator=operator, expression="value")
+    expected_query = f" SET a {operator.value} value"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+def test_set_assign_literal(memgraph, operator):
+    query_builder = QueryBuilder().set_(item="a", operator=operator, literal="value")
+    expected_query = f" SET a {operator.value} 'value'"
+
+    assert query_builder.construct_query() == expected_query
+
+
+def test_multiple_set_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .set_(item="a", operator=SetOperator.LABEL_FILTER, expression="L1")
+        .set_(item="a", operator=SetOperator.ASSIGNMENT, expression="L2")
+    )
+    expected_query = " SET a:L1 SET a = L2"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+def test_set_literal_and_expression_missing(memgraph, operator):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInSet):
+        QueryBuilder().set_(item="n.name", operator=operator)
+
+
+@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+def test_set_extra_values(memgraph, operator):
+    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInSet):
+        QueryBuilder().set_(item="n.name", operator=operator, literal="best_name", expression="Node")
+
+
+def test_set_docstring_example_1(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .where(item="n.name", operator="=", literal="Germany")
+        .set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001)
+        .return_()
+    )
+    expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN * "
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_set_docstring_example_2(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .where(item="n.name", operator="=", literal="Germany")
+        .set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001)
+        .set_(item="n.capital", operator=SetOperator.ASSIGNMENT, literal="Berlin")
+        .return_()
+    )
+    expected_query = (
+        " MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN * "
+    )
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_set_docstring_example_3(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .where(item="n.name", operator="=", literal="Germany")
+        .set_(item="n", operator=SetOperator.LABEL_FILTER, expression="Land")
+        .return_()
+    )
+    expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN * "
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_set_docstring_example_4(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="c", labels="Country")
+        .where(item="c.name", operator="=", literal="Germany")
+        .set_(item="c", operator=SetOperator.INCREMENT, literal={"name": "Germany", "population": "85000000"})
+        .return_()
+    )
+    expected_query = (
+        " MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN * "
+    )
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
 
@@ -1335,6 +1502,190 @@ def test_unsaved_node_relationship_instances(memgraph):
         .return_()
     )
     expected_query = " MATCH (user_1:User {name: 'Ron'})-[:FOLLOWS]->(user_2:User {name: 'Leslie'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_bfs():
+    bfs_alg = BreadthFirstSearch()
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Zagreb")
+        .to(relationship_type="Road", algorithm=bfs_alg)
+        .node(labels="City", name="Paris")
+        .return_()
+    )
+    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road *BFS]->(:City {name: 'Paris'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_bfs_filter_label():
+    bfs_alg = BreadthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Paris")
+        .to(relationship_type="Road", algorithm=bfs_alg)
+        .node(labels="City", name="Berlin")
+        .return_()
+    )
+
+    expected_query = " MATCH (:City {name: 'Paris'})-[:Road *BFS (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+@pytest.mark.parametrize(
+    "lower_bound, upper_bound, expected_query",
+    [
+        (1, 15, " MATCH (a {id: 723})-[ *BFS 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (3, None, " MATCH (a {id: 723})-[ *BFS 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, 10, " MATCH (a {id: 723})-[ *BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, None, " MATCH (a {id: 723})-[ *BFS (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+    ],
+)
+def test_bfs_bounds(lower_bound, upper_bound, expected_query):
+    bfs_alg = BreadthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="r.x > 12 AND n.y < 3")
+
+    query_builder = (
+        QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=bfs_alg).node().return_()
+    )
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_dfs():
+    dfs_alg = DepthFirstSearch()
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Zagreb")
+        .to(relationship_type="Road", algorithm=dfs_alg)
+        .node(labels="City", name="Paris")
+        .return_()
+    )
+    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road *]->(:City {name: 'Paris'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_dfs_filter_label():
+    dfs_alg = DepthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="City", name="Paris")
+        .to(relationship_type="Road", algorithm=dfs_alg)
+        .node(labels="City", name="Berlin")
+        .return_()
+    )
+
+    expected_query = " MATCH (:City {name: 'Paris'})-[:Road * (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+@pytest.mark.parametrize(
+    "lower_bound, upper_bound, expected_query",
+    [
+        (1, 15, " MATCH (a {id: 723})-[ * 1..15 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (3, None, " MATCH (a {id: 723})-[ * 3.. (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, 10, " MATCH (a {id: 723})-[ * ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+        (None, None, " MATCH (a {id: 723})-[ * (r, n | r.x > 12 AND n.y < 3)]-() RETURN * "),
+    ],
+)
+def test_dfs_bounds(lower_bound, upper_bound, expected_query):
+    dfs_alg = DepthFirstSearch(lower_bound=lower_bound, upper_bound=upper_bound, condition="r.x > 12 AND n.y < 3")
+
+    query_builder = (
+        QueryBuilder().match().node(variable="a", id=723).to(directed=False, algorithm=dfs_alg).node().return_()
+    )
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_wshortest():
+    weighted_shortest = WeightedShortestPath(weight_property="r.weight")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_wShortest_bound():
+    weighted_shortest = WeightedShortestPath(upper_bound=10, weight_property="weight")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_wShortest_filter_label():
+    weighted_shortest = WeightedShortestPath(
+        upper_bound=10, weight_property="weight", condition="r.x > 12 AND n.y < 3", total_weight_var="weight_sum"
+    )
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=weighted_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum (r, n | r.x > 12 AND n.y < 3)]-(b {id: 882}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
