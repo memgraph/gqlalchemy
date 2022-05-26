@@ -104,6 +104,7 @@ class VariableProperty:
     """Class for support of using a variable as a node or edge property. Used
     to avoid the quotes given to property values.
     """
+
     def __init__(self, value) -> None:
         self._value = value
 
