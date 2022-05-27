@@ -14,10 +14,17 @@
 
 import os
 import sqlite3
+
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .connection import Connection
 from .disk_storage import OnDiskPropertyDatabase
+from .graph_algorithms.query_modules import QueryModule
+from .exceptions import (
+    GQLAlchemyError,
+    GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+)
 from .models import (
     MemgraphConstraint,
     MemgraphConstraintExists,
@@ -29,11 +36,6 @@ from .models import (
     Relationship,
 )
 
-from .exceptions import (
-    GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
-    GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
-)
 
 __all__ = ("Memgraph",)
 
@@ -43,6 +45,7 @@ MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
+MG_LAZY = os.getenv("MG_LAZY", "false").lower() == "true"
 
 
 class MemgraphConstants:
@@ -63,6 +66,7 @@ class Memgraph:
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,
     ):
         self._host = host
         self._port = port
@@ -70,8 +74,17 @@ class Memgraph:
         self._password = password
         self._encrypted = encrypted
         self._client_name = client_name
+        self._lazy = lazy
         self._cached_connection: Optional[Connection] = None
         self._on_disk_db = None
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
 
     def execute_and_fetch(self, query: str, connection: Connection = None) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
@@ -240,11 +253,11 @@ class Memgraph:
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
         if self._cached_connection is None or not self._cached_connection.is_active():
-            self._cached_connection = self.new_connection()
+            self._cached_connection = self._new_connection()
 
         return self._cached_connection
 
-    def new_connection(self) -> Connection:
+    def _new_connection(self) -> Connection:
         """Creates new Memgraph connection"""
         args = dict(
             host=self._host,
@@ -543,3 +556,25 @@ class Memgraph:
         )
 
         return self.get_variable_assume_one(results, "relationship")
+
+    def get_procedures(self, starts_with: Optional[str] = None, update: bool = False) -> List["QueryModule"]:
+        """Return query procedures.
+
+        Maintains a list of query modules in the Memgraph object. If starts_with
+        is defined then return those modules that start with starts_with string.
+
+        Args:
+            starts_with: Return those modules that start with this string.
+            (Optional)
+            update: Whether to update the list of modules in
+            self.query_modules. (Optional)
+        """
+        if not hasattr(self, "query_modules") or update:
+            results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
+            self.query_modules = [QueryModule(**module_dict) for module_dict in results]
+
+        return (
+            self.query_modules
+            if starts_with is None
+            else [q for q in self.query_modules if q.name.startswith(starts_with)]
+        )
