@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy import memgraph, models, disk_storage, query_builder, instance_runner, exceptions
-
-from memgraph import Memgraph  # noqa F401
-from models import (  # noqa F401
+from gqlalchemy.memgraph import Memgraph  # noqa F401
+from gqlalchemy.models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
@@ -27,8 +25,8 @@ from models import (  # noqa F401
     Relationship,
     Field,
 )
-from disk_storage import SQLitePropertyDatabase  # noqa F401
-from query_builder import (  # noqa F401
+from gqlalchemy.disk_storage import SQLitePropertyDatabase  # noqa F401
+from gqlalchemy.query_builder import (  # noqa F401
     Call,
     Create,
     InvalidMatchChainException,
@@ -41,7 +39,7 @@ from query_builder import (  # noqa F401
     Unwind,
     With,
 )
-from instance_runner import (  # noqa F401
+from gqlalchemy.instance_runner import (  # noqa F401
     DockerImage,
     MemgraphInstanceBinary,
     MemgraphInstanceDocker,
@@ -49,7 +47,7 @@ from instance_runner import (  # noqa F401
     wait_for_port,
 )
 
-from exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
+from gqlalchemy.exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import validator  # noqa F401
 import warnings
 

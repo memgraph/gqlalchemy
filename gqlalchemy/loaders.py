@@ -14,9 +14,9 @@
 
 from string import Template
 
-from memgraph import Memgraph
-from query_builder import QueryBuilder, Unwind
-from models import (
+from . import Memgraph
+from .query_builder import QueryBuilder, Unwind
+from .models import (
     MemgraphIndex,
     MemgraphTrigger,
     TriggerEventObject,
