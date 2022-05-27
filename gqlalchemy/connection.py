@@ -17,8 +17,8 @@ from typing import Any, Dict, Iterator, Optional
 
 import mgclient
 
-from .exceptions import gqlalchemy_error_handler
-from .models import Node, Path, Relationship
+from gqlalchemy.exceptions import gqlalchemy_error_handler
+from gqlalchemy.models import Node, Path, Relationship
 
 __all__ = ("Connection",)
 

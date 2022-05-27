@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Union
 
-from . import Memgraph
+from gqlalchemy import Memgraph
 
 
 MEMGRAPH_DEFAULT_BINARY_PATH = "/usr/lib/memgraph/memgraph"
