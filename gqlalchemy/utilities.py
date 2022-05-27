@@ -17,13 +17,22 @@ from datetime import datetime, date, time, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
+from numpy import isin
+
 
 class DatetimeKeywords(Enum):
-    DURATION = "duration("
-    LOCALTIME = "localTime("
-    LOCALDATETIME = "localDateTime("
-    DATE = "date("
-    CLOSING_PARENTHESES = ")"
+    DURATION = "duration"
+    LOCALTIME = "localTime"
+    LOCALDATETIME = "localDateTime"
+    DATE = "date"
+
+
+datetimeKwMapping = {
+    timedelta: DatetimeKeywords.DURATION.value,
+    time: DatetimeKeywords.LOCALTIME.value,
+    datetime: DatetimeKeywords.LOCALDATETIME.value,
+    date: DatetimeKeywords.DATE.value,
+}
 
 
 class NanValuesHandle(Enum):
@@ -53,7 +62,7 @@ def _format_timedelta(duration: timedelta) -> str:
     minutes = int(remainder_sec // 60)
     remainder_sec -= minutes * 60
 
-    return f"'P{days}DT{hours}H{minutes}M{remainder_sec}S'"
+    return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
 
 
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
@@ -66,29 +75,8 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value_type == PropertyVariable:
         return str(value)
 
-    if isinstance(value, timedelta):
-        return DatetimeKeywords.DURATION.value + _format_timedelta(value) + DatetimeKeywords.CLOSING_PARENTHESES.value
-
-    if isinstance(value, time):
-        return (
-            DatetimeKeywords.LOCALTIME.value
-            + "'"
-            + value.isoformat()
-            + "'"
-            + DatetimeKeywords.CLOSING_PARENTHESES.value
-        )
-
-    if isinstance(value, datetime):
-        return (
-            DatetimeKeywords.LOCALDATETIME.value
-            + "'"
-            + value.isoformat()
-            + "'"
-            + DatetimeKeywords.CLOSING_PARENTHESES.value
-        )
-
-    if isinstance(value, date):
-        return DatetimeKeywords.DATE.value + "'" + value.isoformat() + "'" + DatetimeKeywords.CLOSING_PARENTHESES.value
+    if isinstance(value, (timedelta, time, datetime, date)):
+        return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
 
     if value_type == str and value.lower() in ["true", "false", "null"]:
         return value
