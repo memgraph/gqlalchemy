@@ -45,6 +45,7 @@ MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
+MG_LAZY = os.getenv("MG_LAZY", "false").lower() == "true"
 
 
 class MemgraphConstants:
@@ -65,6 +66,7 @@ class Memgraph:
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,
     ):
         self._host = host
         self._port = port
@@ -72,6 +74,7 @@ class Memgraph:
         self._password = password
         self._encrypted = encrypted
         self._client_name = client_name
+        self._lazy = lazy
         self._cached_connection: Optional[Connection] = None
         self._on_disk_db = None
 
