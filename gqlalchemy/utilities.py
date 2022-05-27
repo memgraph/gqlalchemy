@@ -17,8 +17,6 @@ from datetime import datetime, date, time, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from numpy import isin
-
 
 class DatetimeKeywords(Enum):
     DURATION = "duration"
