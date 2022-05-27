@@ -60,6 +60,10 @@ Can't create {clause} query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
 
+FILE_NOT_FOUND = """
+File with path {path} not found.
+"""
+
 
 class QueryClause(Enum):
     WHERE = "WHERE"
@@ -163,3 +167,9 @@ def gqlalchemy_error_handler(func):
             raise GQLAlchemyDatabaseError(e)
 
     return inner_function
+
+
+class GQLAlchemyFileNotFoundError(GQLAlchemyError):
+    def __init__(self, path):
+        super().__init__()
+        self.message = FILE_NOT_FOUND.format(path=path)

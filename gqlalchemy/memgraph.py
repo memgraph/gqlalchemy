@@ -23,6 +23,7 @@ from .exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+    GQLAlchemyFileNotFoundError,
 )
 from .models import (
     MemgraphConstraint,
@@ -578,28 +579,41 @@ class Memgraph:
             else [q for q in self.query_modules if q.name.startswith(starts_with)]
         )
 
+    def _add_query_module(self, file_path: str, module_name: str):
+        """Function for adding query module.
+
+        Args:
+            file_name (str): path to file containing module.
+            module_name (str): name of the module.
+
+        Returns:
+            Memgraph: Memgraph object.
+        """
+        if not os.path.isfile(file_path):
+            raise GQLAlchemyFileNotFoundError(path=file_path)
+
+        file_text = open(file_path, "r").read().replace("'", '"')
+        query = f"CALL mg.create_module_file('{module_name}','{file_text}') YIELD *"
+        self.execute_and_fetch(query)
+
+        return self
+
     def with_kafka_stream(self):
         """Load kafka stream module
-
         Returns:
             Memgraph: Memgraph instance
         """
-        file_text = open('gqlalchemy/query_modules/push_streams/kafka.py','r').read().replace("'", '"')
-        query = f"CALL mg.create_module_file('kafka.py','{file_text}') YIELD *"
-        self.execute_and_fetch(query)
+        file_path = "gqlalchemy/query_modules/push_streams/kafka.py"
+        module_name = "kafka"
 
-        return self
-    
+        return self._add_query_module(file_path=file_path, module_name=module_name)
+
     def with_power_bi(self):
         """Load power_bi stream module
-
         Returns:
             Memgraph: Memgraph instance
         """
-        file_text = open('gqlalchemy/query_modules/push_streams/power_bi.py','r').read().replace("'", '"')
-        query = f"CALL mg.create_module_file('power_bi.py','{file_text}') YIELD *"
-        self.execute_and_fetch(query)
+        file_path = "gqlalchemy/query_modules/push_streams/power_bi.py"
+        module_name = "power_bi"
 
-        return self
-    
-
+        return self._add_query_module(file_path=file_path, module_name=module_name)
