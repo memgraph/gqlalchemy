@@ -604,7 +604,7 @@ class Memgraph:
             Memgraph: Memgraph instance
         """
         file_path = "gqlalchemy/query_modules/push_streams/kafka.py"
-        module_name = "kafka"
+        module_name = 'kafka'
 
         return self._add_query_module(file_path=file_path, module_name=module_name)
 
