@@ -15,7 +15,7 @@
 from enum import Enum
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, Set
 
 from .memgraph import Connection, Memgraph
 from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
