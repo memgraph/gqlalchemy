@@ -72,9 +72,7 @@ def push(
     headers = {"Content-Type": "application/json"}
 
     try:
-        response = requests.request(
-            method="POST", url=api_url, headers=headers, data=json.dumps(message)
-        )
+        response = requests.request(method="POST", url=api_url, headers=headers, data=json.dumps(message))
     except Exception as e:
         raise Exception(f"Error happened while sending results! {e}")
 
