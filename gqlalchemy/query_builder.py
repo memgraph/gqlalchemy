@@ -1086,7 +1086,7 @@ class DeclarativeBase(ABC):
         Returns:
             A `DeclarativeBase` instance for constructing queries.
         """
-        self._query.append(LoadCsvPartialQuery(path, header, row))
+        self._query.append((path, header, row))
 
         return self
 

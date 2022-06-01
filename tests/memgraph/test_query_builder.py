@@ -47,33 +47,36 @@ def test_invalid_match_chain_throws_exception():
         QueryBuilder().node(labels=":Label", variable="n").node(labels=":Label", variable="m").return_()
 
 
-def test_simple_create(memgraph):
+@pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
+def test_simple_create(vendor):
     query_builder = (
-        QueryBuilder().create().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2").return_()
+        vendor[1].create().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2").return_()
     )
     expected_query = " CREATE (n:L1)-[:TO]->(:L2) RETURN * "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
 
 
-def test_simple_match(memgraph):
+@pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
+def test_simple_match(vendor):
     query_builder = (
-        QueryBuilder().match().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2").return_()
+        vendor[1].match().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2").return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(:L2) RETURN * "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
 
 
-def test_simple_with_multiple_labels(memgraph):
+@pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
+def test_simple_with_multiple_labels(vendor):
     query_builder = (
-        QueryBuilder()
+        vendor[1]
         .match()
         .node(labels=["L1", "L2", "L3"], variable="n")
         .to(relationship_type="TO")
@@ -82,15 +85,16 @@ def test_simple_with_multiple_labels(memgraph):
     )
     expected_query = " MATCH (n:L1:L2:L3)-[:TO]->(m:L2) RETURN * "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
 
 
-def test_multiple_matches(memgraph):
+@pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
+def test_multiple_matches(vendor):
     query_builder = (
-        QueryBuilder()
+        vendor[1]
         .match()
         .node("L1", variable="n")
         .to("TO")
@@ -103,15 +107,16 @@ def test_multiple_matches(memgraph):
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) OPTIONAL MATCH (n)-[:TO]->(:L3) RETURN * "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
 
 
-def test_with_empty(memgraph):
+@pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
+def test_with_empty(vendor):
     query_builder = (
-        QueryBuilder()
+        vendor[1]
         .match()
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
@@ -120,25 +125,27 @@ def test_with_empty(memgraph):
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WITH * "
 
-    with patch.object(Memgraph, "execute", return_value=None) as mock:
+    with patch.object(vendor[0], "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
 
 
-def test_with(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").with_({"n": ""})
+@pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
+def test_with(vendor):
+    query_builder = vendor[1].match().node(variable="n").with_({"n": ""})
     expected_query = " MATCH (n) WITH n "
 
-    with patch.object(Memgraph, "execute", return_value=None) as mock:
+    with patch.object(vendor[0], "execute", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
 
 
-def test_union(memgraph):
+@pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
+def test_union(vendor):
     query_builder = (
-        QueryBuilder()
+        vendor[1]
         .match()
         .node(variable="n1", labels="Node1")
         .return_({"n1": ""})
@@ -149,7 +156,7 @@ def test_union(memgraph):
     )
     expected_query = " MATCH (n1:Node1) RETURN n1 UNION MATCH (n2:Node2) RETURN n2 "
 
-    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+    with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
 
     mock.assert_called_with(expected_query)

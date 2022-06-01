@@ -50,6 +50,7 @@ from .query_builder import (  # noqa F401
     Unwind,
     With,
 )
+from .neo4j_query_builder import Neo4jQueryBuilder  # noqa F401
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import validator  # noqa F401
