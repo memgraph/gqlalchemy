@@ -13,15 +13,15 @@
 # limitations under the License.
 
 import logging
-import multiprocessing as mp
-from typing import Any, Dict, Iterator, List, Union
-
 import mgclient
+import multiprocessing as mp
 import networkx as nx
+
+from typing import Any, Dict, Iterator, List, Union
 
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex
-from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value, NetworkXCypherConfig
+from gqlalchemy.utilities import NetworkXCypherConfig, to_cypher_labels, to_cypher_properties, to_cypher_value
 
 __all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
 

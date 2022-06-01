@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import math
+import pytest
 
 from gqlalchemy.utilities import (
+    NanException,
     NanValuesHandle,
     NetworkXCypherConfig,
     to_cypher_labels,
     to_cypher_properties,
     to_cypher_value,
-    NanException,
 )
 
 

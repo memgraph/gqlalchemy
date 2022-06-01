@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Iterator
-
 import pytest
 
 from gqlalchemy import Memgraph, Node
+from typing import Any, Dict, Iterator
 
 
 def query(command: str) -> Iterator[Dict[str, Any]]:

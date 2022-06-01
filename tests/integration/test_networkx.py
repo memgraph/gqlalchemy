@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from random import randint
-
 import networkx as nx
 import pytest
+
+from random import randint
+
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex
 from gqlalchemy.transformations import nx_graph_to_memgraph_parallel, nx_to_cypher

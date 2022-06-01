@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from typing import Optional
-from gqlalchemy import Node, Relationship, Field
+
+from gqlalchemy import Field, Node, Relationship
 
 
 def test_save_node(memgraph):

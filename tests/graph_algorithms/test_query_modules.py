@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.graph_algorithms.query_modules import QueryModule
 import pytest
+
+from gqlalchemy.graph_algorithms.query_modules import QueryModule
 
 
 def test_set_inputs_exception():

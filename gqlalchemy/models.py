@@ -11,14 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import warnings
 import datetime
+import warnings
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Iterable, Optional, Set, Tuple, Union
-from pydantic import BaseModel, PrivateAttr, Extra, Field  # noqa F401
+from pydantic import BaseModel, Extra, Field, PrivateAttr  # noqa F401
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from gqlalchemy.exceptions import (
     GQLAlchemyError,

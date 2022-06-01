@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.graph_algorithms.query_modules import QueryModule, parse_query_module_signature
+from gqlalchemy.graph_algorithms.query_modules import parse_query_module_signature, QueryModule
 from gqlalchemy.query_builder import QueryBuilder
 from gqlalchemy.memgraph import Memgraph
 

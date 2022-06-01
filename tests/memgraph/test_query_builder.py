@@ -12,34 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.exceptions import (
-    GQLAlchemyExtraKeywordArgumentsInSet,
-    GQLAlchemyLiteralAndExpressionMissingInSet,
-    GQLAlchemyLiteralAndExpressionMissingInWhere,
-    GQLAlchemyExtraKeywordArgumentsInWhere,
-)
 import pytest
-from gqlalchemy import (
-    InvalidMatchChainException,
-    QueryBuilder,
-    match,
-    call,
-    create,
-    load_csv,
-    unwind,
-    with_,
-    merge,
-    return_,
-    Node,
-    Relationship,
-    Field,
-)
-from gqlalchemy.memgraph import Memgraph
-from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
+
 from typing import Optional
 from unittest.mock import patch
-from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
-from gqlalchemy.query_builder import SetOperator, Order
+
+from gqlalchemy import (
+    call,
+    create,
+    Field,
+    InvalidMatchChainException,
+    load_csv,
+    match,
+    merge,
+    Node,
+    QueryBuilder,
+    Relationship,
+    return_,
+    unwind,
+    with_,
+)
+from gqlalchemy.exceptions import (
+    GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyExtraKeywordArgumentsInWhere,
+    GQLAlchemyLiteralAndExpressionMissingInSet,
+    GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyMissingOrder,
+    GQLAlchemyOrderByTypeError,
+)
+from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
+from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.query_builder import Order, SetOperator
 from gqlalchemy.utilities import PropertyVariable
 
 

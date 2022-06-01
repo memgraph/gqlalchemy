@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import pytest
-from gqlalchemy import Field, Node, validator
+
 from typing import List, Optional
+
+from gqlalchemy import Field, Node, validator
 
 
 def test_raise_value_error(memgraph):

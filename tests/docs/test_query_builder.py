@@ -14,7 +14,7 @@
 
 from unittest.mock import patch
 
-from gqlalchemy import match, call, create, merge
+from gqlalchemy import call, create, match, merge
 from gqlalchemy.memgraph import Memgraph
 
 

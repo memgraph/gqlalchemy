@@ -12,8 +12,10 @@
 # limitations under the License.
 
 import pytest
-from gqlalchemy import Node
+
 from pydantic import ValidationError
+
+from gqlalchemy import Node
 
 
 def test_partial_loading(memgraph):

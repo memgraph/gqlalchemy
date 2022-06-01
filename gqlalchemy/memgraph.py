@@ -19,12 +19,12 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 from gqlalchemy.connection import Connection
 from gqlalchemy.disk_storage import OnDiskPropertyDatabase
-from gqlalchemy.graph_algorithms.query_modules import QueryModule
 from gqlalchemy.exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
 )
+from gqlalchemy.graph_algorithms.query_modules import QueryModule
 from gqlalchemy.models import (
     MemgraphConstraint,
     MemgraphConstraintExists,

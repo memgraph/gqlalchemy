@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
-
 import pytest
+
 from gqlalchemy import Memgraph, models
+from pathlib import Path
 
 
 def get_data_dir() -> Path:

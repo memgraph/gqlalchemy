@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import mgclient
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, Optional
-
-import mgclient
 
 from gqlalchemy.exceptions import gqlalchemy_error_handler
 from gqlalchemy.models import Node, Path, Relationship

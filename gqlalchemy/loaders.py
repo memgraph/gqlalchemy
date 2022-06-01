@@ -12,10 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import adlfs
+import platform
+import pyarrow.dataset as ds
+
+from abc import ABC, abstractmethod
+from enum import Enum
+from dacite import from_dict
+from dataclasses import dataclass, field
+from pyarrow import fs
 from string import Template
+from typing import List, Dict, Any, Optional, Union
 
 from gqlalchemy import Memgraph
-from gqlalchemy.query_builder import QueryBuilder, Unwind
 from gqlalchemy.models import (
     MemgraphIndex,
     MemgraphTrigger,
@@ -23,16 +32,8 @@ from gqlalchemy.models import (
     TriggerEventType,
     TriggerExecutionPhase,
 )
+from gqlalchemy.query_builder import QueryBuilder, Unwind
 
-from abc import ABC, abstractmethod
-from enum import Enum
-from dataclasses import dataclass, field
-from dacite import from_dict
-from pyarrow import fs
-from typing import List, Dict, Any, Optional, Union
-import pyarrow.dataset as ds
-import adlfs
-import platform
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"

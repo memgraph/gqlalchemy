@@ -12,23 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
 import re
+
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from gqlalchemy.memgraph import Connection, Memgraph
-from gqlalchemy.graph_algorithms.integrated_algorithms import IntegratedAlgorithm
-from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
-from gqlalchemy.models import Node, Relationship
 from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArgumentsInSet,
-    GQLAlchemyLiteralAndExpressionMissingInWhere,
-    GQLAlchemyLiteralAndExpressionMissingInSet,
     GQLAlchemyExtraKeywordArgumentsInWhere,
+    GQLAlchemyLiteralAndExpressionMissingInSet,
+    GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
 )
+from gqlalchemy.graph_algorithms.integrated_algorithms import IntegratedAlgorithm
+from gqlalchemy.memgraph import Connection, Memgraph
+from gqlalchemy.models import Node, Relationship
+from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 
 
 class DeclarativeBaseTypes:

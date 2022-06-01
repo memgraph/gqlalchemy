@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-
 import pytest
+
 from gqlalchemy import Memgraph, Node, Relationship
+from typing import List
 
 
 def compare_nodes(actual: List[Node], expected: List[Node]):

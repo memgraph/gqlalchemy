@@ -14,8 +14,9 @@
 
 import pytest
 
-from gqlalchemy import SQLitePropertyDatabase, Memgraph, Node, Field, Relationship
 from typing import Optional
+
+from gqlalchemy import Field, Memgraph, Node, Relationship, SQLitePropertyDatabase
 
 
 memgraph = Memgraph()

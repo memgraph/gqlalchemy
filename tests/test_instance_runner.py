@@ -16,6 +16,7 @@ import docker
 import os
 import pathlib
 import pytest
+
 from gqlalchemy.instance_runner import (
     DockerImage,
     MemgraphInstanceBinary,
