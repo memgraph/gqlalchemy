@@ -1070,10 +1070,21 @@ class DeclarativeBase(ABC):
         """Return data from the query.
 
         Args:
-            results: An optional string, tuple or list of strings and tuples for alias names.
+            results: An optional string, tuple or iterable of strings and tuples for alias names.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Examples:
+            Return all variables from a query:
+
+            Python: `match().node(labels="Person", variable="p").return_().execute()`
+            Cypher: `MATCH (p:Person) RETURN *;`
+
+            Return specific variables from a query:
+
+            Python: `match().node(labels="Person", variable="p1").to().node(labels="Person", variable="p2").return_([("p1":"first"), "p2"]).execute()`
+            Cypher: `MATCH (p1:Person)-[]->(p2:Person) RETURN p1 AS first, p2;`
         """
         self._query.append(ReturnPartialQuery(results=results))
         self._fetch_results = True

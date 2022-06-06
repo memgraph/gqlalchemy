@@ -157,6 +157,23 @@ def test_return_results_2(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_return_results_2_new(memgraph):
+    query_builder = (
+        match()
+        .node(labels="Person", variable="p1")
+        .to()
+        .node(labels="Person", variable="p2")
+        .return_([("p1", "first"), "p2"])
+    )
+
+    expected_query = " MATCH (p1:Person)-[]->(p2:Person) RETURN p1 AS first, p2 "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_return_results_3(memgraph):
     query_builder = match().node(labels="Person", variable="p").return_().limit(10)
 
