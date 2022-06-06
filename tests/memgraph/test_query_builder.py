@@ -156,7 +156,7 @@ def test_union(memgraph):
         QueryBuilder()
         .match()
         .node(variable="n1", labels="Node1")
-        .return_(resuls="n1")
+        .return_(results="n1")
         .union(include_duplicates=False)
         .match()
         .node(variable="n2", labels="Node2")
