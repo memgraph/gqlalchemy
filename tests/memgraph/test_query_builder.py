@@ -97,13 +97,13 @@ def test_multiple_matches(memgraph):
     query_builder = (
         QueryBuilder()
         .match()
-        .node("L1", variable="n")
-        .to("TO")
-        .node("L2", variable="m")
-        .match(True)
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .match(optional=True)
         .node(variable="n")
-        .to("TO")
-        .node("L3")
+        .to(relationship_type="TO")
+        .node(labels="L3")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) OPTIONAL MATCH (n)-[:TO]->(:L3) RETURN * "
@@ -132,7 +132,7 @@ def test_with_empty(memgraph):
 
 
 def test_with(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").with_({"n": ""})
+    query_builder = QueryBuilder().match().node(variable="n").with_(results={"n": ""})
     expected_query = " MATCH (n) WITH n "
 
     with patch.object(Memgraph, "execute", return_value=None) as mock:
@@ -142,7 +142,7 @@ def test_with(memgraph):
 
 
 def test_with_new_args(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").with_("n")
+    query_builder = QueryBuilder().match().node(variable="n").with_(results="n")
     expected_query = " MATCH (n) WITH n "
 
     with patch.object(Memgraph, "execute", return_value=None) as mock:
@@ -156,7 +156,7 @@ def test_union(memgraph):
         QueryBuilder()
         .match()
         .node(variable="n1", labels="Node1")
-        .return_("n1")
+        .return_(resuls="n1")
         .union(include_duplicates=False)
         .match()
         .node(variable="n2", labels="Node2")
@@ -245,7 +245,7 @@ def test_delete_list(memgraph):
         .node(variable="n1", labels="Node1")
         .to()
         .node(variable="n2", labels="Node2")
-        .delete(["n1", "n2"])
+        .delete(variable_expressions=["n1", "n2"])
     )
     expected_query = " MATCH (n1:Node1)-[]->(n2:Node2) DELETE n1, n2 "
 
@@ -255,7 +255,7 @@ def test_delete_list(memgraph):
 
 
 def test_simple_merge(memgraph):
-    query_builder = merge().node("L1", variable="n").to("TO").node("L2")
+    query_builder = merge().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2")
     expected_query = " MERGE (n:L1)-[:TO]->(:L2)"
 
     with patch.object(Memgraph, "execute", return_value=None) as mock:
@@ -265,7 +265,9 @@ def test_simple_merge(memgraph):
 
 
 def test_base_merge(memgraph):
-    query_builder = QueryBuilder().merge().node("L1", variable="n").to("TO").node("L2").return_()
+    query_builder = (
+        QueryBuilder().merge().node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2").return_()
+    )
     expected_query = " MERGE (n:L1)-[:TO]->(:L2) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -276,7 +278,12 @@ def test_base_merge(memgraph):
 
 def test_simple_create_with_variables(memgraph):
     query_builder = (
-        QueryBuilder().create().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+        QueryBuilder()
+        .create()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO", variable="e")
+        .node(labels="L2", variable="m")
+        .return_()
     )
     expected_query = " CREATE (n:L1)-[e:TO]->(m:L2) RETURN * "
 
@@ -288,7 +295,12 @@ def test_simple_create_with_variables(memgraph):
 
 def test_simple_match_with_variables(memgraph):
     query_builder = (
-        QueryBuilder().match().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO", variable="e")
+        .node(labels="L2", variable="m")
+        .return_()
     )
     expected_query = " MATCH (n:L1)-[e:TO]->(m:L2) RETURN * "
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -298,7 +310,13 @@ def test_simple_match_with_variables(memgraph):
 
 
 def test_simple_merge_with_variables(memgraph):
-    query_builder = merge().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+    query_builder = (
+        merge()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO", variable="e")
+        .node(labels="L2", variable="m")
+        .return_()
+    )
     expected_query = " MERGE (n:L1)-[e:TO]->(m:L2) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -309,7 +327,12 @@ def test_simple_merge_with_variables(memgraph):
 
 def test_base_merge_with_variables(memgraph):
     query_builder = (
-        QueryBuilder().merge().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+        QueryBuilder()
+        .merge()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO", variable="e")
+        .node(labels="L2", variable="m")
+        .return_()
     )
     expected_query = " MERGE (n:L1)-[e:TO]->(m:L2) RETURN * "
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -349,13 +372,13 @@ def test_multiple_merges(memgraph):
     query_builder = (
         QueryBuilder()
         .merge()
-        .node("L1", variable="n")
-        .to("TO")
-        .node("L2", variable="m")
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
         .merge()
         .node(variable="n")
-        .to("TO")
-        .node("L3")
+        .to(relationship_type="TO")
+        .node(labels="L3")
         .return_()
     )
     expected_query = " MERGE (n:L1)-[:TO]->(m:L2) MERGE (n)-[:TO]->(:L3) RETURN * "
@@ -386,9 +409,9 @@ def test_where_literal(memgraph):
     query_builder = (
         QueryBuilder()
         .match()
-        .node("L1", variable="n")
-        .to("TO")
-        .node("L2", variable="m")
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
         .where(item="n.name", operator="=", literal="best_name")
         .return_()
     )
@@ -1060,7 +1083,12 @@ def test_and_or_xor_not_where(memgraph):
 
 def test_get_single(memgraph):
     query_builder = (
-        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(results="n")
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .return_(results="n")
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN n "
 
@@ -1071,7 +1099,14 @@ def test_get_single(memgraph):
 
 
 def test_return_empty(memgraph):
-    query_builder = QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_()
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .return_()
+    )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -1084,9 +1119,9 @@ def test_return_alias(memgraph):
     query_builder = (
         QueryBuilder()
         .match()
-        .node("L1", variable="n")
-        .to("TO")
-        .node("L2", variable="m")
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
         .return_(results=("L1", "first"))
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first "
@@ -1101,9 +1136,9 @@ def test_return_alias_dict(memgraph):
     query_builder = (
         QueryBuilder()
         .match()
-        .node("L1", variable="n")
-        .to("TO")
-        .node("L2", variable="m")
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
         .return_(results={"L1": "first"})
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first "
@@ -1184,9 +1219,9 @@ def test_return_multiple_alias(memgraph):
     query_builder = (
         QueryBuilder()
         .match()
-        .node("L1", variable="n")
-        .to("TO")
-        .node("L2", variable="m")
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
         .return_(results=[("L1", "first"), "L2", ("L3", "third")])
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first, L2, L3 AS third "
@@ -1206,9 +1241,9 @@ def test_return_multiple_alias_dict(memgraph):
     query_builder = (
         QueryBuilder()
         .match()
-        .node("L1", variable="n")
-        .to("TO")
-        .node("L2", variable="m")
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
         .return_(results={"L1": "first", "L2": "", "L3": "third"})
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first, L2, L3 AS third "
@@ -1221,7 +1256,12 @@ def test_return_multiple_alias_dict(memgraph):
 
 def test_return_alias_same_as_variable(memgraph):
     query_builder = (
-        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(("L1", "L1"))
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .return_(results=("L1", "L1"))
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
@@ -1233,7 +1273,12 @@ def test_return_alias_same_as_variable(memgraph):
 
 def test_return_alias_same_as_variable_dict(memgraph):
     query_builder = (
-        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(results={"L1": "L1"})
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .return_(results={"L1": "L1"})
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
@@ -1245,7 +1290,12 @@ def test_return_alias_same_as_variable_dict(memgraph):
 
 def test_return_alias_empty(memgraph):
     query_builder = (
-        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(results="L1")
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .return_(results="L1")
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
@@ -1257,7 +1307,12 @@ def test_return_alias_empty(memgraph):
 
 def test_return_alias_empty_dict(memgraph):
     query_builder = (
-        QueryBuilder().match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(results={"L1": ""})
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .return_(results={"L1": ""})
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
@@ -1502,7 +1557,7 @@ def test_base_class_unwind(memgraph):
 
 
 def test_base_class_with_dict(memgraph):
-    query_builder = with_({"10": "n"}).return_(results={"n": ""})
+    query_builder = with_(results={"10": "n"}).return_(results={"n": ""})
     expected_query = " WITH 10 AS n RETURN n "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -1512,7 +1567,7 @@ def test_base_class_with_dict(memgraph):
 
 
 def test_base_class_with_tuple(memgraph):
-    query_builder = with_(("10", "n")).return_(results=("n", ""))
+    query_builder = with_(results=("10", "n")).return_(results=("n", ""))
     expected_query = " WITH 10 AS n RETURN n "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
@@ -1576,9 +1631,9 @@ def test_create_with_properties(memgraph):
 def test_from(memgraph):
     query_builder = (
         match()
-        .node("L1", variable="n")
+        .node(labels="L1", variable="n")
         .from_(relationship_type="FROM", variable="e")
-        .node("L2", variable="m")
+        .node(labels="L2", variable="m")
         .return_()
     )
     expected_query = " MATCH (n:L1)<-[e:FROM]-(m:L2) RETURN * "
@@ -1608,7 +1663,7 @@ def test_to(memgraph):
 def test_add_string_partial(memgraph):
     query_builder = (
         match()
-        .node("Node1", variable="n")
+        .node(labels="Node1", variable="n")
         .to(relationship_type="TO", variable="e")
         .add_custom_cypher("(m:L2) ")
         .return_()
@@ -2013,7 +2068,7 @@ def test_wShortest_filter_label():
 def test_property_variable():
     query = (
         QueryBuilder()
-        .with_({"[1,2,3]": "list"})
+        .with_(results={"[1,2,3]": "list"})
         .unwind("list", "element")
         .create()
         .node(num=PropertyVariable(name="element"))
@@ -2030,7 +2085,7 @@ def test_property_variable():
 def test_property_variable_edge():
     query = (
         QueryBuilder()
-        .with_({"15": "number"})
+        .with_(results={"15": "number"})
         .create()
         .node(variable="n")
         .to(relationship_type="REL", num=PropertyVariable(name="number"))
