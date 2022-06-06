@@ -1155,12 +1155,12 @@ class DeclarativeBase(ABC):
         Examples:
             Yield all data from a query:
 
-            Python: `call(procedure='pagerank.get').yield_().return_()`
+            Python: `call(procedure='pagerank.get').yield_().return_().execute()`
             Cypher: `CALL pagerank.get() YIELD * RETURN *;`
 
             Yield some data from a query:
 
-            Python: `.call(procedure='pagerank.get').yield_(results=['node', 'rank']).return_(results=['node','rank'])`
+            Python: `.call(procedure='pagerank.get').yield_(results=['node', 'rank']).return_(results=['node','rank']).execute()`
             Cypher: `CALL pagerank.get() YIELD node, rank RETURN node, rank;`
         """
         self._query.append(YieldPartialQuery(results))
@@ -1217,7 +1217,7 @@ class DeclarativeBase(ABC):
             Ordering query results by the property `n.name` in ascending order
             and by the property `n.last_name` in descending order:
 
-            Python: `match().node(variable='n').return_().order_by(properties=['n.name', ('n.last_name', Order.DESC)])`
+            Python: `match().node(variable='n').return_().order_by(properties=['n.name', ('n.last_name', Order.DESC)]).execute()`
             Cypher: `MATCH (n) RETURN * ORDER BY n.name, n.last_name DESC;`
         """
         self._query.append(OrderByPartialQuery(properties=properties))
@@ -1343,24 +1343,29 @@ class DeclarativeBase(ABC):
             self: A partial Cypher query built from the given parameters.
 
         Examples:
-            Setting or updating a property.
+            Set or update a property.
 
-            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n.population', operator=SetOperator.ASSIGNMENT, literal=83000001).return_()`
+            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n.population', operator=SetOperator.ASSIGNMENT, literal=83000001).return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN *;`
 
-            Setting or updating multiple properties.
+            Set or update multiple properties.
 
-            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n.population', operator=SetOperator.ASSIGNMENT, literal=83000001).set_(item='n.capital', operator=SetOperator.ASSIGNMENT, literal='Berlin').return_()`
+            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n.population', operator=SetOperator.ASSIGNMENT, literal=83000001).set_(item='n.capital', operator=SetOperator.ASSIGNMENT, literal='Berlin').return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN *;`
 
-            Setting node label.
+            Set node label.
 
-            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n', operator=SetOperator.LABEL_FILTER, expression='Land').return_()`
+            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n', operator=SetOperator.LABEL_FILTER, expression='Land').return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN *;`
 
-            Setting or updating all properties using map.
+            Replace all properties using map.
 
-            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator='=', literal='Germany').set_(item='c', operator=SetOperator.INCREMENT, literal={'name': 'Germany', 'population': '85000000'}).return_()`
+            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator='=', literal='Germany').set_(item='c', operator=SetOperator.ASSIGNMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
+            Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c = {name: 'Germany', population: '85000000'} RETURN *;`
+
+            Update all properties using map.
+
+            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator='=', literal='Germany').set_(item='c', operator=SetOperator.INCREMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
             Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN *;`
 
         """
