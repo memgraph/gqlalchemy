@@ -30,6 +30,7 @@ from .exceptions import (
     GQLAlchemyTooLargeTupleInResultQuery,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
+    GQLAlchemyOperatorTypeError,
 )
 
 
@@ -194,6 +195,9 @@ class WhereConditionPartialQuery(PartialQuery):
         literal = kwargs.get(WhereConditionPartialQuery._LITERAL)
         value = kwargs.get(WhereConditionPartialQuery._EXPRESSION)
 
+        if isinstance(operator, str) and operator not in WhereOperator._value2member_map_:
+            raise GQLAlchemyOperatorTypeError(clause=self.type)
+
         if value is None:
             if literal is None:
                 raise GQLAlchemyLiteralAndExpressionMissingInWhere
@@ -203,7 +207,7 @@ class WhereConditionPartialQuery(PartialQuery):
             raise GQLAlchemyExtraKeywordArgumentsInWhere
 
         return ("" if operator in [WhereOperator.LABEL_FILTER, ":"] else " ").join(
-            [item, operator if operator in WhereOperator._value2member_map_ else operator.value, value]
+            [item, operator if isinstance(operator, str) else operator.value, value]
         )
 
 
@@ -580,6 +584,9 @@ class SetPartialQuery(PartialQuery):
         literal = kwargs.get(SetPartialQuery._LITERAL)
         value = kwargs.get(SetPartialQuery._EXPRESSION)
 
+        if isinstance(operator, str) and operator not in SetOperator._value2member_map_:
+            raise GQLAlchemyOperatorTypeError(clause=self.type)
+
         if value is None:
             if literal is None:
                 raise GQLAlchemyLiteralAndExpressionMissingInSet
@@ -591,7 +598,7 @@ class SetPartialQuery(PartialQuery):
         return ("" if operator in [SetOperator.LABEL_FILTER, ":"] else " ").join(
             [
                 item,
-                operator if operator in SetOperator._value2member_map_ else operator.value,
+                operator if isinstance(operator, str) else operator.value,
                 value,
             ]
         )

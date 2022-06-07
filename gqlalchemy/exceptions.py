@@ -73,6 +73,10 @@ TOO_LARGE_TUPLE_IN_RESULT_QUERY = """
 Tuple argument in {clause} clause only has two arguments - variable name and alias.
 """
 
+OPERATOR_TYPE_ERROR = """
+Operator argument in {clause} clause that is a string must be a valid operator.
+"""
+
 
 class QueryClause(Enum):
     WHERE = "WHERE"
@@ -176,6 +180,11 @@ class GQLAlchemyDatabaseError(GQLAlchemyError):
     def __init__(self, message):
         super().__init__()
         self.message = message
+
+
+class GQLAlchemyOperatorTypeError(TypeError):
+    def __init__(self, clause) -> None:
+        self.message = OPERATOR_TYPE_ERROR.format(clause=clause)
 
 
 def gqlalchemy_error_handler(func):

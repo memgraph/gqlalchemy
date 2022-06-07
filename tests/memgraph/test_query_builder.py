@@ -21,6 +21,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArgumentsInWhere,
     GQLAlchemyResultQueryTypeError,
     GQLAlchemyTooLargeTupleInResultQuery,
+    GQLAlchemyOperatorTypeError,
 )
 import pytest
 from gqlalchemy import (
@@ -422,6 +423,19 @@ def test_where_label_without_operator_enum(memgraph):
         query_builder.execute()
 
     mock.assert_called_with(expected_query)
+
+
+def test_where_label_with_rand_string_operator(memgraph):
+    with pytest.raises(GQLAlchemyOperatorTypeError):
+        (
+            QueryBuilder()
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .where(item="n", operator="heyhey", expression="Node")
+            .return_()
+        )
 
 
 def test_where_label(memgraph):
@@ -1541,6 +1555,11 @@ def test_set_label_without_operator_enum(memgraph):
     expected_query = " SET a:L1"
 
     assert query_builder.construct_query() == expected_query
+
+
+def test_set_label_with_rand_operator(memgraph):
+    with pytest.raises(GQLAlchemyOperatorTypeError):
+        QueryBuilder().set_(item="a", operator="heyhey", expression="L1")
 
 
 def test_set_label(memgraph):
