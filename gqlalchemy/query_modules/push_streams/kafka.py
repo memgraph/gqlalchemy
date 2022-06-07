@@ -22,9 +22,6 @@ def create_push_stream(
     if not isinstance(topic, str):
         raise TypeError("Invalid type on second argument!")
 
-    # if not isinstance(config, dict):
-    #     raise TypeError("Invalid type on third argument!")
-
     producer = KafkaProducer(value_serializer=lambda m: json.dumps(m).encode("utf-8"), **config)
 
     producers_by_name[stream_name] = producer
