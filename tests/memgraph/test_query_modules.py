@@ -12,11 +12,9 @@ from gqlalchemy.exceptions import GQLAlchemyFileNotFoundError
 def test_add_query_module_valid(file_path, module_name):
     memgraph_db = Memgraph()._add_query_module(file_path=file_path, module_name=module_name)
 
-    module = list(
-        memgraph_db.execute_and_fetch("CALL mg.get_module_file('/var/lib/memgraph/internal_modules/kafka.py') YIELD *")
-    )
+    module_paths = list(memgraph_db.execute_and_fetch("CALL mg.get_module_files() YIELD path"))
 
-    assert len(module) == 1
+    assert any("kafka" in path["path"] for path in module_paths)
 
 
 @pytest.mark.parametrize(
