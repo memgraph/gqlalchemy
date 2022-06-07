@@ -593,8 +593,8 @@ class Memgraph:
             raise GQLAlchemyFileNotFoundError(path=file_path)
 
         file_text = open(file_path, "r").read().replace("'", '"')
-        query = f"CALL mg.create_module_file('{module_name}','{file_text}') YIELD *"
-        self.execute_and_fetch(query)
+        query = f"CALL mg.create_module_file('{module_name}','{file_text}') YIELD *;"
+        list(self.execute_and_fetch(query))
 
         return self
 
@@ -604,7 +604,7 @@ class Memgraph:
             Memgraph: Memgraph instance
         """
         file_path = "gqlalchemy/query_modules/push_streams/kafka.py"
-        module_name = "kafka.py"
+        module_name = "kafka_stream.py"
 
         return self._add_query_module(file_path=file_path, module_name=module_name)
 
@@ -614,6 +614,6 @@ class Memgraph:
             Memgraph: Memgraph instance
         """
         file_path = "gqlalchemy/query_modules/push_streams/power_bi.py"
-        module_name = "power_bi.py"
+        module_name = "power_bi_stream.py"
 
         return self._add_query_module(file_path=file_path, module_name=module_name)
