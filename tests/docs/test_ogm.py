@@ -1,4 +1,5 @@
 from gqlalchemy import Memgraph, Node, Relationship, Field, match
+from gqlalchemy.query_builder import WhereOperator
 from typing import Optional
 
 db = Memgraph()
@@ -65,7 +66,11 @@ class TestMapNodesAndRelationships:
         ).save(db)
 
         result = next(
-            match().node("Streamer", variable="s").where(item="s.id", operator="=", literal="7").return_().execute()
+            match()
+            .node("Streamer", variable="s")
+            .where(item="s.id", operator=WhereOperator.EQUAL, literal="7")
+            .return_()
+            .execute()
         )["s"]
 
         assert result.id == streamer.id
@@ -113,7 +118,11 @@ class TestSaveNodesAndRelationships:
         language = Language(name="en").save(db)
 
         result = next(
-            match().node("UserSave", variable="u").where(item="u.id", operator="=", literal="3").return_().execute()
+            match()
+            .node("UserSave", variable="u")
+            .where(item="u.id", operator=WhereOperator.EQUAL, literal="3")
+            .return_()
+            .execute()
         )["u"]
 
         assert result.id == user.id
@@ -131,7 +140,11 @@ class TestSaveNodesAndRelationships:
         db.save_node(language)
 
         result = next(
-            match().node("UserSave", variable="u").where(item="u.id", operator="=", literal="4").return_().execute()
+            match()
+            .node("UserSave", variable="u")
+            .where(item="u.id", operator=WhereOperator.EQUAL, literal="4")
+            .return_()
+            .execute()
         )["u"]
 
         assert result.id == user.id
