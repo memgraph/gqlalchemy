@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 from gqlalchemy import match, call, create, merge
 from gqlalchemy.memgraph import Memgraph
-from gqlalchemy.query_builder import WhereOperator
+from gqlalchemy.query_builder import Operator
 
 
 def test_call_procedures_1(memgraph):
@@ -121,8 +121,8 @@ def test_filter_data_1(memgraph):
         .node("Person", variable="p1")
         .to("FRIENDS_WITH")
         .node("Person", variable="p2")
-        .where(item="n.name", operator=WhereOperator.EQUAL, literal="Ron")
-        .or_where(item="m.id", operator=WhereOperator.EQUAL, literal=0)
+        .where(item="n.name", operator=Operator.EQUAL, literal="Ron")
+        .or_where(item="m.id", operator=Operator.EQUAL, literal=0)
         .return_()
     )
 

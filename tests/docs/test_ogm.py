@@ -1,5 +1,5 @@
 from gqlalchemy import Memgraph, Node, Relationship, Field, match
-from gqlalchemy.query_builder import WhereOperator
+from gqlalchemy.query_builder import Operator
 from typing import Optional
 
 db = Memgraph()
@@ -68,7 +68,7 @@ class TestMapNodesAndRelationships:
         result = next(
             match()
             .node("Streamer", variable="s")
-            .where(item="s.id", operator=WhereOperator.EQUAL, literal="7")
+            .where(item="s.id", operator=Operator.EQUAL, literal="7")
             .return_()
             .execute()
         )["s"]
@@ -120,7 +120,7 @@ class TestSaveNodesAndRelationships:
         result = next(
             match()
             .node("UserSave", variable="u")
-            .where(item="u.id", operator=WhereOperator.EQUAL, literal="3")
+            .where(item="u.id", operator=Operator.EQUAL, literal="3")
             .return_()
             .execute()
         )["u"]
@@ -142,7 +142,7 @@ class TestSaveNodesAndRelationships:
         result = next(
             match()
             .node("UserSave", variable="u")
-            .where(item="u.id", operator=WhereOperator.EQUAL, literal="4")
+            .where(item="u.id", operator=Operator.EQUAL, literal="4")
             .return_()
             .execute()
         )["u"]
