@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.py-version }}
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -37,7 +37,7 @@ jobs:
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
           sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
           sudo systemctl stop memgraph
-          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.py-version }}.log' &
+          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.python-version }}.log' &
           sleep 1 # Wait for Memgraph a bit.
       - name: Install Neo4j
         run: |
@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.py-version }}
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -77,7 +77,7 @@ jobs:
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /memgraph/memgraph-community.deb
           dpkg -i /memgraph/memgraph-community.deb
           mkdir /mnt/c/memgraph
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.py-version }}.log' &
+          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
           sleep 1 # Wait for Memgraph a bit.
       - name: Download, install and run Neo4j under WSL
         shell: wsl-bash {0} # root shell
@@ -86,14 +86,13 @@ jobs:
           add-apt-repository "deb https://debian.neo4j.com stable 4.4"
           apt-get -y install neo4j=1:4.4.7
           neo4j-admin set-initial-password test
-          mkdir /mnt/c/neo4j/${{ matrix.py-version }}
+          mkdir /mnt/c/neo4j/${{ matrix.python-version }}
           sudo sed -i 's/#dbms.connector.bolt.listen_address=:7687/dbms.connector.bolt.listen_address=:7688/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/#dbms.connector.bolt.advertised_address=:7687/dbms.connector.bolt.advertised_address=:7688/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/#dbms.default_listen_address=0.0.0.0/dbms.default_listen_address=0.0.0.0/g' /etc/neo4j/neo4j.conf
-          sudo sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j\/${{ matrix.py-version }}/g' /etc/neo4j/neo4j.conf
-          cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.py-version }}/neo4j.conf
-          systemctl enable neo4j.service
-          sudo service neo4j start
+          sudo sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j\/${{ matrix.python-version }}/g' /etc/neo4j/neo4j.conf
+          cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.python-version }}/neo4j.conf
+          systemctl start neo4j.service
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
