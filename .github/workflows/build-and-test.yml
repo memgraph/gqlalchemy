@@ -79,6 +79,10 @@ jobs:
           mkdir /mnt/c/memgraph
           runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
           sleep 1 # Wait for Memgraph a bit.
+      - name: Setup poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
       - name: Download, install and run Neo4j under WSL
         shell: wsl-bash {0} # root shell
         run: |
@@ -94,13 +98,7 @@ jobs:
           sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j\/${{ matrix.python-version }}/g' /etc/neo4j/neo4j.conf
           cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.python-version }}/neo4j.conf
           service neo4j start
-          sleep 20 # Wait for Neo4j a bit.
-      - name: Setup poetry
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: ${{ env.POETRY_VERSION }}
-      - name: Test project
-        run: |
+          sleep 10 # Wait for Neo4j a bit.
           poetry install
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Save Memgraph Logs
