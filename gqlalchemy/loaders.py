@@ -28,6 +28,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass, field
 from dacite import from_dict
+from gqlalchemy.query_builder import Operator
 from pyarrow import fs
 from typing import List, Dict, Any, Optional, Union
 import pyarrow.dataset as ds
@@ -382,8 +383,10 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(item="$node_a:$label_2", operator="MATCH", expression="($node_b:$label_1)")
-        .where(item="$node_b.$property_1", operator="=", expression="$node_a.$property_2")
+        .where(item="$node_a", operator=Operator.LABEL_FILTER, expression="$label_2")
+        .match()
+        .node(labels="$label_1", variable="$node_b")
+        .where(item="$node_b.$property_1", operator=Operator.EQUAL, expression="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
         .to(relationship_type="$relationship_type")
