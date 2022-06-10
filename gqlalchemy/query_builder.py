@@ -1145,6 +1145,13 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            For each number in a list, create a node:
+
+            Python: `update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable("i"))`
+                    `query_builder = QueryBuilder().foreach("i", "[1, 2, 3]", update_clause.construct_query())`
+            Cypher: `FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) )`
         """
         if isinstance(update_clauses, list):
             update_clauses = " ".join(update_clauses)
