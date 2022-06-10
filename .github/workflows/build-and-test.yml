@@ -86,7 +86,7 @@ jobs:
           add-apt-repository "deb https://debian.neo4j.com stable 4.4"
           apt-get -y install neo4j=1:4.4.7
           neo4j-admin set-initial-password test
-          mkdir /mnt/c/neo4j/${{ matrix.python-version }}
+          mkdir -p /mnt/c/neo4j/${{ matrix.python-version }}
           sudo sed -i 's/#dbms.connector.bolt.listen_address=:7687/dbms.connector.bolt.listen_address=:7688/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/#dbms.connector.bolt.advertised_address=:7687/dbms.connector.bolt.advertised_address=:7688/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/#dbms.default_listen_address=0.0.0.0/dbms.default_listen_address=0.0.0.0/g' /etc/neo4j/neo4j.conf
