@@ -1268,7 +1268,7 @@ def test_base_class_with(memgraph):
 
 def test_base_class_foreach(memgraph):
     update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable(name="i"))
-    query_builder = foreach(variable="i", expression="[1, 2, 3]", update_clause=update_clause.construct_query())
+    query_builder = foreach(variable="i", expression="[1, 2, 3]", update_clauses=update_clause.construct_query())
     expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
 
     with patch.object(Memgraph, "execute", return_value=None) as mock:
@@ -1524,7 +1524,9 @@ def test_unsaved_node_relationship_instances(memgraph):
 
 def test_foreach():
     update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable(name="i"))
-    query_builder = QueryBuilder().foreach(variable="i", expression="[1, 2, 3]", update_clause=update_clause.construct_query())
+    query_builder = QueryBuilder().foreach(
+        variable="i", expression="[1, 2, 3]", update_clause=update_clause.construct_query()
+    )
     expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
 
     with patch.object(Memgraph, "execute", return_value=None) as mock:
@@ -1563,7 +1565,7 @@ def test_foreach_multiple_update_clauses():
         .foreach(
             variable="li",
             expression="n.prop",
-            update_clauses=[update_clause_1.construct_query(), update_clause_2.construct_query()],
+            update_clause=[update_clause_1.construct_query(), update_clause_2.construct_query()],
         )
         .return_({"n": ""})
     )
@@ -1619,12 +1621,12 @@ def test_bfs_bounds(lower_bound, upper_bound, expected_query):
 
 def test_foreach_nested():
     create_query = QueryBuilder().create().node(variable="u", prop=PropertyVariable(name="j"))
-    nested_query = QueryBuilder().foreach(variable="j", expression="i", update_clauses=create_query.construct_query())
+    nested_query = QueryBuilder().foreach(variable="j", expression="i", update_clause=create_query.construct_query())
     query = (
         QueryBuilder()
         .match()
         .node(variable="n")
-        .foreach(variable="i", expression="n.prop", update_clauses=nested_query.construct_query())
+        .foreach(variable="i", expression="n.prop", update_clause=nested_query.construct_query())
     )
 
     expected_query = " MATCH (n) FOREACH ( i IN n.prop | FOREACH ( j IN i | CREATE (u {prop: j}) ) ) "

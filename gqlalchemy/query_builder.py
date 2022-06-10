@@ -1133,7 +1133,7 @@ class DeclarativeBase(ABC):
         return result
 
     def foreach(
-        self, variable: str, expression: str, update_clauses: Union[str, List[str], Set[str]]
+        self, variable: str, expression: str, update_clause: Union[str, List[str], Set[str]]
     ) -> "DeclarativeBase":
         """Iterate over a list of elements and for every iteration run every update clause.
 
@@ -1153,10 +1153,10 @@ class DeclarativeBase(ABC):
                     `query_builder = QueryBuilder().foreach("i", "[1, 2, 3]", update_clause.construct_query())`
             Cypher: `FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) )`
         """
-        if isinstance(update_clauses, list):
-            update_clauses = " ".join(update_clauses)
+        if isinstance(update_clause, list):
+            update_clause = " ".join(update_clause)
 
-        self._query.append(ForeachPartialQuery(variable, expression, update_clauses))
+        self._query.append(ForeachPartialQuery(variable, expression, update_clause))
 
         return self
 
