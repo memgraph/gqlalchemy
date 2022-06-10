@@ -619,7 +619,7 @@ class DeclarativeBase(ABC):
         Example:
             Merge node with properties:
 
-            Python: `merge().node(variable='city').where(item='city.name', operator='=', literal='London').return_(results='city').execute()`
+            Python: `merge().node(variable='city').where(item='city.name', operator=Operator.EQUAL, literal='London').return_(results='city').execute()`
             Cypher: `MERGE (city) WHERE city.name = 'London' RETURN city;`
         """
         self._query.append(MergePartialQuery())
@@ -833,17 +833,17 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by the equality of `name` properties of two connected nodes.
 
-            Python: `match().node(variable='n').to().node(variable='m').where(item='n.name', operator='=', expression='m.name').return_()`
+            Python: `match().node(variable='n').to().node(variable='m').where(item='n.name', operator=Operator.EQUAL, expression='m.name').return_()`
             Cypher: `MATCH (n)-[]->(m) WHERE n.name = m.name RETURN *;`
 
             Filtering query results by the node label.
 
-            Python: `match().node(variable='n').where(item='n', operator=':', expression='User').return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').return_()`
             Cypher: `MATCH (n) WHERE n:User RETURN *;`
 
             Filtering query results by the comparison of node property and literal.
 
-            Python: `match().node(variable='n').where(item='n.age', operator='>', literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n.age > 18 RETURN *;`
         """
         # WHERE item operator (literal | expression)
@@ -898,7 +898,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable='n').where(item='n', operator=':', expression='User').and_where(item='n.age', operator='>', literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').and_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User AND n.age > 18 RETURN *;`
         """
         self._query.append(AndWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -922,7 +922,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable='n').where(item='n', operator=':', expression='User').and_not_where(item='n.age', operator='>', literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').and_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User AND NOT n.age > 18 RETURN *;`
         """
         self._query.append(AndNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -946,7 +946,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable='n').where(item='n', operator=':', expression='User').or_where(item='n.age', operator='>', literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').or_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User OR n.age > 18 RETURN *;`
         """
         self._query.append(OrWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -970,7 +970,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable='n').where(item='n', operator=':', expression='User').or_not_where(item='n.age', operator='>', literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').or_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User OR NOT n.age > 18 RETURN *;`
         """
         self._query.append(OrNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -994,7 +994,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable='n').where(item='n', operator=':', expression='User').xor_where(item='n.age', operator='>', literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').xor_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User XOR n.age > 18 RETURN *;`
         """
         self._query.append(XorWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -1018,7 +1018,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable='n').where(item='n', operator=':', expression='User').xor_not_where(item='n.age', operator='>', literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').xor_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User XOR NOT n.age > 18 RETURN *;`
         """
         self._query.append(XorNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -1345,27 +1345,27 @@ class DeclarativeBase(ABC):
         Examples:
             Set or update a property.
 
-            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n.population', operator=SetOperator.ASSIGNMENT, literal=83000001).return_().execute()`
+            Python: `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n.population', operator=Operator.ASSIGNMENT, literal=83000001).return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN *;`
 
             Set or update multiple properties.
 
-            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n.population', operator=SetOperator.ASSIGNMENT, literal=83000001).set_(item='n.capital', operator=SetOperator.ASSIGNMENT, literal='Berlin').return_().execute()`
+            Python: `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n.population', operator=Operator.ASSIGNMENT, literal=83000001).set_(item='n.capital', operator=Operator.ASSIGNMENT, literal='Berlin').return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN *;`
 
             Set node label.
 
-            Python: `match().node(variable='n').where(item='n.name', operator='=', literal='Germany').set_(item='n', operator=SetOperator.LABEL_FILTER, expression='Land').return_().execute()`
+            Python: `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n', operator=Operator.LABEL_FILTER, expression='Land').return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN *;`
 
             Replace all properties using map.
 
-            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator='=', literal='Germany').set_(item='c', operator=SetOperator.ASSIGNMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
+            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator=Operator.EQUAL, literal='Germany').set_(item='c', operator=Operator.ASSIGNMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
             Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c = {name: 'Germany', population: '85000000'} RETURN *;`
 
             Update all properties using map.
 
-            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator='=', literal='Germany').set_(item='c', operator=SetOperator.INCREMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
+            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator=Operator.EQUAL, literal='Germany').set_(item='c', operator=Operator.INCREMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
             Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN *;`
 
         """
