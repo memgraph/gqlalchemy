@@ -15,7 +15,7 @@
 from string import Template
 
 from . import Memgraph
-from .query_builders.memgraph_query_builder import QueryBuilder, Unwind
+from .query_builders.memgraph_query_builder import Operator, QueryBuilder, Unwind
 from .models import (
     MemgraphIndex,
     MemgraphTrigger,
@@ -382,8 +382,10 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(item="$node_a:$label_2", operator="MATCH", expression="($node_b:$label_1)")
-        .where(item="$node_b.$property_1", operator="=", expression="$node_a.$property_2")
+        .where(item="$node_a", operator=Operator.LABEL_FILTER, expression="$label_2")
+        .match()
+        .node(labels="$label_1", variable="$node_b")
+        .where(item="$node_b.$property_1", operator=Operator.EQUAL, expression="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
         .to(relationship_type="$relationship_type")

@@ -23,15 +23,14 @@ from ..graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from ..models import Node, Relationship
 from ..exceptions import (
-    GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyExtraKeywordArguments,
     GQLAlchemyInstantiationError,
-    GQLAlchemyLiteralAndExpressionMissingInSet,
-    GQLAlchemyExtraKeywordArgumentsInWhere,
-    GQLAlchemyLiteralAndExpressionMissingInWhere,
+    GQLAlchemyLiteralAndExpressionMissing,
     GQLAlchemyResultQueryTypeError,
     GQLAlchemyTooLargeTupleInResultQuery,
     GQLAlchemyMissingOrder,
     GQLAlchemyOrderByTypeError,
+    GQLAlchemyOperatorTypeError,
 )
 
 
@@ -81,17 +80,24 @@ class Where(Enum):
     NOT = 5
 
 
+class Operator(Enum):
+    ASSIGNMENT = "="
+    EQUAL = "="
+    GEQ_THAN = ">="
+    GREATER_THAN = ">"
+    INEQUAL = "<>"
+    LABEL_FILTER = ":"
+    LESS_THAN = "<"
+    LEQ_THAN = "<="
+    NOT_EQUAL = "!="
+    INCREMENT = "+="
+
+
 class Order(Enum):
     ASC = 1
     ASCENDING = 2
     DESC = 3
     DESCENDING = 4
-
-
-class SetOperator(Enum):
-    ASSIGNMENT = "="
-    INCREMENT = "+="
-    LABEL_FILTER = ":"
 
 
 class NoVariablesMatchedException(Exception):
@@ -169,9 +175,8 @@ class CallPartialQuery(PartialQuery):
 class WhereConditionPartialQuery(PartialQuery):
     _LITERAL = "literal"
     _EXPRESSION = "expression"
-    _LABEL_FILTER = ":"
 
-    def __init__(self, item: str, operator: str, keyword: Where = Where.WHERE, is_negated: bool = False, **kwargs):
+    def __init__(self, item: str, operator: Operator, keyword: Where = Where.WHERE, is_negated: bool = False, **kwargs):
         super().__init__(type=keyword.name if not is_negated else f"{keyword.name} {Where.NOT.name}")
         self.query = self._build_where_query(item=item, operator=operator, **kwargs)
 
@@ -179,54 +184,65 @@ class WhereConditionPartialQuery(PartialQuery):
         """Constructs a where partial query."""
         return f" {self.type} {self.query} "
 
-    def _build_where_query(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def _build_where_query(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Builds parts of a WHERE Cypher query divided by the boolean operators."""
         literal = kwargs.get(WhereConditionPartialQuery._LITERAL)
         value = kwargs.get(WhereConditionPartialQuery._EXPRESSION)
 
+        operator_str = operator.value if isinstance(operator, Operator) else operator
+
+        if operator_str not in Operator._value2member_map_:
+            raise GQLAlchemyOperatorTypeError(clause=self.type)
+
         if value is None:
             if literal is None:
-                raise GQLAlchemyLiteralAndExpressionMissingInWhere
+                raise GQLAlchemyLiteralAndExpressionMissing(clause=self.type)
 
             value = to_cypher_value(literal)
         elif literal is not None:
-            raise GQLAlchemyExtraKeywordArgumentsInWhere
+            raise GQLAlchemyExtraKeywordArguments(clause=self.type)
 
-        return ("" if operator == WhereConditionPartialQuery._LABEL_FILTER else " ").join([item, operator, value])
+        return ("" if operator_str == Operator.LABEL_FILTER.value else " ").join(
+            [
+                item,
+                operator_str,
+                value,
+            ]
+        )
 
 
 class WhereNotConditionPartialQuery(WhereConditionPartialQuery):
-    def __init__(self, item: str, operator: str, keyword: Where = Where.WHERE, **kwargs):
+    def __init__(self, item: str, operator: Operator, keyword: Where = Where.WHERE, **kwargs):
         super().__init__(item=item, operator=operator, keyword=keyword, is_negated=True, **kwargs)
 
 
 class AndWhereConditionPartialQuery(WhereConditionPartialQuery):
-    def __init__(self, item: str, operator: str, **kwargs):
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(item=item, operator=operator, keyword=Where.AND, **kwargs)
 
 
 class AndNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
-    def __init__(self, item: str, operator: str, **kwargs):
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(item=item, operator=operator, keyword=Where.AND, **kwargs)
 
 
 class OrWhereConditionPartialQuery(WhereConditionPartialQuery):
-    def __init__(self, item: str, operator: str, **kwargs):
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(item=item, operator=operator, keyword=Where.OR, **kwargs)
 
 
 class OrNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
-    def __init__(self, item: str, operator: str, **kwargs):
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(item=item, operator=operator, keyword=Where.OR, **kwargs)
 
 
 class XorWhereConditionPartialQuery(WhereConditionPartialQuery):
-    def __init__(self, item: str, operator: str, **kwargs):
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(item=item, operator=operator, keyword=Where.XOR, **kwargs)
 
 
 class XorNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
-    def __init__(self, item: str, operator: str, **kwargs):
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(item=item, operator=operator, keyword=Where.XOR, **kwargs)
 
 
@@ -554,7 +570,7 @@ class SetPartialQuery(PartialQuery):
     _LITERAL = "literal"
     _EXPRESSION = "expression"
 
-    def __init__(self, item: str, operator: SetOperator, **kwargs):
+    def __init__(self, item: str, operator: Operator, **kwargs):
         super().__init__(DeclarativeBaseTypes.SET)
 
         self.query = self._build_set_query(item=item, operator=operator, **kwargs)
@@ -563,20 +579,31 @@ class SetPartialQuery(PartialQuery):
         """Constructs a set partial query."""
         return f" {self.type} {self.query}"
 
-    def _build_set_query(self, item: str, operator: SetOperator, **kwargs) -> "DeclarativeBase":
+    def _build_set_query(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Builds parts of a SET Cypher query divided by the boolean operators."""
         literal = kwargs.get(SetPartialQuery._LITERAL)
         value = kwargs.get(SetPartialQuery._EXPRESSION)
 
+        operator_str = operator.value if isinstance(operator, Operator) else operator
+
+        if operator_str not in Operator._value2member_map_:
+            raise GQLAlchemyOperatorTypeError(clause=self.type)
+
         if value is None:
             if literal is None:
-                raise GQLAlchemyLiteralAndExpressionMissingInSet
+                raise GQLAlchemyLiteralAndExpressionMissing(clause=self.type)
 
             value = to_cypher_value(literal)
         elif literal is not None:
-            raise GQLAlchemyExtraKeywordArgumentsInSet
+            raise GQLAlchemyExtraKeywordArguments(clause=self.type)
 
-        return ("" if operator == SetOperator.LABEL_FILTER else " ").join([item, operator.value, value])
+        return ("" if operator_str == Operator.LABEL_FILTER.value else " ").join(
+            [
+                item,
+                operator_str,
+                value,
+            ]
+        )
 
 
 class DeclarativeBase(ABC):
@@ -762,7 +789,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def where(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates a WHERE statement Cypher partial query.
 
         Args:
@@ -803,7 +830,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def where_not(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def where_not(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates a WHERE NOT statement Cypher partial query.
 
         Args:
@@ -831,7 +858,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def and_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def and_where(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates an AND statement as a part of WHERE Cypher partial query.
 
         Args:
@@ -855,7 +882,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def and_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def and_not_where(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates an AND NOT statement as a part of WHERE Cypher partial query.
 
         Args:
@@ -879,7 +906,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def or_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def or_where(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates an OR statement as a part of WHERE Cypher partial query.
 
         Args:
@@ -903,7 +930,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def or_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def or_not_where(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates an OR NOT statement as a part of WHERE Cypher partial query.
 
         Args:
@@ -927,7 +954,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def xor_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def xor_where(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates an XOR statement as a part of WHERE Cypher partial query.
 
         Args:
@@ -951,7 +978,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def xor_not_where(self, item: str, operator: str, **kwargs) -> "DeclarativeBase":
+    def xor_not_where(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
         """Creates an XOR NOT statement as a part of WHERE Cypher partial query.
 
         Args:
@@ -1196,7 +1223,7 @@ class DeclarativeBase(ABC):
             return result[retrieve]
         return result
 
-    def set_(self, item: str, operator: SetOperator, **kwargs):
+    def set_(self, item: str, operator: Operator, **kwargs):
         """Creates a SET statement Cypher partial query.
 
         Args:

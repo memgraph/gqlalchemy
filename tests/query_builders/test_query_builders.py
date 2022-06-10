@@ -14,13 +14,12 @@
 
 from datetime import datetime
 from gqlalchemy.exceptions import (
-    GQLAlchemyExtraKeywordArgumentsInSet,
+    GQLAlchemyExtraKeywordArguments,
     GQLAlchemyInstantiationError,
-    GQLAlchemyLiteralAndExpressionMissingInSet,
-    GQLAlchemyLiteralAndExpressionMissingInWhere,
-    GQLAlchemyExtraKeywordArgumentsInWhere,
+    GQLAlchemyLiteralAndExpressionMissing,
     GQLAlchemyResultQueryTypeError,
     GQLAlchemyTooLargeTupleInResultQuery,
+    GQLAlchemyOperatorTypeError,
 )
 import pytest
 from gqlalchemy import (
@@ -43,7 +42,7 @@ from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
-from gqlalchemy.query_builders.declarative_base import SetOperator, Order, _ResultPartialQuery
+from gqlalchemy.query_builders.declarative_base import Operator, Order, _ResultPartialQuery
 from gqlalchemy.utilities import PropertyVariable
 
 
@@ -323,6 +322,25 @@ def test_load_csv_no_header(memgraph):
     mock.assert_called_with(expected_query)
 
 
+@pytest.mark.parametrize("operator", ["=", "<>", "<", "!=", ">", "<=", ">="])
+def test_where_without_operator_enum(memgraph, operator):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node("L1", variable="n")
+        .to("TO")
+        .node("L2", variable="m")
+        .where(item="n.name", operator=operator, literal="best_name")
+        .return_()
+    )
+    expected_query = f" MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name {operator} 'best_name' RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_where_literal(memgraph):
     query_builder = (
         QueryBuilder()
@@ -330,7 +348,7 @@ def test_where_literal(memgraph):
         .node("L1", variable="n")
         .to("TO")
         .node("L2", variable="m")
-        .where(item="n.name", operator="=", literal="best_name")
+        .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' RETURN * "
@@ -348,7 +366,7 @@ def test_where_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", expression="m.name")
+        .where(item="n.name", operator=Operator.EQUAL, expression="m.name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name RETURN * "
@@ -366,7 +384,7 @@ def test_where_not_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where_not(item="n.name", operator="=", expression="m.name")
+        .where_not(item="n.name", operator=Operator.EQUAL, expression="m.name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE NOT n.name = m.name RETURN * "
@@ -377,7 +395,7 @@ def test_where_not_property(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_where_label(memgraph):
+def test_where_label_without_operator_enum(memgraph):
     query_builder = (
         QueryBuilder()
         .match()
@@ -395,6 +413,37 @@ def test_where_label(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_where_label_with_rand_string_operator(memgraph):
+    with pytest.raises(GQLAlchemyOperatorTypeError):
+        (
+            QueryBuilder()
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .where(item="n", operator="heyhey", expression="Node")
+            .return_()
+        )
+
+
+def test_where_label(memgraph):
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(labels="L1", variable="n")
+        .to(relationship_type="TO")
+        .node(labels="L2", variable="m")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .return_()
+    )
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_where_not_label(memgraph):
     query_builder = (
         QueryBuilder()
@@ -402,7 +451,7 @@ def test_where_not_label(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where_not(item="n", operator=":", expression="Node")
+        .where_not(item="n", operator=Operator.LABEL_FILTER, expression="Node")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE NOT n:Node RETURN * "
@@ -414,53 +463,53 @@ def test_where_not_label(memgraph):
 
 
 def test_where_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=")
+            .where(item="n.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_where_not_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where_not(item="n.name", operator="=")
+            .where_not(item="n.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_where_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
 
 def test_where_not_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where_not(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where_not(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
@@ -472,8 +521,8 @@ def test_or_where_literal(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", literal="best_name")
-        .or_where(item="m.id", operator="<", literal=4)
+        .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
+        .or_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR m.id < 4 RETURN * "
@@ -491,8 +540,8 @@ def test_or_not_where_literal(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", literal="best_name")
-        .or_not_where(item="m.id", operator="<", literal=4)
+        .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
+        .or_not_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR NOT m.id < 4 RETURN * "
@@ -510,8 +559,8 @@ def test_or_where_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", expression="m.name")
-        .or_where(item="m.name", operator="=", expression="n.last_name")
+        .where(item="n.name", operator=Operator.EQUAL, expression="m.name")
+        .or_where(item="m.name", operator=Operator.EQUAL, expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name OR m.name = n.last_name RETURN * "
@@ -529,8 +578,8 @@ def test_or_not_where_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", expression="m.name")
-        .or_not_where(item="m.name", operator="=", expression="n.last_name")
+        .where(item="n.name", operator=Operator.EQUAL, expression="m.name")
+        .or_not_where(item="m.name", operator=Operator.EQUAL, expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name OR NOT m.name = n.last_name RETURN * "
@@ -548,8 +597,8 @@ def test_or_where_label(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n", operator=":", expression="Node")
-        .or_where(item="m", operator=":", expression="User")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .or_where(item="m", operator=Operator.LABEL_FILTER, expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node OR m:User RETURN * "
@@ -567,8 +616,8 @@ def test_or_not_where_label(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n", operator=":", expression="Node")
-        .or_not_where(item="m", operator=":", expression="User")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .or_not_where(item="m", operator=Operator.LABEL_FILTER, expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node OR NOT m:User RETURN * "
@@ -580,57 +629,57 @@ def test_or_not_where_label(memgraph):
 
 
 def test_or_where_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=", literal="my_name")
-            .or_where(item="m.name", operator="=")
+            .where(item="n.name", operator=Operator.EQUAL, literal="my_name")
+            .or_where(item="m.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_or_not_where_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=", literal="my_name")
-            .or_not_where(item="m.name", operator="=")
+            .where(item="n.name", operator=Operator.EQUAL, literal="my_name")
+            .or_not_where(item="m.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_or_where_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="m.name", operator="=", literal="best_name")
-            .or_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where(item="m.name", operator=Operator.EQUAL, literal="best_name")
+            .or_where(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
 
 def test_or_not_where_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="m.name", operator="=", literal="best_name")
-            .or_not_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where(item="m.name", operator=Operator.EQUAL, literal="best_name")
+            .or_not_where(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
@@ -642,11 +691,11 @@ def test_and_where_literal(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", literal="best_name")
-        .and_where(item="m.id", operator="<", literal=4)
+        .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
+        .and_where(item="m.id", operator=Operator.LEQ_THAN, literal=4)
         .return_()
     )
-    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND m.id < 4 RETURN * "
+    expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND m.id <= 4 RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -661,8 +710,8 @@ def test_and_not_where_literal(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", literal="best_name")
-        .and_not_where(item="m.id", operator="<", literal=4)
+        .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
+        .and_not_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND NOT m.id < 4 RETURN * "
@@ -680,8 +729,8 @@ def test_and_where_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", expression="m.name")
-        .and_where(item="m.name", operator="=", expression="n.last_name")
+        .where(item="n.name", operator=Operator.EQUAL, expression="m.name")
+        .and_where(item="m.name", operator=Operator.EQUAL, expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name AND m.name = n.last_name RETURN * "
@@ -699,8 +748,8 @@ def test_and_not_where_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", expression="m.name")
-        .and_not_where(item="m.name", operator="=", expression="n.last_name")
+        .where(item="n.name", operator=Operator.EQUAL, expression="m.name")
+        .and_not_where(item="m.name", operator=Operator.EQUAL, expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name AND NOT m.name = n.last_name RETURN * "
@@ -718,8 +767,8 @@ def test_and_where_label(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n", operator=":", expression="Node")
-        .and_where(item="m", operator=":", expression="User")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .and_where(item="m", operator=Operator.LABEL_FILTER, expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node AND m:User RETURN * "
@@ -737,8 +786,8 @@ def test_and_not_where_label(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node("L2", variable="m")
-        .where(item="n", operator=":", expression="Node")
-        .and_not_where(item="m", operator=":", expression="User")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .and_not_where(item="m", operator=Operator.LABEL_FILTER, expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node AND NOT m:User RETURN * "
@@ -750,57 +799,57 @@ def test_and_not_where_label(memgraph):
 
 
 def test_and_where_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=", literal="my_name")
-            .and_where(item="m.name", operator="=")
+            .where(item="n.name", operator=Operator.EQUAL, literal="my_name")
+            .and_where(item="m.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_and_not_where_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=", literal="my_name")
-            .and_not_where(item="m.name", operator="=")
+            .where(item="n.name", operator=Operator.EQUAL, literal="my_name")
+            .and_not_where(item="m.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_and_where_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="m.name", operator="=", literal="best_name")
-            .and_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where(item="m.name", operator=Operator.EQUAL, literal="best_name")
+            .and_where(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
 
 def test_and_not_where_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="m.name", operator="=", literal="best_name")
-            .and_not_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where(item="m.name", operator=Operator.EQUAL, literal="best_name")
+            .and_not_where(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
@@ -812,8 +861,8 @@ def test_xor_where_literal(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", literal="best_name")
-        .xor_where(item="m.id", operator="<", literal=4)
+        .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
+        .xor_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' XOR m.id < 4 RETURN * "
@@ -831,8 +880,8 @@ def test_xor_not_where_literal(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", literal="best_name")
-        .xor_not_where(item="m.id", operator="<", literal=4)
+        .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
+        .xor_not_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' XOR NOT m.id < 4 RETURN * "
@@ -850,8 +899,8 @@ def test_xor_where_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", expression="m.name")
-        .xor_where(item="m.name", operator="=", expression="n.last_name")
+        .where(item="n.name", operator=Operator.EQUAL, expression="m.name")
+        .xor_where(item="m.name", operator=Operator.EQUAL, expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name XOR m.name = n.last_name RETURN * "
@@ -869,8 +918,8 @@ def test_xor_not_where_property(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n.name", operator="=", expression="m.name")
-        .xor_not_where(item="m.name", operator="=", expression="n.last_name")
+        .where(item="n.name", operator=Operator.EQUAL, expression="m.name")
+        .xor_not_where(item="m.name", operator=Operator.EQUAL, expression="n.last_name")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = m.name XOR NOT m.name = n.last_name RETURN * "
@@ -888,8 +937,8 @@ def test_xor_where_label(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n", operator=":", expression="Node")
-        .xor_where(item="m", operator=":", expression="User")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .xor_where(item="m", operator=Operator.LABEL_FILTER, expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node XOR m:User RETURN * "
@@ -907,8 +956,8 @@ def test_xor_not_where_label(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n", operator=":", expression="Node")
-        .xor_not_where(item="m", operator=":", expression="User")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .xor_not_where(item="m", operator=Operator.LABEL_FILTER, expression="User")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node XOR NOT m:User RETURN * "
@@ -920,57 +969,57 @@ def test_xor_not_where_label(memgraph):
 
 
 def test_xor_where_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=", literal="my_name")
-            .xor_where(item="m.name", operator="=")
+            .where(item="n.name", operator=Operator.EQUAL, literal="my_name")
+            .xor_where(item="m.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_xor_not_where_literal_and_expression_missing(memgraph):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInWhere):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="n.name", operator="=", literal="my_name")
-            .xor_not_where(item="m.name", operator="=")
+            .where(item="n.name", operator=Operator.EQUAL, literal="my_name")
+            .xor_not_where(item="m.name", operator=Operator.EQUAL)
             .return_()
         )
 
 
 def test_xor_and_where_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="m.name", operator="=", literal="best_name")
-            .xor_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where(item="m.name", operator=Operator.EQUAL, literal="best_name")
+            .xor_where(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
 
 def test_xor_not_and_where_extra_values(memgraph):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInWhere):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         (
             QueryBuilder()
             .match()
             .node(labels="L1", variable="n")
             .to(relationship_type="TO")
             .node(labels="L2", variable="m")
-            .where(item="m.name", operator="=", literal="best_name")
-            .xor_not_where(item="n.name", operator="=", literal="best_name", expression="Node")
+            .where(item="m.name", operator=Operator.EQUAL, literal="best_name")
+            .xor_not_where(item="n.name", operator=Operator.EQUAL, literal="best_name", expression="Node")
             .return_()
         )
 
@@ -982,13 +1031,13 @@ def test_and_or_xor_not_where(memgraph):
         .node(labels="L1", variable="n")
         .to(relationship_type="TO")
         .node(labels="L2", variable="m")
-        .where(item="n", operator=":", expression="Node")
-        .and_where(item="n.age", operator=">", literal=5)
-        .or_where(item="n", operator=":", expression="Node2")
-        .xor_where(item="n.name", operator="=", expression="m.name")
-        .xor_not_where(item="m", operator=":", expression="User")
-        .or_not_where(item="m", operator=":", expression="Node")
-        .and_not_where(item="m.name", operator="=", literal="John")
+        .where(item="n", operator=Operator.LABEL_FILTER, expression="Node")
+        .and_where(item="n.age", operator=Operator.GREATER_THAN, literal=5)
+        .or_where(item="n", operator=Operator.LABEL_FILTER, expression="Node2")
+        .xor_where(item="n.name", operator=Operator.EQUAL, expression="m.name")
+        .xor_not_where(item="m", operator=Operator.LABEL_FILTER, expression="User")
+        .or_not_where(item="m", operator=Operator.LABEL_FILTER, expression="Node")
+        .and_not_where(item="m.name", operator=Operator.EQUAL, literal="John")
         .return_()
     )
     expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node AND n.age > 5 OR n:Node2 XOR n.name = m.name XOR NOT m:User OR NOT m:Node AND NOT m.name = 'John' RETURN * "
@@ -1489,14 +1538,26 @@ def test_add_string_complete(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_set_label(memgraph):
-    query_builder = QueryBuilder().set_(item="a", operator=SetOperator.LABEL_FILTER, expression="L1")
+def test_set_label_without_operator_enum(memgraph):
+    query_builder = QueryBuilder().set_(item="a", operator=":", expression="L1")
     expected_query = " SET a:L1"
 
     assert query_builder.construct_query() == expected_query
 
 
-@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+def test_set_label_with_rand_operator(memgraph):
+    with pytest.raises(GQLAlchemyOperatorTypeError):
+        QueryBuilder().set_(item="a", operator="heyhey", expression="L1")
+
+
+def test_set_label(memgraph):
+    query_builder = QueryBuilder().set_(item="a", operator=Operator.LABEL_FILTER, expression="L1")
+    expected_query = " SET a:L1"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
 def test_set_assign_expression(memgraph, operator):
     query_builder = QueryBuilder().set_(item="a", operator=operator, expression="value")
     expected_query = f" SET a {operator.value} value"
@@ -1504,7 +1565,15 @@ def test_set_assign_expression(memgraph, operator):
     assert query_builder.construct_query() == expected_query
 
 
-@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+@pytest.mark.parametrize("operator", ["=", "+="])
+def test_set_assign_expression_without_operator_enum(memgraph, operator):
+    query_builder = QueryBuilder().set_(item="a", operator=operator, expression="value")
+    expected_query = f" SET a {operator} value"
+
+    assert query_builder.construct_query() == expected_query
+
+
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
 def test_set_assign_literal(memgraph, operator):
     query_builder = QueryBuilder().set_(item="a", operator=operator, literal="value")
     expected_query = f" SET a {operator.value} 'value'"
@@ -1515,23 +1584,23 @@ def test_set_assign_literal(memgraph, operator):
 def test_multiple_set_label(memgraph):
     query_builder = (
         QueryBuilder()
-        .set_(item="a", operator=SetOperator.LABEL_FILTER, expression="L1")
-        .set_(item="a", operator=SetOperator.ASSIGNMENT, expression="L2")
+        .set_(item="a", operator=Operator.LABEL_FILTER, expression="L1")
+        .set_(item="a", operator=Operator.ASSIGNMENT, expression="L2")
     )
     expected_query = " SET a:L1 SET a = L2"
 
     assert query_builder.construct_query() == expected_query
 
 
-@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
 def test_set_literal_and_expression_missing(memgraph, operator):
-    with pytest.raises(GQLAlchemyLiteralAndExpressionMissingInSet):
+    with pytest.raises(GQLAlchemyLiteralAndExpressionMissing):
         QueryBuilder().set_(item="n.name", operator=operator)
 
 
-@pytest.mark.parametrize("operator", [SetOperator.ASSIGNMENT, SetOperator.INCREMENT])
+@pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
 def test_set_extra_values(memgraph, operator):
-    with pytest.raises(GQLAlchemyExtraKeywordArgumentsInSet):
+    with pytest.raises(GQLAlchemyExtraKeywordArguments):
         QueryBuilder().set_(item="n.name", operator=operator, literal="best_name", expression="Node")
 
 
@@ -1540,8 +1609,8 @@ def test_set_docstring_example_1(memgraph):
         QueryBuilder()
         .match()
         .node(variable="n")
-        .where(item="n.name", operator="=", literal="Germany")
-        .set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001)
+        .where(item="n.name", operator=Operator.EQUAL, literal="Germany")
+        .set_(item="n.population", operator=Operator.ASSIGNMENT, literal=83000001)
         .return_()
     )
     expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN * "
@@ -1556,9 +1625,9 @@ def test_set_docstring_example_2(memgraph):
         QueryBuilder()
         .match()
         .node(variable="n")
-        .where(item="n.name", operator="=", literal="Germany")
-        .set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001)
-        .set_(item="n.capital", operator=SetOperator.ASSIGNMENT, literal="Berlin")
+        .where(item="n.name", operator=Operator.EQUAL, literal="Germany")
+        .set_(item="n.population", operator=Operator.ASSIGNMENT, literal=83000001)
+        .set_(item="n.capital", operator=Operator.ASSIGNMENT, literal="Berlin")
         .return_()
     )
     expected_query = (
@@ -1575,8 +1644,8 @@ def test_set_docstring_example_3(memgraph):
         QueryBuilder()
         .match()
         .node(variable="n")
-        .where(item="n.name", operator="=", literal="Germany")
-        .set_(item="n", operator=SetOperator.LABEL_FILTER, expression="Land")
+        .where(item="n.name", operator=Operator.EQUAL, literal="Germany")
+        .set_(item="n", operator=Operator.LABEL_FILTER, expression="Land")
         .return_()
     )
     expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN * "
@@ -1591,8 +1660,8 @@ def test_set_docstring_example_4(memgraph):
         QueryBuilder()
         .match()
         .node(variable="c", labels="Country")
-        .where(item="c.name", operator="=", literal="Germany")
-        .set_(item="c", operator=SetOperator.INCREMENT, literal={"name": "Germany", "population": "85000000"})
+        .where(item="c.name", operator=Operator.EQUAL, literal="Germany")
+        .set_(item="c", operator=Operator.INCREMENT, literal={"name": "Germany", "population": "85000000"})
         .return_()
     )
     expected_query = (

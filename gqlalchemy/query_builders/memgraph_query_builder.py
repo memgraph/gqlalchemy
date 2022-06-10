@@ -22,9 +22,9 @@ from .declarative_base import (  # noqa F401
     LoadCsv,
     Match,
     Merge,
+    Operator,
     Order,
     Return,
-    SetOperator,
     Unwind,
     With,
 )
