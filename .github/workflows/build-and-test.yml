@@ -86,14 +86,15 @@ jobs:
           add-apt-repository "deb https://debian.neo4j.com stable 4.4"
           apt-get -y install neo4j=1:4.4.7
           neo4j-admin set-initial-password test
-          mkdir /mnt/c/neo4j
+          mkdir /mnt/c/neo4j/${{ matrix.py-version }}
           sudo sed -i 's/#dbms.connector.bolt.listen_address=:7687/dbms.connector.bolt.listen_address=:7688/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/#dbms.connector.bolt.advertised_address=:7687/dbms.connector.bolt.advertised_address=:7688/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/#dbms.default_listen_address=0.0.0.0/dbms.default_listen_address=0.0.0.0/g' /etc/neo4j/neo4j.conf
-          sudo sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j/g' /etc/neo4j/neo4j.conf
-          cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/neo4j.conf
+          sudo sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j\/${{ matrix.py-version }}/g' /etc/neo4j/neo4j.conf
+          cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.py-version }}/neo4j.conf
           systemctl enable neo4j.service
           sudo service neo4j start
+          cp /var/log/neo4j/debug.log /mnt/c/neo4j/${{ matrix.py-version }}/debug.log
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
