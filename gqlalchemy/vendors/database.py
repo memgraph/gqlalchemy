@@ -308,7 +308,7 @@ class Database(ABC):
             + f" AND id(end_node) = {relationship._end_node_id}"
             + f" AND id(relationship) = {relationship._id}"
             + relationship._get_cypher_set_properties("relationship")
-            + " RETURN node;"
+            + " RETURN relationship;"
         )
 
         return self.get_variable_assume_one(results, "relationship")
