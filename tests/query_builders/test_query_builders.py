@@ -39,7 +39,7 @@ from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
-from gqlalchemy.query_builder import SetOperator, Order
+from gqlalchemy.query_builders.query_builder import SetOperator, Order
 
 
 def test_invalid_match_chain_throws_exception():

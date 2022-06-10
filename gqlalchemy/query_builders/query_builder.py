@@ -17,11 +17,11 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from .vendors.memgraph import Connection, Memgraph
-from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
-from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
-from .models import Node, Relationship
-from .exceptions import (
+from ..vendors.memgraph import Connection, Memgraph
+from ..graph_algorithms.integrated_algorithms import IntegratedAlgorithm
+from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+from ..models import Node, Relationship
+from ..exceptions import (
     GQLAlchemyExtraKeywordArgumentsInSet,
     GQLAlchemyLiteralAndExpressionMissingInWhere,
     GQLAlchemyLiteralAndExpressionMissingInSet,
@@ -1086,7 +1086,7 @@ class DeclarativeBase(ABC):
         Returns:
             A `DeclarativeBase` instance for constructing queries.
         """
-        self._query.append((path, header, row))
+        self._query.append(LoadCsvPartialQuery(path, header, row))
 
         return self
 

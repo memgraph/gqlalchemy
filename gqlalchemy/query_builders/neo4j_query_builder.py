@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .vendors.neo4j import Neo4j
+from ..vendors.neo4j import Neo4j
 from .query_builder import DeclarativeBase
 
 
@@ -22,4 +22,4 @@ class Neo4jQueryBuilder(DeclarativeBase):
 
 
 def load_csv(self, path: str, header: bool, row: str) -> "DeclarativeBase":
-        raise NotImplementedError
+    raise NotImplementedError
