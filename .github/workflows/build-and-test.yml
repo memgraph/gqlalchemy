@@ -79,13 +79,17 @@ jobs:
           mkdir /mnt/c/memgraph
           runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.py-version }}.log' &
           sleep 1 # Wait for Memgraph a bit.
-      - name: Install Neo4j
+      - name: Download, install and run Neo4j under WSL
         shell: wsl-bash {0} # root shell
         run: |
           curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
-          add-apt-repository "deb https://debian.neo4j.com stable 4.1"
-          apt install neo4j -y
+          add-apt-repository "deb https://debian.neo4j.com stable 4.4"
+          apt-get install neo4j=1:4.4.7
           systemctl enable neo4j.service
+          neo4j-admin set-initial-password test
+          sed -i 's/#dbms.connector.bolt.listen_address=:7687/dbms.connector.bolt.listen_address=:7688/g' /etc/neo4j/neo4j.conf
+          sed -i 's/#dbms.connector.bolt.advertised_address=:7687/dbms.connector.bolt.advertised_address=:7688/g' /etc/neo4j/neo4j.conf
+          sudo service neo4j start
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
