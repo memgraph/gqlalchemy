@@ -84,6 +84,7 @@ jobs:
         run: |
           curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | apt-key add -
           add-apt-repository "deb https://debian.neo4j.com stable 4.4"
+          sudo apt-get -y install ca-certificates-java
           sudo apt-get -y install neo4j=1:4.4.7
           neo4j-admin set-initial-password test
           mkdir -p /mnt/c/neo4j/${{ matrix.python-version }}
