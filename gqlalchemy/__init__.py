@@ -47,7 +47,7 @@ from gqlalchemy.instance_runner import (  # noqa F401
     wait_for_port,
 )
 
-from gqlalchemy.exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
+from gqlalchemy.exceptions import GQLAlchemyError, GQLAlchemyWarning  # noqa F401
 from pydantic import validator  # noqa F401
 import warnings
 
