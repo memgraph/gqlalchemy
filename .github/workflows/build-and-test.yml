@@ -91,6 +91,7 @@ jobs:
           sudo sed -i 's/#dbms.connector.bolt.advertised_address=:7687/dbms.connector.bolt.advertised_address=:7688/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/#dbms.default_listen_address=0.0.0.0/dbms.default_listen_address=0.0.0.0/g' /etc/neo4j/neo4j.conf
           sudo sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j/g' /etc/neo4j/neo4j.conf
+          cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/neo4j.conf
           systemctl enable neo4j.service
           sudo service neo4j start
       - name: Setup poetry
