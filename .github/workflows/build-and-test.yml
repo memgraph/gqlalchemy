@@ -82,17 +82,17 @@ jobs:
       - name: Download, install and run Neo4j under WSL
         shell: wsl-bash {0} # root shell
         run: |
-          curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+          curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | apt-key add -
           add-apt-repository "deb https://debian.neo4j.com stable 4.4"
           apt-get -y install neo4j=1:4.4.7
           neo4j-admin set-initial-password test
           mkdir -p /mnt/c/neo4j/${{ matrix.python-version }}
-          sudo sed -i 's/#dbms.connector.bolt.listen_address=:7687/dbms.connector.bolt.listen_address=:7688/g' /etc/neo4j/neo4j.conf
-          sudo sed -i 's/#dbms.connector.bolt.advertised_address=:7687/dbms.connector.bolt.advertised_address=:7688/g' /etc/neo4j/neo4j.conf
-          sudo sed -i 's/#dbms.default_listen_address=0.0.0.0/dbms.default_listen_address=0.0.0.0/g' /etc/neo4j/neo4j.conf
-          sudo sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j\/${{ matrix.python-version }}/g' /etc/neo4j/neo4j.conf
+          sed -i 's/#dbms.connector.bolt.listen_address=:7687/dbms.connector.bolt.listen_address=:7688/g' /etc/neo4j/neo4j.conf
+          sed -i 's/#dbms.connector.bolt.advertised_address=:7687/dbms.connector.bolt.advertised_address=:7688/g' /etc/neo4j/neo4j.conf
+          sed -i 's/#dbms.default_listen_address=0.0.0.0/dbms.default_listen_address=0.0.0.0/g' /etc/neo4j/neo4j.conf
+          sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j\/${{ matrix.python-version }}/g' /etc/neo4j/neo4j.conf
           cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.python-version }}/neo4j.conf
-          systemctl start neo4j.service
+          service neo4j start
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
