@@ -94,7 +94,6 @@ jobs:
           cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.py-version }}/neo4j.conf
           systemctl enable neo4j.service
           sudo service neo4j start
-          cp /var/log/neo4j/debug.log /mnt/c/neo4j/${{ matrix.py-version }}/debug.log
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
