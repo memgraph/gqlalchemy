@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import docker
-import os
 import psutil
 import socket
 import subprocess
 import time
+
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Union
@@ -172,7 +172,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         self.stop()
         args_mg = f"{self.binary_path } " + (" ").join([f"{k}={v}" for k, v in self.config.items()])
         if self.user != "":
-            args_mg = f"sudo runuser -l {self.user} -c '{args_mg}'"
+            args_mg = f"runuser -l {self.user} -c '{args_mg}'"
 
         self.proc_mg = subprocess.Popen(args_mg, shell=True)
         wait_for_port(self.host, self.port)
@@ -199,7 +199,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         procs.add(process)
         for proc in process.children(recursive=True):
             procs.add(proc)
-            os.system(f"sudo kill {proc.pid}")
+            proc.kill()
 
         process.kill()
         psutil.wait_procs(procs)

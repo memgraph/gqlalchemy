@@ -45,6 +45,7 @@ MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
+MG_LAZY = os.getenv("MG_LAZY", "false").lower() == "true"
 
 
 class MemgraphConstants:
@@ -65,8 +66,10 @@ class Memgraph(Database):
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,
     ):
         super().__init__(host, port, username, password, encrypted, client_name)
+        self._lazy = lazy
         self._on_disk_db = None
 
     def get_indexes(self) -> List[MemgraphIndex]:
@@ -194,6 +197,18 @@ class Memgraph(Database):
         """Drops all triggers in the database"""
         for trigger in self.get_triggers():
             self.drop_trigger(trigger)
+
+    def _new_connection(self) -> Connection:
+        """Creates new Memgraph connection"""
+        args = dict(
+            host=self._host,
+            port=self._port,
+            username=self._username,
+            password=self._password,
+            encrypted=self._encrypted,
+            client_name=self._client_name,
+        )
+        return MemgraphConnection(**args)
 
     def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase) -> None:
         """Adds and OnDiskPropertyDatabase to Memgraph so that any property

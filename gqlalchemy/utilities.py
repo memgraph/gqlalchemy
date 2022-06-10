@@ -14,8 +14,24 @@
 
 import math
 
+from datetime import datetime, date, time, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
+
+
+class DatetimeKeywords(Enum):
+    DURATION = "duration"
+    LOCALTIME = "localTime"
+    LOCALDATETIME = "localDateTime"
+    DATE = "date"
+
+
+datetimeKwMapping = {
+    timedelta: DatetimeKeywords.DURATION.value,
+    time: DatetimeKeywords.LOCALTIME.value,
+    datetime: DatetimeKeywords.LOCALDATETIME.value,
+    date: DatetimeKeywords.DATE.value,
+}
 
 
 class NanValuesHandle(Enum):
@@ -37,6 +53,17 @@ class NetworkXCypherConfig:
         return self._nan_handler
 
 
+def _format_timedelta(duration: timedelta) -> str:
+    days = int(duration.total_seconds() // 86400)
+    remainder_sec = duration.total_seconds() - days * 86400
+    hours = int(remainder_sec // 3600)
+    remainder_sec -= hours * 3600
+    minutes = int(remainder_sec // 60)
+    remainder_sec -= minutes * 60
+
+    return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
+
+
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid Cypher type."""
     if config is None:
@@ -44,7 +71,13 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     value_type = type(value)
 
-    if value_type == str and value.lower() == "null":
+    if value_type == PropertyVariable:
+        return str(value)
+
+    if isinstance(value, (timedelta, time, datetime, date)):
+        return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
+
+    if value_type == str and value.lower() in ["true", "false", "null"]:
         return value
 
     if value_type == float and math.isnan(value):
@@ -65,9 +98,6 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     if value is None:
         return "null"
-
-    if value.lower() in ["true", "false"]:
-        return value
 
     return f"'{value}'"
 
@@ -95,6 +125,18 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
             return f":{labels}"
         return f":{':'.join(labels)}"
     return ""
+
+
+class PropertyVariable:
+    """Class for support of using a variable as a node or edge property. Used
+    to avoid the quotes given to property values.
+    """
+
+    def __init__(self, name: str) -> None:
+        self._name = name
+
+    def __str__(self) -> str:
+        return self._name
 
 
 class NanException(Exception):

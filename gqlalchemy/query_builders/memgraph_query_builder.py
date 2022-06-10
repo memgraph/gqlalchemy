@@ -12,18 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..vendors.neo4j import Neo4jConnection
-from .declarative_base import DeclarativeBase, Call, Create, Match, Merge, Return, Unwind, With  # noqa F401
+from typing import Optional
+
+from ..vendors.memgraph import MemgraphConnection
+from .declarative_base import (  # noqa F401
+    DeclarativeBase,
+    Call,
+    Create,
+    LoadCsv,
+    Match,
+    Merge,
+    Order,
+    Return,
+    SetOperator,
+    Unwind,
+    With,
+)
 
 
-class Neo4jQueryBuilder(DeclarativeBase):
-    def __init__(self, connection: Neo4jConnection):
+class QueryBuilder(DeclarativeBase):
+    def __init__(self, connection: Optional[MemgraphConnection] = None):
         super().__init__(connection)
-
-
-def load_csv(**kwargs) -> None:
-    raise NotImplementedError
-
-
-def LoadCsv(**kwargs) -> None:
-    raise NotImplementedError

@@ -12,18 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..vendors.neo4j import Neo4jConnection
-from .declarative_base import DeclarativeBase, Call, Create, Match, Merge, Return, Unwind, With  # noqa F401
+from gqlalchemy.vendors.memgraph import Memgraph
 
 
-class Neo4jQueryBuilder(DeclarativeBase):
-    def __init__(self, connection: Neo4jConnection):
-        super().__init__(connection)
+def test_argument_lazy_default():
+    memgraph = Memgraph()
+    assert memgraph._lazy is False
 
 
-def load_csv(**kwargs) -> None:
-    raise NotImplementedError
-
-
-def LoadCsv(**kwargs) -> None:
-    raise NotImplementedError
+def test_argument_lazy_false():
+    memgraph = Memgraph(lazy=True)
+    assert memgraph._lazy is True

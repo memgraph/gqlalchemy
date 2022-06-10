@@ -54,6 +54,14 @@ class Database(ABC):
         self._client_name = client_name
         self._cached_connection: Optional[Connection] = None
 
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
     def execute_and_fetch(self, query: str, connection: Connection = None) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         connection = connection or self._get_cached_connection()

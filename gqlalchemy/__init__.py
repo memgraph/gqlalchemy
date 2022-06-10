@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .query_builders import neo4j_query_builder, query_builder  # noqa F401
-
 from .disk_storage import SQLitePropertyDatabase  # noqa F401
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from .instance_runner import (  # noqa F401
@@ -39,7 +37,12 @@ from .models import (  # noqa F401
     Field,
 )
 from .vendors.neo4j import Neo4j  # noqa F401
-from .query_builders.query_builder import (  # noqa F401
+from .query_builders import (  # noqa F401
+    neo4j_query_builder,
+    memgraph_query_builder,
+    memgraph_query_builder as query_builder,
+)
+from .query_builders.declarative_base import (  # noqa F401
     Call,
     Create,
     InvalidMatchChainException,
@@ -48,10 +51,10 @@ from .query_builders.query_builder import (  # noqa F401
     Match,
     Merge,
     NoVariablesMatchedException,
-    QueryBuilder,
     Unwind,
     With,
 )
+from .query_builders.memgraph_query_builder import QueryBuilder
 from .query_builders.neo4j_query_builder import Neo4jQueryBuilder  # noqa F401
 
 from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
@@ -69,3 +72,4 @@ unwind = Unwind
 with_ = With
 return_ = Return
 load_csv = LoadCsv
+MemgraphQueryBuilder = QueryBuilder
