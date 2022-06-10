@@ -93,6 +93,7 @@ jobs:
           sed -i 's/dbms.directories.logs=\/var\/log\/neo4j/dbms.directories.logs=\/mnt\/c\/neo4j\/${{ matrix.python-version }}/g' /etc/neo4j/neo4j.conf
           cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.python-version }}/neo4j.conf
           service neo4j start
+          sleep 10 # Wait for Neo4j a bit.
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
