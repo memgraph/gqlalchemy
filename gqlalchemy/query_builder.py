@@ -36,13 +36,13 @@ class DeclarativeBaseTypes:
     CREATE = "CREATE"
     DELETE = "DELETE"
     FOREACH = "FOREACH"
-    RELATIONSHIP = "RELATIONSHIP"
     LIMIT = "LIMIT"
     LOAD_CSV = "LOAD_CSV"
     MATCH = "MATCH"
     MERGE = "MERGE"
     NODE = "NODE"
     ORDER_BY = "ORDER BY"
+    RELATIONSHIP = "RELATIONSHIP"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
     SET = "SET"
@@ -1138,10 +1138,10 @@ class DeclarativeBase(ABC):
         """Iterate over a list of elements and for every iteration run every update clause.
 
         Args:
-            variable: variable name that stores each element
-            expression: Any expression that results to a list
+            variable: The variable name that stores each element.
+            expression: Any expression that results in a list.
             update_clauses: One or more Cypher update clauses:
-                SET, REMOVE, CREATE, MERGE, DELETE, FOREACH
+                SET, REMOVE, CREATE, MERGE, DELETE, FOREACH.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
