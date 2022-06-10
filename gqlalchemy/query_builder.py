@@ -517,7 +517,7 @@ class OrderByPartialQuery(PartialQuery):
 
 
 class LimitPartialQuery(PartialQuery):
-    def __init__(self, integer_expression: str):
+    def __init__(self, integer_expression: Union[str, int]):
         super().__init__(DeclarativeBaseTypes.LIMIT)
 
         self.integer_expression = integer_expression
@@ -528,7 +528,7 @@ class LimitPartialQuery(PartialQuery):
 
 
 class SkipPartialQuery(PartialQuery):
-    def __init__(self, integer_expression: str):
+    def __init__(self, integer_expression: Union[str, int]):
         super().__init__(DeclarativeBaseTypes.SKIP)
 
         self.integer_expression = integer_expression
@@ -1224,7 +1224,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def limit(self, integer_expression: str) -> "DeclarativeBase":
+    def limit(self, integer_expression: Union[str, int]) -> "DeclarativeBase":
         """Limit the number of records when returning results.
 
         Args:
@@ -1244,7 +1244,7 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def skip(self, integer_expression: str) -> "DeclarativeBase":
+    def skip(self, integer_expression: Union[str, int]) -> "DeclarativeBase":
         """Skip a number of records when returning results.
 
         Args:

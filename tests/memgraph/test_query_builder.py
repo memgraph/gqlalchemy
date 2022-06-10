@@ -1496,9 +1496,10 @@ def test_order_by_asc_desc(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_limit(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_().limit(integer_expression="3")
-    expected_query = " MATCH (n) RETURN * LIMIT 3 "
+@pytest.mark.parametrize("integer_expression", ["3", 3])
+def test_limit(memgraph, integer_expression):
+    query_builder = QueryBuilder().match().node(variable="n").return_().limit(integer_expression=integer_expression)
+    expected_query = f" MATCH (n) RETURN * LIMIT {integer_expression} "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -1506,9 +1507,12 @@ def test_limit(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_skip(memgraph):
-    query_builder = QueryBuilder().match().node(variable="n").return_(results="n").skip(integer_expression="1")
-    expected_query = " MATCH (n) RETURN n SKIP 1 "
+@pytest.mark.parametrize("integer_expression", ["1", 1])
+def test_skip(memgraph, integer_expression):
+    query_builder = (
+        QueryBuilder().match().node(variable="n").return_(results="n").skip(integer_expression=integer_expression)
+    )
+    expected_query = f" MATCH (n) RETURN n SKIP {integer_expression} "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
