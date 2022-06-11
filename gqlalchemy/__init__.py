@@ -21,7 +21,6 @@ from .instance_runner import (  # noqa F401
     wait_for_docker_container,
     wait_for_port,
 )
-from .vendors.memgraph import Memgraph  # noqa F401
 from .models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
@@ -36,7 +35,6 @@ from .models import (  # noqa F401
     Relationship,
     Field,
 )
-from .vendors.neo4j import Neo4j  # noqa F401
 from .query_builders import (  # noqa F401
     neo4j_query_builder,
     memgraph_query_builder,
@@ -56,8 +54,9 @@ from .query_builders.declarative_base import (  # noqa F401
 )
 from .query_builders.memgraph_query_builder import QueryBuilder
 from .query_builders.neo4j_query_builder import Neo4jQueryBuilder  # noqa F401
+from .vendors.memgraph import Memgraph  # noqa F401
+from .vendors.neo4j import Neo4j  # noqa F401
 
-from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import validator  # noqa F401
 import warnings
 

@@ -18,7 +18,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union, Set
 
-from ..vendors.memgraph import Connection, Memgraph
+from ..vendors.database import Database
+from ..vendors.memgraph import Memgraph
 from ..graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
 from ..models import Node, Relationship
@@ -607,7 +608,7 @@ class SetPartialQuery(PartialQuery):
 
 
 class DeclarativeBase(ABC):
-    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, connection: Optional[Database] = None):
         self._query: List[PartialQuery] = []
         self._connection = connection if connection is not None else Memgraph()
         self._fetch_results: bool = False
@@ -1309,55 +1310,49 @@ class DeclarativeBase(ABC):
 
 
 class Create(DeclarativeBase):
-    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(CreatePartialQuery())
 
 
 class Match(DeclarativeBase):
-    def __init__(self, optional: bool = False, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, optional: bool = False, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(MatchPartialQuery(optional))
 
 
 class Merge(DeclarativeBase):
-    def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(MergePartialQuery())
 
 
 class Call(DeclarativeBase):
-    def __init__(
-        self, procedure: str, arguments: Optional[str] = None, connection: Optional[Union[Connection, Memgraph]] = None
-    ):
+    def __init__(self, procedure: str, arguments: Optional[str] = None, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(CallPartialQuery(procedure, arguments))
 
 
 class Unwind(DeclarativeBase):
-    def __init__(self, list_expression: str, variable: str, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, list_expression: str, variable: str, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(UnwindPartialQuery(list_expression, variable))
 
 
 class With(DeclarativeBase):
-    def __init__(
-        self, results: Optional[Dict[str, str]] = {}, connection: Optional[Union[Connection, Memgraph]] = None
-    ):
+    def __init__(self, results: Optional[Dict[str, str]] = {}, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
 
 
 class LoadCsv(DeclarativeBase):
-    def __init__(self, path: str, header: bool, row: str, connection: Optional[Union[Connection, Memgraph]] = None):
+    def __init__(self, path: str, header: bool, row: str, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(LoadCsvPartialQuery(path, header, row))
 
 
 class Return(DeclarativeBase):
-    def __init__(
-        self, results: Optional[Dict[str, str]] = {}, connection: Optional[Union[Connection, Memgraph]] = None
-    ):
+    def __init__(self, results: Optional[Dict[str, str]] = {}, connection: Optional[Database] = None):
         super().__init__(connection)
         self._query.append(ReturnPartialQuery(results))
         self._fetch_results = True
