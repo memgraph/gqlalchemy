@@ -12,17 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 from abc import ABC, abstractmethod
+import os
 from typing import Any, Dict, Iterator, List, Optional
 
 from ..connection import Connection
-from ..graph_algorithms.query_modules import QueryModule
 from ..exceptions import GQLAlchemyError
+from ..graph_algorithms.query_modules import QueryModule
 from ..models import (
-    Index,
     Constraint,
+    Index,
     Node,
     Relationship,
 )

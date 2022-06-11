@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..vendors.neo4j import Neo4j
 from .declarative_base import DeclarativeBase, Call, Create, Match, Merge, Return, Unwind, With  # noqa F401
+from ..vendors.neo4j import Neo4j
 
 
 class Neo4jQueryBuilder(DeclarativeBase):

@@ -12,27 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
-
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union, Set
+import re
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
-from ..vendors.database import Database
-from ..vendors.memgraph import Memgraph
 from ..graph_algorithms.integrated_algorithms import IntegratedAlgorithm
-from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
-from ..models import Node, Relationship
 from ..exceptions import (
     GQLAlchemyExtraKeywordArguments,
     GQLAlchemyInstantiationError,
     GQLAlchemyLiteralAndExpressionMissing,
+    GQLAlchemyMissingOrder,
+    GQLAlchemyOperatorTypeError,
+    GQLAlchemyOrderByTypeError,
     GQLAlchemyResultQueryTypeError,
     GQLAlchemyTooLargeTupleInResultQuery,
-    GQLAlchemyMissingOrder,
-    GQLAlchemyOrderByTypeError,
-    GQLAlchemyOperatorTypeError,
 )
+from ..models import Node, Relationship
+from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+from ..vendors.database import Database
+from ..vendors.memgraph import Memgraph
 
 
 class DeclarativeBaseTypes:

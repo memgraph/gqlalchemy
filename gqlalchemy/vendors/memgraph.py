@@ -17,15 +17,15 @@ import sqlite3
 
 from typing import List, Optional, Union
 
-from ..connection import Connection, MemgraphConnection
 from .database import Database
+from ..connection import Connection, MemgraphConnection
 from ..disk_storage import OnDiskPropertyDatabase
-from ..graph_algorithms.query_modules import QueryModule
 from ..exceptions import (
     GQLAlchemyError,
-    GQLAlchemyUniquenessConstraintError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+    GQLAlchemyUniquenessConstraintError,
 )
+from ..graph_algorithms.query_modules import QueryModule
 from ..models import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,

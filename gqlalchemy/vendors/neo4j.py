@@ -16,8 +16,8 @@ import os
 
 from typing import List, Optional, Union
 
-from ..connection import Connection, Neo4jConnection
 from .database import Database
+from ..connection import Connection, Neo4jConnection
 from ..exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,

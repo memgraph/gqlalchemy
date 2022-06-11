@@ -14,11 +14,10 @@
 
 from typing import Optional
 
-from ..vendors.memgraph import Memgraph
 from .declarative_base import (  # noqa F401
-    DeclarativeBase,
     Call,
     Create,
+    DeclarativeBase,
     LoadCsv,
     Match,
     Merge,
@@ -28,6 +27,7 @@ from .declarative_base import (  # noqa F401
     Unwind,
     With,
 )
+from ..vendors.memgraph import Memgraph
 
 
 class QueryBuilder(DeclarativeBase):
