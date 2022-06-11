@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..vendors.neo4j import Neo4jConnection
+from ..vendors.neo4j import Neo4j
 from .declarative_base import DeclarativeBase, Call, Create, Match, Merge, Return, Unwind, With  # noqa F401
 
 
 class Neo4jQueryBuilder(DeclarativeBase):
-    def __init__(self, connection: Neo4jConnection):
+    def __init__(self, connection: Neo4j):
         super().__init__(connection)
 
 

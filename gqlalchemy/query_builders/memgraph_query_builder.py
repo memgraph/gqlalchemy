@@ -14,7 +14,7 @@
 
 from typing import Optional
 
-from ..vendors.memgraph import MemgraphConnection
+from ..vendors.memgraph import Memgraph
 from .declarative_base import (  # noqa F401
     DeclarativeBase,
     Call,
@@ -31,5 +31,5 @@ from .declarative_base import (  # noqa F401
 
 
 class QueryBuilder(DeclarativeBase):
-    def __init__(self, connection: Optional[MemgraphConnection] = None):
+    def __init__(self, connection: Optional[Memgraph] = None):
         super().__init__(connection)
