@@ -1557,19 +1557,19 @@ def test_bfs():
 def test_foreach_multiple_update_clauses():
     variable_li = PropertyVariable(name="li")
     update_clause_1 = QueryBuilder().create().node(labels="F4", prop=variable_li)
-    update_clause_2 = QueryBuilder().create().node(variable="m", labels="F5", prop2=variable_li)
+    update_clause_2 = QueryBuilder().create().node(labels="F5", prop2=variable_li)
     query = (
         QueryBuilder()
         .match()
         .node(variable="n")
         .foreach(
             variable="li",
-            expression="n.prop",
+            expression="[1, 2]",
             update_clause=[update_clause_1.construct_query(), update_clause_2.construct_query()],
         )
         .return_({"n": ""})
     )
-    expected_query = " MATCH (n) FOREACH ( li IN n.prop | CREATE (:F4 {prop: li}) CREATE (m:F5 {prop2: li}) ) RETURN n "
+    expected_query = " MATCH (n) FOREACH ( li IN [1, 2] | CREATE (:F4 {prop: li}) CREATE (:F5 {prop2: li}) ) RETURN n "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query.execute()
