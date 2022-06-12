@@ -19,7 +19,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .memgraph import Connection, Memgraph
 from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
-from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value, to_cypher_qm_arguments
 from .models import Node, Relationship
 from .exceptions import (
     GQLAlchemyExtraKeywordArgumentsInSet,
@@ -150,16 +150,10 @@ class CallPartialQuery(PartialQuery):
         super().__init__(DeclarativeBaseTypes.CALL)
 
         self.procedure = procedure
-        self.arguments = self._parse_query_arguments(arguments)
+        self.arguments = to_cypher_qm_arguments(arguments)
 
     def construct_query(self) -> str:
         return f" CALL {self.procedure}({self.arguments if self.arguments else ''}) "
-
-    def _parse_query_arguments(self, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]) -> str:
-        if isinstance(arguments, tuple):
-            return ", ".join([to_cypher_value(x) for x in arguments])
-
-        return arguments
 
 
 class WhereConditionPartialQuery(PartialQuery):
