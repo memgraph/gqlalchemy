@@ -15,7 +15,7 @@
 from pathlib import Path
 
 import pytest
-from gqlalchemy import Memgraph
+from gqlalchemy import Memgraph, models
 
 
 def get_data_dir() -> Path:
@@ -58,3 +58,8 @@ def populated_memgraph(dataset_file: str) -> Memgraph:
     yield memgraph
 
     memgraph.drop_database()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def init():
+    models.IGNORE_SUBCLASSNOTFOUNDWARNING = True

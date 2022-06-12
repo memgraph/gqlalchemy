@@ -75,6 +75,14 @@ class Memgraph:
         self._cached_connection: Optional[Connection] = None
         self._on_disk_db = None
 
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
     def execute_and_fetch(self, query: str, connection: Connection = None) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         connection = connection or self._get_cached_connection()
@@ -242,11 +250,11 @@ class Memgraph:
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
         if self._cached_connection is None or not self._cached_connection.is_active():
-            self._cached_connection = self.new_connection()
+            self._cached_connection = self._new_connection()
 
         return self._cached_connection
 
-    def new_connection(self) -> Connection:
+    def _new_connection(self) -> Connection:
         """Creates new Memgraph connection"""
         args = dict(
             host=self._host,

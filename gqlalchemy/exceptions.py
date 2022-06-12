@@ -111,7 +111,7 @@ class GQLAlchemyMissingOrder(GQLAlchemyError):
         self.message = MISSING_ORDER
 
 
-class GQLAlchemyOrderByTypeError(TypeError):
+class GQLAlchemyOrderByTypeError(GQLAlchemyError):
     def __init__(self):
         super().__init__()
         self.message = ORDER_BY_TYPE_ERROR
@@ -147,3 +147,19 @@ class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
 class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
     def __init__(self):
         super().__init__(clause=QueryClause.SET)
+
+
+class GQLAlchemyDatabaseError(GQLAlchemyError):
+    def __init__(self, message):
+        super().__init__()
+        self.message = message
+
+
+def gqlalchemy_error_handler(func):
+    def inner_function(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise GQLAlchemyDatabaseError(e)
+
+    return inner_function

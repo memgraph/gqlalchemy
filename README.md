@@ -40,85 +40,194 @@ The project uses [Poetry](https://python-poetry.org/) to build the GQLAlchemy Py
 Before starting the tests, make sure you have an active Memgraph instance running. Execute the following command:
 `poetry run pytest .`
 
-## GQLAlchemy example
+## GQLAlchemy capabilities
 
-When working with the `gqlalchemy`, a Python developer can connect to the database and execute a `MATCH` Cypher query using the following syntax:
+<details>
+<summary>🗺️ Object graph mapper</summary>
+<br>
 
-```python
-from gqlalchemy import Memgraph
-
-memgraph = Memgraph("127.0.0.1", 7687)
-memgraph.execute("CREATE (:Node)-[:Connection]->(:Node)")
-results = memgraph.execute_and_fetch("""
-    MATCH (from:Node)-[:Connection]->(to:Node)
-    RETURN from, to;
-""")
-
-for result in results:
-    print(result['from'])
-    print(result['to'])
-```
-
-## Query builder example
-
-As we can see, the example above can be error-prone, because we do not have abstractions for creating a database connection and `MATCH` query.
-
-Now, rewrite the exact same query by using the functionality of GQLAlchemy's query builder:
+Below you can see an example of how to create `User` and `Language` node classes, and a relationship class of type `SPEAKS`. Along with that, you can see how to create a new node and relationship and how to save them in the database. After that, you can load those nodes and relationship from the database.
+<br>
+<br>
 
 ```python
-from gqlalchemy import match, Memgraph
+from gqlalchemy import Memgraph, Node, Relationship, Field
+from typing import Optional
 
-memgraph = Memgraph()
+db = Memgraph()
 
-results = (
-    match()
-    .node("Node", variable="from")
-    .to("Connection")
-    .node("Node", variable="to")
-    .return_()
-    .execute()
-)
+class User(Node, index=True, db=db):
+    id: str = Field(index=True, exist=True, unique=True, db=db)
 
-for result in results:
-    print(result["from"])
-    print(result["to"])
-```
+class Language(Node):
+    name: str = Field(unique=True, db=db)
 
-An example using the `Node` and `Relationship` classes:
-
-```python
-from gqlalchemy import Memgraph, Node, Relationship, match, Field
-
-memgraph = Memgraph("127.0.0.1", 7687)
-
-
-class User(Node):
-    id: int = Field(index=True, exist=True, unique=True, db=memgraph)
-
-
-class Follows(Relationship, type="FOLLOWS"):
+class Speaks(Relationship, type="SPEAKS"):
     pass
 
+user = User(id="3", username="John").save(db)
+language = Language(name="en").save(db)
+speaks_rel = Speaks(
+    _start_node_id = user._id,
+    _end_node_id = language._id
+).save(db)
 
-u1 = User(id=1).save(memgraph)
-u2 = User(id=2).save(memgraph)
-r = Follows(_start_node_id=u1._id, _end_node_id=u2._id).save(memgraph)
-
-result = list(
-    match(memgraph.new_connection())
-    .node(variable="a")
-    .to(variable="r")
-    .node(variable="b")
-    .where("a.id", "=", u1.id)
-    .or_where("b.id", "=", u2.id)
-    .return_()
-    .execute()
-)[0]
-
-print(result["a"])
-print(result["b"])
-print(result["r"])
+loaded_user = User(id="3").load(db=db)
+print(loaded_user)
+loaded_speaks = Speaks(
+        _start_node_id=user._id,
+        _end_node_id=language._id
+    ).load(db)
+print(loaded_speaks)
 ```
+</details>
+
+<details>
+<summary>🔨 Query builder</summary>
+<br>
+When building a Cypher query, you can use a set of methods that are wrappers around Cypher clauses. 
+<br>
+<br>
+
+```python
+from gqlalchemy import create, match
+
+query_create = create()
+        .node(labels="Person", name="Leslie")
+        .to(edge_label="FRIENDS_WITH")
+        .node(labels="Person", name="Ron")
+        .execute()
+
+query_match = match()
+        .node(labels="Person", variable="p1")
+        .to()
+        .node(labels="Person", variable="p2")
+        .where(item="p1.name", operator="=", literal="Leslie")
+        .return_({"p1":"p1"})
+        .execute()
+```
+</details>
+
+<details>
+<summary>🚰 Manage streams</summary>
+<br>
+
+You can create and start Kafka or Pulsar stream using GQLAlchemy. 
+<br>
+
+**Kafka stream** 
+```python
+from gqlalchemy import MemgraphPulsarStream
+
+stream = MemgraphPulsarStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", service_url="localhost:6650")
+db.create_stream(stream)
+db.start_stream(stream)
+```
+
+**Pulsar stream**
+```python
+from gqlalchemy import MemgraphKafkaStream
+
+stream = MemgraphKafkaStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", bootstrap_servers="localhost:9093")
+db.create_stream(stream)
+db.start_stream(stream)
+```
+</details>
+
+<details>
+<summary>🗄️ Import table data from different sources</summary>
+<br>
+
+**Import table data to a graph database**
+
+You can translate table data from a file to graph data and import it to Memgraph. Currently, we support reading of CSV, Parquet, ORC and IPC/Feather/Arrow file formats via the PyArrow package.
+
+Read all about it in [table to graph importer how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/loaders/table-to-graph-importer).
+
+**Make a custom file system importer**
+
+If you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by extending abstract classes `FileSystemHandler` and `DataLoader`, respectively.
+
+Read all about it in [custom file system importer how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/loaders/custom-file-system-importer).
+
+</details>
+
+<details>
+<summary>⚙️ Manage Memgraph instances</summary>
+<br>
+
+You can start, stop, connect to and monitor Memgraph instances with GQLAlchemy.
+
+**Manage Memgraph Docker instance**
+
+```python
+from gqlalchemy.instance_runner import (
+    DockerImage,
+    MemgraphInstanceDocker
+)
+
+memgraph_instance = MemgraphInstanceDocker(
+    docker_image=DockerImage.MEMGRAPH, docker_image_tag="latest", host="0.0.0.0", port=7687
+)
+memgraph = memgraph_instance.start_and_connect(restart=False)
+
+memgraph.execute_and_fetch("RETURN 'Memgraph is running' AS result"))[0]["result"]
+```
+
+**Manage Memgraph binary instance**
+
+```python
+from gqlalchemy.instance_runner import MemgraphInstanceBinary
+
+memgraph_instance = MemgraphInstanceBinary(
+    host="0.0.0.0", port=7698, binary_path="/usr/lib/memgraph/memgraph", user="memgraph"
+)
+memgraph = memgraph_instance.start_and_connect(restart=False)
+
+memgraph.execute_and_fetch("RETURN 'Memgraph is running' AS result"))[0]["result"]
+```
+</details>
+
+<details>
+<summary>🔫 Manage database triggers</summary>
+<br>
+
+Because Memgraph supports database triggers on `CREATE`, `UPDATE` and `DELETE` operations, GQLAlchemy also implements a simple interface for maintaining these triggers.
+
+```python
+from gqlalchemy import Memgraph, MemgraphTrigger
+from gqlalchemy.models import (
+    TriggerEventType,
+    TriggerEventObject,
+    TriggerExecutionPhase,
+)
+
+db = Memgraph()
+
+trigger = MemgraphTrigger(
+    name="ratings_trigger",
+    event_type=TriggerEventType.CREATE,
+    event_object=TriggerEventObject.NODE,
+    execution_phase=TriggerExecutionPhase.AFTER,
+    statement="UNWIND createdVertices AS node SET node.created_at = LocalDateTime()",
+)
+
+db.create_trigger(trigger)
+triggers = db.get_triggers()
+print(triggers)
+```
+</details>
+
+<details>
+<summary>💽 On-disk storage</summary>
+<br>
+
+Since Memgraph is an in-memory graph database, the GQLAlchemy library provides an on-disk storage solution for large properties not used in graph algorithms. This is useful when nodes or relationships have metadata that doesn’t need to be used in any of the graph algorithms that need to be carried out in Memgraph, but can be fetched after. Learn all about it in the [on-disk storage how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/on-disk-storage).
+</details>
+
+<br>
+
+If you want to learn more about OGM, query builder, managing streams, importing data from different source, managing Memgraph instances, managing database triggers and using on-disk storage, check out the GQLAlchemy [how-to guides](https://memgraph.com/docs/gqlalchemy/how-to-guides).
 
 ## Development (how to build)
 ```
