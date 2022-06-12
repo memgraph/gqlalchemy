@@ -26,3 +26,6 @@ def test_memgraph_query_builder_methods_exist(memgraph: Memgraph):
 
     for qm_name in query_module_names:
         assert qm_name in actual_query_module_names
+
+    for qm_name in actual_query_module_names:
+        assert qm_name in query_module_names
