@@ -157,7 +157,7 @@ class CallPartialQuery(PartialQuery):
 
     def _parse_query_arguments(self, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]) -> str:
         if isinstance(arguments, tuple):
-            return ", ".join([to_cypher_value(x) for x in arguments])
+            return ", ".join([to_cypher_value(arg) for arg in arguments])
 
         return arguments
 
