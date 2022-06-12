@@ -15,7 +15,7 @@
 import math
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class NanValuesHandle(Enum):
@@ -98,6 +98,13 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
             return f":{labels}"
         return f":{':'.join(labels)}"
     return ""
+
+def to_cypher_qm_arguments(self, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]) -> str:
+    """Converts query module arguments to a valid Cypher string of query module arguments."""
+    if isinstance(arguments, tuple):
+        return ", ".join([to_cypher_value(arg) for arg in arguments])
+
+    return arguments
 
 
 class PropertyVariable:
