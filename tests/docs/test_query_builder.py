@@ -28,6 +28,7 @@ def test_call_procedure_arguments_tuple():
     call_procedure = CallPartialQuery("dummy.procedure", ("a", "b")).construct_query()
     assert call_procedure == " CALL dummy.procedure('a', 'b') "
 
+
 def test_call_procedure_arguments_tuple_string_int():
     call_procedure = CallPartialQuery("dummy.procedure", ("a", 1)).construct_query()
     assert call_procedure == " CALL dummy.procedure('a', 1) "
