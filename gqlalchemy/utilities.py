@@ -99,7 +99,8 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str:
         return f":{':'.join(labels)}"
     return ""
 
-def to_cypher_qm_arguments(self, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]) -> str:
+
+def to_cypher_qm_arguments(arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]) -> str:
     """Converts query module arguments to a valid Cypher string of query module arguments."""
     if isinstance(arguments, tuple):
         return ", ".join([to_cypher_value(arg) for arg in arguments])
