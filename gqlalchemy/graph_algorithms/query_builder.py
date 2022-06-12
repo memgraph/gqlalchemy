@@ -1,11 +1,15 @@
-from abc import ABCMeta
-from gqlalchemy.query_builder import CallPartialQuery, DeclarativeBase, PartialQuery, QueryBuilder
+from gqlalchemy.query_builder import DeclarativeBase, QueryBuilder
 from gqlalchemy.memgraph import Connection, Memgraph
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 
 class MemgraphQueryBuilder(QueryBuilder):
+    """
+    This query builder extends the usual Cypher query builder capabilities with Memgraph's query modules.
+    User gets with this module autocomplete features of graph algorithms.
+    Documentation on the methods can be found on Memgraph's web page.
+    """
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
 
@@ -92,8 +96,8 @@ class MemgraphQueryBuilder(QueryBuilder):
     def nxalg_bfs_predecessors(self, source: Any, depth_limit: Optional[int] = None) -> DeclarativeBase:
         return self.call("nxalg.bfs_predecessors", (source, depth_limit))
 
-    def nxalg_bfs_sucessors(self, source: Any, depth_limit: Optional[int] = None) -> DeclarativeBase:
-        return self.call("nxalg.bfs_sucessors", (source, depth_limit))
+    def nxalg_bfs_successors(self, source: Any, depth_limit: Optional[int] = None) -> DeclarativeBase:
+        return self.call("nxalg.bfs_successors", (source, depth_limit))
 
     def nxalg_bfs_tree(self, source: Any, reverse: bool = False, depth_limit: Optional[int] = None) -> DeclarativeBase:
         return self.call("nxalg.bfs_tree", (source, reverse, depth_limit))
@@ -139,8 +143,8 @@ class MemgraphQueryBuilder(QueryBuilder):
     def nxalg_dfs_preorder_nodes(self, source: Any, depth_limit: Optional[int] = None) -> DeclarativeBase:
         return self.call("nxalg.dfs_preorder_nodes", (source, depth_limit))
 
-    def nxalg_dfs_sucessors(self, source: Any, depth_limit: Optional[int] = None) -> DeclarativeBase:
-        return self.call("nxalg.dfs_sucessors", (source, depth_limit))
+    def nxalg_dfs_successors(self, source: Any, depth_limit: Optional[int] = None) -> DeclarativeBase:
+        return self.call("nxalg.dfs_successors", (source, depth_limit))
 
     def nxalg_dfs_tree(self, source: Any, depth_limit: Optional[int] = None) -> DeclarativeBase:
         return self.call("nxalg.dfs_tree", (source, depth_limit))
@@ -261,7 +265,7 @@ class MemgraphQueryBuilder(QueryBuilder):
         return self.call("nxalg.maximal_matching")
 
     def nxalg_minimum_spanning_tree(
-        self, weight: str = "weight", algorithm: str = "kruskal", ignore_nan: bool = false
+        self, weight: str = "weight", algorithm: str = "kruskal", ignore_nan: bool = False
     ) -> DeclarativeBase:
         return self.call("nxalg.minimum_spanning_tree", (weight, algorithm, ignore_nan))
 
