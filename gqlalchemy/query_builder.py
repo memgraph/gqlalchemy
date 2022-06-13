@@ -248,13 +248,13 @@ class NodePartialQuery(PartialQuery):
     def __init__(self, variable: Optional[str], labels: str, properties: str):
         super().__init__(DeclarativeBaseTypes.NODE)
 
-        self._variable = variable
+        self._variable = "" if variable is None else variable
         self._labels = labels
         self._properties = properties
 
     @property
     def variable(self) -> str:
-        return "" if self._variable is None else self._variable
+        return self._variable
 
     @property
     def labels(self) -> str:
@@ -282,7 +282,7 @@ class RelationshipPartialQuery(PartialQuery):
         super().__init__(DeclarativeBaseTypes.RELATIONSHIP)
 
         self.directed = directed
-        self._variable = variable
+        self._variable = "" if variable is None else variable
         self._labels = labels
         self._algorithm = algorithm
         self._properties = properties
@@ -290,7 +290,7 @@ class RelationshipPartialQuery(PartialQuery):
 
     @property
     def variable(self) -> str:
-        return "" if self._variable is None else self._variable
+        return self._variable
 
     @property
     def labels(self) -> str:
