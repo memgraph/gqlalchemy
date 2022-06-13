@@ -32,7 +32,7 @@ from gqlalchemy.models import (
     TriggerEventType,
     TriggerExecutionPhase,
 )
-from gqlalchemy.query_builder import QueryBuilder, Unwind
+from gqlalchemy.query_builder import QueryBuilder, Unwind, Operator
 
 
 NAME_MAPPINGS_KEY = "name_mappings"
