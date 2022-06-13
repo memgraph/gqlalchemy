@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-import os
 from typing import Any, Dict, Iterator, List, Optional
 
 from ..connection import Connection
