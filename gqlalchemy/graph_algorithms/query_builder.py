@@ -10,6 +10,7 @@ class MemgraphQueryBuilder(QueryBuilder):
     User gets with this module autocomplete features of graph algorithms.
     Documentation on the methods can be found on Memgraph's web page.
     """
+
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
 
