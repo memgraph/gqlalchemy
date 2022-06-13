@@ -140,7 +140,7 @@ def test_with(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_with_new_args(memgraph):
+def test_with_str_args(memgraph):
     query_builder = QueryBuilder().match().node(variable="n").with_(results="n")
     expected_query = " MATCH (n) WITH n "
 

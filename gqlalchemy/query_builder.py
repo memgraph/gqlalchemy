@@ -621,12 +621,12 @@ class DeclarativeBase(ABC):
             A `DeclarativeBase` instance for constructing queries.
 
         Examples:
-            Get all nodes with certain label:
+            Get all nodes with a certain label:
 
             Python: `match().node(labels='Country', variable='c').return_(results='c').execute()`
             Cypher: `MATCH (c:Country) RETURN c;`
 
-            Get a relationship of certain type that connects two nodes with certain label:
+            Get a relationship of a certain type that connects two nodes with certain label:
 
             Python: `match().node(labels='Town', variable='t').to(relationship_type='BELONGS_TO', variable='b').node(labels='Country', variable='c').return_(results='b').execute()`
             Cypher: `MATCH (t:Town)-[b:BELONGS_TO]->(c:Country) RETURN b;`
