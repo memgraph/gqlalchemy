@@ -60,6 +60,21 @@ def populated_memgraph(dataset_file: str) -> Memgraph:
     memgraph.drop_database()
 
 
+@pytest.fixture
+def remove_module_memgraph(module_remove_name: str) -> Memgraph:
+    memgraph = Memgraph()
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+    memgraph.drop_database()
+
+    yield memgraph
+
+    module_paths = list(memgraph.execute_and_fetch("CALL mg.get_module_files() YIELD path"))
+    module_path = [path["path"] for path in module_paths if module_remove_name in path["path"]][0]
+    list(memgraph.execute_and_fetch(f"CALL mg.delete_module_file('{module_path}') YIELD *"))
+    memgraph.drop_database()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def init():
     models.IGNORE_SUBCLASSNOTFOUNDWARNING = True
