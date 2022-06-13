@@ -353,6 +353,12 @@ class MemgraphQueryBuilder(QueryBuilder):
 
 
 class MageQueryBuilder(MemgraphQueryBuilder):
+    """
+    This query builder extends the Memgraph query builder with Memgraph MAGE graph algorithm Cypher options.
+    User gets with this module autocomplete features of graph algorithms written in MAGE library.
+    Documentation on the methods can be found on Memgraph's web page.
+    """
+
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
 
