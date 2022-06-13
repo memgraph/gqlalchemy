@@ -10,10 +10,10 @@ from gqlalchemy.exceptions import GQLAlchemyFileNotFoundError
         ("gqlalchemy/query_modules/push_streams/kafka.py", "kafka.py"),
     ],
 )
-def test_add_query_module_valid(file_path, module_name):
-    memgraph_db = Memgraph().add_query_module(file_path=file_path, module_name=module_name)
+def test_add_query_module_valid(file_path, module_name, remove_kafka_module_memgraph):
+    memgraph = remove_kafka_module_memgraph.add_query_module(file_path=file_path, module_name=module_name)
 
-    module_paths = list(memgraph_db.execute_and_fetch("CALL mg.get_module_files() YIELD path"))
+    module_paths = list(memgraph.execute_and_fetch("CALL mg.get_module_files() YIELD path"))
 
     assert any("kafka" in path["path"] for path in module_paths)
 
