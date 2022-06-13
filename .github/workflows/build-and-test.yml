@@ -27,6 +27,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set up networkx
+        run: |
+        pip install networkx
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
@@ -64,6 +67,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set up networkx
         run: |
         pip install networkx
       - uses: Vampire/setup-wsl@v1
