@@ -18,7 +18,6 @@ from typing import Any, Dict, Iterator, List, Optional
 
 from ..connection import Connection
 from ..exceptions import GQLAlchemyError
-from ..graph_algorithms.query_modules import QueryModule
 from ..models import (
     Constraint,
     Index,
@@ -27,23 +26,15 @@ from ..models import (
 )
 
 
-MG_HOST = os.getenv("MG_HOST", "127.0.0.1")
-MG_PORT = int(os.getenv("MG_PORT", "7687"))
-MG_USERNAME = os.getenv("MG_USERNAME", "")
-MG_PASSWORD = os.getenv("MG_PASSWORD", "")
-MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
-MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
-
-
 class Database(ABC):
     def __init__(
         self,
-        host: str = MG_HOST,
-        port: int = MG_PORT,
-        username: str = MG_USERNAME,
-        password: str = MG_PASSWORD,
-        encrypted: bool = MG_ENCRYPTED,
-        client_name: str = MG_CLIENT_NAME,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        encrypted: bool,
+        client_name: str,
     ):
         self._host = host
         self._port = port
@@ -72,23 +63,23 @@ class Database(ABC):
         connection.execute(query)
 
     def create_index(self, index: Index) -> None:
-        """Creates an index (label or label-property type) in the database"""
+        """Creates an index (label or label-property type) in the database."""
         query = f"CREATE INDEX ON {index.to_cypher()};"
         self.execute(query)
 
     def drop_index(self, index: Index) -> None:
-        """Drops an index (label or label-property type) in the database"""
+        """Drops an index (label or label-property type) in the database."""
         query = f"DROP INDEX ON {index.to_cypher()};"
         self.execute(query)
 
     @abstractmethod
     def get_indexes(self) -> List[Index]:
-        """Returns a list of all database indexes (label and label-property types)"""
+        """Returns a list of all database indexes (label and label-property types)."""
         pass
 
     @abstractmethod
     def ensure_indexes(self, indexes: List[Index]) -> None:
-        """Ensures that database indexes match input indexes"""
+        """Ensures that database indexes match input indexes."""
         pass
 
     def drop_indexes(self) -> None:
@@ -96,12 +87,12 @@ class Database(ABC):
         self.ensure_indexes(indexes=[])
 
     def create_constraint(self, index: Constraint) -> None:
-        """Creates a constraint (label or label-property type) in the database"""
+        """Creates a constraint (label or label-property type) in the database."""
         query = f"CREATE CONSTRAINT ON {index.to_cypher()};"
         self.execute(query)
 
     def drop_constraint(self, index: Constraint) -> None:
-        """Drops a constraint (label or label-property type) in the database"""
+        """Drops a constraint (label or label-property type) in the database."""
         query = f"DROP CONSTRAINT ON {index.to_cypher()};"
         self.execute(query)
 
@@ -109,7 +100,7 @@ class Database(ABC):
     def get_constraints(
         self,
     ) -> List[Constraint]:
-        """Returns a list of all database constraints (label and label-property types)"""
+        """Returns a list of all database constraints (label and label-property types)."""
         pass
 
     @abstractmethod
@@ -128,7 +119,7 @@ class Database(ABC):
         self,
         constraints: List[Constraint],
     ) -> None:
-        """Ensures that database constraints match input constraints"""
+        """Ensures that database constraints match input constraints."""
         old_constraints = set(self.get_constraints())
         new_constraints = set(constraints)
         for obsolete_constraints in old_constraints.difference(new_constraints):
@@ -137,11 +128,11 @@ class Database(ABC):
             self.create_constraint(missing_constraint)
 
     def drop_database(self):
-        """Drops database by removing all nodes and edges"""
+        """Drops database by removing all nodes and edges."""
         self.execute("MATCH (n) DETACH DELETE n;")
 
     def _get_cached_connection(self) -> Connection:
-        """Returns cached connection if it exists, creates it otherwise"""
+        """Returns cached connection if it exists, creates it otherwise."""
         if self._cached_connection is None or not self._cached_connection.is_active():
             self._cached_connection = self.new_connection()
 
@@ -149,11 +140,11 @@ class Database(ABC):
 
     @abstractmethod
     def new_connection(self) -> Connection:
-        """Creates new Memgraph connection"""
+        """Creates new database connection."""
         pass
 
     def _get_nodes_with_unique_fields(self, node: Node) -> Optional[Node]:
-        """Get's all nodes from Memgraph that have any of the unique fields
+        """Get's all nodes from the database that have any of the unique fields
         set to the values in the `node` object.
         """
         return self.execute_and_fetch(
@@ -181,7 +172,7 @@ class Database(ABC):
         return result[variable_name]
 
     def create_node(self, node: Node) -> Optional[Node]:
-        """Creates a node in Memgraph from the `node` object."""
+        """Creates a node in database from the `node` object."""
         results = self.execute_and_fetch(
             f"CREATE (node:{node._label}) {node._get_cypher_set_properties('node')} RETURN node;"
         )
@@ -189,23 +180,23 @@ class Database(ABC):
 
     @abstractmethod
     def save_node(self, node: Node) -> Node:
-        """Saves node to Memgraph.
-        If the node._id is not None it fetches the node with the same id from
-        Memgraph and updates it's fields.
+        """Saves node to database.
+        If the node._id is not None, it fetches the node with the same id from
+        the database and updates it's fields.
         If the node has unique fields it fetches the nodes with the same unique
-        fields from Memgraph and updates it's fields.
+        fields from the database and updates it's fields.
         Otherwise it creates a new node with the same properties.
         Null properties are ignored.
         """
         pass
 
     def save_nodes(self, nodes: List[Node]) -> None:
-        """Saves a list of nodes to Memgraph."""
+        """Saves a list of nodes to the database."""
         for i in range(len(nodes)):
             nodes[i]._id = self.save_node(nodes[i])._id
 
     def save_node_with_id(self, node: Node) -> Optional[Node]:
-        """Saves a node in Memgraph using the internal Memgraph id."""
+        """Saves a node to the database using the internal id."""
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label})"
             + f" WHERE id(node) = {node._id}"
@@ -217,45 +208,45 @@ class Database(ABC):
 
     @abstractmethod
     def load_node(self, node: Node) -> Optional[Node]:
-        """Loads a node from Memgraph.
-        If the node._id is not None it fetches the node from Memgraph with that
+        """Loads a node from the database.
+        If the node._id is not None, it fetches the node from the database with that
         internal id.
-        If the node has unique fields it fetches the node from Memgraph with
+        If the node has unique fields it fetches the node from the database with
         those unique fields set.
-        Otherwise it tries to find any node in Memgraph that has all properties
+        Otherwise it tries to find any node in the database that has all properties
         set to exactly the same values.
         If no node is found or no properties are set it raises a GQLAlchemyError.
         """
         pass
 
     def load_node_with_all_properties(self, node: Node) -> Optional[Node]:
-        """Loads a node from Memgraph with all equal property values."""
+        """Loads a node from the database with all equal property values."""
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label}) WHERE {node._get_cypher_fields_and_block('node')} RETURN node;"
         )
         return self.get_variable_assume_one(results, "node")
 
     def load_node_with_id(self, node: Node) -> Optional[Node]:
-        """Loads a node with the same internal Memgraph id."""
+        """Loads a node with the same internal database id."""
         results = self.execute_and_fetch(f"MATCH (node: {node._label}) WHERE id(node) = {node._id} RETURN node;")
 
         return self.get_variable_assume_one(results, "node")
 
     @abstractmethod
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Returns a relationship loaded from Memgraph.
-        If the relationship._id is not None it fetches the relationship from
-        Memgraph that has the same internal id.
+        """Returns a relationship loaded from the database.
+        If the relationship._id is not None, it fetches the relationship from
+        the database that has the same internal id.
         Otherwise it returns the relationship whose relationship._start_node_id
         and relationship._end_node_id and all relationship properties that
-        are not None match the relationship in Memgraph.
-        If there is no relationship like that in Memgraph, or if there are
-        multiple relationships like that in Memgraph, throws GQLAlchemyError.
+        are not None match the relationship in the database.
+        If there is no relationship like that in database, or if there are
+        multiple relationships like that in database, throws GQLAlchemyError.
         """
         pass
 
     def load_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
-        """Loads a relationship from Memgraph using the internal id."""
+        """Loads a relationship from the database using the internal id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -268,7 +259,7 @@ class Database(ABC):
     def load_relationship_with_start_node_id_and_end_node_id(
         self, relationship: Relationship
     ) -> Optional[Relationship]:
-        """Loads a relationship from Memgraph using start node and end node id
+        """Loads a relationship from the database using start node and end node id
         for which all properties of the relationship that are not None match.
         """
         and_block = relationship._get_cypher_fields_and_block("relationship")
@@ -285,8 +276,8 @@ class Database(ABC):
 
     @abstractmethod
     def save_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Saves a relationship to Memgraph.
-        If relationship._id is not None it finds the relationship in Memgraph
+        """Saves a relationship to the database.
+        If relationship._id is not None it finds the relationship in the database
         and updates it's properties with the values in `relationship`.
         If relationship._id is None, it creates a new relationship.
         If you want to set a relationship._id instead of creating a new
@@ -295,12 +286,12 @@ class Database(ABC):
         pass
 
     def save_relationships(self, relationships: List[Relationship]) -> None:
-        """Saves a list of relationships to Memgraph."""
+        """Saves a list of relationships to the database."""
         for i in range(len(relationships)):
             relationships[i]._id = self.save_relationship(relationships[i])._id
 
     def save_relationship_with_id(self, relationship: Relationship) -> Optional[Relationship]:
-        """Saves a relationship in Memgraph using the relationship._id."""
+        """Saves a relationship to the database using the relationship._id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -313,7 +304,7 @@ class Database(ABC):
         return self.get_variable_assume_one(results, "relationship")
 
     def create_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Creates a new relationship in Memgraph."""
+        """Creates a new relationship in the database."""
         results = self.execute_and_fetch(
             "MATCH (start_node), (end_node)"
             + f" WHERE id(start_node) = {relationship._start_node_id}"
@@ -324,25 +315,3 @@ class Database(ABC):
         )
 
         return self.get_variable_assume_one(results, "relationship")
-
-    def get_procedures(self, starts_with: Optional[str] = None, update: bool = False) -> List["QueryModule"]:
-        """Return query procedures.
-
-        Maintains a list of query modules in the Memgraph object. If starts_with
-        is defined then return those modules that start with starts_with string.
-
-        Args:
-            starts_with: Return those modules that start with this string.
-            (Optional)
-            update: Whether to update the list of modules in
-            self.query_modules. (Optional)
-        """
-        if not hasattr(self, "query_modules") or update:
-            results = self.execute_and_fetch("CALL mg.procedures() YIELD *;")
-            self.query_modules = [QueryModule(**module_dict) for module_dict in results]
-
-        return (
-            self.query_modules
-            if starts_with is None
-            else [q for q in self.query_modules if q.name.startswith(starts_with)]
-        )

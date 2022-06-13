@@ -58,7 +58,7 @@ class Connection(ABC):
 
     @abstractmethod
     def is_active(self) -> bool:
-        """Returns True if connection is active and can be used"""
+        """Returns True if connection is active and can be used."""
         pass
 
 
@@ -96,7 +96,7 @@ class MemgraphConnection(Connection):
             yield {dsc.name: _convert_memgraph_value(row[index]) for index, dsc in enumerate(cursor.description)}
 
     def is_active(self) -> bool:
-        """Returns True if connection is active and can be used"""
+        """Returns True if connection is active and can be used."""
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
     @gqlalchemy_error_handler
@@ -117,7 +117,7 @@ class MemgraphConnection(Connection):
 
 
 def _convert_memgraph_value(value: Any) -> Any:
-    """Converts Memgraph objects to custom Node/Relationship objects"""
+    """Converts Memgraph objects to custom Node/Relationship objects."""
     if isinstance(value, mgclient.Relationship):
         return Relationship.parse_obj(
             {
@@ -178,7 +178,7 @@ class Neo4jConnection(Connection):
                 yield {column: _convert_neo4j_value(result[column]) for column in columns}
 
     def is_active(self) -> bool:
-        """Returns True if connection is active and can be used"""
+        """Returns True if connection is active and can be used."""
         return self._connection is not None
 
     def _create_connection(self):
@@ -188,7 +188,7 @@ class Neo4jConnection(Connection):
 
 
 def _convert_neo4j_value(value: Any) -> Any:
-    """Converts Neo4j objects to custom Node/Relationship objects"""
+    """Converts Neo4j objects to custom Node/Relationship objects."""
     if isinstance(value, Neo4jRelationship):
         return Relationship.parse_obj(
             {

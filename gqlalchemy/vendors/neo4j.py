@@ -68,7 +68,7 @@ class Neo4j(Database):
         self._cached_connection: Optional[Connection] = None
 
     def get_indexes(self) -> List[Neo4jIndex]:
-        """Returns a list of all database indexes (label and label-property types)"""
+        """Returns a list of all database indexes (label and label-property types)."""
         indexes = []
         for result in self.execute_and_fetch("SHOW INDEX;"):
             if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP:
@@ -92,7 +92,7 @@ class Neo4j(Database):
         return indexes
 
     def ensure_indexes(self, indexes: List[Neo4jIndex]) -> None:
-        """Ensures that database indexes match input indexes"""
+        """Ensures that database indexes match input indexes."""
         old_indexes = set(self.get_indexes())
         new_indexes = set(indexes)
         for obsolete_index in old_indexes.difference(new_indexes):
@@ -104,7 +104,7 @@ class Neo4j(Database):
     def get_constraints(
         self,
     ) -> List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]]:
-        """Returns a list of all database constraints (label and label-property types)"""
+        """Returns a list of all database constraints (label and label-property types)."""
         constraints: List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]] = []
         for result in self.execute_and_fetch("SHOW CONSTRAINTS;"):
             if result[Neo4jConstants.TYPE] == "UNIQUENESS":
@@ -127,7 +127,7 @@ class Neo4j(Database):
         return [x for x in self.get_constraints() if isinstance(x, Neo4jConstraintUnique)]
 
     def new_connection(self) -> Connection:
-        """Creates new Neo4j connection"""
+        """Creates new Neo4j connection."""
         args = dict(
             host=self._host,
             port=self._port,
@@ -139,11 +139,11 @@ class Neo4j(Database):
         return Neo4jConnection(**args)
 
     def save_node(self, node: Node) -> Node:
-        """Saves node to Neo4j.
+        """Saves node to the database.
         If the node._id is not None it fetches the node with the same id from
-        Neo4j and updates it's fields.
+        the database and updates it's fields.
         If the node has unique fields it fetches the nodes with the same unique
-        fields from Neo4j and updates it's fields.
+        fields from the database and updates it's fields.
         Otherwise it creates a new node with the same properties.
         Null properties are ignored.
         """
@@ -167,12 +167,12 @@ class Neo4j(Database):
         return result
 
     def load_node(self, node: Node) -> Optional[Node]:
-        """Loads a node from Neo4j.
-        If the node._id is not None it fetches the node from Neo4j with that
+        """Loads a node from the database.
+        If the node._id is not None it fetches the node from the database with that
         internal id.
-        If the node has unique fields it fetches the node from Neo4j with
+        If the node has unique fields it fetches the node from the database with
         those unique fields set.
-        Otherwise it tries to find any node in Neo4j that has all properties
+        Otherwise it tries to find any node in the database that has all properties
         set to exactly the same values.
         If no node is found or no properties are set it raises a GQLAlchemyError.
         """
@@ -189,14 +189,14 @@ class Neo4j(Database):
         return result
 
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Returns a relationship loaded from Neo4j.
+        """Returns a relationship loaded from the database.
         If the relationship._id is not None it fetches the relationship from
-        Neo4j that has the same internal id.
+        the database that has the same internal id.
         Otherwise it returns the relationship whose relationship._start_node_id
         and relationship._end_node_id and all relationship properties that
-        are not None match the relationship in Neo4j.
-        If there is no relationship like that in Neo4j, or if there are
-        multiple relationships like that in Neo4j, throws GQLAlchemyError.
+        are not None match the relationship in the database.
+        If there is no relationship like that in the database, or if there are
+        multiple relationships like that in the database, throws GQLAlchemyError.
         """
         if relationship._id is not None:
             result = self.load_relationship_with_id(relationship)
@@ -207,8 +207,8 @@ class Neo4j(Database):
         return result
 
     def save_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Saves a relationship to Neo4j.
-        If relationship._id is not None it finds the relationship in Neo4j
+        """Saves a relationship to the database.
+        If relationship._id is not None it finds the relationship in the database
         and updates it's properties with the values in `relationship`.
         If relationship._id is None, it creates a new relationship.
         If you want to set a relationship._id instead of creating a new

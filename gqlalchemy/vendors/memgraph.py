@@ -73,7 +73,7 @@ class Memgraph(Database):
         self._on_disk_db = None
 
     def get_indexes(self) -> List[MemgraphIndex]:
-        """Returns a list of all database indexes (label and label-property types)"""
+        """Returns a list of all database indexes (label and label-property types)."""
         indexes = []
         for result in self.execute_and_fetch("SHOW INDEX INFO;"):
             indexes.append(
@@ -85,7 +85,7 @@ class Memgraph(Database):
         return indexes
 
     def ensure_indexes(self, indexes: List[MemgraphIndex]) -> None:
-        """Ensures that database indexes match input indexes"""
+        """Ensures that database indexes match input indexes."""
         old_indexes = set(self.get_indexes())
         new_indexes = set(indexes)
         for obsolete_index in old_indexes.difference(new_indexes):
@@ -96,7 +96,7 @@ class Memgraph(Database):
     def get_constraints(
         self,
     ) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]:
-        """Returns a list of all database constraints (label and label-property types)"""
+        """Returns a list of all database constraints (label and label-property types)."""
         constraints: List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]] = []
         for result in self.execute_and_fetch("SHOW CONSTRAINT INFO;"):
             if result[MemgraphConstants.CONSTRAINT_TYPE] == MemgraphConstants.UNIQUE:
@@ -126,7 +126,7 @@ class Memgraph(Database):
         return [x for x in self.get_constraints() if isinstance(x, MemgraphConstraintUnique)]
 
     def new_connection(self) -> Connection:
-        """Creates new Memgraph connection"""
+        """Creates new Memgraph connection."""
         args = dict(
             host=self._host,
             port=self._port,
@@ -138,34 +138,34 @@ class Memgraph(Database):
         return MemgraphConnection(**args)
 
     def create_stream(self, stream: MemgraphStream) -> None:
-        """Create a stream"""
+        """Create a stream."""
         query = stream.to_cypher()
         self.execute(query)
 
     def start_stream(self, stream: MemgraphStream) -> None:
-        """Start a stream"""
+        """Start a stream."""
         query = f"START STREAM {stream.name};"
         self.execute(query)
 
     def get_streams(self) -> List[str]:
-        """Returns a list of all streams"""
+        """Returns a list of all streams."""
         streams = []
         for result in self.execute_and_fetch("SHOW STREAMS;"):
             streams.append(result)
         return streams
 
     def drop_stream(self, stream: MemgraphStream) -> None:
-        """Drop a stream"""
+        """Drop a stream."""
         query = f"DROP STREAM {stream.name};"
         self.execute(query)
 
     def create_trigger(self, trigger: MemgraphTrigger) -> None:
-        """Creates a trigger"""
+        """Creates a trigger."""
         query = trigger.to_cypher()
         self.execute(query)
 
     def get_triggers(self) -> List[str]:
-        """Returns a list of all database triggers"""
+        """Returns a list of all database triggers."""
         triggers_list = list(self.execute_and_fetch("SHOW TRIGGERS;"))
         memgraph_triggers_list = []
         for trigger in triggers_list:
@@ -189,17 +189,17 @@ class Memgraph(Database):
         return memgraph_triggers_list
 
     def drop_trigger(self, trigger: MemgraphTrigger) -> None:
-        """Drop a trigger"""
+        """Drop a trigger."""
         query = f"DROP TRIGGER {trigger.name};"
         self.execute(query)
 
     def drop_triggers(self) -> None:
-        """Drops all triggers in the database"""
+        """Drops all triggers in the database."""
         for trigger in self.get_triggers():
             self.drop_trigger(trigger)
 
     def _new_connection(self) -> Connection:
-        """Creates new Memgraph connection"""
+        """Creates new Memgraph connection."""
         args = dict(
             host=self._host,
             port=self._port,
@@ -211,22 +211,22 @@ class Memgraph(Database):
         return MemgraphConnection(**args)
 
     def init_disk_storage(self, on_disk_db: OnDiskPropertyDatabase) -> None:
-        """Adds and OnDiskPropertyDatabase to Memgraph so that any property
+        """Adds and OnDiskPropertyDatabase to the database so that any property
         that has a Field(on_disk=True) can be stored to and loaded from
         an OnDiskPropertyDatabase.
         """
         self.on_disk_db = on_disk_db
 
     def remove_on_disk_storage(self) -> None:
-        """Removes the OnDiskPropertyDatabase from Memgraph"""
+        """Removes the OnDiskPropertyDatabase from the database."""
         self.on_disk_db = None
 
     def save_node(self, node: Node) -> Node:
-        """Saves node to Memgraph.
+        """Saves node to the database.
         If the node._id is not None it fetches the node with the same id from
-        Memgraph and updates it's fields.
+        the database and updates it's fields.
         If the node has unique fields it fetches the nodes with the same unique
-        fields from Memgraph and updates it's fields.
+        fields from the database and updates it's fields.
         Otherwise it creates a new node with the same properties.
         Null properties are ignored.
         """
@@ -252,7 +252,7 @@ class Memgraph(Database):
 
     def _save_node_properties_on_disk(self, node: Node, result: Node) -> Node:
         """Saves all on_disk properties to the on disk database attached to
-        Memgraph.
+        the database.
         """
         for field in node.__fields__:
             value = getattr(node, field, None)
@@ -265,12 +265,12 @@ class Memgraph(Database):
         return result
 
     def load_node(self, node: Node) -> Optional[Node]:
-        """Loads a node from Memgraph.
-        If the node._id is not None it fetches the node from Memgraph with that
+        """Loads a node from the database.
+        If the node._id is not None it fetches the node from the database with that
         internal id.
-        If the node has unique fields it fetches the node from Memgraph with
+        If the node has unique fields it fetches the node from the database with
         those unique fields set.
-        Otherwise it tries to find any node in Memgraph that has all properties
+        Otherwise it tries to find any node in the database that has all properties
         set to exactly the same values.
         If no node is found or no properties are set it raises a GQLAlchemyError.
         """
@@ -303,14 +303,14 @@ class Memgraph(Database):
         return result
 
     def load_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Returns a relationship loaded from Memgraph.
+        """Returns a relationship loaded from the database.
         If the relationship._id is not None it fetches the relationship from
-        Memgraph that has the same internal id.
+        the database that has the same internal id.
         Otherwise it returns the relationship whose relationship._start_node_id
         and relationship._end_node_id and all relationship properties that
-        are not None match the relationship in Memgraph.
-        If there is no relationship like that in Memgraph, or if there are
-        multiple relationships like that in Memgraph, throws GQLAlchemyError.
+        are not None match the relationship in the database.
+        If there is no relationship like that in the database, or if there are
+        multiple relationships like that in the database, throws GQLAlchemyError.
         """
         if relationship._id is not None:
             result = self.load_relationship_with_id(relationship)
@@ -342,8 +342,8 @@ class Memgraph(Database):
         return result
 
     def save_relationship(self, relationship: Relationship) -> Optional[Relationship]:
-        """Saves a relationship to Memgraph.
-        If relationship._id is not None it finds the relationship in Memgraph
+        """Saves a relationship to the database.
+        If relationship._id is not None it finds the relationship in the database
         and updates it's properties with the values in `relationship`.
         If relationship._id is None, it creates a new relationship.
         If you want to set a relationship._id instead of creating a new

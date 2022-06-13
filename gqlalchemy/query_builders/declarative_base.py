@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 from abc import ABC, abstractmethod
 from enum import Enum
-import re
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
 from ..graph_algorithms.integrated_algorithms import IntegratedAlgorithm
