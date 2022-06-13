@@ -441,7 +441,7 @@ class UnionPartialQuery(PartialQuery):
 
 
 class DeletePartialQuery(PartialQuery):
-    def __init__(self, variable_expressions: List[str], detach: bool):
+    def __init__(self, variable_expressions: Union[str, List[str]], detach: bool):
         super().__init__(DeclarativeBaseTypes.DELETE)
 
         self._variable_expressions = variable_expressions
@@ -453,11 +453,11 @@ class DeletePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Creates a DELETE statement Cypher partial query."""
-        return f" {'DETACH' if self.detach else ''} DELETE {', '.join(self.variable_expressions)} "
+        return f" {'DETACH' if self.detach else ''} DELETE {', '.join(self.variable_expressions) if isinstance(self.variable_expressions, list) else self.variable_expressions} "
 
 
 class RemovePartialQuery(PartialQuery):
-    def __init__(self, items: List[str]):
+    def __init__(self, items: Union[str, List[str]]):
         super().__init__(DeclarativeBaseTypes.REMOVE)
 
         self._items = items
@@ -468,7 +468,7 @@ class RemovePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Creates a REMOVE statement Cypher partial query."""
-        return f" REMOVE {', '.join(self.items)} "
+        return f" REMOVE {', '.join(self.items) if isinstance(self.items, list) else self.items} "
 
 
 class YieldPartialQuery(_ResultPartialQuery):
@@ -536,7 +536,7 @@ class OrderByPartialQuery(PartialQuery):
 
 
 class LimitPartialQuery(PartialQuery):
-    def __init__(self, integer_expression: str):
+    def __init__(self, integer_expression: Union[str, int]):
         super().__init__(DeclarativeBaseTypes.LIMIT)
 
         self.integer_expression = integer_expression
@@ -547,7 +547,7 @@ class LimitPartialQuery(PartialQuery):
 
 
 class SkipPartialQuery(PartialQuery):
-    def __init__(self, integer_expression: str):
+    def __init__(self, integer_expression: Union[str, int]):
         super().__init__(DeclarativeBaseTypes.SKIP)
 
         self.integer_expression = integer_expression
@@ -646,6 +646,17 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Examples:
+            Get all nodes with a certain label:
+
+            Python: `match().node(labels='Country', variable='c').return_(results='c').execute()`
+            Cypher: `MATCH (c:Country) RETURN c;`
+
+            Get a relationship of a certain type that connects two nodes with certain label:
+
+            Python: `match().node(labels='Town', variable='t').to(relationship_type='BELONGS_TO', variable='b').node(labels='Country', variable='c').return_(results='b').execute()`
+            Cypher: `MATCH (t:Town)-[b:BELONGS_TO]->(c:Country) RETURN b;`
         """
         self._query.append(MatchPartialQuery(optional))
 
@@ -658,6 +669,12 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Merge node with properties:
+
+            Python: `merge().node(variable='city').where(item='city.name', operator=Operator.EQUAL, literal='London').return_(results='city').execute()`
+            Cypher: `MERGE (city) WHERE city.name = 'London' RETURN city;`
         """
         self._query.append(MergePartialQuery())
 
@@ -668,6 +685,12 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Create a single node:
+
+            Python: `create().node(labels='Person', variable='p').return_(results='p').execute()`
+            Cypher: `CREATE (p:Person) RETURN p;`
         """
         self._query.append(CreatePartialQuery())
 
@@ -686,6 +709,17 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Examples:
+            Call procedure with no arguments:
+
+            Python: `call('pagerank.get').yield_().return_().execute()`
+            Cypher: `CALL pagerank.get() YIELD * RETURN *;`
+
+            Call procedure with arguments:
+
+            Python: `call('json_util.load_from_url', 'https://some-url.com').yield_('objects').return_(results='objects').execute()
+            Cypher: `CALL json_util.load_from_url(https://some-url.com) YIELD objects RETURN objects;`
         """
         self._query.append(CallPartialQuery(procedure, arguments))
 
@@ -710,6 +744,12 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Create a node and return it:
+
+            Python: `create().node(labels='Person', variable='n', first_name='Kate').return_(results='n').execute()`
+            Cypher: `CREATE (n:Person {first_name: 'Kate'}) RETURN n;`
         """
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.NODE):
             raise InvalidMatchChainException()
@@ -747,6 +787,12 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Match and return a relationship:
+
+            Python: `match().node(labels='Town', variable='t').to(relationship_type='BELONGS_TO', variable='b').node(labels='Country', variable='c').return_(results='b').execute()`
+            Cypher: `MATCH (t:Town)-[b:BELONGS_TO]->(c:Country) RETURN b;`
         """
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.RELATIONSHIP):
             raise InvalidMatchChainException()
@@ -792,6 +838,12 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Match and return a relationship:
+
+            Python: `match().node(labels='Country', variable='c').from_(relationship_type='BELONGS_TO', variable='b').node(labels='Town', variable='t').return_(results='b').execute()`
+            Cypher: `MATCH (c:Country)<-[b:BELONGS_TO]-(t:Town) RETURN b;`
         """
         if not self._is_linking_valid_with_query(DeclarativeBaseTypes.RELATIONSHIP):
             raise InvalidMatchChainException()
@@ -837,17 +889,17 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by the equality of `name` properties of two connected nodes.
 
-            Python: `match().node(variable="n").to().node(variable="m").where(item="n.name", operator="=", expression="m.name").return_()`
+            Python: `match().node(variable='n').to().node(variable='m').where(item='n.name', operator=Operator.EQUAL, expression='m.name').return_()`
             Cypher: `MATCH (n)-[]->(m) WHERE n.name = m.name RETURN *;`
 
             Filtering query results by the node label.
 
-            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').return_()`
             Cypher: `MATCH (n) WHERE n:User RETURN *;`
 
             Filtering query results by the comparison of node property and literal.
 
-            Python: `match().node(variable="n").where(item="n.age", operator=">", literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n.age > 18 RETURN *;`
         """
         # WHERE item operator (literal | expression)
@@ -878,7 +930,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by the equality of `name` properties of two connected nodes.
 
-            Python: `match().node(variable="n").to().node(variable="m").where_not(item="n.name", operator="=", expression="m.name").return_()`
+            Python: `match().node(variable='n').to().node(variable='m').where_not(item='n.name', operator='=', expression='m.name').return_()`
             Cypher: `MATCH (n)-[]->(m) WHERE NOT n.name = m.name RETURN *;`
         """
         self._query.append(WhereNotConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -902,7 +954,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").and_where(item="n.age", operator=">", literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').and_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User AND n.age > 18 RETURN *;`
         """
         self._query.append(AndWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -926,7 +978,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").and_not_where(item="n.age", operator=">", literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').and_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User AND NOT n.age > 18 RETURN *;`
         """
         self._query.append(AndNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -950,7 +1002,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").or_where(item="n.age", operator=">", literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').or_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User OR n.age > 18 RETURN *;`
         """
         self._query.append(OrWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -974,7 +1026,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").or_not_where(item="n.age", operator=">", literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').or_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User OR NOT n.age > 18 RETURN *;`
         """
         self._query.append(OrNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -998,7 +1050,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").xor_where(item="n.age", operator=">", literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').xor_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User XOR n.age > 18 RETURN *;`
         """
         self._query.append(XorWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -1022,7 +1074,7 @@ class DeclarativeBase(ABC):
         Examples:
             Filtering query results by node label or the comparison of node property and literal.
 
-            Python: `match().node(variable="n").where(item="n", operator=":", expression="User").xor_not_where(item="n.age", operator=">", literal=18).return_()`
+            Python: `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').xor_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n:User XOR NOT n.age > 18 RETURN *;`
         """
         self._query.append(XorNotWhereConditionPartialQuery(item=item, operator=operator, **kwargs))
@@ -1038,6 +1090,10 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Python: `unwind(list_expression="[1, 2, 3, null]", variable="x").return_(results=["x", ("'val'", "y")]).execute()`
+            Cypher: `UNWIND [1, 2, 3, null] AS x RETURN x, 'val' AS y;`
         """
         self._query.append(UnwindPartialQuery(list_expression, variable))
 
@@ -1053,8 +1109,18 @@ class DeclarativeBase(ABC):
             results: A dictionary mapping variables in the first query with
             aliases in the second query.
 
+        Raises:
+            GQLAlchemyResultQueryTypeError: Raises an error when the provided argument is of wrong type.
+            GQLAlchemyTooLargeTupleInResultQuery: Raises an error when the given tuple has length larger than 2.
+
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Pipe the result from first part of the query for the futher use:
+
+            Python: `match().node(variable='n').with('n').execute()`
+            Cypher: `MATCH (n) WITH n;
         """
         self._query.append(WithPartialQuery(results))
 
@@ -1069,36 +1135,59 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Examples:
+            Combine querties and retain duplicates:
+
+            Python: `match().node(variable="c", labels="Country").return_(results=("c.name", "columnName")).union().match().node(variable="p", labels="Person").return_(results=("p.name", "columnName")).execute()`
+            Cypher: `MATCH (c:Country) RETURN c.name AS columnName UNION ALL MATCH (p:Person) RETURN p.name AS columnName;`
+
+            Combine queries and remove duplicates:
+
+            Python: `match().node(variable="c", labels="Country").return_(results=("c.name", "columnName")).union(include_duplicates=False).match().node(variable="p", labels="Person").return_(results=("p.name", "columnName")).execute()`
+            Cypher: `MATCH (c:Country) RETURN c.name AS columnName UNION MATCH (p:Person) RETURN p.name AS columnName;`
         """
         self._query.append(UnionPartialQuery(include_duplicates))
 
         return self
 
-    def delete(self, variable_expressions: List[str], detach: Optional[bool] = False) -> "DeclarativeBase":
+    def delete(self, variable_expressions: Union[str, List[str]], detach: Optional[bool] = False) -> "DeclarativeBase":
         """Delete nodes and relationships from the database.
 
         Args:
-            variable_expressions: A list of strings indicating which nodes
-              and/or relationships should be removed.
+            variable_expressions: A string or list of strings indicating which node(s)
+              and/or relationship(s) should be removed.
             detach: A bool indicating if relationships should be deleted along
               with a node.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Delete a node:
+
+            Python: `match().node(labels='Node1', variable='n1').delete(variable_expressions='n1').execute()`
+            Cypher: `MATCH (n1:Node1) DELETE n1;`
         """
         self._query.append(DeletePartialQuery(variable_expressions, detach))
 
         return self
 
-    def remove(self, items: List[str]) -> "DeclarativeBase":
+    def remove(self, items: Union[str, List[str]]) -> "DeclarativeBase":
         """Remove labels and properties from nodes and relationships.
 
         Args:
-            items: A list of strings indicating which labels and/or properties
+            items: A string or list of strings indicating which label(s) and/or properties
               should be removed.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Remove a property from a node:
+
+            Python: `match().node(labels='Country', variable='n', name='United Kingdom').remove(items='n.name').return_(results='n').execute()`
+            Cypher: `MATCH (n:Country {name: 'United Kingdom'}) REMOVE n.name RETURN n;`
         """
         self._query.append(RemovePartialQuery(items))
 
@@ -1110,11 +1199,25 @@ class DeclarativeBase(ABC):
         """Yield data from the query.
 
         Args:
-            results: A dictionary mapping items that are returned with alias
-              names.
+            results: A dictionary mapping items that are returned with alias names.
+
+        Raises:
+            GQLAlchemyResultQueryTypeError: Raises an error when the provided argument is of wrong type.
+            GQLAlchemyTooLargeTupleInResultQuery: Raises an error when the given tuple has length larger than 2.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Examples:
+            Yield all data from a query:
+
+            Python: `call(procedure='pagerank.get').yield_().return_().execute()`
+            Cypher: `CALL pagerank.get() YIELD * RETURN *;`
+
+            Yield some data from a query:
+
+            Python: `.call(procedure='pagerank.get').yield_(results=['node', 'rank']).return_(results=['node','rank']).execute()`
+            Cypher: `CALL pagerank.get() YIELD node, rank RETURN node, rank;`
         """
         self._query.append(YieldPartialQuery(results))
 
@@ -1128,18 +1231,22 @@ class DeclarativeBase(ABC):
         Args:
             results: An optional string, tuple or iterable of strings and tuples for alias names.
 
+        Raises:
+            GQLAlchemyResultQueryTypeError: Raises an error when the provided argument is of wrong type.
+            GQLAlchemyTooLargeTupleInResultQuery: Raises an error when the given tuple has length larger than 2.
+
         Returns:
             A `DeclarativeBase` instance for constructing queries.
 
         Examples:
             Return all variables from a query:
 
-            Python: `match().node(labels="Person", variable="p").return_().execute()`
+            Python: `match().node(labels='Person', variable='p').return_().execute()`
             Cypher: `MATCH (p:Person) RETURN *;`
 
             Return specific variables from a query:
 
-            Python: `match().node(labels="Person", variable="p1").to().node(labels="Person", variable="p2").return_([("p1":"first"), "p2"]).execute()`
+            Python: `match().node(labels='Person', variable='p1').to().node(labels='Person', variable='p2').return_(results=[('p1','first'), 'p2']).execute()`
             Cypher: `MATCH (p1:Person)-[]->(p2:Person) RETURN p1 AS first, p2;`
         """
         self._query.append(ReturnPartialQuery(results=results))
@@ -1148,32 +1255,32 @@ class DeclarativeBase(ABC):
         return self
 
     def order_by(
-        self, properties: Union[str, Tuple[str, Order], Iterable[Union[str, Tuple[str, Order]]]]
+        self, properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]
     ) -> "DeclarativeBase":
         """Creates an ORDER BY statement Cypher partial query.
 
         Args:
-            properties: Properties and order by which the query results will be ordered.
+            properties: Properties and order (DESC/DESCENDING/ASC/ASCENDING) by which the query results will be ordered.
 
         Raises:
             GQLAlchemyOrderByTypeError: Raises an error when the given ordering is of the wrong type.
-            GQLAlchemyMissingOrdering: Raises an error when the given property is neither string nor tuple.
+            GQLAlchemyMissingOrder: Raises an error when the given property is neither string nor tuple.
 
         Returns:
-            self: A partial Cypher query built from the given parameters.
+            A `DeclarativeBase` instance for constructing queries.
 
         Examples:
             Ordering query results by the property `n.name` in ascending order
             and by the property `n.last_name` in descending order:
 
-            Python: `match().node(variable="n").return_().order_by(properties=["n.name", ("n.last_name", Order.DESC)])`
+            Python: `match().node(variable='n').return_().order_by(properties=['n.name', ('n.last_name', Order.DESC)]).execute()`
             Cypher: `MATCH (n) RETURN * ORDER BY n.name, n.last_name DESC;`
         """
         self._query.append(OrderByPartialQuery(properties=properties))
 
         return self
 
-    def limit(self, integer_expression: str) -> "DeclarativeBase":
+    def limit(self, integer_expression: Union[str, int]) -> "DeclarativeBase":
         """Limit the number of records when returning results.
 
         Args:
@@ -1182,12 +1289,18 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Limit the number of returned results:
+
+            Python: `match().node(labels='Person', variable='p').return_().limit(integer_expression='10').execute()`
+            Cypher: `MATCH (p:Person) RETURN * LIMIT 10;`
         """
         self._query.append(LimitPartialQuery(integer_expression))
 
         return self
 
-    def skip(self, integer_expression: str) -> "DeclarativeBase":
+    def skip(self, integer_expression: Union[str, int]) -> "DeclarativeBase":
         """Skip a number of records when returning results.
 
         Args:
@@ -1196,6 +1309,12 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Skip the first result:
+
+            Python: `match().node(variable='n').return_(results='n').skip(integer_expression='1').execute()`
+            Cypher: `MATCH (n) RETURN n SKIP 1;`
         """
         self._query.append(SkipPartialQuery(integer_expression))
 
@@ -1228,6 +1347,17 @@ class DeclarativeBase(ABC):
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
+
+        Examples:
+            Load CSV with header:
+
+            Python: `load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()`
+            Cypher: `LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN *;`
+
+            Load CSV without header:
+
+            Python: `load_csv(path='path/to/my/file.csv', header=False, row='row').return_().execute()`
+            Cypher: `LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN *;`
         """
         self._query.append(LoadCsvPartialQuery(path, header, row))
 
@@ -1297,24 +1427,29 @@ class DeclarativeBase(ABC):
             self: A partial Cypher query built from the given parameters.
 
         Examples:
-            Setting or updating a property.
+            Set or update a property.
 
-            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001).return_()`
+            Python: `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n.population', operator=Operator.ASSIGNMENT, literal=83000001).return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN *;`
 
-            Setting or updating multiple properties.
+            Set or update multiple properties.
 
-            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n.population", operator=SetOperator.ASSIGNMENT, literal=83000001).set_(item="n.capital", operator=SetOperator.ASSIGNMENT, literal="Berlin").return_()`
+            Python: `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n.population', operator=Operator.ASSIGNMENT, literal=83000001).set_(item='n.capital', operator=Operator.ASSIGNMENT, literal='Berlin').return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN *;`
 
-            Setting node label.
+            Set node label.
 
-            Python: `match().node(variable="n").where(item="n.name", operator="=", literal="Germany").set_(item="n", operator=SetOperator.LABEL_FILTER, expression="Land").return_()`
+            Python: `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n', operator=Operator.LABEL_FILTER, expression='Land').return_().execute()`
             Cypher: `MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN *;`
 
-            Setting or updating all properties using map.
+            Replace all properties using map.
 
-            Python: `match().node(variable="c", labels="Country").where(item="c.name", operator="=", literal="Germany").set_(item="c", operator=SetOperator.INCREMENT, literal={"name": "Germany", "population": "85000000"}).return_()`
+            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator=Operator.EQUAL, literal='Germany').set_(item='c', operator=Operator.ASSIGNMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
+            Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c = {name: 'Germany', population: '85000000'} RETURN *;`
+
+            Update all properties using map.
+
+            Python: `match().node(variable='c', labels='Country').where(item='c.name', operator=Operator.EQUAL, literal='Germany').set_(item='c', operator=Operator.INCREMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
             Cypher: `MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN *;`
 
         """
