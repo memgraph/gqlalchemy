@@ -77,6 +77,10 @@ FILE_NOT_FOUND = """
 File with path {path} not found.
 """
 
+OPERATOR_TYPE_ERROR = """
+Operator argument in {clause} clause that is a string must be a valid operator.
+"""
+
 
 class QueryClause(Enum):
     WHERE = "WHERE"
@@ -129,36 +133,14 @@ class GQLAlchemyOrderByTypeError(GQLAlchemyError):
         self.message = ORDER_BY_TYPE_ERROR
 
 
-class GQLAlchemyLiteralAndExpressionMissingInClause(GQLAlchemyError):
+class GQLAlchemyLiteralAndExpressionMissing(GQLAlchemyError):
     def __init__(self, clause: str):
-        super().__init__()
         self.message = LITERAL_AND_EXPRESSION_MISSING.format(clause=clause)
-
-
-class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyLiteralAndExpressionMissingInClause):
-    def __init__(self):
-        super().__init__(clause=QueryClause.WHERE)
-
-
-class GQLAlchemyLiteralAndExpressionMissingInSet(GQLAlchemyLiteralAndExpressionMissingInClause):
-    def __init__(self):
-        super().__init__(clause=QueryClause.SET)
 
 
 class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
     def __init__(self, clause: str):
-        super().__init__()
         self.message = EXTRA_KEYWORD_ARGUMENTS.format(clause=clause)
-
-
-class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
-    def __init__(self):
-        super().__init__(clause=QueryClause.WHERE)
-
-
-class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
-    def __init__(self):
-        super().__init__(clause=QueryClause.SET)
 
 
 class GQLAlchemyTooLargeTupleInResultQuery(GQLAlchemyError):
@@ -180,6 +162,11 @@ class GQLAlchemyDatabaseError(GQLAlchemyError):
     def __init__(self, message):
         super().__init__()
         self.message = message
+
+
+class GQLAlchemyOperatorTypeError(TypeError):
+    def __init__(self, clause) -> None:
+        self.message = OPERATOR_TYPE_ERROR.format(clause=clause)
 
 
 def gqlalchemy_error_handler(func):
