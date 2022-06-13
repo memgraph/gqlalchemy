@@ -579,7 +579,7 @@ class Memgraph:
             else [q for q in self.query_modules if q.name.startswith(starts_with)]
         )
 
-    def _add_query_module(self, file_path: str, module_name: str) -> "Memgraph":
+    def add_query_module(self, file_path: str, module_name: str) -> "Memgraph":
         """Function for adding query module.
 
         Args:
@@ -606,7 +606,7 @@ class Memgraph:
         file_path = "gqlalchemy/query_modules/push_streams/kafka.py"
         module_name = "kafka_stream.py"
 
-        return self._add_query_module(file_path=file_path, module_name=module_name)
+        return self.add_query_module(file_path=file_path, module_name=module_name)
 
     def with_power_bi(self) -> "Memgraph":
         """Load power_bi stream module
@@ -616,4 +616,4 @@ class Memgraph:
         file_path = "gqlalchemy/query_modules/push_streams/power_bi.py"
         module_name = "power_bi_stream.py"
 
-        return self._add_query_module(file_path=file_path, module_name=module_name)
+        return self.add_query_module(file_path=file_path, module_name=module_name)
