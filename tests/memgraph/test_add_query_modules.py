@@ -1,4 +1,5 @@
 import pytest
+
 from gqlalchemy import Memgraph
 from gqlalchemy.exceptions import GQLAlchemyFileNotFoundError
 
@@ -25,4 +26,4 @@ def test_add_query_module_valid(file_path, module_name):
 )
 def test_add_query_module_invalid(file_path, module_name):
     with pytest.raises(GQLAlchemyFileNotFoundError):
-        Memgraph()._add_query_module(file_path=file_path, module_name=module_name)
+        Memgraph().add_query_module(file_path=file_path, module_name=module_name)
