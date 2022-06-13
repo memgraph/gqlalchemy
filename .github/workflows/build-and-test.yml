@@ -71,7 +71,7 @@ jobs:
       - name: Set up pip and install packages
         run: |
           python -m pip install -U pip
-          Sudo -H pip install networkx numpy scipy
+          sudo -H pip install networkx numpy scipy
       - uses: Vampire/setup-wsl@v1
         with:
           distribution: Ubuntu-20.04
