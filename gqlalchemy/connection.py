@@ -17,7 +17,7 @@ from typing import Any, Dict, Iterator, Optional
 
 import mgclient
 
-from gqlalchemy.exceptions import gqlalchemy_error_handler
+from gqlalchemy.exceptions import database_error_handler
 
 from .models import Node, Path, Relationship
 
@@ -77,14 +77,14 @@ class MemgraphConnection(Connection):
         self.lazy = lazy
         self._connection = self._create_connection()
 
-    @gqlalchemy_error_handler
+    @database_error_handler
     def execute(self, query: str) -> None:
         """Executes Cypher query without returning any results."""
         cursor = self._connection.cursor()
         cursor.execute(query)
         cursor.fetchall()
 
-    @gqlalchemy_error_handler
+    @database_error_handler
     def execute_and_fetch(self, query: str) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         cursor = self._connection.cursor()
@@ -99,7 +99,7 @@ class MemgraphConnection(Connection):
         """Returns True if connection is active and can be used"""
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
-    @gqlalchemy_error_handler
+    @database_error_handler
     def _create_connection(self) -> Connection:
         """Creates and returns a connection with Memgraph."""
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE

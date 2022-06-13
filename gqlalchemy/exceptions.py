@@ -148,7 +148,7 @@ class GQLAlchemyTooLargeTupleInResultQuery(GQLAlchemyError):
         self.message = TOO_LARGE_TUPLE_IN_RESULT_QUERY.format(clause=clause)
 
 
-class GQLAlchemyResultQueryTypeError(TypeError):
+class GQLAlchemyResultQueryTypeError(GQLAlchemyError):
     def __init__(self, clause):
         self.message = RESULT_QUERY_TYPE_ERROR.format(clause=clause)
 
@@ -169,7 +169,7 @@ class GQLAlchemyOperatorTypeError(TypeError):
         self.message = OPERATOR_TYPE_ERROR.format(clause=clause)
 
 
-def gqlalchemy_error_handler(func):
+def database_error_handler(func):
     def inner_function(*args, **kwargs):
         try:
             return func(*args, **kwargs)
