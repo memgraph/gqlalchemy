@@ -27,6 +27,7 @@ from gqlalchemy import (
     QueryBuilder,
     match,
     call,
+    foreach,
     create,
     load_csv,
     unwind,
@@ -1471,6 +1472,17 @@ def test_base_class_with_dict(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_base_class_foreach(memgraph):
+    update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable(name="i"))
+    query_builder = foreach(variable="i", expression="[1, 2, 3]", update_clauses=update_clause.construct_query())
+    expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_base_class_with_tuple(memgraph):
     query_builder = with_(("10", "n")).return_(("n", ""))
     expected_query = " WITH 10 AS n RETURN n "
@@ -1746,6 +1758,19 @@ def test_unsaved_node_relationship_instances(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_foreach():
+    update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable(name="i"))
+    query_builder = QueryBuilder().foreach(
+        variable="i", expression="[1, 2, 3]", update_clause=update_clause.construct_query()
+    )
+    expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
 def test_bfs():
     bfs_alg = BreadthFirstSearch()
 
@@ -1761,6 +1786,29 @@ def test_bfs():
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_foreach_multiple_update_clauses():
+    variable_li = PropertyVariable(name="li")
+    update_clause_1 = QueryBuilder().create().node(labels="F4", prop=variable_li)
+    update_clause_2 = QueryBuilder().create().node(labels="F5", prop2=variable_li)
+    query = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .foreach(
+            variable="li",
+            expression="[1, 2]",
+            update_clause=[update_clause_1.construct_query(), update_clause_2.construct_query()],
+        )
+        .return_({"n": ""})
+    )
+    expected_query = " MATCH (n) FOREACH ( li IN [1, 2] | CREATE (:F4 {prop: li}) CREATE (:F5 {prop2: li}) ) RETURN n "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query.execute()
 
     mock.assert_called_with(expected_query)
 
@@ -1803,6 +1851,24 @@ def test_bfs_bounds(lower_bound, upper_bound, expected_query):
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_foreach_nested():
+    create_query = QueryBuilder().create().node(variable="u", prop=PropertyVariable(name="j"))
+    nested_query = QueryBuilder().foreach(variable="j", expression="i", update_clause=create_query.construct_query())
+    query = (
+        QueryBuilder()
+        .match()
+        .node(variable="n")
+        .foreach(variable="i", expression="n.prop", update_clause=nested_query.construct_query())
+    )
+
+    expected_query = " MATCH (n) FOREACH ( i IN n.prop | FOREACH ( j IN i | CREATE (u {prop: j}) ) ) "
+
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query.execute()
 
     mock.assert_called_with(expected_query)
 

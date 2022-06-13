@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import re
+
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union, Set
+
 from .memgraph import Connection, Memgraph
 from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
@@ -36,13 +38,14 @@ class DeclarativeBaseTypes:
     CALL = "CALL"
     CREATE = "CREATE"
     DELETE = "DELETE"
-    RELATIONSHIP = "RELATIONSHIP"
+    FOREACH = "FOREACH"
     LIMIT = "LIMIT"
     LOAD_CSV = "LOAD_CSV"
     MATCH = "MATCH"
     MERGE = "MERGE"
     NODE = "NODE"
     ORDER_BY = "ORDER BY"
+    RELATIONSHIP = "RELATIONSHIP"
     REMOVE = "REMOVE"
     RETURN = "RETURN"
     SET = "SET"
@@ -562,6 +565,30 @@ class AddStringPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         return f"{self.custom_cypher}"
+
+
+class ForeachPartialQuery(PartialQuery):
+    def __init__(self, variable: str, expression: str, update_clauses: str):
+        super().__init__(DeclarativeBaseTypes.FOREACH)
+        self._variable = variable
+        self._expression = expression
+        self._update_clauses = update_clauses
+
+    @property
+    def variable(self) -> str:
+        return self._variable
+
+    @property
+    def expression(self) -> str:
+        return self._expression
+
+    @property
+    def update_clauses(self) -> str:
+        return self._update_clauses
+
+    def construct_query(self) -> str:
+        """Creates a FOREACH statement Cypher partial query."""
+        return f" FOREACH ( {self.variable} IN {self.expression} | {self.update_clauses} ) "
 
 
 class SetPartialQuery(PartialQuery):
@@ -1221,6 +1248,34 @@ class DeclarativeBase(ABC):
             return result[retrieve]
         return result
 
+    def foreach(
+        self, variable: str, expression: str, update_clause: Union[str, List[str], Set[str]]
+    ) -> "DeclarativeBase":
+        """Iterate over a list of elements and for every iteration run every update clause.
+
+        Args:
+            variable: The variable name that stores each element.
+            expression: Any expression that results in a list.
+            update_clauses: One or more Cypher update clauses:
+                SET, REMOVE, CREATE, MERGE, DELETE, FOREACH.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            For each number in a list, create a node:
+
+            Python: `update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable("i"))`
+                    `query_builder = QueryBuilder().foreach("i", "[1, 2, 3]", update_clause.construct_query())`
+            Cypher: `FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) )`
+        """
+        if isinstance(update_clause, list):
+            update_clause = " ".join(update_clause)
+
+        self._query.append(ForeachPartialQuery(variable, expression, update_clause))
+
+        return self
+
     def set_(self, item: str, operator: Operator, **kwargs):
         """Creates a SET statement Cypher partial query.
 
@@ -1349,6 +1404,18 @@ class With(DeclarativeBase):
     ):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
+
+
+class Foreach(DeclarativeBase):
+    def __init__(
+        self,
+        variable: str,
+        expression: str,
+        update_clauses: Union[str, List[str], Set[str]],
+        connection: Optional[Union[Connection, Memgraph]] = None,
+    ):
+        super().__init__(connection)
+        self._query.append(ForeachPartialQuery(variable, expression, update_clauses))
 
 
 class LoadCsv(DeclarativeBase):
