@@ -20,7 +20,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union, 
 
 from .memgraph import Connection, Memgraph
 from .graph_algorithms.integrated_algorithms import IntegratedAlgorithm
-from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value
+from .utilities import to_cypher_labels, to_cypher_properties, to_cypher_value, to_cypher_qm_arguments
 from .models import Node, Relationship
 from .exceptions import (
     GQLAlchemyExtraKeywordArguments,
@@ -163,11 +163,11 @@ class CreatePartialQuery(PartialQuery):
 
 
 class CallPartialQuery(PartialQuery):
-    def __init__(self, procedure: str, arguments: str):
+    def __init__(self, procedure: str, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]):
         super().__init__(DeclarativeBaseTypes.CALL)
 
         self.procedure = procedure
-        self.arguments = arguments
+        self.arguments = to_cypher_qm_arguments(arguments)
 
     def construct_query(self) -> str:
         return f" CALL {self.procedure}({self.arguments if self.arguments else ''}) "
@@ -673,7 +673,9 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def call(self, procedure: str, arguments: Optional[str] = None) -> "DeclarativeBase":
+    def call(
+        self, procedure: str, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]] = None
+    ) -> "DeclarativeBase":
         """Call a query module procedure.
 
         Args:
