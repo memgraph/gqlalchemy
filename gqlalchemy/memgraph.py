@@ -580,7 +580,11 @@ class Memgraph:
         )
 
     def add_query_module(self, file_path: str, module_name: str) -> "Memgraph":
-        """Function for adding query module.
+        """Function for adding a query module in Python written language to Memgraph.
+        Example can be found in the functions below (with_kafka_stream, with_power_bi).
+        
+        The module is synced dynamically then with the database to enable higher processing
+        capabilities.
 
         Args:
             file_name (str): path to file containing module.
@@ -599,7 +603,7 @@ class Memgraph:
         return self
 
     def with_kafka_stream(self) -> "Memgraph":
-        """Load kafka stream module
+        """Load kafka stream query module
         Returns:
             Memgraph: Memgraph instance
         """
@@ -609,7 +613,7 @@ class Memgraph:
         return self.add_query_module(file_path=file_path, module_name=module_name)
 
     def with_power_bi(self) -> "Memgraph":
-        """Load power_bi stream module
+        """Load power_bi stream query module
         Returns:
             Memgraph: Memgraph instance
         """
