@@ -78,6 +78,7 @@ jobs:
       - name: Download, install and run Memgraph under WSL
         shell: wsl-bash {0} # root shell
         run: |
+          pip install networkx
           mkdir /memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /memgraph/memgraph-community.deb
           dpkg -i /memgraph/memgraph-community.deb
