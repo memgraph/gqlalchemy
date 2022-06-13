@@ -37,6 +37,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Install Memgraph
         run: |
+          pip install networkx
           mkdir /home/runner/memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
           sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
