@@ -582,7 +582,7 @@ class Memgraph:
     def add_query_module(self, file_path: str, module_name: str) -> "Memgraph":
         """Function for adding a query module in Python written language to Memgraph.
         Example can be found in the functions below (with_kafka_stream, with_power_bi).
-        
+
         The module is synced dynamically then with the database to enable higher processing
         capabilities.
 
