@@ -45,6 +45,7 @@ MG_USERNAME = os.getenv("MG_USERNAME", "")
 MG_PASSWORD = os.getenv("MG_PASSWORD", "")
 MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
 MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
+MG_LAZY = os.getenv("MG_LAZY", "false").lower() == "true"
 
 
 class MemgraphConstants:
@@ -65,6 +66,7 @@ class Memgraph:
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,
     ):
         self._host = host
         self._port = port
@@ -72,6 +74,7 @@ class Memgraph:
         self._password = password
         self._encrypted = encrypted
         self._client_name = client_name
+        self._lazy = lazy
         self._cached_connection: Optional[Connection] = None
         self._on_disk_db = None
 
@@ -250,11 +253,11 @@ class Memgraph:
     def _get_cached_connection(self) -> Connection:
         """Returns cached connection if it exists, creates it otherwise"""
         if self._cached_connection is None or not self._cached_connection.is_active():
-            self._cached_connection = self.new_connection()
+            self._cached_connection = self._new_connection()
 
         return self._cached_connection
 
-    def new_connection(self) -> Connection:
+    def _new_connection(self) -> Connection:
         """Creates new Memgraph connection"""
         args = dict(
             host=self._host,
@@ -536,7 +539,7 @@ class Memgraph:
             + f" AND id(end_node) = {relationship._end_node_id}"
             + f" AND id(relationship) = {relationship._id}"
             + relationship._get_cypher_set_properties("relationship")
-            + " RETURN node;"
+            + " RETURN relationship;"
         )
 
         return self.get_variable_assume_one(results, "relationship")

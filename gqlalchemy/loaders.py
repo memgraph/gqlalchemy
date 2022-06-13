@@ -28,6 +28,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass, field
 from dacite import from_dict
+from gqlalchemy.query_builder import Operator
 from pyarrow import fs
 from typing import List, Dict, Any, Optional, Union
 import pyarrow.dataset as ds
@@ -52,15 +53,15 @@ IPC_EXTENSION = "ipc"
 FEATHER_EXTENSION = "feather"
 ARROW_EXTENSION = "arrow"
 
-BLOB_ACCOUNT_NAME = "blob_account_name"
-BLOB_ACCOUNT_KEY = "blob_account_key"
-BLOB_SAS_TOKEN = "blob_sas_token"
+BLOB_ACCOUNT_NAME = "account_name"
+BLOB_ACCOUNT_KEY = "account_key"
+BLOB_SAS_TOKEN = "sas_token"
 BLOB_CONTAINER_NAME_KEY = "container_name"
 
-S3_REGION = "s3_region"
-S3_ACCESS_KEY = "s3_access_key"
-S3_SECRET_KEY = "s3_secret_key"
-S3_SESSION_TOKEN = "s3_session_token"
+S3_REGION = "region"
+S3_ACCESS_KEY = "access_key"
+S3_SECRET_KEY = "secret_key"
+S3_SESSION_TOKEN = "session_token"
 S3_BUCKET_NAME_KEY = "bucket_name"
 
 LOCAL_STORAGE_PATH = "local_storage_path"
@@ -209,10 +210,10 @@ class S3FileSystemHandler(FileSystemHandler):
             bucket_name: Name of the bucket on S3 from which to read the data
 
         Kwargs:
-            s3_access_key: S3 access key.
-            s3_secret_key: S3 secret key.
-            s3_region: S3 region.
-            s3_session_token: S3 session token (Optional).
+            access_key: S3 access key.
+            secret_key: S3 secret key.
+            region: S3 region.
+            session_token: S3 session token (Optional).
 
         Raises:
             KeyError: kwargs doesn't contain necessary fields.
@@ -244,9 +245,9 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
             container_name: Name of the Blob container storing data.
 
         Kwargs:
-            blob_account_name: Account name from Azure Blob.
-            blob_account_key: Account key for Azure Blob (Optional - if using sas_token).
-            blob_sas_token: Shared access signature token for authentification (Optional).
+            account_name: Account name from Azure Blob.
+            account_key: Account key for Azure Blob (Optional - if using sas_token).
+            sas_token: Shared access signature token for authentification (Optional).
 
         Raises:
             KeyError: kwargs doesn't contain necessary fields.
@@ -382,8 +383,10 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(item="$node_a:$label_2", operator="MATCH", expression="($node_b:$label_1)")
-        .where(item="$node_b.$property_1", operator="=", expression="$node_a.$property_2")
+        .where(item="$node_a", operator=Operator.LABEL_FILTER, expression="$label_2")
+        .match()
+        .node(labels="$label_1", variable="$node_b")
+        .where(item="$node_b.$property_1", operator=Operator.EQUAL, expression="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
         .to(relationship_type="$relationship_type")

@@ -60,6 +60,23 @@ Can't create {clause} query with extra keyword arguments:
 Please provide a value to either 'literal' or 'expression' keyword arguments.
 """
 
+RESULT_QUERY_TYPE_ERROR = """
+Can't create {clause} query:
+The argument provided is of wrong type. Please provide str, tuple[str, str], list[Union[tuple[str, str], str]] or set[Union[tuple[str, str], str]].
+"""
+
+INSTANTIATION_ERROR = """
+{class_name} class shouldn't be instantiatied!
+"""
+
+TOO_LARGE_TUPLE_IN_RESULT_QUERY = """
+Tuple argument in {clause} clause only has two arguments - variable name and alias.
+"""
+
+OPERATOR_TYPE_ERROR = """
+Operator argument in {clause} clause that is a string must be a valid operator.
+"""
+
 
 class QueryClause(Enum):
     WHERE = "WHERE"
@@ -85,7 +102,6 @@ class GQLAlchemyUniquenessConstraintError(GQLAlchemyError):
 
 class GQLAlchemyDatabaseMissingInFieldError(GQLAlchemyError):
     def __init__(self, constraint: str, field: str, field_type: str):
-        super().__init__()
         self.message = DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE.format(
             constraint=constraint,
             field=field,
@@ -95,55 +111,65 @@ class GQLAlchemyDatabaseMissingInFieldError(GQLAlchemyError):
 
 class GQLAlchemyDatabaseMissingInNodeClassError(GQLAlchemyError):
     def __init__(self, cls):
-        super().__init__()
         self.message = DATABASE_MISSING_IN_NODE_CLASS_ERROR_MESSAGE.format(cls=cls)
 
 
 class GQLAlchemyOnDiskPropertyDatabaseNotDefinedError(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = ON_DISK_PROPERTY_DATABASE_NOT_DEFINED_ERROR
 
 
 class GQLAlchemyMissingOrder(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = MISSING_ORDER
 
 
-class GQLAlchemyOrderByTypeError(TypeError):
+class GQLAlchemyOrderByTypeError(GQLAlchemyError):
     def __init__(self):
-        super().__init__()
         self.message = ORDER_BY_TYPE_ERROR
 
 
-class GQLAlchemyLiteralAndExpressionMissingInClause(GQLAlchemyError):
+class GQLAlchemyLiteralAndExpressionMissing(GQLAlchemyError):
     def __init__(self, clause: str):
-        super().__init__()
         self.message = LITERAL_AND_EXPRESSION_MISSING.format(clause=clause)
-
-
-class GQLAlchemyLiteralAndExpressionMissingInWhere(GQLAlchemyLiteralAndExpressionMissingInClause):
-    def __init__(self):
-        super().__init__(clause=QueryClause.WHERE)
-
-
-class GQLAlchemyLiteralAndExpressionMissingInSet(GQLAlchemyLiteralAndExpressionMissingInClause):
-    def __init__(self):
-        super().__init__(clause=QueryClause.SET)
 
 
 class GQLAlchemyExtraKeywordArguments(GQLAlchemyError):
     def __init__(self, clause: str):
-        super().__init__()
         self.message = EXTRA_KEYWORD_ARGUMENTS.format(clause=clause)
 
 
-class GQLAlchemyExtraKeywordArgumentsInWhere(GQLAlchemyExtraKeywordArguments):
-    def __init__(self):
-        super().__init__(clause=QueryClause.WHERE)
+class GQLAlchemyTooLargeTupleInResultQuery(GQLAlchemyError):
+    def __init__(self, clause) -> None:
+        self.message = TOO_LARGE_TUPLE_IN_RESULT_QUERY.format(clause=clause)
 
 
-class GQLAlchemyExtraKeywordArgumentsInSet(GQLAlchemyExtraKeywordArguments):
-    def __init__(self):
-        super().__init__(clause=QueryClause.SET)
+class GQLAlchemyResultQueryTypeError(TypeError):
+    def __init__(self, clause):
+        self.message = RESULT_QUERY_TYPE_ERROR.format(clause=clause)
+
+
+class GQLAlchemyInstantiationError(GQLAlchemyError):
+    def __init__(self, class_name) -> None:
+        self.message = INSTANTIATION_ERROR.format(class_name=class_name)
+
+
+class GQLAlchemyDatabaseError(GQLAlchemyError):
+    def __init__(self, message):
+        super().__init__()
+        self.message = message
+
+
+class GQLAlchemyOperatorTypeError(TypeError):
+    def __init__(self, clause) -> None:
+        self.message = OPERATOR_TYPE_ERROR.format(clause=clause)
+
+
+def gqlalchemy_error_handler(func):
+    def inner_function(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise GQLAlchemyDatabaseError(e)
+
+    return inner_function
