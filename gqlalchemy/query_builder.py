@@ -248,24 +248,24 @@ class XorNotWhereConditionPartialQuery(WhereNotConditionPartialQuery):
 
 
 class NodePartialQuery(PartialQuery):
-    def __init__(self, variable: str, labels: str, properties: str):
+    def __init__(self, variable: Optional[str], labels: str, properties: str):
         super().__init__(DeclarativeBaseTypes.NODE)
 
-        self._variable = variable
+        self._variable = "" if variable is None else variable
         self._labels = labels
         self._properties = properties
 
     @property
     def variable(self) -> str:
-        return self._variable if self._variable is not None else ""
+        return self._variable
 
     @property
     def labels(self) -> str:
-        return self._labels if self._labels is not None else ""
+        return self._labels
 
     @property
     def properties(self) -> str:
-        return self._properties if self._properties is not None else ""
+        return self._properties
 
     def construct_query(self) -> str:
         """Constructs a node partial query."""
@@ -276,16 +276,16 @@ class RelationshipPartialQuery(PartialQuery):
     def __init__(
         self,
         variable: Optional[str],
-        labels: Optional[str],
-        algorithm: Optional[str],
-        properties: Optional[str],
+        labels: str,
+        algorithm: str,
+        properties: str,
         directed: bool,
         from_: bool,
     ):
         super().__init__(DeclarativeBaseTypes.RELATIONSHIP)
 
         self.directed = directed
-        self._variable = variable
+        self._variable = "" if variable is None else variable
         self._labels = labels
         self._algorithm = algorithm
         self._properties = properties
@@ -293,22 +293,22 @@ class RelationshipPartialQuery(PartialQuery):
 
     @property
     def variable(self) -> str:
-        return "" if self._variable is None else self._variable
+        return self._variable
 
     @property
     def labels(self) -> str:
-        return "" if self._labels is None else self._labels
+        return self._labels
 
     @property
     def algorithm(self) -> str:
-        return "" if self._algorithm is None else self._algorithm
+        return self._algorithm
 
     @property
     def properties(self) -> str:
-        return "" if self._properties is None else self._properties
+        return self._properties
 
     def construct_query(self) -> str:
-        """Constructs an relationship partial query."""
+        """Constructs a relationship partial query."""
         relationship_query = f"{self.variable}{self.labels}{self.algorithm}{self.properties}"
 
         if not self.directed:
@@ -449,7 +449,7 @@ class DeletePartialQuery(PartialQuery):
 
     @property
     def variable_expressions(self) -> str:
-        return self._variable_expressions if self._variable_expressions is not None else ""
+        return self._variable_expressions
 
     def construct_query(self) -> str:
         """Creates a DELETE statement Cypher partial query."""
@@ -464,7 +464,7 @@ class RemovePartialQuery(PartialQuery):
 
     @property
     def items(self) -> str:
-        return self._items if self._items is not None else ""
+        return self._items
 
     def construct_query(self) -> str:
         """Creates a REMOVE statement Cypher partial query."""
