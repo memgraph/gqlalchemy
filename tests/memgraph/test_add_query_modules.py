@@ -11,7 +11,7 @@ from gqlalchemy.exceptions import GQLAlchemyFileNotFoundError
     ],
 )
 def test_add_query_module_valid(file_path, module_name):
-    memgraph_db = Memgraph()._add_query_module(file_path=file_path, module_name=module_name)
+    memgraph_db = Memgraph().add_query_module(file_path=file_path, module_name=module_name)
 
     module_paths = list(memgraph_db.execute_and_fetch("CALL mg.get_module_files() YIELD path"))
 
