@@ -1,7 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
-from gqlalchemy.query_builder import DeclarativeBase, QueryBuilder
-from gqlalchemy.memgraph import Connection, Memgraph
+from gqlalchemy.query_builders.declarative_base import DeclarativeBase
+from gqlalchemy.query_builders.memgraph_query_builder import QueryBuilder
+from gqlalchemy.vendors.memgraph import Connection, Memgraph
 
 
 class MemgraphQueryBuilder(QueryBuilder):

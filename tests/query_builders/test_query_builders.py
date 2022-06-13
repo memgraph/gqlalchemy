@@ -83,13 +83,13 @@ class TestMemgraphNeo4jQueryBuilder:
         query_builder = (
             vendor[1]
             .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
-            .match(True)
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .match(optional=True)
             .node(variable="n")
-            .to("TO")
-            .node("L3")
+            .to(relationship_type="TO")
+            .node(labels="L3")
             .return_()
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) OPTIONAL MATCH (n)-[:TO]->(:L3) RETURN * "
@@ -116,7 +116,16 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_with(self, vendor):
-        query_builder = vendor[1].match().node(variable="n").with_({"n": ""})
+        query_builder = vendor[1].match().node(variable="n").with_(results={"n": ""})
+        expected_query = " MATCH (n) WITH n "
+
+        with patch.object(vendor[0], "execute", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_with_str_args(self, vendor):
+        query_builder = vendor[1].match().node(variable="n").with_(results="n")
         expected_query = " MATCH (n) WITH n "
 
         with patch.object(vendor[0], "execute", return_value=None) as mock:
@@ -129,13 +138,33 @@ class TestMemgraphNeo4jQueryBuilder:
             vendor[1]
             .match()
             .node(variable="n1", labels="Node1")
-            .return_("n1")
+            .return_(results="n1")
             .union(include_duplicates=False)
             .match()
             .node(variable="n2", labels="Node2")
-            .return_("n2")
+            .return_(results="n2")
         )
         expected_query = " MATCH (n1:Node1) RETURN n1 UNION MATCH (n2:Node2) RETURN n2 "
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_union_2(self, vendor):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(variable="c", labels="Country")
+            .return_(results=("c.name", "columnName"))
+            .union(include_duplicates=False)
+            .match()
+            .node(variable="p", labels="Person")
+            .return_(results=("p.name", "columnName"))
+        )
+        expected_query = (
+            " MATCH (c:Country) RETURN c.name AS columnName UNION MATCH (p:Person) RETURN p.name AS columnName "
+        )
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -147,11 +176,11 @@ class TestMemgraphNeo4jQueryBuilder:
             vendor[1]
             .match()
             .node(variable="n1", labels="Node1")
-            .return_("n1")
+            .return_(results="n1")
             .union()
             .match()
             .node(variable="n2", labels="Node2")
-            .return_("n2")
+            .return_(results="n2")
         )
         expected_query = " MATCH (n1:Node1) RETURN n1 UNION ALL MATCH (n2:Node2) RETURN n2 "
 
@@ -160,17 +189,59 @@ class TestMemgraphNeo4jQueryBuilder:
 
         mock.assert_called_with(expected_query)
 
+    def test_union_all_2(self, vendor):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(variable="c", labels="Country")
+            .return_(results=("c.name", "columnName"))
+            .union()
+            .match()
+            .node(variable="p", labels="Person")
+            .return_(results=("p.name", "columnName"))
+        )
+        expected_query = (
+            " MATCH (c:Country) RETURN c.name AS columnName UNION ALL MATCH (p:Person) RETURN p.name AS columnName "
+        )
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
     def test_delete(self, vendor):
-        query_builder = vendor[1].match().node(variable="n1", labels="Node1").delete({"n1"})
+        query_builder = vendor[1].match().node(variable="n1", labels="Node1").delete("n1")
         expected_query = " MATCH (n1:Node1) DELETE n1 "
 
         with patch.object(vendor[0], "execute", return_value=None) as mock:
             query_builder.execute()
-            mock.assert_called_with(expected_query)
+
+        mock.assert_called_with(expected_query)
+
+    def test_delete_list(self, vendor):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(variable="n1", labels="Node1")
+            .to()
+            .node(variable="n2", labels="Node2")
+            .delete(variable_expressions=["n1", "n2"])
+        )
+        expected_query = " MATCH (n1:Node1)-[]->(n2:Node2) DELETE n1, n2 "
+
+        with patch.object(vendor[0], "execute", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
 
     def test_simple_create_with_variables(self, vendor):
         query_builder = (
-            vendor[1].create().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+            vendor[1]
+            .create()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO", variable="e")
+            .node(labels="L2", variable="m")
+            .return_()
         )
         expected_query = " CREATE (n:L1)-[e:TO]->(m:L2) RETURN * "
 
@@ -181,7 +252,12 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_simple_match_with_variables(self, vendor):
         query_builder = (
-            vendor[1].match().node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO", variable="e")
+            .node(labels="L2", variable="m")
+            .return_()
         )
         expected_query = " MATCH (n:L1)-[e:TO]->(m:L2) RETURN * "
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
@@ -206,7 +282,7 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_remove_property(self, vendor):
-        query_builder = vendor[1].match().node(variable="n", labels="Node").remove({"n.name"})
+        query_builder = vendor[1].match().node(variable="n", labels="Node").remove(items="n.name")
         expected_query = " MATCH (n:Node) REMOVE n.name "
 
         with patch.object(vendor[0], "execute", return_value=None) as mock:
@@ -218,13 +294,13 @@ class TestMemgraphNeo4jQueryBuilder:
         query_builder = (
             vendor[1]
             .merge()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
             .merge()
             .node(variable="n")
-            .to("TO")
-            .node("L3")
+            .to(relationship_type="TO")
+            .node(labels="L3")
             .return_()
         )
         expected_query = " MERGE (n:L1)-[:TO]->(m:L2) MERGE (n)-[:TO]->(:L3) RETURN * "
@@ -256,9 +332,9 @@ class TestMemgraphNeo4jQueryBuilder:
         query_builder = (
             vendor[1]
             .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
             .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
             .return_()
         )
@@ -918,7 +994,14 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_get_single(self, vendor):
-        query_builder = vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_("n")
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results="n")
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN n "
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=iter([{"n": None}])) as mock:
@@ -927,7 +1010,14 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_return_empty(self, vendor):
-        query_builder = vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_()
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_()
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN * "
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
@@ -937,7 +1027,12 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_return_alias(self, vendor):
         query_builder = (
-            vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(("L1", "first"))
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results=("L1", "first"))
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first "
 
@@ -948,7 +1043,12 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_return_alias_dict(self, vendor):
         query_builder = (
-            vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "first"})
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results={"L1": "first"})
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first "
 
@@ -962,7 +1062,7 @@ class TestMemgraphNeo4jQueryBuilder:
         test_set.add(("L1", "first"))
         test_set.add("L2")
 
-        query_builder = vendor[1].return_(test_set).construct_query()
+        query_builder = vendor[1].return_(results=test_set).construct_query()
         expected_query = [" RETURN L1 AS first, L2 ", " RETURN L2, L1 AS first "]
 
         assert query_builder in expected_query
@@ -973,7 +1073,7 @@ class TestMemgraphNeo4jQueryBuilder:
         test_set.add("L2")
 
         with pytest.raises(GQLAlchemyResultQueryTypeError):
-            vendor[1].return_(test_set).construct_query()
+            vendor[1].return_(results=test_set).construct_query()
 
     def test_return_alias_set_datetime(self, vendor):
         test_set = set()
@@ -981,7 +1081,7 @@ class TestMemgraphNeo4jQueryBuilder:
         test_set.add(datetime.date)
 
         with pytest.raises(GQLAlchemyResultQueryTypeError):
-            vendor[1].return_(test_set).construct_query()
+            vendor[1].return_(results=test_set).construct_query()
 
     def test_return_alias_set_too_large_tuple(self, vendor):
         test = ("L1", "first", "L2")
@@ -994,7 +1094,7 @@ class TestMemgraphNeo4jQueryBuilder:
         test_set.add(("L1", "first"))
         test_set.add(("L2", "second"))
 
-        query_builder = vendor[1].return_(test_set).construct_query()
+        query_builder = vendor[1].return_(results=test_set).construct_query()
         expected_query = [" RETURN L1 AS first, L2 AS second ", " RETURN L2 AS second, L1 AS first "]
 
         assert query_builder in expected_query
@@ -1021,10 +1121,10 @@ class TestMemgraphNeo4jQueryBuilder:
         query_builder = (
             vendor[1]
             .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
-            .return_([("L1", "first"), "L2", ("L3", "third")])
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results=[("L1", "first"), "L2", ("L3", "third")])
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first, L2, L3 AS third "
 
@@ -1041,10 +1141,10 @@ class TestMemgraphNeo4jQueryBuilder:
         query_builder = (
             vendor[1]
             .match()
-            .node("L1", variable="n")
-            .to("TO")
-            .node("L2", variable="m")
-            .return_({"L1": "first", "L2": "", "L3": "third"})
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results={"L1": "first", "L2": "", "L3": "third"})
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 AS first, L2, L3 AS third "
 
@@ -1055,7 +1155,12 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_return_alias_same_as_variable(self, vendor):
         query_builder = (
-            vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_(("L1", "L1"))
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results=("L1", "L1"))
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
@@ -1066,7 +1171,12 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_return_alias_same_as_variable_dict(self, vendor):
         query_builder = (
-            vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": "L1"})
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results={"L1": "L1"})
         )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
@@ -1076,7 +1186,14 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_return_alias_empty(self, vendor):
-        query_builder = vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_("L1")
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results="L1")
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
@@ -1085,7 +1202,14 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_return_alias_empty_dict(self, vendor):
-        query_builder = vendor[1].match().node("L1", variable="n").to("TO").node("L2", variable="m").return_({"L1": ""})
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .return_(results={"L1": ""})
+        )
         expected_query = " MATCH (n:L1)-[:TO]->(m:L2) RETURN L1 "
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
@@ -1095,7 +1219,9 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_unwind(self, vendor):
         query_builder = (
-            vendor[1].unwind(list_expression="[1, 2, 3, null]", variable="x").return_([("x", ""), ("'val'", "y")])
+            vendor[1]
+            .unwind(list_expression="[1, 2, 3, null]", variable="x")
+            .return_(results=[("x", ""), ("'val'", "y")])
         )
         expected_query = " UNWIND [1, 2, 3, null] AS x RETURN x, 'val' AS y "
 
@@ -1105,7 +1231,7 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_remove_label(self, vendor):
-        query_builder = vendor[1].match().node(variable="n", labels=["Node1", "Node2"]).remove({"n:Node2"})
+        query_builder = vendor[1].match().node(variable="n", labels=["Node1", "Node2"]).remove(items="n:Node2")
         expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2 "
 
         with patch.object(vendor[0], "execute", return_value=None) as mock:
@@ -1114,7 +1240,9 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_remove_property_and_label(self, vendor):
-        query_builder = vendor[1].match().node(variable="n", labels=["Node1", "Node2"]).remove(["n:Node2", "n.name"])
+        query_builder = (
+            vendor[1].match().node(variable="n", labels=["Node1", "Node2"]).remove(items=["n:Node2", "n.name"])
+        )
         expected_query = " MATCH (n:Node1:Node2) REMOVE n:Node2, n.name "
 
         with patch.object(vendor[0], "execute", return_value=None) as mock:
@@ -1195,38 +1323,66 @@ class TestMemgraphNeo4jQueryBuilder:
 
         mock.assert_called_with(expected_query)
 
-    def test_limit(self, vendor):
-        query_builder = vendor[1].match().node(variable="n").return_().limit("3")
-        expected_query = " MATCH (n) RETURN * LIMIT 3 "
+    @pytest.mark.parametrize("integer_expression", ["3", 3])
+    def test_limit(self, vendor, integer_expression):
+        query_builder = vendor[1].match().node(variable="n").return_().limit(integer_expression=integer_expression)
+        expected_query = f" MATCH (n) RETURN * LIMIT {integer_expression} "
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
 
-    def test_skip(self, vendor):
-        query_builder = vendor[1].match().node(variable="n").return_(("n", "")).skip("1")
-        expected_query = " MATCH (n) RETURN n SKIP 1 "
+    @pytest.mark.parametrize("integer_expression", ["1", 1])
+    def test_skip(self, vendor, integer_expression):
+        query_builder = (
+            vendor[1].match().node(variable="n").return_(results="n").skip(integer_expression=integer_expression)
+        )
+        expected_query = f" MATCH (n) RETURN n SKIP {integer_expression} "
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
-
         mock.assert_called_with(expected_query)
 
     def test_from(self, vendor):
         query_builder = (
-            vendor[1].match().node("L1", variable="n").from_("TO", variable="e").node("L2", variable="m").return_()
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .from_(relationship_type="FROM", variable="e")
+            .node(labels="L2", variable="m")
+            .return_()
         )
-        expected_query = " MATCH (n:L1)<-[e:TO]-(m:L2) RETURN * "
+        expected_query = " MATCH (n:L1)<-[e:FROM]-(m:L2) RETURN * "
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
 
+    def test_to(self, vendor):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="Town", variable="t")
+            .to(relationship_type="BELONGS_TO", variable="b")
+            .node(labels="Country", variable="c")
+            .return_(results="b")
+        )
+        expected_query = " MATCH (t:Town)-[b:BELONGS_TO]->(c:Country) RETURN b "
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+        mock.assert_called_with(expected_query)
+
     def test_add_string_partial(self, vendor):
         query_builder = (
-            vendor[1].match().node("Node1", variable="n").to("TO", variable="e").add_custom_cypher("(m:L2) ").return_()
+            vendor[1]
+            .match()
+            .node(labels="Node1", variable="n")
+            .to(relationship_type="TO", variable="e")
+            .add_custom_cypher("(m:L2) ")
+            .return_()
         )
         expected_query = " MATCH (n:Node1)-[e:TO]->(m:L2) RETURN * "
 
@@ -1445,7 +1601,7 @@ class TestMemgraphNeo4jQueryBuilder:
     def test_property_variable(self, vendor):
         query = (
             vendor[1]
-            .with_({"[1,2,3]": "list"})
+            .with_(results={"[1,2,3]": "list"})
             .unwind("list", "element")
             .create()
             .node(num=PropertyVariable(name="element"))
@@ -1461,7 +1617,7 @@ class TestMemgraphNeo4jQueryBuilder:
     def test_property_variable_edge(self, vendor):
         query = (
             vendor[1]
-            .with_({"15": "number"})
+            .with_(results={"15": "number"})
             .create()
             .node(variable="n")
             .to(relationship_type="REL", num=PropertyVariable(name="number"))
@@ -1472,5 +1628,91 @@ class TestMemgraphNeo4jQueryBuilder:
 
         with patch.object(vendor[0], "execute", return_value=None) as mock:
             query.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_foreach(self, vendor):
+        update_clause = vendor[1].create().node(variable="n", id=PropertyVariable(name="i"))
+        query_builder = vendor[1].foreach(
+            variable="i", expression="[1, 2, 3]", update_clause=update_clause.construct_query()
+        )
+        expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
+
+        with patch.object(vendor[0], "execute", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_foreach_multiple_update_clauses(self, vendor):
+        variable_li = PropertyVariable(name="li")
+        update_clause_1 = vendor[1].create().node(labels="F4", prop=variable_li)
+        update_clause_2 = vendor[1].create().node(labels="F5", prop2=variable_li)
+        query = (
+            vendor[1]
+            .match()
+            .node(variable="n")
+            .foreach(
+                variable="li",
+                expression="[1, 2]",
+                update_clause=[update_clause_1.construct_query(), update_clause_2.construct_query()],
+            )
+            .return_({"n": ""})
+        )
+        expected_query = (
+            " MATCH (n) FOREACH ( li IN [1, 2] | CREATE (:F4 {prop: li}) CREATE (:F5 {prop2: li}) ) RETURN n "
+        )
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_foreach_nested(self, vendor):
+        create_query = vendor[1].create().node(variable="u", prop=PropertyVariable(name="j"))
+        nested_query = vendor[1].foreach(variable="j", expression="i", update_clause=create_query.construct_query())
+        query = (
+            vendor[1]
+            .match()
+            .node(variable="n")
+            .foreach(variable="i", expression="n.prop", update_clause=nested_query.construct_query())
+        )
+
+        expected_query = " MATCH (n) FOREACH ( i IN n.prop | FOREACH ( j IN i | CREATE (u {prop: j}) ) ) "
+
+        with patch.object(vendor[0], "execute", return_value=None) as mock:
+            query.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_merge(self, vendor):
+        query_builder = (
+            vendor[1]
+            .merge()
+            .node(variable="city")
+            .where(item="city.name", operator="=", literal="London")
+            .return_(results="city")
+        )
+        expected_query = " MERGE (city) WHERE city.name = 'London' RETURN city "
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_create(self, vendor):
+        query_builder = vendor[1].create().node(labels="Person", variable="p").return_(results="p")
+        expected_query = " CREATE (p:Person) RETURN p "
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_create_with_properties(self, vendor):
+        query_builder = vendor[1].create().node(labels="Person", variable="p", first_name="Kate").return_(results="p")
+        expected_query = " CREATE (p:Person {first_name: 'Kate'}) RETURN p "
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
 
         mock.assert_called_with(expected_query)

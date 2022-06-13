@@ -32,7 +32,7 @@ from ..exceptions import (
 from ..models import Node, Relationship
 from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_qm_arguments, to_cypher_value
 from ..vendors.database import Database
-from ..vendors.memgraph import Memgraph, Connection
+from ..vendors.memgraph import Memgraph
 
 
 class DeclarativeBaseTypes:

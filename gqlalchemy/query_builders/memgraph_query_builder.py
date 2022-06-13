@@ -18,6 +18,7 @@ from .declarative_base import (  # noqa F401
     Call,
     Create,
     DeclarativeBase,
+    Foreach,
     LoadCsv,
     Match,
     Merge,

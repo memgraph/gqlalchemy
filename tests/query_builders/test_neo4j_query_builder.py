@@ -14,16 +14,18 @@
 
 from unittest.mock import patch
 
-from gqlalchemy import Neo4j
+from gqlalchemy import Neo4j, Neo4jQueryBuilder
 from gqlalchemy.query_builders.neo4j_query_builder import (
     Call,
     Create,
+    Foreach,
     Match,
     Merge,
     Return,
     Unwind,
     With,
 )
+from gqlalchemy.utilities import PropertyVariable
 
 
 class TestNeo4jBaseClasses:
@@ -47,8 +49,20 @@ class TestNeo4jBaseClasses:
 
         mock.assert_called_with(expected_query)
 
+    def test_base_class_foreach(self, neo4j):
+        update_clause = Neo4jQueryBuilder(connection=neo4j).create().node(variable="n", id=PropertyVariable(name="i"))
+        query_builder = Foreach(
+            variable="i", expression="[1, 2, 3]", update_clauses=update_clause.construct_query(), connection=neo4j
+        )
+        expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
+
+        with patch.object(Neo4j, "execute", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
     def test_base_class_match(self, neo4j):
-        query_builder = Match(connection=neo4j).node(variable="n").return_("n")
+        query_builder = Match(connection=neo4j).node(variable="n").return_(results="n")
         expected_query = " MATCH (n) RETURN n "
 
         with patch.object(Neo4j, "execute_and_fetch", return_value=None) as mock:
@@ -57,7 +71,13 @@ class TestNeo4jBaseClasses:
         mock.assert_called_with(expected_query)
 
     def test_base_merge(self, neo4j):
-        query_builder = Merge(connection=neo4j).node("L1", variable="n").to("TO").node("L2").return_()
+        query_builder = (
+            Merge(connection=neo4j)
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2")
+            .return_()
+        )
         expected_query = " MERGE (n:L1)-[:TO]->(:L2) RETURN * "
 
         with patch.object(Neo4j, "execute_and_fetch", return_value=None) as mock:
@@ -67,17 +87,17 @@ class TestNeo4jBaseClasses:
 
     def test_simple_merge_with_variables(self, neo4j):
         query_builder = (
-            Merge(connection=neo4j).node("L1", variable="n").to("TO", variable="e").node("L2", variable="m").return_()
+            Merge(connection=neo4j).node(labels="L1", variable="n").to(relationship_type="TO").node(labels="L2")
         )
-        expected_query = " MERGE (n:L1)-[e:TO]->(m:L2) RETURN * "
+        expected_query = " MERGE (n:L1)-[:TO]->(:L2)"
 
-        with patch.object(Neo4j, "execute_and_fetch", return_value=None) as mock:
+        with patch.object(Neo4j, "execute", return_value=None) as mock:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
 
     def test_base_class_unwind(self, neo4j):
-        query_builder = Unwind("[1, 2, 3]", "x", connection=neo4j).return_(("x", "x"))
+        query_builder = Unwind("[1, 2, 3]", "x", connection=neo4j).return_(results=("x", "x"))
         expected_query = " UNWIND [1, 2, 3] AS x RETURN x "
 
         with patch.object(Neo4j, "execute_and_fetch", return_value=None) as mock:
@@ -86,7 +106,7 @@ class TestNeo4jBaseClasses:
         mock.assert_called_with(expected_query)
 
     def test_base_class_with_dict(self, neo4j):
-        query_builder = With({"10": "n"}, connection=neo4j).return_({"n": ""})
+        query_builder = With(results={"10": "n"}, connection=neo4j).return_(results={"n": ""})
         expected_query = " WITH 10 AS n RETURN n "
 
         with patch.object(Neo4j, "execute_and_fetch", return_value=None) as mock:
@@ -95,7 +115,7 @@ class TestNeo4jBaseClasses:
         mock.assert_called_with(expected_query)
 
     def test_base_class_with_tuple(self, neo4j):
-        query_builder = With(("10", "n"), connection=neo4j).return_(("n", ""))
+        query_builder = With(results=("10", "n"), connection=neo4j).return_(results=("n", ""))
         expected_query = " WITH 10 AS n RETURN n "
 
         with patch.object(Neo4j, "execute_and_fetch", return_value=None) as mock:

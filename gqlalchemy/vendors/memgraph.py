@@ -15,7 +15,7 @@
 import os
 import sqlite3
 
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import List, Optional, Union
 
 from .database import Database
 from ..connection import Connection, MemgraphConnection

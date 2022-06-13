@@ -12,7 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .declarative_base import DeclarativeBase, Call, Create, Match, Merge, Return, Unwind, With  # noqa F401
+from .declarative_base import (  # noqa F401
+    DeclarativeBase,
+    Call,
+    Create,
+    Foreach,
+    Match,
+    Merge,
+    Return,
+    Unwind,
+    With,
+)  # noqa F401
 from ..vendors.neo4j import Neo4j
 
 
