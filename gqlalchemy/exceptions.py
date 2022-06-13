@@ -77,6 +77,10 @@ OPERATOR_TYPE_ERROR = """
 Operator argument in {clause} clause that is a string must be a valid operator.
 """
 
+TIMEOUT_ERROR_MESSAGE = "Waited too long for the port {port} on host {host} to start accepting connections."
+DOCKER_TIMEOUT_ERROR_MESSAGE = "Waited too long for the Docker container to start."
+MEMGRAPH_CONNECTION_ERROR_MESSAGE = "The Memgraph process probably died."
+
 
 class QueryClause(Enum):
     WHERE = "WHERE"
@@ -144,7 +148,7 @@ class GQLAlchemyTooLargeTupleInResultQuery(GQLAlchemyError):
         self.message = TOO_LARGE_TUPLE_IN_RESULT_QUERY.format(clause=clause)
 
 
-class GQLAlchemyResultQueryTypeError(TypeError):
+class GQLAlchemyResultQueryTypeError(GQLAlchemyError):
     def __init__(self, clause):
         self.message = RESULT_QUERY_TYPE_ERROR.format(clause=clause)
 
@@ -156,13 +160,32 @@ class GQLAlchemyInstantiationError(GQLAlchemyError):
 
 class GQLAlchemyDatabaseError(GQLAlchemyError):
     def __init__(self, message):
-        super().__init__()
         self.message = message
 
 
-class GQLAlchemyOperatorTypeError(TypeError):
+class GQLAlchemyOperatorTypeError(GQLAlchemyError):
     def __init__(self, clause) -> None:
         self.message = OPERATOR_TYPE_ERROR.format(clause=clause)
+
+
+class GQLAlchemyTimeoutError(GQLAlchemyError):
+    def __init__(self, message):
+        self.message = message
+
+
+class GQLAlchemyWaitForPortError(GQLAlchemyTimeoutError):
+    def __init__(self, port, host):
+        super().__init__(message=TIMEOUT_ERROR_MESSAGE.format(port=port, host=host))
+
+
+class GQLAlchemyWaitForDockerError(GQLAlchemyTimeoutError):
+    def __init__(self):
+        super().__init__(message=DOCKER_TIMEOUT_ERROR_MESSAGE)
+
+
+class GQLAlchemyWaitForConnectionError(GQLAlchemyTimeoutError):
+    def __init__(self):
+        super().__init__(message=MEMGRAPH_CONNECTION_ERROR_MESSAGE)
 
 
 def gqlalchemy_error_handler(func):

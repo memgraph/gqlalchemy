@@ -16,6 +16,12 @@ import docker
 import os
 import pathlib
 import pytest
+
+from gqlalchemy.exceptions import (
+    GQLAlchemyWaitForPortError,
+    GQLAlchemyWaitForDockerError, 
+    GQLAlchemyWaitForConnectionError,
+)
 from gqlalchemy.instance_runner import (
     DockerImage,
     MemgraphInstanceBinary,
@@ -26,23 +32,21 @@ from gqlalchemy.instance_runner import (
 
 
 def test_wait_for_port():
-    with pytest.raises(TimeoutError):
+    with pytest.raises(GQLAlchemyWaitForPortError):
         wait_for_port(port=0000, timeout=1)
 
 
 @pytest.mark.docker
 def test_wait_for_docker_container():
     container = docker.from_env().containers.create(DockerImage.MEMGRAPH.value)
-    with pytest.raises(TimeoutError):
+    with pytest.raises(GQLAlchemyWaitForDockerError):
         wait_for_docker_container(container, timeout=1)
 
 
 @pytest.mark.docker
 def test_start_and_connect_memgraph_docker():
     memgraph_instance = MemgraphInstanceDocker(port=7690)
-    memgraph = memgraph_instance.start_and_connect()
-    assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
-    assert memgraph_instance.is_running()
+    memgraph_instance.start_and_connect()
     memgraph_instance.stop()
     assert not memgraph_instance.is_running()
 
