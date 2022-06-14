@@ -265,7 +265,7 @@ class RelationshipPartialQuery(PartialQuery):
     def __init__(
         self,
         variable: Optional[str],
-        type: str,
+        relationship_type: str,
         algorithm: str,
         properties: str,
         directed: bool,
@@ -275,7 +275,7 @@ class RelationshipPartialQuery(PartialQuery):
 
         self.directed = directed
         self._variable = "" if variable is None else variable
-        self._type = type
+        self._relationship_type = relationship_type
         self._algorithm = algorithm
         self._properties = properties
         self._from = from_
@@ -285,8 +285,8 @@ class RelationshipPartialQuery(PartialQuery):
         return self._variable
 
     @property
-    def type(self) -> str:
-        return self._type
+    def relationship_type(self) -> str:
+        return self._relationship_type
 
     @property
     def algorithm(self) -> str:
@@ -298,7 +298,7 @@ class RelationshipPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a relationship partial query."""
-        relationship_query = f"{self.variable}{self.type}{self.algorithm}{self.properties}"
+        relationship_query = f"{self.variable}{self.relationship_type}{self.algorithm}{self.properties}"
 
         if not self.directed:
             relationship_query = f"-[{relationship_query}]-"
@@ -796,7 +796,7 @@ class DeclarativeBase(ABC):
         self._query.append(
             RelationshipPartialQuery(
                 variable=variable,
-                type=type_str,
+                relationship_type=type_str,
                 algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
@@ -847,7 +847,7 @@ class DeclarativeBase(ABC):
         self._query.append(
             RelationshipPartialQuery(
                 variable=variable,
-                type=type_str,
+                relationship_type=type_str,
                 algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
