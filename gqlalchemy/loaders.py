@@ -15,7 +15,7 @@
 from string import Template
 
 from . import Memgraph
-from .query_builder import QueryBuilder, Unwind
+from .query_builders.memgraph_query_builder import Operator, QueryBuilder, Unwind
 from .models import (
     MemgraphIndex,
     MemgraphTrigger,
@@ -28,7 +28,6 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass, field
 from dacite import from_dict
-from gqlalchemy.query_builder import Operator
 from pyarrow import fs
 from typing import List, Dict, Any, Optional, Union
 import pyarrow.dataset as ds

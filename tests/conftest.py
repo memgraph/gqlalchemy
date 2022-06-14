@@ -15,11 +15,22 @@
 from pathlib import Path
 
 import pytest
-from gqlalchemy import Memgraph, models
+from gqlalchemy import Memgraph, models, Neo4j, QueryBuilder, Neo4jQueryBuilder
+from typing import Tuple
 
 
 def get_data_dir() -> Path:
     return Path(__file__).parents[0].joinpath("data")
+
+
+@pytest.fixture
+def database(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def vendor(request):
+    return request.getfixturevalue(request.param)
 
 
 @pytest.fixture
@@ -33,6 +44,45 @@ def memgraph() -> Memgraph:
 
     memgraph.ensure_indexes([])
     memgraph.ensure_constraints([])
+
+
+@pytest.fixture
+def neo4j() -> Neo4j:
+    neo4j = Neo4j(port="7688")
+    neo4j.ensure_constraints([])
+    neo4j.ensure_indexes([])
+    neo4j.drop_database()
+
+    yield neo4j
+
+    neo4j.ensure_constraints([])
+    neo4j.ensure_indexes([])
+
+
+@pytest.fixture
+def memgraph_query_builder() -> Tuple[Memgraph, QueryBuilder]:
+    memgraph = Memgraph()
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+    memgraph.drop_database()
+
+    yield (memgraph, QueryBuilder(memgraph))
+
+    memgraph.ensure_indexes([])
+    memgraph.ensure_constraints([])
+
+
+@pytest.fixture
+def neo4j_query_builder() -> Tuple[Neo4j, Neo4jQueryBuilder]:
+    neo4j = Neo4j(port="7688")
+    neo4j.ensure_constraints([])
+    neo4j.ensure_indexes([])
+    neo4j.drop_database()
+
+    yield (neo4j, Neo4jQueryBuilder(neo4j))
+
+    neo4j.ensure_constraints([])
+    neo4j.ensure_indexes([])
 
 
 @pytest.fixture

@@ -21,6 +21,11 @@ from gqlalchemy.exceptions import database_error_handler
 
 from .models import Node, Path, Relationship
 
+from neo4j import GraphDatabase
+from neo4j.graph import Node as Neo4jNode
+from neo4j.graph import Path as Neo4jPath
+from neo4j.graph import Relationship as Neo4jRelationship
+
 __all__ = ("Connection",)
 
 
@@ -53,13 +58,8 @@ class Connection(ABC):
 
     @abstractmethod
     def is_active(self) -> bool:
-        """Returns True if connection is active and can be used"""
+        """Returns True if connection is active and can be used."""
         pass
-
-    @staticmethod
-    def create(**kwargs) -> "Connection":
-        """Creates an instance of a connection."""
-        return MemgraphConnection(**kwargs)
 
 
 class MemgraphConnection(Connection):
@@ -73,7 +73,9 @@ class MemgraphConnection(Connection):
         client_name: Optional[str] = None,
         lazy: bool = False,
     ):
-        super().__init__(host, port, username, password, encrypted, client_name=client_name)
+        super().__init__(
+            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+        )
         self.lazy = lazy
         self._connection = self._create_connection()
 
@@ -96,7 +98,7 @@ class MemgraphConnection(Connection):
             yield {dsc.name: _convert_memgraph_value(row[index]) for index, dsc in enumerate(cursor.description)}
 
     def is_active(self) -> bool:
-        """Returns True if connection is active and can be used"""
+        """Returns True if connection is active and can be used."""
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
     @database_error_handler
@@ -117,7 +119,7 @@ class MemgraphConnection(Connection):
 
 
 def _convert_memgraph_value(value: Any) -> Any:
-    """Converts Memgraph objects to custom Node/Relationship objects"""
+    """Converts Memgraph objects to custom Node/Relationship objects."""
     if isinstance(value, mgclient.Relationship):
         return Relationship.parse_obj(
             {
@@ -143,6 +145,79 @@ def _convert_memgraph_value(value: Any) -> Any:
             {
                 "_nodes": list([_convert_memgraph_value(node) for node in value.nodes]),
                 "_relationships": list([_convert_memgraph_value(rel) for rel in value.relationships]),
+            }
+        )
+
+    return value
+
+
+class Neo4jConnection(Connection):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        encrypted: bool,
+        client_name: Optional[str] = None,
+        lazy: bool = True,
+    ):
+        super().__init__(
+            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+        )
+        self.lazy = lazy
+        self._connection = self._create_connection()
+
+    def execute(self, query: str) -> None:
+        """Executes Cypher query without returning any results."""
+        with self._connection.session() as session:
+            session.run(query)
+
+    def execute_and_fetch(self, query: str) -> Iterator[Dict[str, Any]]:
+        """Executes Cypher query and returns iterator of results."""
+        with self._connection.session() as session:
+            results = session.run(query)
+            columns = results.keys()
+            for result in results:
+                yield {column: _convert_neo4j_value(result[column]) for column in columns}
+
+    def is_active(self) -> bool:
+        """Returns True if connection is active and can be used."""
+        return self._connection is not None
+
+    def _create_connection(self):
+        return GraphDatabase.driver(
+            f"bolt://{self.host}:{self.port}", auth=(self.username, self.password), encrypted=self.encrypted
+        )
+
+
+def _convert_neo4j_value(value: Any) -> Any:
+    """Converts Neo4j objects to custom Node/Relationship objects."""
+    if isinstance(value, Neo4jRelationship):
+        return Relationship.parse_obj(
+            {
+                "_type": value.type,
+                "_id": value.id,
+                "_start_node_id": value.start_node.id,
+                "_end_node_id": value.end_node.id,
+                **dict(value.items()),
+            }
+        )
+
+    if isinstance(value, Neo4jNode):
+        return Node.parse_obj(
+            {
+                "_id": value.id,
+                "_labels": set(value.labels),
+                **dict(value.items()),
+            }
+        )
+
+    if isinstance(value, Neo4jPath):
+        return Path.parse_obj(
+            {
+                "_nodes": list([_convert_neo4j_value(node) for node in value.nodes]),
+                "_relationships": list([_convert_neo4j_value(rel) for rel in value.relationships]),
             }
         )
 

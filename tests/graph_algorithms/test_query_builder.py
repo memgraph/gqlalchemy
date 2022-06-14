@@ -1,6 +1,6 @@
 from gqlalchemy import Memgraph
 from gqlalchemy.graph_algorithms.query_builder import MemgraphQueryBuilder
-from gqlalchemy.query_builder import QueryBuilder
+from gqlalchemy.query_builders.memgraph_query_builder import QueryBuilder
 
 
 def test_memgraph_query_builder_methods_exist(memgraph: Memgraph):

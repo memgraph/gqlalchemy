@@ -1,13 +1,30 @@
+# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import pytest
+
 from gqlalchemy import Node, Field
 from typing import Optional
 
 
-def test_node(memgraph):
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_node(database):
     class User(Node):
-        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: int = Field(index=True, db=database)
+        name: str = Field(unique=True, db=database)
 
-    user = User(id=0, name="Kate").save(memgraph)
+    user = User(id=0, name="Kate").save(database)
 
     assert User.label == "User"
     assert User.labels == {"User"}
@@ -19,16 +36,17 @@ def test_node(memgraph):
     assert user.name == "Kate"
 
 
-def test_node_inheritance(memgraph):
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_node_inheritance(database):
     class User(Node):
-        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: int = Field(index=True, db=database)
+        name: str = Field(unique=True, db=database)
 
     class Admin(User):
-        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        admin_id: int = Field(index=True, db=database)
 
-    user = User(id=0, name="Kate").save(memgraph)
-    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+    user = User(id=0, name="Kate").save(database)
+    admin = Admin(id=1, admin_id=0, name="Admin").save(database)
 
     assert User.label == "User"
     assert User.labels == {"User"}
@@ -55,16 +73,17 @@ def test_node_inheritance(memgraph):
     assert admin._labels == {"Admin", "User"}
 
 
-def test_node_custom_label(memgraph):
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_node_custom_label(database):
     class User(Node, label="UserX"):
-        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: int = Field(index=True, db=database)
+        name: str = Field(unique=True, db=database)
 
     class Admin(User, label="AdminX"):
-        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        admin_id: int = Field(index=True, db=database)
 
-    user = User(id=0, name="Kate").save(memgraph)
-    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+    user = User(id=0, name="Kate").save(database)
+    admin = Admin(id=1, admin_id=0, name="Admin").save(database)
 
     assert User.label == "UserX"
     assert User.labels == {"UserX"}
@@ -83,15 +102,16 @@ def test_node_custom_label(memgraph):
     assert admin._labels == {"AdminX", "UserX"}
 
 
-def test_node_custom_labels(memgraph):
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_node_custom_labels(database):
     class User(Node, labels={"UserX", "UserY"}):
-        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: int = Field(index=True, db=database)
+        name: str = Field(unique=True, db=database)
 
     class Admin(User, label="AdminX", labels={"AdminX", "AdminY"}):
-        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        admin_id: int = Field(index=True, db=database)
 
-    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+    admin = Admin(id=1, admin_id=0, name="Admin").save(database)
 
     assert User.label == "User"
     assert User.labels == {"User", "UserX", "UserY"}
@@ -105,34 +125,35 @@ def test_node_custom_labels(memgraph):
     assert admin._labels == {"AdminX", "AdminY", "User", "UserX", "UserY"}
 
 
-def test_node_various_inheritance(memgraph):
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_node_various_inheritance(database):
     class User(Node):
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, db=database)
 
     class UserOne(Node, label="User1"):
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, db=database)
 
     class UserTwo(User, label="User2", labels={"User3"}):
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        name: str = Field(index=True, db=database)
 
     class Streamer(User):
-        id: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: str = Field(index=True, db=database)
         followers: Optional[int] = Field()
 
     class StreamerOne(User, label="Streamer1"):
-        id: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: str = Field(index=True, db=database)
         followers: Optional[int] = Field()
 
     class StreamerTwo(Streamer, label="Streamer2", labels={"Streamer3", "Streamer4"}):
-        id: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: str = Field(index=True, db=database)
         followers: Optional[int] = Field()
 
-    user = User(name="Kate").save(memgraph)
-    userOne = UserOne(name="Mrma").save(memgraph)
-    userTwo = UserTwo(name="Boris").save(memgraph)
-    streamer = Streamer(id=7, name="Ivan", followers=172).save(memgraph)
-    streamerOne = StreamerOne(id=8, name="Bruno", followers=173).save(memgraph)
-    streamerTwo = StreamerTwo(id=9, name="Marko", followers=174).save(memgraph)
+    user = User(name="Kate").save(database)
+    userOne = UserOne(name="Mrma").save(database)
+    userTwo = UserTwo(name="Boris").save(database)
+    streamer = Streamer(id=7, name="Ivan", followers=172).save(database)
+    streamerOne = StreamerOne(id=8, name="Bruno", followers=173).save(database)
+    streamerTwo = StreamerTwo(id=9, name="Marko", followers=174).save(database)
 
     assert "name" in Streamer.__fields__
     assert user.name == "Kate"
@@ -194,10 +215,11 @@ def test_node_various_inheritance(memgraph):
     }
 
 
-def test_node_multiple_inheritence(memgraph):
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_node_multiple_inheritence(database):
     class User(Node, labels={"UserX"}):
-        id: int = Field(index=True, exists=True, unique=True, db=memgraph)
-        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
+        id: int = Field(index=True, db=database)
+        name: str = Field(index=True, db=database)
 
     class UserOne(Node, labels={"UserOneX"}):
         pass
@@ -206,9 +228,9 @@ def test_node_multiple_inheritence(memgraph):
         pass
 
     class Admin(UserOne, UserTwo, User, label="AdminX", labels={"AdminX", "AdminY"}):
-        admin_id: int = Field(index=True, exists=True, unique=True, db=memgraph)
+        admin_id: int = Field(index=True, db=database)
 
-    admin = Admin(id=1, admin_id=0, name="Admin").save(memgraph)
+    admin = Admin(id=1, admin_id=0, name="Admin").save(database)
 
     assert UserOne.label == "UserOne"
     assert UserTwo.label == "UserTwoX"

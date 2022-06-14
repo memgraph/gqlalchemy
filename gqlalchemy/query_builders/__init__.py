@@ -11,15 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from gqlalchemy.vendors.memgraph import Memgraph
-
-
-def test_argument_lazy_default():
-    memgraph = Memgraph()
-    assert memgraph._lazy is False
-
-
-def test_argument_lazy_false():
-    memgraph = Memgraph(lazy=True)
-    assert memgraph._lazy is True
