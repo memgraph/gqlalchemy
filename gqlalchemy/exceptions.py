@@ -193,6 +193,12 @@ class GQLAlchemyWaitForConnectionError(GQLAlchemyTimeoutError):
         super().__init__(message=MEMGRAPH_CONNECTION_ERROR_MESSAGE)
 
 
+class GQLAlchemyFileNotFoundError(GQLAlchemyError):
+    def __init__(self, path):
+        super().__init__()
+        self.message = FILE_NOT_FOUND.format(path=path)
+
+
 def database_error_handler(func):
     def inner_function(*args, **kwargs):
         try:
@@ -204,6 +210,19 @@ def database_error_handler(func):
 
 
 def connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2):
+    """Wrapper for a wait on the connection.
+
+    Args:
+        func: A function that tries to create the connection
+        delay: A float that defines how long to wait between retries.
+        timeout: A float that defines how long to wait for the port.
+        backoff: An integer used for multiplying the delay.
+
+    Raises:
+      GQLAlchemyWaitForConnectionError: Raises an error
+      after the timeout period has passed.
+    """
+
     def _handler(*args, **kwargs):
         start_time = time.perf_counter()
         current_delay = delay
@@ -218,9 +237,3 @@ def connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff:
                 current_delay *= backoff
 
     return _handler
-
-
-class GQLAlchemyFileNotFoundError(GQLAlchemyError):
-    def __init__(self, path):
-        super().__init__()
-        self.message = FILE_NOT_FOUND.format(path=path)
