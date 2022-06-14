@@ -203,7 +203,7 @@ def database_error_handler(func):
     return inner_function
 
 
-def gqlalchemy_connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2):
+def connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2):
     def _handler(*args, **kwargs):
         start_time = time.perf_counter()
         inner_delay = delay
