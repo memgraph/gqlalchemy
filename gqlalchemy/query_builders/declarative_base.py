@@ -13,13 +13,11 @@
 # limitations under the License.
 
 import re
-
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
-from ..graph_algorithms.integrated_algorithms import IntegratedAlgorithm
-from ..exceptions import (
+from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArguments,
     GQLAlchemyInstantiationError,
     GQLAlchemyLiteralAndExpressionMissing,
@@ -29,10 +27,11 @@ from ..exceptions import (
     GQLAlchemyResultQueryTypeError,
     GQLAlchemyTooLargeTupleInResultQuery,
 )
-from ..models import Node, Relationship
-from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_qm_arguments, to_cypher_value
-from ..vendors.database_client import DatabaseClient
-from ..vendors.memgraph import Memgraph
+from gqlalchemy.graph_algorithms.integrated_algorithms import IntegratedAlgorithm
+from gqlalchemy.vendors.memgraph import Memgraph
+from gqlalchemy.models import Node, Relationship
+from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value, to_cypher_qm_arguments
+from gqlalchemy.vendors.database_client import DatabaseClient
 
 
 class DeclarativeBaseTypes:
@@ -266,7 +265,7 @@ class RelationshipPartialQuery(PartialQuery):
     def __init__(
         self,
         variable: Optional[str],
-        labels: str,
+        relationship_type: str,
         algorithm: str,
         properties: str,
         directed: bool,
@@ -276,7 +275,7 @@ class RelationshipPartialQuery(PartialQuery):
 
         self.directed = directed
         self._variable = "" if variable is None else variable
-        self._labels = labels
+        self._relationship_type = relationship_type
         self._algorithm = algorithm
         self._properties = properties
         self._from = from_
@@ -286,8 +285,8 @@ class RelationshipPartialQuery(PartialQuery):
         return self._variable
 
     @property
-    def labels(self) -> str:
-        return self._labels
+    def relationship_type(self) -> str:
+        return self._relationship_type
 
     @property
     def algorithm(self) -> str:
@@ -299,7 +298,7 @@ class RelationshipPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a relationship partial query."""
-        relationship_query = f"{self.variable}{self.labels}{self.algorithm}{self.properties}"
+        relationship_query = f"{self.variable}{self.relationship_type}{self.algorithm}{self.properties}"
 
         if not self.directed:
             relationship_query = f"-[{relationship_query}]-"
@@ -797,7 +796,7 @@ class DeclarativeBase(ABC):
         self._query.append(
             RelationshipPartialQuery(
                 variable=variable,
-                labels=type_str,
+                relationship_type=type_str,
                 algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
@@ -848,7 +847,7 @@ class DeclarativeBase(ABC):
         self._query.append(
             RelationshipPartialQuery(
                 variable=variable,
-                labels=type_str,
+                relationship_type=type_str,
                 algorithm="" if algorithm is None else str(algorithm),
                 properties=properties_str,
                 directed=bool(directed),
@@ -1090,7 +1089,16 @@ class DeclarativeBase(ABC):
         return self
 
     def with_(
-        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+        self,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ) -> "DeclarativeBase":
         """Chain together parts of a query, piping the results from one to be
         used as starting points or criteria in the next.
@@ -1184,7 +1192,16 @@ class DeclarativeBase(ABC):
         return self
 
     def yield_(
-        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+        self,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ) -> "DeclarativeBase":
         """Yield data from the query.
 
@@ -1214,7 +1231,16 @@ class DeclarativeBase(ABC):
         return self
 
     def return_(
-        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+        self,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ) -> "DeclarativeBase":
         """Return data from the query.
 

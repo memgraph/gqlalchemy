@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+from typing import Optional
+from unittest.mock import patch
 from datetime import datetime
+
 from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArguments,
     GQLAlchemyInstantiationError,
@@ -21,10 +25,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyTooLargeTupleInResultQuery,
     GQLAlchemyOperatorTypeError,
 )
-import pytest
 from gqlalchemy import Field, InvalidMatchChainException, Node, QueryBuilder, Relationship
-from typing import Optional
-from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builders.declarative_base import Operator, Order, _ResultPartialQuery
 from gqlalchemy.utilities import PropertyVariable

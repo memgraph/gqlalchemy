@@ -15,9 +15,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional
 
-from ..connection import Connection
-from ..exceptions import GQLAlchemyError
-from ..models import (
+from gqlalchemy.connection import Connection
+from gqlalchemy.exceptions import GQLAlchemyError
+from gqlalchemy.models import (
     Constraint,
     Index,
     Node,

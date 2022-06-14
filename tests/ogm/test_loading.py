@@ -13,8 +13,9 @@
 
 import pytest
 
-from gqlalchemy import Node
 from pydantic import ValidationError
+
+from gqlalchemy import Node
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)

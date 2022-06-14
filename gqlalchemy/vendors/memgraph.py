@@ -14,20 +14,17 @@
 
 import os
 import sqlite3
-
 from typing import List, Optional, Union
 
-from .database_client import DatabaseClient
-from ..connection import Connection, MemgraphConnection
-from ..disk_storage import OnDiskPropertyDatabase
-from ..exceptions import (
+from gqlalchemy.connection import Connection, MemgraphConnection
+from gqlalchemy.disk_storage import OnDiskPropertyDatabase
+from gqlalchemy.exceptions import (
     GQLAlchemyError,
     GQLAlchemyFileNotFoundError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
     GQLAlchemyUniquenessConstraintError,
 )
-from ..graph_algorithms.query_modules import QueryModule
-from ..models import (
+from gqlalchemy.models import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
@@ -36,7 +33,8 @@ from ..models import (
     Node,
     Relationship,
 )
-
+from gqlalchemy.vendors.database_client import DatabaseClient
+from gqlalchemy.graph_algorithms.query_modules import QueryModule
 
 __all__ = ("Memgraph",)
 

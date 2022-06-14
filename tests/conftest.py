@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
-
 import pytest
-from gqlalchemy import Memgraph, models, Neo4j, QueryBuilder, Neo4jQueryBuilder
+from pathlib import Path
 from typing import Tuple
+
+from gqlalchemy import Memgraph, models, Neo4j, QueryBuilder, Neo4jQueryBuilder
+from gqlalchemy.instance_runner import MemgraphInstanceDocker
 
 
 def get_data_dir() -> Path:
@@ -128,3 +129,32 @@ def remove_module_memgraph(module_remove_name: str) -> Memgraph:
 @pytest.fixture(scope="session", autouse=True)
 def init():
     models.IGNORE_SUBCLASSNOTFOUNDWARNING = True
+
+
+@pytest.fixture
+def configuration():
+    return {"--log-level": "TRACE"}
+
+
+@pytest.fixture
+def memgraph_instance_docker():
+    def _memgraph_instance_docker(config):
+        return MemgraphInstanceDocker(port=7690, config=config)
+
+    return _memgraph_instance_docker
+
+
+@pytest.fixture
+def memgraph_instance_docker_with_config(memgraph_instance_docker, configuration):
+    instance = memgraph_instance_docker(config=configuration)
+    yield instance
+
+    instance.stop()
+
+
+@pytest.fixture
+def memgraph_instance_docker_without_config(memgraph_instance_docker):
+    instance = memgraph_instance_docker(config={})
+    yield instance
+
+    instance.stop()

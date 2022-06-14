@@ -13,23 +13,21 @@
 # limitations under the License.
 
 import os
-
 from typing import List, Optional, Union
 
-from .database_client import DatabaseClient
-from ..connection import Connection, Neo4jConnection
-from ..exceptions import (
+from gqlalchemy.connection import Connection, Neo4jConnection
+from gqlalchemy.exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,
 )
-from ..models import (
+from gqlalchemy.models import (
     Neo4jConstraintExists,
     Neo4jConstraintUnique,
     Neo4jIndex,
     Node,
     Relationship,
 )
-
+from gqlalchemy.vendors.database_client import DatabaseClient
 
 __all__ = ("Neo4j",)
 
