@@ -206,16 +206,16 @@ def database_error_handler(func):
 def connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2):
     def _handler(*args, **kwargs):
         start_time = time.perf_counter()
-        inner_delay = delay
+        current_delay = delay
         while True:
             try:
                 return func(*args, **kwargs)
             except Exception as ex:
-                time.sleep(inner_delay)
+                time.sleep(current_delay)
                 if time.perf_counter() - start_time >= timeout:
                     raise GQLAlchemyWaitForConnectionError(ex)
 
-                inner_delay *= backoff
+                current_delay *= backoff
 
     return _handler
 
