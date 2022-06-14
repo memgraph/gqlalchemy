@@ -14,8 +14,24 @@
 
 from unittest.mock import patch
 
-from gqlalchemy import match, call, create, merge
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy import call, create, match, merge
+from gqlalchemy.vendors.memgraph import Memgraph
+from gqlalchemy.query_builders.declarative_base import CallPartialQuery, Operator
+
+
+def test_call_procedure_arguments_string():
+    call_procedure = CallPartialQuery("dummy.procedure", "'a', 'b'").construct_query()
+    assert call_procedure == " CALL dummy.procedure('a', 'b') "
+
+
+def test_call_procedure_arguments_tuple():
+    call_procedure = CallPartialQuery("dummy.procedure", ("a", "b")).construct_query()
+    assert call_procedure == " CALL dummy.procedure('a', 'b') "
+
+
+def test_call_procedure_arguments_tuple_string_int():
+    call_procedure = CallPartialQuery("dummy.procedure", ("a", 1)).construct_query()
+    assert call_procedure == " CALL dummy.procedure('a', 1) "
 
 
 def test_call_procedures_1(memgraph):
@@ -67,7 +83,10 @@ def test_create_nodes_relationships_2(memgraph):
 
 def test_create_nodes_relationships_3(memgraph):
     query_builder = (
-        create().node(labels="Person", name="Leslie").to(edge_label="FRIENDS_WITH").node(labels="Person", name="Ron")
+        create()
+        .node(labels="Person", name="Leslie")
+        .to(relationship_type="FRIENDS_WITH")
+        .node(labels="Person", name="Ron")
     )
 
     expected_query = " CREATE (:Person {name: 'Leslie'})-[:FRIENDS_WITH]->(:Person {name: 'Ron'})"
@@ -117,8 +136,8 @@ def test_filter_data_1(memgraph):
         .node("Person", variable="p1")
         .to("FRIENDS_WITH")
         .node("Person", variable="p2")
-        .where(item="n.name", operator="=", literal="Ron")
-        .or_where(item="m.id", operator="=", literal=0)
+        .where(item="n.name", operator=Operator.EQUAL, literal="Ron")
+        .or_where(item="m.id", operator=Operator.EQUAL, literal=0)
         .return_()
     )
 
@@ -147,6 +166,23 @@ def test_return_results_2(memgraph):
     )
 
     expected_query = " MATCH (p1:Person)-[]->(p2:Person) RETURN p1 "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_return_results_2_new(memgraph):
+    query_builder = (
+        match()
+        .node(labels="Person", variable="p1")
+        .to()
+        .node(labels="Person", variable="p2")
+        .return_([("p1", "first"), "p2"])
+    )
+
+    expected_query = " MATCH (p1:Person)-[]->(p2:Person) RETURN p1 AS first, p2 "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()

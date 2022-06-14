@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import datetime
 import math
+import pytest
 
 from gqlalchemy.utilities import (
+    NanException,
     NanValuesHandle,
     NetworkXCypherConfig,
     to_cypher_labels,
     to_cypher_properties,
     to_cypher_value,
-    NanException,
 )
 
 
@@ -55,6 +56,18 @@ def test_to_cypher_properties():
     actual_properties = to_cypher_properties(properties)
 
     assert actual_properties == expected_properties
+
+
+def test_to_cypher_datetime():
+    date = datetime.date(1970, 1, 19)
+    localtime = datetime.time(12, 12, 12)
+    localdatetime = datetime.datetime(1999, 12, 12, 12, 12, 12)
+    duration = datetime.timedelta(days=1, hours=5, minutes=16, seconds=12)
+
+    assert to_cypher_value(date) == "date('1970-01-19')"
+    assert to_cypher_value(localtime) == "localTime('12:12:12')"
+    assert to_cypher_value(localdatetime) == "localDateTime('1999-12-12T12:12:12')"
+    assert to_cypher_value(duration) == "duration('P1DT5H16M12.0S')"
 
 
 def test_to_cypher_labels_single_label():

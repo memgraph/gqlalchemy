@@ -15,6 +15,7 @@
 import pytest
 
 import networkx as nx
+
 from gqlalchemy.transformations import nx_to_cypher, NoNetworkXConfigException, NetworkXCypherBuilder
 from gqlalchemy.utilities import NetworkXCypherConfig
 

@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.models import MemgraphIndex
-from gqlalchemy import Field, Node
 import pytest
+
+from gqlalchemy import Field, Node
+from gqlalchemy.models import MemgraphIndex
 from gqlalchemy.exceptions import GQLAlchemyDatabaseMissingInNodeClassError
 
 
