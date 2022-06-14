@@ -33,6 +33,7 @@ from gqlalchemy.disk_storage import SQLitePropertyDatabase  # noqa F401
 from gqlalchemy.query_builder import (  # noqa F401
     Call,
     Create,
+    Foreach,
     InvalidMatchChainException,
     Return,
     LoadCsv,
@@ -61,5 +62,6 @@ match = Match
 merge = Merge
 unwind = Unwind
 with_ = With
+foreach = Foreach
 return_ = Return
 load_csv = LoadCsv

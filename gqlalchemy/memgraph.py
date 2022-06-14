@@ -22,6 +22,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyError,
     GQLAlchemyUniquenessConstraintError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
+    GQLAlchemyFileNotFoundError,
 )
 from gqlalchemy.graph_algorithms.query_modules import QueryModule
 from gqlalchemy.models import (
@@ -577,3 +578,46 @@ class Memgraph:
             if starts_with is None
             else [q for q in self.query_modules if q.name.startswith(starts_with)]
         )
+
+    def add_query_module(self, file_path: str, module_name: str) -> "Memgraph":
+        """Function for adding a query module in Python written language to Memgraph.
+        Example can be found in the functions below (with_kafka_stream, with_power_bi).
+
+        The module is synced dynamically then with the database to enable higher processing
+        capabilities.
+
+        Args:
+            file_name (str): path to file containing module.
+            module_name (str): name of the module.
+
+        Returns:
+            Memgraph: Memgraph object.
+        """
+        if not os.path.isfile(file_path):
+            raise GQLAlchemyFileNotFoundError(path=file_path)
+
+        file_text = open(file_path, "r").read().replace("'", '"')
+        query = f"CALL mg.create_module_file('{module_name}','{file_text}') YIELD *;"
+        list(self.execute_and_fetch(query))
+
+        return self
+
+    def with_kafka_stream(self) -> "Memgraph":
+        """Load kafka stream query module
+        Returns:
+            Memgraph: Memgraph instance
+        """
+        file_path = "gqlalchemy/query_modules/push_streams/kafka.py"
+        module_name = "kafka_stream.py"
+
+        return self.add_query_module(file_path=file_path, module_name=module_name)
+
+    def with_power_bi(self) -> "Memgraph":
+        """Load power_bi stream query module
+        Returns:
+            Memgraph: Memgraph instance
+        """
+        file_path = "gqlalchemy/query_modules/push_streams/power_bi.py"
+        module_name = "power_bi_stream.py"
+
+        return self.add_query_module(file_path=file_path, module_name=module_name)
