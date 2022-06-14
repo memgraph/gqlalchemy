@@ -21,7 +21,7 @@ from neo4j.graph import Node as Neo4jNode
 from neo4j.graph import Path as Neo4jPath
 from neo4j.graph import Relationship as Neo4jRelationship
 
-from gqlalchemy.exceptions import database_error_handler
+from gqlalchemy.exceptions import database_error_handler, connection_handler
 from gqlalchemy.models import Node, Path, Relationship
 
 __all__ = ("Connection",)
@@ -99,7 +99,7 @@ class MemgraphConnection(Connection):
         """Returns True if connection is active and can be used."""
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
-    @database_error_handler
+    @connection_handler
     def _create_connection(self) -> Connection:
         """Creates and returns a connection with Memgraph."""
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE

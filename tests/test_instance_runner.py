@@ -18,56 +18,48 @@ import pytest
 
 import docker
 
+from gqlalchemy.exceptions import (
+    GQLAlchemyWaitForPortError,
+    GQLAlchemyWaitForDockerError,
+)
 from gqlalchemy.instance_runner import (
     DockerImage,
     MemgraphInstanceBinary,
-    MemgraphInstanceDocker,
     wait_for_port,
     wait_for_docker_container,
 )
 
 
 def test_wait_for_port():
-    with pytest.raises(TimeoutError):
+    with pytest.raises(GQLAlchemyWaitForPortError):
         wait_for_port(port=0000, timeout=1)
 
 
 @pytest.mark.docker
 def test_wait_for_docker_container():
     container = docker.from_env().containers.create(DockerImage.MEMGRAPH.value)
-    with pytest.raises(TimeoutError):
+    with pytest.raises(GQLAlchemyWaitForDockerError):
         wait_for_docker_container(container, timeout=1)
 
 
 @pytest.mark.docker
-def test_start_and_connect_memgraph_docker():
-    memgraph_instance = MemgraphInstanceDocker(port=7690)
-    memgraph = memgraph_instance.start_and_connect()
-    assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
-    assert memgraph_instance.is_running()
-    memgraph_instance.stop()
-    assert not memgraph_instance.is_running()
+def test_start_memgraph_docker(memgraph_instance_docker_without_config):
+    memgraph_instance_docker_without_config.start()
+    assert memgraph_instance_docker_without_config.is_running()
 
 
 @pytest.mark.docker
-def test_start_and_connect_memgraph_docker_config():
-    memgraph_instance = MemgraphInstanceDocker(port=7691, config={"--log-level": "TRACE"})
-    memgraph = memgraph_instance.start_and_connect()
-    assert memgraph_instance.is_running()
-    assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
-    memgraph_instance.stop()
-    assert not memgraph_instance.is_running()
+def test_start_and_connect_memgraph_docker_config(memgraph_instance_docker_with_config):
+    memgraph_instance_docker_with_config.start()
+    conn = memgraph_instance_docker_with_config.connect()
+    assert list(conn.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
 
 
 @pytest.mark.docker
-def test_start_memgraph_docker_connect():
-    memgraph_instance = MemgraphInstanceDocker(port=7692)
-    memgraph_instance.start()
-    assert memgraph_instance.is_running()
-    memgraph = memgraph_instance.connect()
+def test_start_and_connect_memgraph_without_docker_config(memgraph_instance_docker_without_config):
+    memgraph_instance_docker_without_config.start()
+    memgraph = memgraph_instance_docker_without_config.connect()
     assert list(memgraph.execute_and_fetch("RETURN 100 AS result"))[0]["result"] == 100
-    memgraph_instance.stop()
-    assert not memgraph_instance.is_running()
 
 
 @pytest.mark.ubuntu

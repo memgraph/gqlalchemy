@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from enum import Enum
+import time
 
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
@@ -80,6 +81,10 @@ File with path {path} not found.
 OPERATOR_TYPE_ERROR = """
 Operator argument in {clause} clause that is a string must be a valid operator.
 """
+
+TIMEOUT_ERROR_MESSAGE = "Waited too long for the port {port} on host {host} to start accepting connections."
+DOCKER_TIMEOUT_ERROR_MESSAGE = "Waited too long for the Docker container to start."
+MEMGRAPH_CONNECTION_ERROR_MESSAGE = "The Memgraph process probably died."
 
 
 class QueryClause(Enum):
@@ -160,13 +165,38 @@ class GQLAlchemyInstantiationError(GQLAlchemyError):
 
 class GQLAlchemyDatabaseError(GQLAlchemyError):
     def __init__(self, message):
-        super().__init__()
         self.message = message
 
 
-class GQLAlchemyOperatorTypeError(TypeError):
+class GQLAlchemyOperatorTypeError(GQLAlchemyError):
     def __init__(self, clause) -> None:
         self.message = OPERATOR_TYPE_ERROR.format(clause=clause)
+
+
+class GQLAlchemyTimeoutError(GQLAlchemyError):
+    def __init__(self, message):
+        self.message = message
+
+
+class GQLAlchemyWaitForPortError(GQLAlchemyTimeoutError):
+    def __init__(self, port, host):
+        super().__init__(message=TIMEOUT_ERROR_MESSAGE.format(port=port, host=host))
+
+
+class GQLAlchemyWaitForDockerError(GQLAlchemyTimeoutError):
+    def __init__(self):
+        super().__init__(message=DOCKER_TIMEOUT_ERROR_MESSAGE)
+
+
+class GQLAlchemyWaitForConnectionError(GQLAlchemyTimeoutError):
+    def __init__(self):
+        super().__init__(message=MEMGRAPH_CONNECTION_ERROR_MESSAGE)
+
+
+class GQLAlchemyFileNotFoundError(GQLAlchemyError):
+    def __init__(self, path):
+        super().__init__()
+        self.message = FILE_NOT_FOUND.format(path=path)
 
 
 def database_error_handler(func):
@@ -179,7 +209,31 @@ def database_error_handler(func):
     return inner_function
 
 
-class GQLAlchemyFileNotFoundError(GQLAlchemyError):
-    def __init__(self, path):
-        super().__init__()
-        self.message = FILE_NOT_FOUND.format(path=path)
+def connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2):
+    """Wrapper for a wait on the connection.
+
+    Args:
+        func: A function that tries to create the connection
+        delay: A float that defines how long to wait between retries.
+        timeout: A float that defines how long to wait for the port.
+        backoff: An integer used for multiplying the delay.
+
+    Raises:
+      GQLAlchemyWaitForConnectionError: Raises an error
+      after the timeout period has passed.
+    """
+
+    def _handler(*args, **kwargs):
+        start_time = time.perf_counter()
+        current_delay = delay
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except Exception as ex:
+                time.sleep(current_delay)
+                if time.perf_counter() - start_time >= timeout:
+                    raise GQLAlchemyWaitForConnectionError(ex)
+
+                current_delay *= backoff
+
+    return _handler
