@@ -14,11 +14,6 @@
 
 import os
 import sqlite3
-
-from .connection import Connection
-from .disk_storage import OnDiskPropertyDatabase
-from .graph_algorithms.query_modules import QueryModule
-
 from typing import List, Optional, Union
 
 from .database_client import DatabaseClient
