@@ -15,7 +15,7 @@
 import re
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
 from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArguments,
