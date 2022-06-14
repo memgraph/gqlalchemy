@@ -14,7 +14,6 @@
 
 import os
 import sqlite3
-
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from gqlalchemy.connection import Connection

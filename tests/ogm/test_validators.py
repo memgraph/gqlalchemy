@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pytest
-
 from typing import List, Optional
 
 from gqlalchemy import Field, Node, validator

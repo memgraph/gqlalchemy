@@ -1,5 +1,6 @@
-from gqlalchemy import Node, Field
 from typing import Optional
+
+from gqlalchemy import Node, Field
 
 
 def test_multiple_inheritance(memgraph):

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pytest
-
 from typing import Optional
 
 from gqlalchemy import Field, Memgraph, Node, Relationship, SQLitePropertyDatabase

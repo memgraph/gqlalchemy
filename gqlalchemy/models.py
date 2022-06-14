@@ -13,12 +13,12 @@
 
 import datetime
 import warnings
-
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from pydantic import BaseModel, Extra, Field, PrivateAttr  # noqa F401
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+
+from pydantic import BaseModel, Extra, Field, PrivateAttr  # noqa F401
 
 from gqlalchemy.exceptions import (
     GQLAlchemyError,

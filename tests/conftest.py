@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import pytest
+from pathlib import Path
 
 from gqlalchemy import Memgraph, models
-from pathlib import Path
 
 
 def get_data_dir() -> Path:

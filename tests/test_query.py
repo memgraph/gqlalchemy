@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import pytest
+from typing import Any, Dict, Iterator
 
 from gqlalchemy import Memgraph, Node
-from typing import Any, Dict, Iterator
 
 
 def query(command: str) -> Iterator[Dict[str, Any]]:

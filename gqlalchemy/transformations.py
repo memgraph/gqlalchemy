@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import logging
-import mgclient
 import multiprocessing as mp
-import networkx as nx
-
 from typing import Any, Dict, Iterator, List, Union
+
+import mgclient
+import networkx as nx
 
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex

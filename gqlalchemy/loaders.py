@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import adlfs
 import platform
-import pyarrow.dataset as ds
-
 from abc import ABC, abstractmethod
 from enum import Enum
-from dacite import from_dict
 from dataclasses import dataclass, field
-from pyarrow import fs
 from string import Template
 from typing import List, Dict, Any, Optional, Union
+
+import adlfs
+import pyarrow.dataset as ds
+from pyarrow import fs
+from dacite import from_dict
 
 from gqlalchemy import Memgraph
 from gqlalchemy.models import (

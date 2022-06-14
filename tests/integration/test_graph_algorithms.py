@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+import unittest.mock as mock
+from typing import List
+
 from gqlalchemy.graph_algorithms.query_modules import parse_query_module_signature, QueryModule
 from gqlalchemy.query_builder import QueryBuilder
 from gqlalchemy.memgraph import Memgraph
-
-from typing import List
-
-import pytest
-import unittest.mock as mock
 
 
 @pytest.mark.parametrize(

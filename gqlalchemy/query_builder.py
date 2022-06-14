@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import re
-
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union, Set

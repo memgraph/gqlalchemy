@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import pytest
+from typing import List
 
 from gqlalchemy import Memgraph, Node, Relationship
-from typing import List
 
 
 def compare_nodes(actual: List[Node], expected: List[Node]):

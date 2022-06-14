@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
+from pydantic import validator  # noqa F401
+
 from gqlalchemy.memgraph import Memgraph  # noqa F401
 from gqlalchemy.models import (  # noqa F401
     MemgraphConstraintExists,
@@ -46,10 +50,7 @@ from gqlalchemy.instance_runner import (  # noqa F401
     wait_for_docker_container,
     wait_for_port,
 )
-
 from gqlalchemy.exceptions import GQLAlchemyError, GQLAlchemyWarning  # noqa F401
-from pydantic import validator  # noqa F401
-import warnings
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]

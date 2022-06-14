@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mgclient
 import multiprocessing as mp
 import pytest
 import random
 import traceback
-
 from typing import Optional
+
+import mgclient
 
 from gqlalchemy import Field, GQLAlchemyError, Memgraph, Node, SQLitePropertyDatabase
 
