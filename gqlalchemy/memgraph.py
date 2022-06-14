@@ -580,30 +580,3 @@ class Memgraph:
             if starts_with is None
             else [q for q in self.query_modules if q.name.startswith(starts_with)]
         )
-
-    def wait_for_connection(self, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2) -> None:
-        """Wait for a connection to become available.
-
-        Args:
-            delay: A float that defines how long to wait between retries.
-            timeout: A float that defines how long to wait for the port.
-            backoff: An integer used for multiplying the delay.
-
-        Raises:
-        TimeoutError: Raises an error when the host and port are not accepting
-            connections after the timeout period has passed.
-        """
-        start_time = time.perf_counter()
-
-        while True:
-            try:
-                return self.is_alive()
-            except GQLAlchemyDatabaseError:
-                time.sleep(delay)
-                if time.perf_counter() - start_time >= timeout:
-                    raise GQLAlchemyWaitForConnectionError
-
-            delay *= backoff
-
-    def is_alive(self) -> bool:
-        return any(self.execute_and_fetch("RETURN 1;"))

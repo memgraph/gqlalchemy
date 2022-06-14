@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from enum import Enum
+import time
 
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
@@ -196,3 +197,20 @@ def gqlalchemy_error_handler(func):
             raise GQLAlchemyDatabaseError(e)
 
     return inner_function
+
+
+def gqlalchemy_connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2):
+    def _handler(*args, **kwargs):
+        start_time = time.perf_counter()
+        inner_delay = delay
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except Exception as ex:
+                time.sleep(inner_delay)
+                if time.perf_counter() - start_time >= timeout:
+                    raise GQLAlchemyWaitForConnectionError(ex)
+
+                inner_delay *= backoff
+
+    return _handler

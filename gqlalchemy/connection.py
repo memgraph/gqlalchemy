@@ -17,7 +17,7 @@ from typing import Any, Dict, Iterator, Optional
 
 import mgclient
 
-from gqlalchemy.exceptions import gqlalchemy_error_handler
+from gqlalchemy.exceptions import gqlalchemy_error_handler, gqlalchemy_connection_handler
 
 from .models import Node, Path, Relationship
 
@@ -99,7 +99,7 @@ class MemgraphConnection(Connection):
         """Returns True if connection is active and can be used"""
         return self._connection is not None and self._connection.status == mgclient.CONN_STATUS_READY
 
-    @gqlalchemy_error_handler
+    @gqlalchemy_connection_handler
     def _create_connection(self) -> Connection:
         """Creates and returns a connection with Memgraph."""
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE

@@ -22,7 +22,11 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Union
 
-from gqlalchemy.exceptions import GQLAlchemyWaitForConnectionError, GQLAlchemyWaitForDockerError, GQLAlchemyWaitForPortError
+from gqlalchemy.exceptions import (
+    GQLAlchemyWaitForConnectionError,
+    GQLAlchemyWaitForDockerError,
+    GQLAlchemyWaitForPortError,
+)
 
 from .memgraph import Memgraph
 
@@ -33,7 +37,7 @@ MEMGRAPH_CONFIG_BOLT_PORT = "--bolt-port"
 MEMGRAPH_CONFIG_BOLT_ADDRESS = "--bolt-address"
 DOCKER_IMAGE_TAG_LATEST = "latest"
 LOOPBACK_ADDRESS = "127.0.0.1"
-WILDCARD_ADDRESS = "0.0.0.0" """  """
+WILDCARD_ADDRESS = "0.0.0.0"
 
 
 class DockerImage(Enum):
@@ -123,7 +127,7 @@ class MemgraphInstance(ABC):
         self._memgraph = None
 
     @property
-    def memgraph(self):
+    def memgraph(self) -> Memgraph:
         if self._memgraph is None:
             self._memgraph = Memgraph(self.host, self.port)
 
@@ -133,7 +137,7 @@ class MemgraphInstance(ABC):
         self.config.update(config)
 
     def connect(self) -> "Memgraph":
-        if not self._is_instance_running():
+        if not self.is_running():
             raise GQLAlchemyWaitForConnectionError
 
         return self.memgraph
@@ -157,7 +161,7 @@ class MemgraphInstance(ABC):
             restart: A bool indicating if the instance should be
               restarted if it's already running.
         """
-        if not restart and self._is_instance_running():
+        if not restart and self.is_running():
             return
 
         self.stop()
@@ -165,15 +169,14 @@ class MemgraphInstance(ABC):
 
     def stop(self) -> Any:
         """Stop the Memgraph instance."""
-        if not self._is_instance_running():
+        if not self.is_running():
             return
 
         self._stop_instance()
 
+    @abstractmethod
     def is_running(self) -> bool:
-        is_running = self._is_instance_running()
-        self.memgraph.wait_for_connection()
-        return is_running
+        pass
 
     @abstractmethod
     def _start_instance(self) -> None:
@@ -181,10 +184,6 @@ class MemgraphInstance(ABC):
 
     @abstractmethod
     def _stop_instance(self) -> Any:
-        pass
-
-    @abstractmethod
-    def _is_instance_running(self) -> bool:
         pass
 
 
@@ -223,7 +222,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         process.kill()
         psutil.wait_procs(procs)
 
-    def _is_instance_running(self) -> bool:
+    def is_running(self) -> bool:
         """Check if the Memgraph instance is still running."""
         return self.proc_mg is not None and self.proc_mg.poll() is None
 
@@ -253,14 +252,14 @@ class MemgraphInstanceDocker(MemgraphInstance):
             detach=True,
             ports={f"{self.port}/tcp": self.port},
         )
-        wait_for_docker_container(self._container, delay=1)
+        wait_for_docker_container(self._container)
 
     def _stop_instance(self) -> Dict:
         self._container.stop()
 
         return self._container.wait()
 
-    def _is_instance_running(self) -> bool:
+    def is_running(self) -> bool:
         """Check if the Memgraph instance is still running."""
         if self._container is None:
             return False

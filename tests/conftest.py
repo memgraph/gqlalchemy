@@ -16,6 +16,7 @@ from pathlib import Path
 
 import pytest
 from gqlalchemy import Memgraph, models
+from gqlalchemy.instance_runner import MemgraphInstanceDocker
 
 
 def get_data_dir() -> Path:
@@ -63,3 +64,32 @@ def populated_memgraph(dataset_file: str) -> Memgraph:
 @pytest.fixture(scope="session", autouse=True)
 def init():
     models.IGNORE_SUBCLASSNOTFOUNDWARNING = True
+
+
+@pytest.fixture
+def configuration():
+    return {"--log-level": "TRACE"}
+
+
+@pytest.fixture
+def memgraph_instance_docker():
+    def _memgraph_instance_docker(config):
+        return MemgraphInstanceDocker(port=7690, config=config)
+
+    return _memgraph_instance_docker
+
+
+@pytest.fixture
+def memgraph_instance_docker_with_config(memgraph_instance_docker, configuration):
+    instance = memgraph_instance_docker(config=configuration)
+    yield instance
+
+    instance.stop()
+
+
+@pytest.fixture
+def memgraph_instance_docker_without_config(memgraph_instance_docker):
+    instance = memgraph_instance_docker(config={})
+    yield instance
+
+    instance.stop()
