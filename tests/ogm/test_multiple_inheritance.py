@@ -12,9 +12,9 @@
 # limitations under the License.
 
 import pytest
+from typing import Optional
 
 from gqlalchemy import Node, Field
-from typing import Optional
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)

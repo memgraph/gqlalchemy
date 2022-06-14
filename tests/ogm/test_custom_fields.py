@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydantic import Field
+
 from gqlalchemy import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
@@ -19,7 +21,6 @@ from gqlalchemy import (
     Neo4jIndex,
     Node,
 )
-from pydantic import Field
 
 
 def test_create_constraint_exist(memgraph):

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .declarative_base import (  # noqa F401
+from gqlalchemy.query_builders.declarative_base import (  # noqa F401
     DeclarativeBase,
     Call,
     Create,
@@ -22,8 +22,8 @@ from .declarative_base import (  # noqa F401
     Return,
     Unwind,
     With,
-)  # noqa F401
-from ..vendors.neo4j import Neo4j
+)
+from gqlalchemy.vendors.neo4j import Neo4j
 
 
 class Neo4jQueryBuilder(DeclarativeBase):

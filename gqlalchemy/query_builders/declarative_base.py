@@ -13,13 +13,11 @@
 # limitations under the License.
 
 import re
-
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
-from ..graph_algorithms.integrated_algorithms import IntegratedAlgorithm
-from ..exceptions import (
+from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArguments,
     GQLAlchemyInstantiationError,
     GQLAlchemyLiteralAndExpressionMissing,
@@ -29,10 +27,11 @@ from ..exceptions import (
     GQLAlchemyResultQueryTypeError,
     GQLAlchemyTooLargeTupleInResultQuery,
 )
-from ..models import Node, Relationship
-from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_qm_arguments, to_cypher_value
-from ..vendors.database_client import DatabaseClient
-from ..vendors.memgraph import Memgraph
+from gqlalchemy.graph_algorithms.integrated_algorithms import IntegratedAlgorithm
+from gqlalchemy.vendors.memgraph import Memgraph
+from gqlalchemy.models import Node, Relationship
+from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value, to_cypher_qm_arguments
+from gqlalchemy.vendors.database_client import DatabaseClient
 
 
 class DeclarativeBaseTypes:

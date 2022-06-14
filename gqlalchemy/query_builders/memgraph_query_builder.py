@@ -14,7 +14,7 @@
 
 from typing import Optional
 
-from .declarative_base import (  # noqa F401
+from gqlalchemy.query_builders.declarative_base import (  # noqa F401
     Call,
     Create,
     DeclarativeBase,
@@ -29,8 +29,8 @@ from .declarative_base import (  # noqa F401
     Unwind,
     With,
 )
-from ..vendors.database_client import DatabaseClient
-from ..vendors.memgraph import Memgraph
+from gqlalchemy.vendors.database_client import DatabaseClient
+from gqlalchemy.vendors.memgraph import Memgraph
 
 
 class MemgraphQueryBuilderTypes(DeclarativeBaseTypes):

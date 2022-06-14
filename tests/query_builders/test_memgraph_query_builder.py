@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pytest
-
 from unittest.mock import patch
 
 from gqlalchemy import InvalidMatchChainException, Memgraph, QueryBuilder

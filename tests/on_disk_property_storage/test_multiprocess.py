@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import multiprocessing as mp
-from typing import Optional
-
-import traceback
-import mgclient
 import pytest
 import random
+import traceback
+from typing import Optional
 
-from gqlalchemy import Memgraph, Node, Field, SQLitePropertyDatabase, GQLAlchemyError
+import mgclient
+
+from gqlalchemy import Field, GQLAlchemyError, Memgraph, Node, SQLitePropertyDatabase
 
 
 db = Memgraph()

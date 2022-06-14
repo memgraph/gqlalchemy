@@ -14,7 +14,8 @@
 import pytest
 
 from typing import Optional
-from gqlalchemy import Node, Relationship, Field
+
+from gqlalchemy import Field, Node, Relationship
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
