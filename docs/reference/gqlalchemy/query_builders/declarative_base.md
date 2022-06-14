@@ -686,7 +686,15 @@ Unwind a list of values as individual rows.
 #### with\_
 
 ```python
-def with_(results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None) -> "DeclarativeBase"
+def with_(results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None) -> "DeclarativeBase"
 ```
 
 Chain together parts of a query, piping the results from one to be
@@ -804,7 +812,15 @@ Remove labels and properties from nodes and relationships.
 #### yield\_
 
 ```python
-def yield_(results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None) -> "DeclarativeBase"
+def yield_(results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None) -> "DeclarativeBase"
 ```
 
 Yield data from the query.
@@ -840,7 +856,15 @@ Yield data from the query.
 #### return\_
 
 ```python
-def return_(results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None) -> "DeclarativeBase"
+def return_(results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None) -> "DeclarativeBase"
 ```
 
 Return data from the query.
