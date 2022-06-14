@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
-
 import pytest
-from gqlalchemy import Memgraph, models, Neo4j, QueryBuilder, Neo4jQueryBuilder
+from pathlib import Path
 from typing import Tuple
+
+from gqlalchemy import Memgraph, models, Neo4j, QueryBuilder, Neo4jQueryBuilder
 
 
 def get_data_dir() -> Path:

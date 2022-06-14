@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import docker
-import psutil
+
 import socket
 import subprocess
 import time
-
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Union
-from .vendors.memgraph import Memgraph
+
+import docker
+import psutil
+
+from gqlalchemy.vendors.memgraph import Memgraph
 
 
 MEMGRAPH_DEFAULT_BINARY_PATH = "/usr/lib/memgraph/memgraph"
