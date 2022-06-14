@@ -17,7 +17,6 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
-from gqlalchemy.graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from gqlalchemy.exceptions import (
     GQLAlchemyExtraKeywordArguments,
     GQLAlchemyInstantiationError,
