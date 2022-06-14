@@ -31,7 +31,7 @@ from ..exceptions import (
 )
 from ..models import Node, Relationship
 from ..utilities import to_cypher_labels, to_cypher_properties, to_cypher_qm_arguments, to_cypher_value
-from ..vendors.database import Database
+from ..vendors.database_client import DatabaseClient
 from ..vendors.memgraph import Memgraph
 
 
@@ -121,17 +121,6 @@ class PartialQuery(ABC):
     @abstractmethod
     def construct_query(self) -> str:
         pass
-
-
-class LoadCsvPartialQuery(PartialQuery):
-    def __init__(self, path: str, header: bool, row: str):
-        super().__init__(DeclarativeBaseTypes.LOAD_CSV)
-        self.path = path
-        self.header = header
-        self.row = row
-
-    def construct_query(self) -> str:
-        return f" LOAD CSV FROM '{self.path}' " + ("WITH" if self.header else "NO") + f" HEADER AS {self.row} "
 
 
 class MatchPartialQuery(PartialQuery):
@@ -633,7 +622,7 @@ class SetPartialQuery(PartialQuery):
 
 
 class DeclarativeBase(ABC):
-    def __init__(self, connection: Optional[Database] = None):
+    def __init__(self, connection: Optional[DatabaseClient] = None):
         self._query: List[PartialQuery] = []
         self._connection = connection if connection is not None else Memgraph()
         self._fetch_results: bool = False
@@ -1337,33 +1326,6 @@ class DeclarativeBase(ABC):
 
         return self
 
-    def load_csv(self, path: str, header: bool, row: str) -> "DeclarativeBase":
-        """Load data from a CSV file by executing a Cypher query for each row.
-
-        Args:
-            path: A string representing the path to the CSV file.
-            header: A bool indicating if the CSV file starts with a header row.
-            row: A string representing the name of the variable for iterating
-              over each row.
-
-        Returns:
-            A `DeclarativeBase` instance for constructing queries.
-
-        Examples:
-            Load CSV with header:
-
-            Python: `load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()`
-            Cypher: `LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN *;`
-
-            Load CSV without header:
-
-            Python: `load_csv(path='path/to/my/file.csv', header=False, row='row').return_().execute()`
-            Cypher: `LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN *;`
-        """
-        self._query.append(LoadCsvPartialQuery(path, header, row))
-
-        return self
-
     def get_single(self, retrieve: str) -> Any:
         """Returns a single result with a `retrieve` variable name.
 
@@ -1500,37 +1462,37 @@ class DeclarativeBase(ABC):
 
 
 class Create(DeclarativeBase):
-    def __init__(self, connection: Optional[Database] = None):
+    def __init__(self, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(CreatePartialQuery())
 
 
 class Match(DeclarativeBase):
-    def __init__(self, optional: bool = False, connection: Optional[Database] = None):
+    def __init__(self, optional: bool = False, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(MatchPartialQuery(optional))
 
 
 class Merge(DeclarativeBase):
-    def __init__(self, connection: Optional[Database] = None):
+    def __init__(self, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(MergePartialQuery())
 
 
 class Call(DeclarativeBase):
-    def __init__(self, procedure: str, arguments: Optional[str] = None, connection: Optional[Database] = None):
+    def __init__(self, procedure: str, arguments: Optional[str] = None, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(CallPartialQuery(procedure, arguments))
 
 
 class Unwind(DeclarativeBase):
-    def __init__(self, list_expression: str, variable: str, connection: Optional[Database] = None):
+    def __init__(self, list_expression: str, variable: str, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(UnwindPartialQuery(list_expression, variable))
 
 
 class With(DeclarativeBase):
-    def __init__(self, results: Optional[Dict[str, str]] = {}, connection: Optional[Database] = None):
+    def __init__(self, results: Optional[Dict[str, str]] = {}, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(WithPartialQuery(results))
 
@@ -1541,20 +1503,14 @@ class Foreach(DeclarativeBase):
         variable: str,
         expression: str,
         update_clauses: Union[str, List[str], Set[str]],
-        connection: Optional[Database] = None,
+        connection: Optional[DatabaseClient] = None,
     ):
         super().__init__(connection)
         self._query.append(ForeachPartialQuery(variable, expression, update_clauses))
 
 
-class LoadCsv(DeclarativeBase):
-    def __init__(self, path: str, header: bool, row: str, connection: Optional[Database] = None):
-        super().__init__(connection)
-        self._query.append(LoadCsvPartialQuery(path, header, row))
-
-
 class Return(DeclarativeBase):
-    def __init__(self, results: Optional[Dict[str, str]] = {}, connection: Optional[Database] = None):
+    def __init__(self, results: Optional[Dict[str, str]] = {}, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(ReturnPartialQuery(results))
         self._fetch_results = True

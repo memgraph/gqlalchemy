@@ -29,11 +29,3 @@ from ..vendors.neo4j import Neo4j
 class Neo4jQueryBuilder(DeclarativeBase):
     def __init__(self, connection: Neo4j):
         super().__init__(connection)
-
-
-def load_csv(**kwargs) -> None:
-    raise NotImplementedError
-
-
-def LoadCsv(**kwargs) -> None:
-    raise NotImplementedError

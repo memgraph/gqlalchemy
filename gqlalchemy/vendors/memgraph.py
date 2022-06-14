@@ -17,7 +17,7 @@ import sqlite3
 
 from typing import List, Optional, Union
 
-from .database import Database
+from .database_client import DatabaseClient
 from ..connection import Connection, MemgraphConnection
 from ..disk_storage import OnDiskPropertyDatabase
 from ..exceptions import (
@@ -58,7 +58,7 @@ class MemgraphConstants:
     UNIQUE = "unique"
 
 
-class Memgraph(Database):
+class Memgraph(DatabaseClient):
     def __init__(
         self,
         host: str = MG_HOST,
@@ -69,7 +69,9 @@ class Memgraph(Database):
         client_name: str = MG_CLIENT_NAME,
         lazy: bool = MG_LAZY,
     ):
-        super().__init__(host, port, username, password, encrypted, client_name)
+        super().__init__(
+            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+        )
         self._lazy = lazy
         self._on_disk_db = None
 

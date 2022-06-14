@@ -46,14 +46,13 @@ from .query_builders.declarative_base import (  # noqa F401
     Foreach,
     InvalidMatchChainException,
     Return,
-    LoadCsv,
     Match,
     Merge,
     NoVariablesMatchedException,
     Unwind,
     With,
 )
-from .query_builders.memgraph_query_builder import QueryBuilder
+from .query_builders.memgraph_query_builder import LoadCsv, QueryBuilder
 from .query_builders.neo4j_query_builder import Neo4jQueryBuilder  # noqa F401
 from .vendors.memgraph import Memgraph  # noqa F401
 from .vendors.neo4j import Neo4j  # noqa F401

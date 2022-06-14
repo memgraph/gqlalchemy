@@ -16,7 +16,7 @@ import os
 
 from typing import List, Optional, Union
 
-from .database import Database
+from .database_client import DatabaseClient
 from ..connection import Connection, Neo4jConnection
 from ..exceptions import (
     GQLAlchemyError,
@@ -54,7 +54,7 @@ class Neo4jConstants:
     UNIQUENESS = "uniqueness"
 
 
-class Neo4j(Database):
+class Neo4j(DatabaseClient):
     def __init__(
         self,
         host: str = NEO4J_HOST,
@@ -64,31 +64,27 @@ class Neo4j(Database):
         encrypted: bool = NEO4J_ENCRYPTED,
         client_name: str = NEO4J_CLIENT_NAME,
     ):
-        super().__init__(host, port, username, password, encrypted, client_name)
+        super().__init__(
+            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+        )
         self._cached_connection: Optional[Connection] = None
 
     def get_indexes(self) -> List[Neo4jIndex]:
         """Returns a list of all database indexes (label and label-property types)."""
         indexes = []
         for result in self.execute_and_fetch("SHOW INDEX;"):
-            if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP:
-                indexes.append(
-                    Neo4jIndex(
-                        result[Neo4jConstants.LABEL][0],
-                        result[Neo4jConstants.PROPERTIES][0],
-                        result[Neo4jConstants.TYPE],
-                        result[Neo4jConstants.UNIQUENESS],
-                    )
+            indexes.append(
+                Neo4jIndex(
+                    result[Neo4jConstants.LABEL][0]
+                    if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP
+                    else result[Neo4jConstants.LABEL],
+                    result[Neo4jConstants.PROPERTIES][0]
+                    if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP
+                    else result[Neo4jConstants.PROPERTIES],
+                    result[Neo4jConstants.TYPE],
+                    result[Neo4jConstants.UNIQUENESS],
                 )
-            else:
-                indexes.append(
-                    Neo4jIndex(
-                        result[Neo4jConstants.LABEL],
-                        result[Neo4jConstants.PROPERTIES],
-                        result[Neo4jConstants.TYPE],
-                        result[Neo4jConstants.UNIQUENESS],
-                    )
-                )
+            )
         return indexes
 
     def ensure_indexes(self, indexes: List[Neo4jIndex]) -> None:

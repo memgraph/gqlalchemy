@@ -86,8 +86,7 @@ class Index(ABC):
     property: Optional[str] = None
 
     def to_cypher(self) -> str:
-        property_cypher = f"({self.property})" if self.property else ""
-        return f":{self.label}{property_cypher}"
+        return f":{self.label}{f'({self.property})' if self.property else ''}"
 
 
 @dataclass(frozen=True, eq=True)

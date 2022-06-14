@@ -22,12 +22,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyOperatorTypeError,
 )
 import pytest
-from gqlalchemy import (
-    InvalidMatchChainException,
-    Node,
-    Relationship,
-    Field,
-)
+from gqlalchemy import Field, InvalidMatchChainException, Node, QueryBuilder, Relationship
 from typing import Optional
 from unittest.mock import patch
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
@@ -1632,7 +1627,7 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_foreach(self, vendor):
-        update_clause = vendor[1].create().node(variable="n", id=PropertyVariable(name="i"))
+        update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable(name="i"))
         query_builder = vendor[1].foreach(
             variable="i", expression="[1, 2, 3]", update_clause=update_clause.construct_query()
         )
@@ -1645,8 +1640,8 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_foreach_multiple_update_clauses(self, vendor):
         variable_li = PropertyVariable(name="li")
-        update_clause_1 = vendor[1].create().node(labels="F4", prop=variable_li)
-        update_clause_2 = vendor[1].create().node(labels="F5", prop2=variable_li)
+        update_clause_1 = QueryBuilder().create().node(labels="F4", prop=variable_li)
+        update_clause_2 = QueryBuilder().create().node(labels="F5", prop2=variable_li)
         query = (
             vendor[1]
             .match()
@@ -1668,8 +1663,10 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_foreach_nested(self, vendor):
-        create_query = vendor[1].create().node(variable="u", prop=PropertyVariable(name="j"))
-        nested_query = vendor[1].foreach(variable="j", expression="i", update_clause=create_query.construct_query())
+        create_query = QueryBuilder().create().node(variable="u", prop=PropertyVariable(name="j"))
+        nested_query = QueryBuilder().foreach(
+            variable="j", expression="i", update_clause=create_query.construct_query()
+        )
         query = (
             vendor[1]
             .match()

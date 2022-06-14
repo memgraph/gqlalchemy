@@ -73,7 +73,9 @@ class MemgraphConnection(Connection):
         client_name: Optional[str] = None,
         lazy: bool = False,
     ):
-        super().__init__(host, port, username, password, encrypted, client_name=client_name)
+        super().__init__(
+            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+        )
         self.lazy = lazy
         self._connection = self._create_connection()
 
@@ -160,7 +162,9 @@ class Neo4jConnection(Connection):
         client_name: Optional[str] = None,
         lazy: bool = True,
     ):
-        super().__init__(host, port, username, password, encrypted, client_name=client_name)
+        super().__init__(
+            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+        )
         self.lazy = lazy
         self._connection = self._create_connection()
 

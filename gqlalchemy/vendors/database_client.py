@@ -25,7 +25,7 @@ from ..models import (
 )
 
 
-class Database(ABC):
+class DatabaseClient(ABC):
     def __init__(
         self,
         host: str,
@@ -147,9 +147,7 @@ class Database(ABC):
         set to the values in the `node` object.
         """
         return self.execute_and_fetch(
-            f"MATCH (node: {node._label})"
-            + f" WHERE {node._get_cypher_unique_fields_or_block('node')}"
-            + " RETURN node;"
+            f"MATCH (node: {node._label})" f" WHERE {node._get_cypher_unique_fields_or_block('node')}" f" RETURN node;"
         )
 
     def get_variable_assume_one(self, query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any:
@@ -198,9 +196,9 @@ class Database(ABC):
         """Saves a node to the database using the internal id."""
         results = self.execute_and_fetch(
             f"MATCH (node: {node._label})"
-            + f" WHERE id(node) = {node._id}"
-            + f" {node._get_cypher_set_properties('node')}"
-            + " RETURN node;"
+            f" WHERE id(node) = {node._id}"
+            f" {node._get_cypher_set_properties('node')}"
+            f" RETURN node;"
         )
 
         return self.get_variable_assume_one(results, "node")
@@ -248,10 +246,10 @@ class Database(ABC):
         """Loads a relationship from the database using the internal id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
-            + f" WHERE id(start_node) = {relationship._start_node_id}"
-            + f" AND id(end_node) = {relationship._end_node_id}"
-            + f" AND id(relationship) = {relationship._id}"
-            + " RETURN relationship;"
+            f" WHERE id(start_node) = {relationship._start_node_id}"
+            f" AND id(end_node) = {relationship._end_node_id}"
+            f" AND id(relationship) = {relationship._id}"
+            f" RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
 
@@ -263,13 +261,12 @@ class Database(ABC):
         """
         and_block = relationship._get_cypher_fields_and_block("relationship")
         if and_block.strip():
-            and_block = " AND " + and_block
+            and_block = f" AND {and_block}"
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship:{relationship._type}]->(end_node)"
-            + f" WHERE id(start_node) = {relationship._start_node_id}"
-            + f" AND id(end_node) = {relationship._end_node_id}"
-            + and_block
-            + " RETURN relationship;"
+            f" WHERE id(start_node) = {relationship._start_node_id}"
+            f" AND id(end_node) = {relationship._end_node_id}"
+            f"{and_block} RETURN relationship;"
         )
         return self.get_variable_assume_one(results, "relationship")
 
@@ -293,11 +290,10 @@ class Database(ABC):
         """Saves a relationship to the database using the relationship._id."""
         results = self.execute_and_fetch(
             f"MATCH (start_node)-[relationship: {relationship._type}]->(end_node)"
-            + f" WHERE id(start_node) = {relationship._start_node_id}"
-            + f" AND id(end_node) = {relationship._end_node_id}"
-            + f" AND id(relationship) = {relationship._id}"
-            + relationship._get_cypher_set_properties("relationship")
-            + " RETURN relationship;"
+            f" WHERE id(start_node) = {relationship._start_node_id}"
+            f" AND id(end_node) = {relationship._end_node_id}"
+            f" AND id(relationship) = {relationship._id}"
+            f"{relationship._get_cypher_set_properties('relationship')} RETURN relationship;"
         )
 
         return self.get_variable_assume_one(results, "relationship")
@@ -306,11 +302,10 @@ class Database(ABC):
         """Creates a new relationship in the database."""
         results = self.execute_and_fetch(
             "MATCH (start_node), (end_node)"
-            + f" WHERE id(start_node) = {relationship._start_node_id}"
-            + f" AND id(end_node) = {relationship._end_node_id}"
-            + f" CREATE (start_node)-[relationship:{relationship._type}]->(end_node)"
-            + relationship._get_cypher_set_properties("relationship")
-            + "RETURN relationship"
+            f" WHERE id(start_node) = {relationship._start_node_id}"
+            f" AND id(end_node) = {relationship._end_node_id}"
+            f" CREATE (start_node)-[relationship:{relationship._type}]->(end_node)"
+            f"{relationship._get_cypher_set_properties('relationship')} RETURN relationship"
         )
 
         return self.get_variable_assume_one(results, "relationship")
