@@ -91,10 +91,11 @@ When building a Cypher query, you can use a set of methods that are wrappers aro
 
 ```python
 from gqlalchemy import create, match
+from gqlalchemy.query_builder import Operator
 
 query_create = create()
         .node(labels="Person", name="Leslie")
-        .to(edge_label="FRIENDS_WITH")
+        .to(relationship_type="FRIENDS_WITH")
         .node(labels="Person", name="Ron")
         .execute()
 
@@ -102,8 +103,8 @@ query_match = match()
         .node(labels="Person", variable="p1")
         .to()
         .node(labels="Person", variable="p2")
-        .where(item="p1.name", operator="=", literal="Leslie")
-        .return_({"p1":"p1"})
+        .where(item="p1.name", operator=Operator.EQUAL, literal="Leslie")
+        .return_(results=["p1", ("p2", "second")])
         .execute()
 ```
 </details>
