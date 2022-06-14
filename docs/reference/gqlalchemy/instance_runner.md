@@ -6,7 +6,7 @@ title: gqlalchemy.instance_runner
 #### wait\_for\_port
 
 ```python
-def wait_for_port(host: str = "127.0.0.1", port: int = 7687, delay: float = 0.01, timeout: float = 5.0) -> None
+def wait_for_port(host: str = LOOPBACK_ADDRESS, port: int = MEMGRAPH_DEFAULT_PORT, delay: float = 0.01, timeout: float = 5.0) -> None
 ```
 
 Wait for a TCP port to become available.
@@ -63,10 +63,24 @@ systems.
 #### start
 
 ```python
-def start(restart: bool = False) -> "Memgraph"
+def start(restart: bool = False) -> None
 ```
 
-Start the Memgraph instance and return the connection object.
+Start the Memgraph instance from a binary file.
+
+**Attributes**:
+
+- `restart` - A bool indicating if the instance should be
+  restarted if it&#x27;s already running.
+
+#### start\_and\_connect
+
+```python
+def start_and_connect(restart: bool = False) -> "Memgraph"
+```
+
+Start the Memgraph instance from a binary file and return the
+connection object.
 
 **Attributes**:
 
@@ -76,7 +90,7 @@ Start the Memgraph instance and return the connection object.
 #### stop
 
 ```python
-def stop() -> int
+def stop() -> None
 ```
 
 Stop the Memgraph instance.
@@ -106,10 +120,24 @@ A class for managing Memgraph instances started in Docker containers.
 #### start
 
 ```python
-def start(restart: bool = False) -> "Memgraph"
+def start(restart: bool = False) -> None
 ```
 
-Start the Memgraph instance and return the connection object.
+Start the Memgraph instance in a Docker container.
+
+**Attributes**:
+
+- `restart` - A bool indicating if the instance should be
+  restarted if it&#x27;s already running.
+
+#### start\_and\_connect
+
+```python
+def start_and_connect(restart: bool = False) -> "Memgraph"
+```
+
+Start the Memgraph instance in a Docker container and return the
+connection object.
 
 **Attributes**:
 
