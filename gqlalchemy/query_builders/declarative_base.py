@@ -1089,7 +1089,16 @@ class DeclarativeBase(ABC):
         return self
 
     def with_(
-        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+        self,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ) -> "DeclarativeBase":
         """Chain together parts of a query, piping the results from one to be
         used as starting points or criteria in the next.
@@ -1183,7 +1192,16 @@ class DeclarativeBase(ABC):
         return self
 
     def yield_(
-        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+        self,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ) -> "DeclarativeBase":
         """Yield data from the query.
 
@@ -1213,7 +1231,16 @@ class DeclarativeBase(ABC):
         return self
 
     def return_(
-        self, results: Optional[Union[str, Tuple[str, str], Iterable[Union[str, Tuple[str, str]]]]] = None
+        self,
+        results: Optional[
+            Union[
+                str,
+                Tuple[str, str],
+                Dict[str, str],
+                List[Union[str, Tuple[str, str]]],
+                Set[Union[str, Tuple[str, str]]],
+            ]
+        ] = None,
     ) -> "DeclarativeBase":
         """Return data from the query.
 
