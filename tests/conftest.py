@@ -16,8 +16,6 @@ import pytest
 from pathlib import Path
 from typing import Tuple
 
-import pytest
-
 from gqlalchemy import Memgraph, models, Neo4j, QueryBuilder, Neo4jQueryBuilder
 from gqlalchemy.instance_runner import MemgraphInstanceDocker
 
