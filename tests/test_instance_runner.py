@@ -20,12 +20,10 @@ import pytest
 from gqlalchemy.exceptions import (
     GQLAlchemyWaitForPortError,
     GQLAlchemyWaitForDockerError,
-    GQLAlchemyWaitForConnectionError,
 )
 from gqlalchemy.instance_runner import (
     DockerImage,
     MemgraphInstanceBinary,
-    MemgraphInstanceDocker,
     wait_for_port,
     wait_for_docker_container,
 )

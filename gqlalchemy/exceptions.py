@@ -218,6 +218,8 @@ def gqlalchemy_connection_handler(func, delay: float = 0.01, timeout: float = 5.
                 inner_delay *= backoff
 
     return _handler
+
+
 class GQLAlchemyFileNotFoundError(GQLAlchemyError):
     def __init__(self, path):
         super().__init__()
