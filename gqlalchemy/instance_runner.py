@@ -28,7 +28,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyWaitForPortError,
 )
 
-from .memgraph import Memgraph
+from .vendors.memgraph import Memgraph
 
 
 MEMGRAPH_DEFAULT_BINARY_PATH = "/usr/lib/memgraph/memgraph"

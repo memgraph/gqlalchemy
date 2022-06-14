@@ -74,6 +74,10 @@ TOO_LARGE_TUPLE_IN_RESULT_QUERY = """
 Tuple argument in {clause} clause only has two arguments - variable name and alias.
 """
 
+FILE_NOT_FOUND = """
+File with path {path} not found.
+"""
+
 OPERATOR_TYPE_ERROR = """
 Operator argument in {clause} clause that is a string must be a valid operator.
 """
@@ -189,7 +193,7 @@ class GQLAlchemyWaitForConnectionError(GQLAlchemyTimeoutError):
         super().__init__(message=MEMGRAPH_CONNECTION_ERROR_MESSAGE)
 
 
-def gqlalchemy_error_handler(func):
+def database_error_handler(func):
     def inner_function(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -214,3 +218,7 @@ def gqlalchemy_connection_handler(func, delay: float = 0.01, timeout: float = 5.
                 inner_delay *= backoff
 
     return _handler
+class GQLAlchemyFileNotFoundError(GQLAlchemyError):
+    def __init__(self, path):
+        super().__init__()
+        self.message = FILE_NOT_FOUND.format(path=path)

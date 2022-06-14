@@ -12,33 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .memgraph import Memgraph  # noqa F401
-from .models import (  # noqa F401
-    MemgraphConstraintExists,
-    MemgraphConstraintUnique,
-    MemgraphIndex,
-    MemgraphKafkaStream,
-    MemgraphPulsarStream,
-    MemgraphTrigger,
-    Node,
-    Path,
-    Relationship,
-    Field,
-)
 from .disk_storage import SQLitePropertyDatabase  # noqa F401
-from .query_builder import (  # noqa F401
-    Call,
-    Create,
-    InvalidMatchChainException,
-    Return,
-    LoadCsv,
-    Match,
-    Merge,
-    NoVariablesMatchedException,
-    QueryBuilder,
-    Unwind,
-    With,
-)
+from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from .instance_runner import (  # noqa F401
     DockerImage,
     MemgraphInstanceBinary,
@@ -46,8 +21,42 @@ from .instance_runner import (  # noqa F401
     wait_for_docker_container,
     wait_for_port,
 )
+from .models import (  # noqa F401
+    MemgraphConstraintExists,
+    MemgraphConstraintUnique,
+    MemgraphIndex,
+    MemgraphKafkaStream,
+    MemgraphPulsarStream,
+    MemgraphTrigger,
+    Neo4jConstraintUnique,
+    Neo4jIndex,
+    Node,
+    Path,
+    Relationship,
+    Field,
+)
+from .query_builders import (  # noqa F401
+    neo4j_query_builder,
+    memgraph_query_builder,
+    memgraph_query_builder as query_builder,
+)
+from .query_builders.declarative_base import (  # noqa F401
+    Call,
+    Create,
+    Foreach,
+    InvalidMatchChainException,
+    Return,
+    Match,
+    Merge,
+    NoVariablesMatchedException,
+    Unwind,
+    With,
+)
+from .query_builders.memgraph_query_builder import LoadCsv, QueryBuilder
+from .query_builders.neo4j_query_builder import Neo4jQueryBuilder  # noqa F401
+from .vendors.memgraph import Memgraph  # noqa F401
+from .vendors.neo4j import Neo4j  # noqa F401
 
-from .exceptions import GQLAlchemyWarning, GQLAlchemyError  # noqa F401
 from pydantic import validator  # noqa F401
 import warnings
 
@@ -60,5 +69,7 @@ match = Match
 merge = Merge
 unwind = Unwind
 with_ = With
+foreach = Foreach
 return_ = Return
 load_csv = LoadCsv
+MemgraphQueryBuilder = QueryBuilder

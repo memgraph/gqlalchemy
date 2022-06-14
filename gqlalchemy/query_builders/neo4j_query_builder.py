@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.vendors.memgraph import Memgraph
+from .declarative_base import (  # noqa F401
+    DeclarativeBase,
+    Call,
+    Create,
+    Foreach,
+    Match,
+    Merge,
+    Return,
+    Unwind,
+    With,
+)  # noqa F401
+from ..vendors.neo4j import Neo4j
 
 
-def test_argument_lazy_default():
-    memgraph = Memgraph()
-    assert memgraph._lazy is False
-
-
-def test_argument_lazy_false():
-    memgraph = Memgraph(lazy=True)
-    assert memgraph._lazy is True
+class Neo4jQueryBuilder(DeclarativeBase):
+    def __init__(self, connection: Neo4j):
+        super().__init__(connection)
