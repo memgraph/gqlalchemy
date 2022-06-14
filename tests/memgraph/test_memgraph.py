@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.vendors.memgraph import Memgraph
 
 
 def test_argument_lazy_default():

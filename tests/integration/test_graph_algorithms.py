@@ -16,9 +16,8 @@ import pytest
 import unittest.mock as mock
 from typing import List
 
-from gqlalchemy.graph_algorithms.query_modules import parse_query_module_signature, QueryModule
-from gqlalchemy.query_builder import QueryBuilder
-from gqlalchemy.memgraph import Memgraph
+from gqlalchemy.graph_algorithms.query_modules import QueryModule, parse_query_module_signature
+from gqlalchemy import Memgraph, QueryBuilder
 
 
 @pytest.mark.parametrize(

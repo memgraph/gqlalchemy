@@ -15,8 +15,8 @@
 from unittest.mock import patch
 
 from gqlalchemy import call, create, match, merge
-from gqlalchemy.memgraph import Memgraph
-from gqlalchemy.query_builder import Operator, CallPartialQuery
+from gqlalchemy.vendors.memgraph import Memgraph
+from gqlalchemy.query_builders.declarative_base import CallPartialQuery, Operator
 
 
 def test_call_procedure_arguments_string():

@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABC
-from typing import Optional, List
-
 import sqlite3
 import contextlib
+from abc import ABC
+from typing import Optional, List
 
 
 class OnDiskPropertyDatabase(ABC):

@@ -23,7 +23,7 @@ from typing import Any, Dict, Union
 import docker
 import psutil
 
-from gqlalchemy import Memgraph
+from gqlalchemy.vendors.memgraph import Memgraph
 
 
 MEMGRAPH_DEFAULT_BINARY_PATH = "/usr/lib/memgraph/memgraph"

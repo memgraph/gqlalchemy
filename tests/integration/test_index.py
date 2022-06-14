@@ -14,8 +14,8 @@
 
 import pytest
 
-from gqlalchemy.models import MemgraphIndex
 from gqlalchemy import Field, Node
+from gqlalchemy.models import MemgraphIndex
 from gqlalchemy.exceptions import GQLAlchemyDatabaseMissingInNodeClassError
 
 

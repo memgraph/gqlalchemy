@@ -11,3 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from gqlalchemy.query_builders.declarative_base import (  # noqa F401
+    DeclarativeBase,
+    Call,
+    Create,
+    Foreach,
+    Match,
+    Merge,
+    Return,
+    Unwind,
+    With,
+)
+from gqlalchemy.vendors.neo4j import Neo4j
+
+
+class Neo4jQueryBuilder(DeclarativeBase):
+    def __init__(self, connection: Neo4j):
+        super().__init__(connection)

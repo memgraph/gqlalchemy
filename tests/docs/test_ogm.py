@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy import Memgraph, Node, Relationship, Field, match
-from gqlalchemy.query_builder import Operator
 from typing import Optional
+
+from gqlalchemy import Memgraph, Node, Relationship, Field, match
+from gqlalchemy.query_builders.memgraph_query_builder import Operator
 
 db = Memgraph()
 

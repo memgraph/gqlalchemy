@@ -81,17 +81,27 @@ class FieldAttrsConstants:
 
 
 @dataclass(frozen=True, eq=True)
-class MemgraphIndex:
+class Index(ABC):
     label: str
     property: Optional[str] = None
 
     def to_cypher(self) -> str:
-        property_cypher = f"({self.property})" if self.property else ""
-        return f":{self.label}{property_cypher}"
+        return f":{self.label}{f'({self.property})' if self.property else ''}"
 
 
 @dataclass(frozen=True, eq=True)
-class MemgraphConstraint(ABC):
+class MemgraphIndex(Index):
+    pass
+
+
+@dataclass(frozen=True, eq=True)
+class Neo4jIndex(Index):
+    type: Optional[str] = None
+    uniqueness: Optional[str] = None
+
+
+@dataclass(frozen=True, eq=True)
+class Constraint(ABC):
     label: str
 
     @abstractmethod
@@ -100,7 +110,7 @@ class MemgraphConstraint(ABC):
 
 
 @dataclass(frozen=True, eq=True)
-class MemgraphConstraintUnique(MemgraphConstraint):
+class MemgraphConstraintUnique(Constraint):
     property: Union[str, Tuple]
 
     def to_cypher(self) -> str:
@@ -113,7 +123,28 @@ class MemgraphConstraintUnique(MemgraphConstraint):
 
 
 @dataclass(frozen=True, eq=True)
-class MemgraphConstraintExists(MemgraphConstraint):
+class MemgraphConstraintExists(Constraint):
+    property: str
+
+    def to_cypher(self) -> str:
+        return f"(n:{self.label}) ASSERT EXISTS (n.{self.property})"
+
+
+@dataclass(frozen=True, eq=True)
+class Neo4jConstraintUnique(Constraint):
+    property: Union[str, Tuple]
+
+    def to_cypher(self) -> str:
+        properties_str = ""
+        if isinstance(self.property, (tuple, set, list)):
+            properties_str = ", ".join([f"n.{prop}" for prop in self.property])
+        else:
+            properties_str = f"n.{self.property}"
+        return f"(n:{self.label}) ASSERT {properties_str} IS UNIQUE"
+
+
+@dataclass(frozen=True, eq=True)
+class Neo4jConstraintExists(Constraint):
     property: str
 
     def to_cypher(self) -> str:
@@ -527,7 +558,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
     def _label(self) -> str:
         return ":".join(sorted(self._labels))
 
-    def save(self, db: "Memgraph") -> "Node":  # noqa F821
+    def save(self, db: "Database") -> "Node":  # noqa F821
         """Saves node to Memgraph.
         If the node._id is not None it fetches the node with the same id from
         Memgraph and updates it's fields.
@@ -542,7 +573,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         self._id = node._id
         return self
 
-    def load(self, db: "Memgraph") -> "Node":  # noqa F821
+    def load(self, db: "Database") -> "Node":  # noqa F821
         """Loads a node from Memgraph.
         If the node._id is not None it fetches the node from Memgraph with that
         internal id.
@@ -601,7 +632,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
             )
         )
 
-    def save(self, db: "Memgraph") -> "Relationship":  # noqa F821
+    def save(self, db: "Database") -> "Relationship":  # noqa F821
         """Saves a relationship to Memgraph.
         If relationship._id is not None it finds the relationship in Memgraph
         and updates it's properties with the values in `relationship`.
@@ -615,7 +646,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
         self._id = relationship._id
         return self
 
-    def load(self, db: "Memgraph") -> "Relationship":  # noqa F821
+    def load(self, db: "Database") -> "Relationship":  # noqa F821
         """Returns a relationship loaded from Memgraph.
         If the relationship._id is not None it fetches the relationship from
         Memgraph that has the same internal id.
