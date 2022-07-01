@@ -288,20 +288,21 @@ python-versions = "*"
 
 [[package]]
 name = "docker"
-version = "5.0.3"
+version = "4.2.2"
 description = "A Python library for the Docker Engine API."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.dependencies]
-pywin32 = {version = "227", markers = "sys_platform == \"win32\""}
+pypiwin32 = {version = "223", markers = "sys_platform == \"win32\" and python_version >= \"3.6\""}
 requests = ">=2.14.2,<2.18.0 || >2.18.0"
+six = ">=1.4.0"
 websocket-client = ">=0.32.0"
 
 [package.extras]
 ssh = ["paramiko (>=2.4.2)"]
-tls = ["pyOpenSSL (>=17.5.0)", "cryptography (>=3.4.7)", "idna (>=2.0.0)"]
+tls = ["pyOpenSSL (>=17.5.0)", "cryptography (>=1.3.4)", "idna (>=2.0.0)"]
 
 [[package]]
 name = "filelock"
@@ -714,7 +715,7 @@ tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 
 [[package]]
 name = "pymgclient"
-version = "1.2.0"
+version = "1.3.0"
 description = "Memgraph database adapter for Python language"
 category = "main"
 optional = false
@@ -730,6 +731,17 @@ python-versions = ">=3.6.8"
 
 [package.extras]
 diagrams = ["railroad-diagrams", "jinja2"]
+
+[[package]]
+name = "pypiwin32"
+version = "223"
+description = ""
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pywin32 = ">=223"
 
 [[package]]
 name = "pytest"
@@ -947,7 +959,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 
 [[package]]
 name = "websocket-client"
-version = "1.3.2"
+version = "1.3.3"
 description = "WebSocket client for Python with low level API options"
 category = "main"
 optional = false
@@ -986,7 +998,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "cbfee02b9da6ea3277361bcbec821ef70f42ddab45cad62f6e2bdb3e84ebfdc0"
+content-hash = "33f79089beb5a71e41ad0a35c0d3f0636b5d969a299e283b1e713a13767261fc"
 
 [metadata.files]
 adal = [
@@ -1279,8 +1291,8 @@ distlib = [
     {file = "distlib-0.3.4.zip", hash = "sha256:e4b58818180336dc9c529bfb9a0b58728ffc09ad92027a3f30b7cd91e3458579"},
 ]
 docker = [
-    {file = "docker-5.0.3-py2.py3-none-any.whl", hash = "sha256:7a79bb439e3df59d0a72621775d600bc8bc8b422d285824cb37103eab91d1ce0"},
-    {file = "docker-5.0.3.tar.gz", hash = "sha256:d916a26b62970e7c2f554110ed6af04c7ccff8e9f81ad17d0d40c75637e227fb"},
+    {file = "docker-4.2.2-py2.py3-none-any.whl", hash = "sha256:03a46400c4080cb6f7aa997f881ddd84fef855499ece219d75fbdb53289c17ab"},
+    {file = "docker-4.2.2.tar.gz", hash = "sha256:26eebadce7e298f55b76a88c4f8802476c5eaddbdbe38dbc6cce8781c47c9b54"},
 ]
 filelock = [
     {file = "filelock-3.7.1-py3-none-any.whl", hash = "sha256:37def7b658813cda163b56fc564cdc75e86d338246458c4c28ae84cabefa2404"},
@@ -1649,22 +1661,26 @@ pyjwt = [
     {file = "PyJWT-2.4.0.tar.gz", hash = "sha256:d42908208c699b3b973cbeb01a969ba6a96c821eefb1c5bfe4c390c01d67abba"},
 ]
 pymgclient = [
-    {file = "pymgclient-1.2.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:908b039188c31b0fc6117aacc040c0ed33067a9e09cb14c934eecf73e429f961"},
-    {file = "pymgclient-1.2.0-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:a78a48c84ff77733fde72c29c2fbbafa3fb81150171ef336976c18e17a655b18"},
-    {file = "pymgclient-1.2.0-cp310-cp310-win_amd64.whl", hash = "sha256:a123eeda47d8c2cb90ea8fe765041f0324dd36b9db60664dad62969a5a581bd0"},
-    {file = "pymgclient-1.2.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:c6e66f519d17995812be06ca3d4cf8c476e8b3740226abd1655bbd8817c572bd"},
-    {file = "pymgclient-1.2.0-cp37-cp37m-win_amd64.whl", hash = "sha256:88d8809b0048a0cfc61636290d57f7230b34d28bbc8be429f8b4e7e84e697804"},
-    {file = "pymgclient-1.2.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:660806bdb256ca3eb0220dea36f4bca5b7d2ce867295113b88c0ffacedcd011a"},
-    {file = "pymgclient-1.2.0-cp38-cp38-macosx_12_0_arm64.whl", hash = "sha256:f3197e71aa32df6069cef5bb8da74248bc4a3f260a9ccde5efc939f0ffce21a2"},
-    {file = "pymgclient-1.2.0-cp38-cp38-win_amd64.whl", hash = "sha256:2c6cb017e7e41ae47c1c23d5503ee2fc2dfee7166c08742dd7c83b1d4942517c"},
-    {file = "pymgclient-1.2.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:b77941967bc7d24009a125d0dbf6bd4fa04dd5ba102d30360408fd609a397025"},
-    {file = "pymgclient-1.2.0-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:d3855b32d6c011dcf85b6d0533e1546ba8cefd2cd936824156c313465a2f5c23"},
-    {file = "pymgclient-1.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:49c47e9dc6d228607589494cafecf402e76c4d22c864951392495069c6ff95ec"},
-    {file = "pymgclient-1.2.0.tar.gz", hash = "sha256:50143bd138880dd32218d17dada37ade12f7a7b35d7903605e76a1149fd8bb3e"},
+    {file = "pymgclient-1.3.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:fdcfb49be56fe4bc3e6f7011986b1a0d93008cf1cc76f40e9dde11ec3229d5d4"},
+    {file = "pymgclient-1.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:7dfb20875fad9f920b086cf6261a86e85cc9e313a428984826dbfa2cb7f52c0a"},
+    {file = "pymgclient-1.3.0-cp310-cp310-win_amd64.whl", hash = "sha256:b89e6387fa0977803baf7a618bc6861f74adfc7ac58bfd13ca459b08eedac352"},
+    {file = "pymgclient-1.3.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:8e1b7e9e94ba2fe9bf90a8a5ccf269920f619d9e2c1440de457ae261842bdcb7"},
+    {file = "pymgclient-1.3.0-cp37-cp37m-win_amd64.whl", hash = "sha256:6afd7a4f39130752be9523f6e82b0a632a8b32b55503380c1af6a0ecb6ccf115"},
+    {file = "pymgclient-1.3.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:495d0cac21a02dac5d56a0e5ee4a61847673f040272d10e3ee046d7cae1055c3"},
+    {file = "pymgclient-1.3.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:a8ab0f74db076574d40f1a62b19059e72534a65a2c56ae35c3882bd462437390"},
+    {file = "pymgclient-1.3.0-cp38-cp38-win_amd64.whl", hash = "sha256:e6bf06fb68d915ca30435561f635d56aaae726b413f335200e9030f2ce0c8be1"},
+    {file = "pymgclient-1.3.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:0fd3d8017318344d8dffc66dc6aa710055029ee2d7a0ddff940a3f52e2eefdfc"},
+    {file = "pymgclient-1.3.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:51d47a7d620d968cbcdbf9caf00d94792c628010adb600a1eb5638c21eaca310"},
+    {file = "pymgclient-1.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:acfc2e5f2ec02287833bf7145024becdc221e13682b191ab1a015698f3227c44"},
+    {file = "pymgclient-1.3.0.tar.gz", hash = "sha256:76b06bf94d0f6eaeb65aa277b56b6f2b05b4d27634fcf0b575a637200f910319"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
+]
+pypiwin32 = [
+    {file = "pypiwin32-223-py3-none-any.whl", hash = "sha256:67adf399debc1d5d14dffc1ab5acacb800da569754fafdc576b2a039485aa775"},
+    {file = "pypiwin32-223.tar.gz", hash = "sha256:71be40c1fbd28594214ecaecb58e7aa8b708eabfa0125c8a109ebd51edbd776a"},
 ]
 pytest = [
     {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
@@ -1801,8 +1817,8 @@ virtualenv = [
     {file = "virtualenv-20.14.1.tar.gz", hash = "sha256:ef589a79795589aada0c1c5b319486797c03b67ac3984c48c669c0e4f50df3a5"},
 ]
 websocket-client = [
-    {file = "websocket-client-1.3.2.tar.gz", hash = "sha256:50b21db0058f7a953d67cc0445be4b948d7fc196ecbeb8083d68d94628e4abf6"},
-    {file = "websocket_client-1.3.2-py3-none-any.whl", hash = "sha256:722b171be00f2b90e1d4fb2f2b53146a536ca38db1da8ff49c972a4e1365d0ef"},
+    {file = "websocket-client-1.3.3.tar.gz", hash = "sha256:d58c5f284d6a9bf8379dab423259fe8f85b70d5fa5d2916d5791a84594b122b1"},
+    {file = "websocket_client-1.3.3-py3-none-any.whl", hash = "sha256:5d55652dc1d0b3c734f044337d929aaf83f4f9138816ec680c1aefefb4dc4877"},
 ]
 yarl = [
     {file = "yarl-1.7.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:f2a8508f7350512434e41065684076f640ecce176d262a7d54f0da41d99c5a95"},
