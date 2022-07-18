@@ -11,13 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydantic import Field
+
 from gqlalchemy import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
+    Neo4jConstraintUnique,
+    Neo4jIndex,
     Node,
 )
-from pydantic import Field
 
 
 def test_create_constraint_exist(memgraph):
@@ -51,3 +54,24 @@ def test_create_index(memgraph):
     actual_constraints = memgraph.get_indexes()
 
     assert actual_constraints == [memgraph_index]
+
+
+def test_create_constraint_unique_neo4j(neo4j):
+    class Node2(Node):
+        id: int = Field(db=neo4j)
+
+    neo4j_constraint = Neo4jConstraintUnique("Node2", ("id",))
+
+    neo4j.create_constraint(neo4j_constraint)
+    actual_constraints = neo4j.get_constraints()
+
+    assert actual_constraints == [neo4j_constraint]
+
+
+def test_create_index_neo4j(neo4j):
+    neo4j_index = Neo4jIndex(label="Node2", property="id", type="BTREE", uniqueness="NONUNIQUE")
+
+    neo4j.create_index(neo4j_index)
+    actual_constraints = neo4j.get_indexes()
+
+    assert neo4j_index in actual_constraints

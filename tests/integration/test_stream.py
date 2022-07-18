@@ -11,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import pytest
+
 from gqlalchemy import MemgraphKafkaStream, MemgraphPulsarStream, Memgraph
+from gqlalchemy.exceptions import GQLAlchemyError
 
 
 def stream_exists(stream: str, memgraph: Memgraph) -> bool:
@@ -22,25 +25,25 @@ def stream_exists(stream: str, memgraph: Memgraph) -> bool:
 def test_create_kafka_stream(memgraph):
     kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
 
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyError) as e_info:
         memgraph.create_stream(kafka_stream)
-    assert "Local: Broker transport failure" in str(e_info.value)
+    assert "Local: Broker transport failure" in str(e_info.value.message)
 
 
 def test_create_pulsar_stream(memgraph):
     pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
 
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyError) as e_info:
         memgraph.create_stream(pulsar_stream)
-    assert "Pulsar consumer test_stream : ConnectError" in str(e_info.value)
+    assert "Pulsar consumer test_stream : ConnectError" in str(e_info.value.message)
 
 
 def test_drop_pulsar_stream(memgraph):
     pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
 
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyError) as e_info:
         memgraph.create_stream(pulsar_stream)
-    assert "Pulsar consumer test_stream : ConnectError" in str(e_info.value)
+    assert "Pulsar consumer test_stream : ConnectError" in str(e_info.value.message)
 
 
 def test_create_kafka_stream_cypher():
@@ -58,17 +61,17 @@ def test_create_pulsar_stream_cypher():
 def test_start_kafka_stream(memgraph):
     kafka_stream = MemgraphKafkaStream(name="test_stream", topics=["topic"], transform="kafka_stream.transform")
 
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyError) as e_info:
         memgraph.start_stream(kafka_stream)
-    assert "Couldn't find stream 'test_stream'" in str(e_info.value)
+    assert "Couldn't find stream 'test_stream'" in str(e_info.value.message)
 
 
 def test_start_pulsar_stream(memgraph):
     pulsar_stream = MemgraphPulsarStream(name="test_stream", topics=["topic"], transform="pulsar_stream.transform")
 
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(GQLAlchemyError) as e_info:
         memgraph.start_stream(pulsar_stream)
-    assert "Couldn't find stream 'test_stream'" in str(e_info.value)
+    assert "Couldn't find stream 'test_stream'" in str(e_info.value.message)
 
 
 def test_kafka_stream_extended_cypher():

@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 from typing import Optional
-from gqlalchemy import Node, Relationship, Path
+
+from gqlalchemy import Node, Path, Relationship
 from gqlalchemy.models import GraphObject
 
 
@@ -45,7 +47,8 @@ def test_dictionary_deserialisation():
     pass
 
 
-def test_automatic_deserialisation_from_database(memgraph):
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_automatic_deserialisation_from_database(database):
     class Person(Node):
         id: Optional[int]
         name: Optional[str]
@@ -57,11 +60,11 @@ def test_automatic_deserialisation_from_database(memgraph):
     class Friends(Relationship, type="FRIENDS"):
         pass
 
-    memgraph.execute("create (:Person {id: 1, name: 'person'});")
-    memgraph.execute("create (:Alice {id: 8, name: 'alice'});")
-    memgraph.execute("match (a:Alice) match(b:Person) create (a)-[:FRIENDS]->(b);")
+    database.execute("create (:Person {id: 1, name: 'person'});")
+    database.execute("create (:Alice {id: 8, name: 'alice'});")
+    database.execute("match (a:Alice) match(b:Person) create (a)-[:FRIENDS]->(b);")
 
-    result = list(memgraph.execute_and_fetch("match (a)-[r]->(b) return a, r, b"))
+    result = list(database.execute_and_fetch("match (a)-[r]->(b) return a, r, b"))
     for node in result:
         a = node["a"]
         assert isinstance(a, Alice)
@@ -73,6 +76,7 @@ def test_automatic_deserialisation_from_database(memgraph):
         assert isinstance(a._id, int)
 
         r = node["r"]
+        print(f"r: {r}")
         assert isinstance(r, Friends)
         assert r._type == "FRIENDS"
         assert isinstance(r._id, int)
@@ -91,11 +95,12 @@ def test_automatic_deserialisation_from_database(memgraph):
         assert isinstance(b._id, int)
 
 
-def test_path_deserialisation(memgraph):
-    memgraph.execute("create (:Person {id: 1, name: 'person'});")
-    memgraph.execute("create (:Alice {id: 8, name: 'alice'});")
-    memgraph.execute("match (a:Alice) match(b:Person) create (a)-[:FRIENDS]->(b);")
-    result = list(memgraph.execute_and_fetch("MATCH p = ()-[*1]-() RETURN p"))
+@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+def test_path_deserialisation(database):
+    database.execute("create (:Person {id: 1, name: 'person'});")
+    database.execute("create (:Alice {id: 8, name: 'alice'});")
+    database.execute("match (a:Alice) match(b:Person) create (a)-[:FRIENDS]->(b);")
+    result = list(database.execute_and_fetch("MATCH p = ()-[*1]-() RETURN p"))
     path = result[0]["p"]
     assert isinstance(path, Path)
     assert len(path._nodes) == 2
