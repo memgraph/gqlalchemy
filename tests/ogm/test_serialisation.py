@@ -11,46 +11,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
 from typing import Optional
+from gqlalchemy import Node, Relationship, Field
 
-from gqlalchemy import Field, Node, Relationship
 
-
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_save_node(database):
+def test_save_node(memgraph):
     class SimpleNode(Node):
         id: Optional[int] = Field()
         name: Optional[str] = Field()
 
     node1 = SimpleNode(id=1, name="First Simple Node")
     assert node1._id is None
-    node1.save(database)
+    node1.save(memgraph)
     assert node1._id is not None
     node2 = SimpleNode(id=1)
-    node2.save(database)
+    node2.save(memgraph)
     assert node1._id != node2._id
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_save_node2(database):
+def test_save_node2(memgraph):
     class NodeWithKey(Node):
-        id: int = Field(unique=True, db=database)
+        id: int = Field(exists=True, unique=True, index=True, db=memgraph)
         name: Optional[str] = Field()
 
     node1 = NodeWithKey(id=1, name="First NodeWithKey")
     assert node1._id is None
-    node1.save(database)
+    node1.save(memgraph)
     assert node1._id is not None
     node2 = NodeWithKey(id=1)
-    node2.save(database)
+    node2.save(memgraph)
     assert node1._id == node2._id
     assert node1.name == node2.name
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_save_nodes(database):
+def test_save_nodes(memgraph):
     class SimpleNode(Node):
         id: Optional[int] = Field()
         name: Optional[str] = Field()
@@ -63,7 +57,7 @@ def test_save_nodes(database):
     assert node2._id is None
     assert node3._id is None
 
-    database.save_nodes([node1, node2, node3])
+    memgraph.save_nodes([node1, node2, node3])
 
     assert node1._id is not None
     assert node2._id is not None
@@ -73,61 +67,58 @@ def test_save_nodes(database):
     node2.name = "2nd Simple Node"
     node3.name = "3rd Simple Node"
 
-    database.save_nodes([node1, node2, node3])
+    memgraph.save_nodes([node1, node2, node3])
 
     assert node1.name == "1st Simple Node"
     assert node2.name == "2nd Simple Node"
     assert node3.name == "3rd Simple Node"
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_save_relationship(database):
+def test_save_relationship(memgraph):
     class NodeWithKey(Node):
-        id: int = Field(unique=True, db=database)
+        id: int = Field(exists=True, unique=True, index=True, db=memgraph)
         name: Optional[str] = Field()
 
     class SimpleRelationship(Relationship, type="SIMPLE_RELATIONSHIP"):
         pass
 
-    node1 = NodeWithKey(id=1, name="First NodeWithKey").save(database)
-    node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(database)
+    node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
+    node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
     relationship = SimpleRelationship(
         _start_node_id=node1._id,
         _end_node_id=node2._id,
     )
     assert SimpleRelationship.type == relationship._type
     assert SimpleRelationship._type is not None
-    relationship.save(database)
+    relationship.save(memgraph)
     assert relationship._id is not None
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_save_relationship2(database):
+def test_save_relationship2(memgraph):
     class NodeWithKey(Node):
-        id: int = Field(unique=True, db=database)
+        id: int = Field(exists=True, unique=True, index=True, db=memgraph)
         name: Optional[str] = Field()
 
     class SimpleRelationship(Relationship, type="SIMPLE_RELATIONSHIP"):
         pass
 
-    node1 = NodeWithKey(id=1, name="First NodeWithKey").save(database)
-    node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(database)
+    node1 = NodeWithKey(id=1, name="First NodeWithKey").save(memgraph)
+    node2 = NodeWithKey(id=2, name="Second NodeWithKey").save(memgraph)
     relationship = SimpleRelationship(
         _start_node_id=node1._id,
         _end_node_id=node2._id,
     )
     assert SimpleRelationship.type == relationship._type
     assert SimpleRelationship.type is not None
-    relationship.save(database)
+    relationship.save(memgraph)
     assert relationship._id is not None
-    relationship2 = database.load_relationship(relationship)
+    relationship2 = memgraph.load_relationship(relationship)
     assert relationship2._id == relationship._id
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_save_relationships(database):
+def test_save_relationships(memgraph):
     class User(Node):
-        id: int = Field(unique=True, db=database)
+        id: int = Field(exists=True, unique=True, index=True, db=memgraph)
         name: Optional[str] = Field()
 
     class Follows(Relationship, type="FOLLOWS"):
@@ -136,7 +127,7 @@ def test_save_relationships(database):
     node1 = User(id=1, name="Marin")
     node2 = User(id=2, name="Marko")
 
-    database.save_nodes([node1, node2])
+    memgraph.save_nodes([node1, node2])
     assert node1._id is not None
     assert node2._id is not None
 
@@ -152,6 +143,6 @@ def test_save_relationships(database):
     assert Follows.type == relationship1._type
     assert Follows._type is not None
 
-    database.save_relationships([relationship1, relationship2])
+    memgraph.save_relationships([relationship1, relationship2])
     assert relationship1._id is not None
     assert relationship2._id is not None

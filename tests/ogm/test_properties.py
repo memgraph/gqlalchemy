@@ -11,24 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
 from gqlalchemy import Node
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_properties(database):
+def test_properties(memgraph):
     class User(Node):
         id: int
         last_name: str
         _name: str
         _age: int
 
-    user = User(id=1, last_name="Smith", _name="Jane").save(database)
-    User(id=2, last_name="Scott").save(database)
-    loaded_user = database.load_node(user)
+    user = User(id=1, last_name="Smith", _name="Jane").save(memgraph)
+    User(id=2, last_name="Scott").save(memgraph)
+    loaded_user = memgraph.load_node(user)
     loaded_user._age = 24
-    loaded_user2 = database.load_node(User(id=2, last_name="Scott"))
+    loaded_user2 = memgraph.load_node(User(id=2, last_name="Scott"))
 
     assert type(loaded_user) is User
     assert type(loaded_user2) is User

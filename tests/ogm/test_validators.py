@@ -13,33 +13,31 @@
 # limitations under the License.
 
 import pytest
+from gqlalchemy import Field, Node, validator
 from typing import List, Optional
 
-from gqlalchemy import Field, Node, validator
 
-
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_raise_value_error(database):
+def test_raise_value_error(memgraph):
     class User(Node):
-        name: str = Field(unique=True, db=database)
+        name: str = Field(index=True, exists=True, unique=True, db=memgraph)
         age: int = Field()
         friends: Optional[List[str]] = Field()
 
-        @validator("name", allow_reuse=True)
+        @validator("name")
         def name_can_not_be_empty(cls, v):
             if v == "":
                 raise ValueError("name can't be empty")
 
             return v
 
-        @validator("age", allow_reuse=True)
+        @validator("age")
         def age_must_be_greater_than_zero(cls, v):
             if v <= 0:
                 raise ValueError("age must be greater than zero")
 
             return v
 
-        @validator("friends", each_item=True, allow_reuse=True)
+        @validator("friends", each_item=True)
         def friends_must_be_(cls, v):
             if v == "":
                 raise ValueError("name can't be empty")
@@ -47,10 +45,10 @@ def test_raise_value_error(database):
             return v
 
     with pytest.raises(ValueError):
-        User(name="", age=26).save(database)
+        User(name="", age=26).save(memgraph)
 
     with pytest.raises(ValueError):
-        User(name="Kate", age=0).save(database)
+        User(name="Kate", age=0).save(memgraph)
 
     with pytest.raises(ValueError):
-        User(name="Kate", age=26, friends=["Ema", "Ana", ""]).save(database)
+        User(name="Kate", age=26, friends=["Ema", "Ana", ""]).save(memgraph)

@@ -27,20 +27,3 @@ def to_cypher_labels(labels: Union[str, List[str], None]) -> str
 
 Converts labels to a Cypher label definition.
 
-#### to\_cypher\_qm\_arguments
-
-```python
-def to_cypher_qm_arguments(arguments: Optional[Union[str, Tuple[Union[str, int, float]]]]) -> str
-```
-
-Converts query module arguments to a valid Cypher string of query module arguments.
-
-## PropertyVariable Objects
-
-```python
-class PropertyVariable()
-```
-
-Class for support of using a variable as a node or edge property. Used
-to avoid the quotes given to property values.
-

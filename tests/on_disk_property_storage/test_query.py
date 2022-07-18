@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import pytest
-from typing import Optional
 
-from gqlalchemy import Field, Memgraph, Node, Relationship, SQLitePropertyDatabase
+from gqlalchemy import SQLitePropertyDatabase, Memgraph, Node, Field, Relationship
+from typing import Optional
 
 
 memgraph = Memgraph()

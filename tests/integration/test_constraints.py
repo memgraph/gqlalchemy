@@ -14,6 +14,7 @@
 
 from gqlalchemy import Field, MemgraphConstraintExists, MemgraphConstraintUnique, Memgraph, Node
 
+
 db = Memgraph()
 
 

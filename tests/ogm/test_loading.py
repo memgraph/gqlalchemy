@@ -12,38 +12,34 @@
 # limitations under the License.
 
 import pytest
-
+from gqlalchemy import Node
 from pydantic import ValidationError
 
-from gqlalchemy import Node
 
-
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_partial_loading(database):
+def test_partial_loading(memgraph):
     class User(Node):
         id: int
         name: str = None
 
-    User(id=1, name="Jane").save(database)
+    User(id=1, name="Jane").save(memgraph)
 
     with pytest.raises(ValidationError):
-        database.load_node(User(name="Jane"))
+        memgraph.load_node(User(name="Jane"))
 
-    user_by_id = database.load_node(User(id=1))
+    user_by_id = memgraph.load_node(User(id=1))
 
     assert user_by_id.id == 1
     assert user_by_id.name == "Jane"
     assert user_by_id._label == "User"
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_node_loading(database):
+def test_node_loading(memgraph):
     class User(Node):
         id: int
         name: str
 
-    User(id=1, name="Jane").save(database)
-    user_by_name = database.load_node(User(id=1, name="Jane"))
+    User(id=1, name="Jane").save(memgraph)
+    user_by_name = memgraph.load_node(User(id=1, name="Jane"))
 
     assert user_by_name.id == 1
     assert user_by_name.name == "Jane"

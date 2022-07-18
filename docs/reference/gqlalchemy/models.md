@@ -170,7 +170,7 @@ Returns True if the Node has any unique fields.
 #### save
 
 ```python
-def save(db: "Database") -> "Node"
+def save(db: "Memgraph") -> "Node"
 ```
 
 Saves node to Memgraph.
@@ -184,7 +184,7 @@ Null properties are ignored.
 #### load
 
 ```python
-def load(db: "Database") -> "Node"
+def load(db: "Memgraph") -> "Node"
 ```
 
 Loads a node from Memgraph.
@@ -221,7 +221,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass)
 #### save
 
 ```python
-def save(db: "Database") -> "Relationship"
+def save(db: "Memgraph") -> "Relationship"
 ```
 
 Saves a relationship to Memgraph.
@@ -234,7 +234,7 @@ relationship, use `load_relationship` first.
 #### load
 
 ```python
-def load(db: "Database") -> "Relationship"
+def load(db: "Memgraph") -> "Relationship"
 ```
 
 Returns a relationship loaded from Memgraph.

@@ -12,28 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import platform
-from abc import ABC, abstractmethod
-from enum import Enum
-from dataclasses import dataclass, field
 from string import Template
-from typing import List, Dict, Any, Optional, Union
 
-import adlfs
-import pyarrow.dataset as ds
-from pyarrow import fs
-from dacite import from_dict
-
-from gqlalchemy import Memgraph
-from gqlalchemy.models import (
+from . import Memgraph
+from .query_builder import QueryBuilder, Unwind
+from .models import (
     MemgraphIndex,
     MemgraphTrigger,
     TriggerEventObject,
     TriggerEventType,
     TriggerExecutionPhase,
 )
-from gqlalchemy.query_builders.memgraph_query_builder import Operator, QueryBuilder, Unwind
 
+from abc import ABC, abstractmethod
+from enum import Enum
+from dataclasses import dataclass, field
+from dacite import from_dict
+from pyarrow import fs
+from typing import List, Dict, Any, Optional, Union
+import pyarrow.dataset as ds
+import adlfs
+import platform
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
@@ -53,15 +52,15 @@ IPC_EXTENSION = "ipc"
 FEATHER_EXTENSION = "feather"
 ARROW_EXTENSION = "arrow"
 
-BLOB_ACCOUNT_NAME = "account_name"
-BLOB_ACCOUNT_KEY = "account_key"
-BLOB_SAS_TOKEN = "sas_token"
+BLOB_ACCOUNT_NAME = "blob_account_name"
+BLOB_ACCOUNT_KEY = "blob_account_key"
+BLOB_SAS_TOKEN = "blob_sas_token"
 BLOB_CONTAINER_NAME_KEY = "container_name"
 
-S3_REGION = "region"
-S3_ACCESS_KEY = "access_key"
-S3_SECRET_KEY = "secret_key"
-S3_SESSION_TOKEN = "session_token"
+S3_REGION = "s3_region"
+S3_ACCESS_KEY = "s3_access_key"
+S3_SECRET_KEY = "s3_secret_key"
+S3_SESSION_TOKEN = "s3_session_token"
 S3_BUCKET_NAME_KEY = "bucket_name"
 
 LOCAL_STORAGE_PATH = "local_storage_path"
@@ -210,10 +209,10 @@ class S3FileSystemHandler(FileSystemHandler):
             bucket_name: Name of the bucket on S3 from which to read the data
 
         Kwargs:
-            access_key: S3 access key.
-            secret_key: S3 secret key.
-            region: S3 region.
-            session_token: S3 session token (Optional).
+            s3_access_key: S3 access key.
+            s3_secret_key: S3 secret key.
+            s3_region: S3 region.
+            s3_session_token: S3 session token (Optional).
 
         Raises:
             KeyError: kwargs doesn't contain necessary fields.
@@ -245,9 +244,9 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
             container_name: Name of the Blob container storing data.
 
         Kwargs:
-            account_name: Account name from Azure Blob.
-            account_key: Account key for Azure Blob (Optional - if using sas_token).
-            sas_token: Shared access signature token for authentification (Optional).
+            blob_account_name: Account name from Azure Blob.
+            blob_account_key: Account key for Azure Blob (Optional - if using sas_token).
+            blob_sas_token: Shared access signature token for authentification (Optional).
 
         Raises:
             KeyError: kwargs doesn't contain necessary fields.
@@ -383,20 +382,18 @@ class TableToGraphImporter:
     _TriggerQueryTemplate = Template(
         Unwind(list_expression="createdVertices", variable="$node_a")
         .with_(results={"$node_a": ""})
-        .where(item="$node_a", operator=Operator.LABEL_FILTER, expression="$label_2")
-        .match()
-        .node(labels="$label_1", variable="$node_b")
-        .where(item="$node_b.$property_1", operator=Operator.EQUAL, expression="$node_a.$property_2")
+        .where(item="$node_a:$label_2", operator="MATCH", expression="($node_b:$label_1)")
+        .where(item="$node_b.$property_1", operator="=", expression="$node_a.$property_2")
         .create()
         .node(variable="$from_node")
-        .to(relationship_type="$relationship_type")
+        .to(edge_label="$edge_type")
         .node(variable="$to_node")
         .construct_query()
     )
 
     @staticmethod
     def _create_trigger_cypher_query(
-        label1: str, label2: str, property1: str, property2: str, relationship_type: str, from_entity: bool
+        label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool
     ) -> str:
         """Creates a Cypher query for the translation trigger.
 
@@ -405,7 +402,7 @@ class TableToGraphImporter:
             label2: Label of the second node.
             property1: Property of the first node.
             property2: Property of the second node.
-            relationship_type: Label for the relationship that the trigger creates.
+            edge_type: Label for the relationship that the trigger creates.
             from_entity: Indicate whether the relationship goes from or to the first entity.
         """
         from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
@@ -419,7 +416,7 @@ class TableToGraphImporter:
             property_2=property2,
             from_node=from_node,
             to_node=to_node,
-            relationship_type=relationship_type,
+            edge_type=edge_type,
         )
 
     def __init__(
@@ -500,7 +497,7 @@ class TableToGraphImporter:
                 property2 = self._name_mapper.get_property_name(
                     collection_name=one_to_many_mapping.table_name, column_name=mapping.foreign_key.reference_key
                 )
-                relationship_type = mapping.label
+                edge_type = mapping.label
                 from_entity = mapping.from_entity
 
                 self._create_trigger(
@@ -508,7 +505,7 @@ class TableToGraphImporter:
                     label2=label2,
                     property1=property1,
                     property2=property2,
-                    relationship_type=relationship_type,
+                    edge_type=edge_type,
                     from_entity=from_entity,
                 )
                 self._create_trigger(
@@ -516,12 +513,12 @@ class TableToGraphImporter:
                     label2=label1,
                     property1=property2,
                     property2=property1,
-                    relationship_type=relationship_type,
+                    edge_type=edge_type,
                     from_entity=not from_entity,
                 )
 
     def _create_trigger(
-        self, label1: str, label2: str, property1: str, property2: str, relationship_type: str, from_entity: bool
+        self, label1: str, label2: str, property1: str, property2: str, edge_type: str, from_entity: bool
     ) -> None:
         """Creates a translation trigger in Memgraph.
 
@@ -530,7 +527,7 @@ class TableToGraphImporter:
             label2: Label of the second node.
             property1: Property of the first node.
             property2: Property of the second node.
-            relationship_type: Label for the relationship that the trigger creates.
+            edge_type: Label for the relationship that the trigger creates.
             from_entity: Indicate whether the relationship goes from or to the first entity.
         """
         trigger_name = "__".join([label1, property1, label2, property2])
@@ -541,7 +538,7 @@ class TableToGraphImporter:
             event_object=TriggerEventObject.NODE,
             execution_phase=TriggerExecutionPhase.BEFORE,
             statement=TableToGraphImporter._create_trigger_cypher_query(
-                label1, label2, property1, property2, relationship_type, from_entity
+                label1, label2, property1, property2, edge_type, from_entity
             ),
         )
 

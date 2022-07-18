@@ -21,7 +21,7 @@ import networkx as nx
 
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex
-from gqlalchemy.utilities import NetworkXCypherConfig, to_cypher_labels, to_cypher_properties, to_cypher_value
+from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value, NetworkXCypherConfig
 
 __all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
 

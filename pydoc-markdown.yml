@@ -3,22 +3,11 @@ loaders:
     search_path: [.]
     modules:
       - gqlalchemy.disk_storage
-      - gqlalchemy.instance_runner
-      - gqlalchemy.loaders
+      - gqlalchemy.memgraph
       - gqlalchemy.models
+      - gqlalchemy.query_builder
       - gqlalchemy.transformations
       - gqlalchemy.utilities
-      - gqlalchemy.graph_algorithms.integrated_algorithms
-      - gqlalchemy.graph_algorithms.query_builder
-      - gqlalchemy.graph_algorithms.query_modules
-      - gqlalchemy.query_builders.declarative_base
-      - gqlalchemy.query_builders.memgraph_query_builder
-      - gqlalchemy.query_builders.neo4j_query_builder
-      - gqlalchemy.query_modules.push_streams.kafka
-      - gqlalchemy.query_modules.push_streams.power_bi
-      - gqlalchemy.vendors.database_client
-      - gqlalchemy.vendors.memgraph
-      - gqlalchemy.vendors.neo4j
 processors:
   - type: filter
     skip_empty_modules: true
