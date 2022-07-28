@@ -32,8 +32,6 @@ To install `gqlalchemy`, simply run the following command:
 pip install gqlalchemy
 ```
 
-If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through pip.
-
 ## Build & Test
 
 The project uses [Poetry](https://python-poetry.org/) to build the GQLAlchemy Python library. To build and run tests, execute the following command:
