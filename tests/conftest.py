@@ -76,14 +76,14 @@ def memgraph_query_builder() -> Tuple[Memgraph, QueryBuilder]:
 @pytest.fixture
 def neo4j_query_builder() -> Tuple[Neo4j, Neo4jQueryBuilder]:
     neo4j = Neo4j(port="7688")
-    neo4j.ensure_constraints([])
     neo4j.ensure_indexes([])
+    neo4j.ensure_constraints([])
     neo4j.drop_database()
 
     yield (neo4j, Neo4jQueryBuilder(neo4j))
 
-    neo4j.ensure_constraints([])
     neo4j.ensure_indexes([])
+    neo4j.ensure_constraints([])
 
 
 @pytest.fixture
