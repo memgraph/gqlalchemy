@@ -11,11 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 import warnings
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime, date, time, timedelta
+from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Extra, Field, PrivateAttr  # noqa F401
@@ -29,6 +30,32 @@ from gqlalchemy.exceptions import (
 
 # Suppress the warning GQLAlchemySubclassNotFoundWarning
 IGNORE_SUBCLASSNOTFOUNDWARNING = False
+
+
+class DatetimeKeywords(Enum):
+    DURATION = "duration"
+    LOCALTIME = "localTime"
+    LOCALDATETIME = "localDateTime"
+    DATE = "date"
+
+
+datetimeKwMapping = {
+    timedelta: DatetimeKeywords.DURATION.value,
+    time: DatetimeKeywords.LOCALTIME.value,
+    datetime: DatetimeKeywords.LOCALDATETIME.value,
+    date: DatetimeKeywords.DATE.value,
+}
+
+
+def _format_timedelta(duration: timedelta) -> str:
+    days = int(duration.total_seconds() // 86400)
+    remainder_sec = duration.total_seconds() - days * 86400
+    hours = int(remainder_sec // 3600)
+    remainder_sec -= hours * 3600
+    minutes = int(remainder_sec // 60)
+    remainder_sec -= minutes * 60
+
+    return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
 
 
 class TriggerEventType:
@@ -331,28 +358,32 @@ class GraphObject(BaseModel):
         """
         return cls._convert_to_real_type_(obj)
 
-    def escape_value(self, value: Union[None, bool, int, float, str, list, dict, datetime.datetime]) -> str:
+    def escape_value(
+        self, value: Union[None, bool, int, float, str, list, dict, datetime, timedelta, date, time]
+    ) -> str:
+        value_type = type(value)
+
         if value is None:
             "Null"
-        elif isinstance(value, bool):
+        elif value_type == bool:
             return repr(value)
-        elif isinstance(value, int):
+        elif value_type == int:
             return repr(value)
-        elif isinstance(value, float):
+        elif value_type == float:
             return repr(value)
-        elif isinstance(value, str):
+        elif value_type == str:
             return repr(value)
-        elif isinstance(value, list):
+        elif value_type == list:
             return "[" + ", ".join(self.escape_value(val, True) for val in value) + "]"
-        elif isinstance(value, dict):
+        elif value_type == dict:
             return "{" + ", ".join(f"{val}: {self.escape_value(val, True)}" for key, val in value.items()) + "}"
-        elif isinstance(value, datetime.datetime):
-            return value.isoformat()
+        if isinstance(value, (timedelta, time, datetime, date)):
+            return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
         else:
             raise GQLAlchemyError(
                 f"Unsupported value data type: {type(value)}."
                 + " Memgraph supports the following data types:"
-                + " None, bool, int, float, str, list, dict, datetime.datetime."
+                + " None, bool, int, float, str, list, dict, datetime."
             )
 
     def _get_cypher_field_assignment_block(self, variable_name: str, operator: str) -> str:
@@ -401,7 +432,7 @@ class GraphObject(BaseModel):
             attributes = self.__fields__[field].field_info.extra
             value = getattr(self, field)
             if value is not None and not attributes.get("on_disk", False):
-                cypher_set_properties.append(f" SET {variable_name}.{field} = {repr(value)}")
+                cypher_set_properties.append(f" SET {variable_name}.{field} = {self.escape_value(value)}")
 
         return " " + " ".join(cypher_set_properties) + " "
 

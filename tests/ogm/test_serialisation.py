@@ -13,6 +13,7 @@
 
 import pytest
 
+from datetime import datetime
 from typing import Optional
 
 from gqlalchemy import Field, Node, Relationship
@@ -155,3 +156,12 @@ def test_save_relationships(database):
     database.save_relationships([relationship1, relationship2])
     assert relationship1._id is not None
     assert relationship2._id is not None
+
+
+def test_save_node_with_datetime_property(memgraph):
+    class User(Node):
+        id: str = Field(index=True, unique=True, db=memgraph)
+        name: str = Field()
+        timestamp: datetime = Field()
+
+    User(id="1", name="myUser", timestamp=datetime.now()).save(memgraph)
