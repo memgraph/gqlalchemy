@@ -161,7 +161,7 @@ def test_save_relationships(database):
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
 def test_save_node_with_datetime_property(database):
     class User(Node):
-        id: str = Field(index=True, unique=True, db=database)
+        id: str = Field(index=True, db=database)
         name: str = Field()
         timestamp: datetime = Field()
 
