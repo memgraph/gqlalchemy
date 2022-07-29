@@ -158,12 +158,11 @@ def test_save_relationships(database):
     assert relationship2._id is not None
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_save_node_with_datetime_property(database):
+def test_save_node_with_datetime_property(memgraph):
     class User(Node):
-        id: str = Field(index=True, db=database)
+        id: str = Field(index=True, db=memgraph)
         name: str = Field()
         timestamp: datetime = Field()
 
-    user = User(id="1", name="myUser", timestamp=datetime.now()).save(database)
+    user = User(id="1", name="myUser", timestamp=datetime.now()).save(memgraph)
     assert user._id is not None
