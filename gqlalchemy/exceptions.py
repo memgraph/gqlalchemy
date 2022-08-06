@@ -232,7 +232,7 @@ def connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff:
             except Exception as ex:
                 time.sleep(current_delay)
                 if time.perf_counter() - start_time >= timeout:
-                    raise GQLAlchemyWaitForConnectionError(ex)
+                    raise GQLAlchemyWaitForConnectionError from ex
 
                 current_delay *= backoff
 
