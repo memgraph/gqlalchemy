@@ -341,7 +341,7 @@ class GraphObject(BaseModel):
         elif isinstance(value, float):
             return repr(value)
         elif isinstance(value, str):
-            return repr(value)
+            return repr(value) if value.isprintable() else rf"'{value}'"
         elif isinstance(value, list):
             return "[" + ", ".join(self.escape_value(val, True) for val in value) + "]"
         elif isinstance(value, dict):
@@ -401,7 +401,7 @@ class GraphObject(BaseModel):
             attributes = self.__fields__[field].field_info.extra
             value = getattr(self, field)
             if value is not None and not attributes.get("on_disk", False):
-                cypher_set_properties.append(f" SET {variable_name}.{field} = {repr(value)}")
+                cypher_set_properties.append(f" SET {variable_name}.{field} = {self.escape_value(value)}")
 
         return " " + " ".join(cypher_set_properties) + " "
 
@@ -542,7 +542,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
             if "unique" in attrs:
                 value = getattr(self, field)
                 if value is not None:
-                    cypher_unique_fields.append(f"{variable_name}.{field} = {repr(value)}")
+                    cypher_unique_fields.append(f"{variable_name}.{field} = {self.escape_value(value)}")
 
         return " " + " OR ".join(cypher_unique_fields) + " "
 
