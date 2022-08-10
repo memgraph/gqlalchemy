@@ -243,15 +243,3 @@ def test_node_multiple_inheritence(database):
     assert admin.labels == {"AdminX", "AdminY", "User", "UserX", "UserOne", "UserOneX", "UserTwoX"}
     assert admin._label == "AdminX:AdminY:User:UserOne:UserOneX:UserTwoX:UserX"
     assert admin._labels == {"AdminX", "AdminY", "User", "UserX", "UserOne", "UserOneX", "UserTwoX"}
-
-
-def test_unicode_support(memgraph):
-    class Test(Node):
-        name: str = Field()
-        last_name: str = Field()
-
-    Test(name="\x13", last_name="\u0013").save(memgraph)
-    Test(name="\u0013", last_name="\\x13").save(memgraph)
-    Test(name="this is an example\u0013some text here", last_name="smith").save(memgraph)
-    Test(name="jane", last_name="doe").save(memgraph)
-    Test(name="jack", last_name="\u0013").save(memgraph)
