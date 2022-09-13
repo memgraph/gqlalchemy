@@ -371,9 +371,9 @@ class GraphObject(BaseModel):
             return repr(value)
         elif value_type == float:
             return repr(value)
-        elif value_type == str:
-            return repr(value)
-        elif value_type == list:
+        elif isinstance(value, str):
+            return repr(value) if value.isprintable() else rf"'{value}'"
+        elif isinstance(value, list):
             return "[" + ", ".join(self.escape_value(val, True) for val in value) + "]"
         elif value_type == dict:
             return "{" + ", ".join(f"{val}: {self.escape_value(val, True)}" for key, val in value.items()) + "}"
@@ -573,7 +573,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
             if "unique" in attrs:
                 value = getattr(self, field)
                 if value is not None:
-                    cypher_unique_fields.append(f"{variable_name}.{field} = {repr(value)}")
+                    cypher_unique_fields.append(f"{variable_name}.{field} = {self.escape_value(value)}")
 
         return " " + " OR ".join(cypher_unique_fields) + " "
 
