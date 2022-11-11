@@ -27,7 +27,7 @@ from gqlalchemy.query_builders.memgraph_query_builder import (
     Unwind,
     With,
 )
-from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
+from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath, AllShortestPath
 from gqlalchemy.utilities import PropertyVariable
 
 
@@ -244,7 +244,7 @@ def test_dfs_bounds(lower_bound, upper_bound, expected_query):
     mock.assert_called_with(expected_query)
 
 
-def test_wshortest():
+def test_wShortest():
     weighted_shortest = WeightedShortestPath(weight_property="r.weight")
 
     query_builder = (
@@ -299,6 +299,68 @@ def test_wShortest_filter_label():
     )
 
     expected_query = " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum (r, n | r.x > 12 AND n.y < 3)]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_allShortest():
+    all_shortest = AllShortestPath(weight_property="r.weight")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=all_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *ALLSHORTEST (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_allShortest_bound():
+    all_shortest = AllShortestPath(upper_bound=10, weight_property="weight")
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=all_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *ALLSHORTEST 10 (r, n | r.weight) total_weight]-(b {id: 882}) RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_allShortest_filter_label():
+    all_shortest = AllShortestPath(
+        upper_bound=10, weight_property="weight", condition="r.x > 12 AND n.y < 3", total_weight_var="weight_sum"
+    )
+
+    query_builder = (
+        QueryBuilder()
+        .match()
+        .node(variable="a", id=723)
+        .to(variable="r", directed=False, algorithm=all_shortest)
+        .node(variable="b", id=882)
+        .return_()
+    )
+
+    expected_query = " MATCH (a {id: 723})-[r *ALLSHORTEST 10 (r, n | r.weight) weight_sum (r, n | r.x > 12 AND n.y < 3)]-(b {id: 882}) RETURN * "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
