@@ -147,7 +147,7 @@ Read all about it in [table to graph importer how-to guide](https://memgraph.com
 
 **Make a custom file system importer**
 
-If you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by extending abstract classes `FileSystemHandler` and `DataLoader`, respectively.
+I you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by extending abstract classes `FileSystemHandler` and `DataLoader`, respectively.
 
 Read all about it in [custom file system importer how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/loaders/custom-file-system-importer).
 
