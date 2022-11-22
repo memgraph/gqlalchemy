@@ -46,7 +46,7 @@ jobs:
           sleep 1 # Wait for Memgraph a bit.
       - name: Install Neo4j
         run: |
-          docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:{{ env.NEO4J_VERSION }}
+          docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:${{ env.NEO4J_VERSION }}
       - name: Test project
         run: |
           poetry install
@@ -95,8 +95,8 @@ jobs:
         shell: wsl-bash {0} # root shell
         run: |
           curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | apt-key add -
-          add-apt-repository "deb https://debian.neo4j.com stable {{ env.NEO4J_VERSION }}"
-          sudo apt-get -y install neo4j=1:{{ env.NEO4J_VERSION }}
+          add-apt-repository "deb https://debian.neo4j.com stable ${{ env.NEO4J_VERSION }}"
+          sudo apt-get -y install neo4j=1:${{ env.NEO4J_VERSION }}
           neo4j-admin set-initial-password test
           mkdir -p /mnt/c/neo4j/${{ matrix.python-version }}
           sed -i 's/#dbms.connector.bolt.listen_address=:7687/dbms.connector.bolt.listen_address=:7688/g' /etc/neo4j/neo4j.conf
