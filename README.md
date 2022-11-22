@@ -120,16 +120,6 @@ You can create and start Kafka or Pulsar stream using GQLAlchemy.
 
 **Kafka stream** 
 ```python
-from gqlalchemy import MemgraphKafkaStream
-
-stream = MemgraphKafkaStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", bootstrap_servers="localhost:9093")
-db.create_stream(stream)
-db.start_stream(stream)
-```
-
-
-**Pulsar stream**
-```python
 from gqlalchemy import MemgraphPulsarStream
 
 stream = MemgraphPulsarStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", service_url="localhost:6650")
@@ -137,6 +127,14 @@ db.create_stream(stream)
 db.start_stream(stream)
 ```
 
+**Pulsar stream**
+```python
+from gqlalchemy import MemgraphKafkaStream
+
+stream = MemgraphKafkaStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", bootstrap_servers="localhost:9093")
+db.create_stream(stream)
+db.start_stream(stream)
+```
 </details>
 
 <details>
