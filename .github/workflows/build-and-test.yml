@@ -111,7 +111,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Test project
         run: |
-          poetry install
+          poetry -vvv install
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Save Memgraph Logs
         uses: actions/upload-artifact@v3
