@@ -48,3 +48,31 @@ def test_properties(database):
     assert loaded_user2._label == "User"
     assert user._name == "Jane"
     assert loaded_user._age == 24
+
+
+def test_unicode_support(memgraph):
+    class Test(Node):
+        name: str
+        last_name: str
+
+    user1 = Test(name="\x13", last_name="\u0013").save(memgraph)
+    user2 = Test(name="\u0013", last_name="\\x13").save(memgraph)
+    user3 = Test(name="this is an example\u0013some text here", last_name="smith").save(memgraph)
+    user4 = Test(name="jane", last_name="doe").save(memgraph)
+    user5 = Test(name="jack", last_name="\u0013").save(memgraph)
+
+    loaded_user1 = memgraph.load_node(user1)
+    loaded_user2 = memgraph.load_node(user2)
+    loaded_user3 = memgraph.load_node(user3)
+    loaded_user4 = memgraph.load_node(user4)
+    loaded_user5 = memgraph.load_node(user5)
+
+    assert loaded_user1.name == "\u0013"
+    assert loaded_user1.last_name == "\u0013"
+    assert loaded_user2.name == "\u0013"
+    assert loaded_user2.last_name == "\\x13"
+    assert loaded_user3.name == "this is an example\u0013some text here"
+    assert loaded_user4.name == "jane"
+    assert loaded_user4.last_name == "doe"
+    assert loaded_user5.name == "jack"
+    assert loaded_user5.last_name == "\u0013"
