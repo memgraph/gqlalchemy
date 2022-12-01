@@ -32,6 +32,8 @@ To install `gqlalchemy`, simply run the following command:
 pip install gqlalchemy
 ```
 
+If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through pip.
+
 ## Build & Test
 
 The project uses [Poetry](https://python-poetry.org/) to build the GQLAlchemy Python library. To build and run tests, execute the following command:
@@ -118,6 +120,16 @@ You can create and start Kafka or Pulsar stream using GQLAlchemy.
 
 **Kafka stream** 
 ```python
+from gqlalchemy import MemgraphKafkaStream
+
+stream = MemgraphKafkaStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", bootstrap_servers="localhost:9093")
+db.create_stream(stream)
+db.start_stream(stream)
+```
+
+
+**Pulsar stream**
+```python
 from gqlalchemy import MemgraphPulsarStream
 
 stream = MemgraphPulsarStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", service_url="localhost:6650")
@@ -125,14 +137,6 @@ db.create_stream(stream)
 db.start_stream(stream)
 ```
 
-**Pulsar stream**
-```python
-from gqlalchemy import MemgraphKafkaStream
-
-stream = MemgraphKafkaStream(name="ratings_stream", topics=["ratings"], transform="movielens.rating", bootstrap_servers="localhost:9093")
-db.create_stream(stream)
-db.start_stream(stream)
-```
 </details>
 
 <details>
@@ -143,13 +147,13 @@ db.start_stream(stream)
 
 You can translate table data from a file to graph data and import it to Memgraph. Currently, we support reading of CSV, Parquet, ORC and IPC/Feather/Arrow file formats via the PyArrow package.
 
-Read all about it in [table to graph importer how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/loaders/table-to-graph-importer).
+Read all about it in [table to graph importer how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/table-to-graph-importer).
 
 **Make a custom file system importer**
 
 If you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by extending abstract classes `FileSystemHandler` and `DataLoader`, respectively.
 
-Read all about it in [custom file system importer how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/loaders/custom-file-system-importer).
+Read all about it in [custom file system importer how-to guide](https://memgraph.com/docs/gqlalchemy/how-to-guides/custom-file-system-importer).
 
 </details>
 

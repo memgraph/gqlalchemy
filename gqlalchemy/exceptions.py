@@ -204,7 +204,7 @@ def database_error_handler(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            raise GQLAlchemyDatabaseError(e)
+            raise GQLAlchemyDatabaseError(e) from e
 
     return inner_function
 
@@ -232,7 +232,7 @@ def connection_handler(func, delay: float = 0.01, timeout: float = 5.0, backoff:
             except Exception as ex:
                 time.sleep(current_delay)
                 if time.perf_counter() - start_time >= timeout:
-                    raise GQLAlchemyWaitForConnectionError(ex)
+                    raise GQLAlchemyWaitForConnectionError from ex
 
                 current_delay *= backoff
 
