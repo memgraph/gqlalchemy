@@ -27,7 +27,12 @@ from gqlalchemy.query_builders.memgraph_query_builder import (
     Unwind,
     With,
 )
-from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath, AllShortestPath
+from gqlalchemy.graph_algorithms.integrated_algorithms import (
+    BreadthFirstSearch,
+    DepthFirstSearch,
+    WeightedShortestPath,
+    AllShortestPath,
+)
 from gqlalchemy.utilities import PropertyVariable
 
 
