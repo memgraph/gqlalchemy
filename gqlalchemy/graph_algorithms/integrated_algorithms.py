@@ -203,9 +203,11 @@ class WeightedShortestPath(IntegratedAlgorithm):
 
         return algo_str
 
+
 class AllShortestPath(IntegratedAlgorithm):
     """Build a Djikstra ALL shortest paths call for a Cypher query.
-    The all weighted shortest paths algorithm can """
+    The all weighted shortest paths algorithm can"""
+
     """Build a Djikstra shortest path call for a Cypher query
     The weighted shortest path algorithm can be called in Memgraph with Cypher
     queries such as:
