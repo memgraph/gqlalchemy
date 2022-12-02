@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import math
+import numpy as np
+
 from datetime import datetime, date, time, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -88,12 +90,15 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value_type in [int, float, bool]:
         return str(value)
 
-    if value_type in [list, set, tuple]:
+    if value_type in [list, set, tuple, np.ndarray]:
         return f"[{', '.join(map(to_cypher_value, value))}]"
 
     if value_type == dict:
         lines = ", ".join(f"{k}: {to_cypher_value(v)}" for k, v in value.items())
         return f"{{{lines}}}"
+
+    if isinstance(value, np.generic):
+        return to_cypher_value(value.item())
 
     if value is None:
         return "null"
