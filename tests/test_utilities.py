@@ -14,6 +14,7 @@
 
 import datetime
 import math
+import numpy as np
 import pytest
 
 from gqlalchemy.utilities import (
@@ -37,6 +38,9 @@ from gqlalchemy.utilities import (
         ({"k1": 123, "k2": {"subkey1": "abc"}}, "{k1: 123, k2: {subkey1: 'abc'}}"),
         (None, "null"),
         (True, "True"),
+        (np.array([1, 2, 3]), "[1, 2, 3]"),
+        (np.array(["1", "2", "3"]), "['1', '2', '3']"),
+        (np.array([[1, 2], [3, 4], [4, 5]]), "[[1, 2], [3, 4], [4, 5]]"),
     ],
 )
 def test_to_cypher_value(value, cypher_value):
