@@ -70,7 +70,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     value_type = type(value)
 
-    if value_type == PropertyVariable:
+    if value_type == CypherVariable:
         return str(value)
 
     if isinstance(value, (timedelta, time, datetime, date)):
@@ -134,9 +134,9 @@ def to_cypher_qm_arguments(arguments: Optional[Union[str, Tuple[Union[str, int, 
     return arguments
 
 
-class PropertyVariable:
-    """Class for support of using a variable as a node or edge property. Used
-    to avoid the quotes given to property values.
+class CypherVariable:
+    """Class for support of using a variable as value in Cypher. Used
+    to avoid the quotes given to property values and query module arguments.
     """
 
     def __init__(self, name: str) -> None:

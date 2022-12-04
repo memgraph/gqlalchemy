@@ -25,7 +25,7 @@ from gqlalchemy.query_builders.neo4j_query_builder import (
     Unwind,
     With,
 )
-from gqlalchemy.utilities import PropertyVariable
+from gqlalchemy.utilities import CypherVariable
 
 
 class TestNeo4jBaseClasses:
@@ -50,7 +50,7 @@ class TestNeo4jBaseClasses:
         mock.assert_called_with(expected_query)
 
     def test_base_class_foreach(self, neo4j):
-        update_clause = Neo4jQueryBuilder(connection=neo4j).create().node(variable="n", id=PropertyVariable(name="i"))
+        update_clause = Neo4jQueryBuilder(connection=neo4j).create().node(variable="n", id=CypherVariable(name="i"))
         query_builder = Foreach(
             variable="i", expression="[1, 2, 3]", update_clauses=update_clause.construct_query(), connection=neo4j
         )

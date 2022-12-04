@@ -28,7 +28,7 @@ from gqlalchemy.query_builders.memgraph_query_builder import (
     With,
 )
 from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
-from gqlalchemy.utilities import PropertyVariable
+from gqlalchemy.utilities import CypherVariable
 
 
 def test_invalid_match_chain_throws_exception():
@@ -326,7 +326,7 @@ class TestMemgraphBaseClasses:
         mock.assert_called_with(expected_query)
 
     def test_base_class_foreach(self, memgraph):
-        update_clause = Create().node(variable="n", id=PropertyVariable(name="i"))
+        update_clause = Create().node(variable="n", id=CypherVariable(name="i"))
         query_builder = Foreach(variable="i", expression="[1, 2, 3]", update_clauses=update_clause.construct_query())
         expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
 
