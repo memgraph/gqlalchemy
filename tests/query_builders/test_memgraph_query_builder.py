@@ -52,6 +52,36 @@ def test_load_csv_no_header(memgraph):
     mock.assert_called_with(expected_query)
 
 
+def test_call_subgraph_with_labels(memgraph):
+    label = "LABEL"
+    types = ["TYPE1", "TYPE2"]
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_label=label, relationship_types=types)
+    expected_query = " MATCH p=(:LABEL)-[:TYPE1 | :TYPE2]->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+@pytest.mark.parametrize(
+    "subgraph_query, expected_query",
+    [
+        (
+            "MATCH path=(n:LABEL1)-[:TYPE1]->(m:LABEL2)",
+            " MATCH path=(n:LABEL1)-[:TYPE1]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') ",
+        ),
+        (
+            "MATCH (n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2)",
+            " MATCH p=(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') ",
+        ),
+    ],
+)
+def test_call_subgraph_with_query(memgraph, subgraph_query, expected_query):
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", subgraph_query=subgraph_query)
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
 def test_call_procedure_pagerank(memgraph):
     query_builder = (
         QueryBuilder()
