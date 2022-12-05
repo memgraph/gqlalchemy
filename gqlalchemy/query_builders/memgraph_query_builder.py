@@ -122,7 +122,7 @@ class QueryBuilder(DeclarativeBase):
         """Override of base class method to support Memgraph's subgraph functionality.
 
         Method can be called with node labels and relationship types, both being optional, which are used to construct
-        a subgraph, or if neither is provided, a subgraph query is used, which can be passed as a string representing a 
+        a subgraph, or if neither is provided, a subgraph query is used, which can be passed as a string representing a
         Cypher query defining the MATCH clause which selects the nodes and relationships to use.
 
         Args:
@@ -183,6 +183,6 @@ class ProjectPartialQuery(PartialQuery):
         And appends the WITH clause."""
         query = self.query
         location = query.index("(")
-        if query[location-1] != "=":
+        if query[location - 1] != "=":
             query = query[:location] + "p=" + query[location:]
         return f" {query} WITH project(p) AS graph "
