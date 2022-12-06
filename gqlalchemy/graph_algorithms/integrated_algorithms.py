@@ -73,10 +73,10 @@ class BreadthFirstSearch(IntegratedAlgorithm):
     ) -> None:
         """
         Args:
-            lower_bound: Lower bound for path depth. Defaults to `None`.
-            upper_bound: Upper bound for path depth. Defaults to `None`.
+            lower_bound: Lower bound for path depth.
+            upper_bound: Upper bound for path depth.
             condition: Filter through nodes and relationships that pass this
-            condition. Defaults to `None`.
+            condition.
         """
         super().__init__()
         self.lower_bound = str(lower_bound) if lower_bound is not None else ""
@@ -124,10 +124,10 @@ class DepthFirstSearch(IntegratedAlgorithm):
     ) -> None:
         """
         Args:
-            lower_bound: Lower bound for path depth. Defaults to None.
-            upper_bound: Upper bound for path depth. Defaults to None.
+            lower_bound: Lower bound for path depth.
+            upper_bound: Upper bound for path depth.
             condition: Filter through nodes and relationships that pass this
-            condition. Defaults to None.
+            condition.
         """
         super().__init__()
         self.lower_bound = str(lower_bound) if lower_bound is not None else ""
@@ -158,6 +158,7 @@ class DepthFirstSearch(IntegratedAlgorithm):
 
 class WeightedShortestPath(IntegratedAlgorithm):
     """Build a Djikstra shortest path call for a Cypher query
+
     The weighted shortest path algorithm can be called in Memgraph with Cypher
     queries such as:
     " MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum
@@ -176,19 +177,18 @@ class WeightedShortestPath(IntegratedAlgorithm):
     ) -> None:
         """
         Args:
-            upper_bound: Upper bound for path depth. Defaults to None.
+            upper_bound: Upper bound for path depth.
             condition: Filter through nodes and relationships that pass this
-            condition. Defaults to None.
+            condition.
             total_weight_var: Variable defined as the sum of all weights on
-            path being returned. Defaults to "total_weight".
-            weight_property: property being used as weight. Defaults to
-            "r.weight".
+            path being returned.
+            weight_property: property being used as weight.
         """
         super().__init__()
-        self.weight_property = f"r.{weight_property}" if "." not in weight_property else weight_property
+        self.weight_property = weight_property if "." in weight_property else f"r.{weight_property}"
         self.total_weight_var = total_weight_var
         self.condition = condition
-        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
+        self.upper_bound = "" if upper_bound is None else str(upper_bound)
 
     def __str__(self) -> str:
         algo_str = WSHORTEST_EXPANSION
@@ -205,10 +205,8 @@ class WeightedShortestPath(IntegratedAlgorithm):
 
 
 class AllShortestPath(IntegratedAlgorithm):
-    """Build a Djikstra ALL shortest paths call for a Cypher query.
-    The all weighted shortest paths algorithm can"""
-
     """Build a Djikstra shortest path call for a Cypher query
+
     The weighted shortest path algorithm can be called in Memgraph with Cypher
     queries such as:
     " MATCH (a {id: 723})-[r *ALLSHORTEST 10 (r, n | r.weight) total_weight
@@ -227,19 +225,18 @@ class AllShortestPath(IntegratedAlgorithm):
     ) -> None:
         """
         Args:
-            upper_bound: Upper bound for path depth. Defaults to None.
+            upper_bound: Upper bound for path depth.
             condition: Filter through nodes and relationships that pass this
-            condition. Defaults to None.
+            condition.
             total_weight_var: Variable defined as the sum of all weights on
-            path being returned. Defaults to "total_weight".
-            weight_property: property being used as weight. Defaults to
-            "r.weight".
+            path being returned.
+            weight_property: Property being used as weight.
         """
         super().__init__()
-        self.weight_property = f"r.{weight_property}" if "." not in weight_property else weight_property
+        self.weight_property = weight_property if "." in weight_property else f"r.{weight_property}"
         self.total_weight_var = total_weight_var
         self.condition = condition
-        self.upper_bound = str(upper_bound) if upper_bound is not None else ""
+        self.upper_bound = "" if upper_bound is None else str(upper_bound)
 
     def __str__(self) -> str:
         algo_str = ALLSHORTEST_EXPANSION
