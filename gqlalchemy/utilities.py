@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC, abstractmethod
 import math
 from datetime import datetime, date, time, timedelta
 from enum import Enum
@@ -132,6 +133,72 @@ def to_cypher_qm_arguments(arguments: Optional[Union[str, Tuple[Union[str, int, 
         return ", ".join([to_cypher_value(arg) for arg in arguments])
 
     return arguments
+
+
+class CypherObject(ABC):
+    """Abstract method representing an object in cypher syntax, such as nodes
+    and relationships.
+    """
+
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
+
+
+class CypherNode(CypherObject):
+    """Represents a node in Cypher syntax."""
+
+    def __init__(self, labels: Optional[Union[str, list]] = None) -> None:
+        super().__init__()
+        if isinstance(labels, str):
+            self.labels = [labels]
+        else:
+            self.labels = labels
+
+    def __str__(self) -> str:
+        if not self.labels:
+            return "()"
+
+        return "(:" + ":".join(self.labels) + ")"
+
+
+class RelationshipDirection(Enum):
+    """Defines the direction of CypherRelationship object"""
+
+    UNDIRECTED = 1
+    LEFT = 2
+    RIGHT = 3
+
+
+class CypherRelationship(CypherObject):
+    """Represents a relationship in Cypher syntax. Multiple types can not be
+    set on a relationship, only queried.
+    """
+
+    def __init__(
+        self,
+        types: Optional[Union[str, list]] = None,
+        direction: Optional[RelationshipDirection] = RelationshipDirection.UNDIRECTED,
+    ) -> None:
+        super().__init__()
+        if isinstance(types, str):
+            self.types = [types]
+        else:
+            self.types = types
+        self.direction = direction
+
+    def __str__(self) -> str:
+        if self.types:
+            cypher_relationship = "-[:" + " | :".join(self.types) + "]-"
+        else:
+            cypher_relationship = "--"
+
+        if self.direction == RelationshipDirection.LEFT:
+            return "<" + cypher_relationship
+        elif self.direction == RelationshipDirection.RIGHT:
+            return cypher_relationship + ">"
+        else:
+            return cypher_relationship
 
 
 class CypherVariable:

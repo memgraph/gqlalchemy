@@ -31,7 +31,7 @@ from gqlalchemy.query_builders.declarative_base import (  # noqa F401
 )
 from gqlalchemy.vendors.database_client import DatabaseClient
 from gqlalchemy.vendors.memgraph import Memgraph
-from gqlalchemy.utilities import CypherVariable
+from gqlalchemy.utilities import CypherVariable, CypherNode, CypherRelationship, RelationshipDirection
 
 
 class MemgraphQueryBuilderTypes(DeclarativeBaseTypes):
@@ -92,19 +92,10 @@ class QueryBuilder(DeclarativeBase):
         Returns:
             a string representing a MATCH query for a path with given node labels and relationship types.
         """
-        query = " MATCH p="
-        node = "()" if node_label is None else f"(:{node_label.upper()})"
+        node = CypherNode(node_label)
 
-        query += node + "-"
-
-        if isinstance(relationship_types, str):
-            query += f"[:{relationship_types}]"
-        elif isinstance(relationship_types, Iterable):
-            rels = " | :".join(relationship_types)
-            query += f"[:{rels}]"
-
-        # directed is OK only if we have single label, homogenous graphs
-        query += "->" + node
+        # directed is OK only if we have single label, homogenous graphs (current implementation)
+        query = f" MATCH p={node}{CypherRelationship(relationship_types, RelationshipDirection.RIGHT)}{node}"
 
         return query
 
