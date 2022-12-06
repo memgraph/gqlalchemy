@@ -52,11 +52,29 @@ def test_load_csv_no_header(memgraph):
     mock.assert_called_with(expected_query)
 
 
-def test_call_subgraph_with_labels(memgraph):
+def test_call_subgraph_with_labels_and_types(memgraph):
     label = "LABEL"
     types = ["TYPE1", "TYPE2"]
     query_builder = QueryBuilder().call("export_util.json", "/home/user", node_label=label, relationship_types=types)
     expected_query = " MATCH p=(:LABEL)-[:TYPE1 | :TYPE2]->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_labels(memgraph):
+    label = "LABEL"
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_label=label)
+    expected_query = " MATCH p=(:LABEL)-->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_type(memgraph):
+    relationship_type = "TYPE1"
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", relationship_types=relationship_type)
+    expected_query = " MATCH p=()-[:TYPE1]->() WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)

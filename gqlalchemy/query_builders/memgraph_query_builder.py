@@ -86,17 +86,14 @@ class QueryBuilder(DeclarativeBase):
         """Constructs a MATCH query defining a subgraph using zero or one node labels and relationship types.
 
         Args:
-            node_label (Optional[str], optional): node label to be used in subgraph
-            relationship_types (Optional[Union[str, Iterable[str]]], optional): types of relationships used in subgraph.
+            node_label: A string representing a node label to be used in this subgraph.
+            relationship_types: A string or iterable of types of relationships used in the subgraph.
 
         Returns:
-            str: a MATCH query for a path with given node labels and relationship types
+            a string representing a MATCH query for a path with given node labels and relationship types.
         """
         query = " MATCH p="
-        if node_label is None:
-            node = "()"
-        else:
-            node = f"(:{node_label.upper()})"
+        node = "()" if node_label is None else f"(:{node_label.upper()})"
 
         query += node + "-"
 
@@ -180,7 +177,7 @@ class ProjectPartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         """Constructs a Project partial querty. Given a Match query, adds path identifier if needed
-        And appends the WITH clause."""
+        and appends the WITH clause."""
         query = self.query
         location = query.index("(")
         if query[location - 1] != "=":
