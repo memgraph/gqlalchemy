@@ -89,8 +89,9 @@ class QueryBuilder(DeclarativeBase):
         """Constructs a MATCH query defining a subgraph using one or two node labels and relationship types.
 
         Args:
-            node_labels: If string, used for both sides of the relationship, if list of two, used
+            node_labels: If string, used for both sides of the relationship, if list of two, used in order.
             relationship_types: A string or iterable of types of relationships used in the subgraph.
+            relationship_direction: Enum representing direction.
 
         Returns:
             a string representing a MATCH query for a path with given node labels and relationship types.
@@ -127,8 +128,9 @@ class QueryBuilder(DeclarativeBase):
               format `query_module.procedure`.
             arguments: A string representing the arguments of the procedure in
               text format.
-            node_label: Label of nodes to be used in the subgraph.
+            node_labels: Labels that define the subgraph.
             relationship_types: Types of relationships to be used in the subgraph.
+            relationship_direction: Direction of the relationship.
             subgraph_query: Optional way to define the subgraph via a Cypher MATCH clause.
 
         Returns:
