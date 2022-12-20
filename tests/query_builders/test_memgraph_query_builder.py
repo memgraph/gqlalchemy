@@ -28,7 +28,7 @@ from gqlalchemy.query_builders.memgraph_query_builder import (
     With,
 )
 from gqlalchemy.graph_algorithms.integrated_algorithms import BreadthFirstSearch, DepthFirstSearch, WeightedShortestPath
-from gqlalchemy.utilities import CypherVariable
+from gqlalchemy.utilities import CypherVariable, RelationshipDirection
 
 
 def test_invalid_match_chain_throws_exception():
@@ -55,7 +55,7 @@ def test_load_csv_no_header(memgraph):
 def test_call_subgraph_with_labels_and_types(memgraph):
     label = "LABEL"
     types = ["TYPE1", "TYPE2"]
-    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_label=label, relationship_types=types)
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_labels=label, relationship_types=types)
     expected_query = " MATCH p=(:LABEL)-[:TYPE1 | :TYPE2]->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
@@ -64,8 +64,21 @@ def test_call_subgraph_with_labels_and_types(memgraph):
 
 def test_call_subgraph_with_labels(memgraph):
     label = "LABEL"
-    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_label=label)
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_labels=label)
     expected_query = " MATCH p=(:LABEL)-->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_multiple_labels(memgraph):
+    labels = ["LABEL1", "LABEL2"]
+    query_builder = QueryBuilder().call(
+        "export_util.json", "/home/user", node_labels=labels, relationship_direction=RelationshipDirection.LEFT
+    )
+    expected_query = (
+        " MATCH p=(:LABEL1)<--(:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    )
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)

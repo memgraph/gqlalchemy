@@ -81,21 +81,29 @@ class QueryBuilder(DeclarativeBase):
         return self
 
     def construct_subgraph_query(
-        self, node_label: Optional[str] = None, relationship_types: Optional[Union[str, Iterable[str]]] = None
+        self,
+        node_labels: Optional[Union[str, Iterable[str]]] = None,
+        relationship_types: Optional[Union[str, Iterable[str]]] = None,
+        relationship_direction: Optional[RelationshipDirection] = RelationshipDirection.RIGHT,
     ) -> str:
-        """Constructs a MATCH query defining a subgraph using zero or one node labels and relationship types.
+        """Constructs a MATCH query defining a subgraph using one or two node labels and relationship types.
 
         Args:
-            node_label: A string representing a node label to be used in this subgraph.
+            node_labels: If string, used for both sides of the relationship, if list of two, used
             relationship_types: A string or iterable of types of relationships used in the subgraph.
 
         Returns:
             a string representing a MATCH query for a path with given node labels and relationship types.
         """
-        node = CypherNode(node_label)
+        if not node_labels or isinstance(node_labels, str):
+            node1 = node2 = CypherNode(node_labels)
+        else:
+            if len(node_labels) > 2:
+                raise ValueError("only two node labels are permitted, one for outgoing node and one for incoming node.")
+            node1 = CypherNode(node_labels[0])
+            node2 = CypherNode(node_labels[1])
 
-        # directed is OK only if we have single label, homogenous graphs (current implementation)
-        query = f" MATCH p={node}{CypherRelationship(relationship_types, RelationshipDirection.RIGHT)}{node}"
+        query = f" MATCH p={node1}{CypherRelationship(relationship_types, relationship_direction)}{node2}"
 
         return query
 
@@ -103,8 +111,9 @@ class QueryBuilder(DeclarativeBase):
         self,
         procedure: str,
         arguments: Optional[Union[str, Tuple[Union[str, int, float]]]] = None,
-        node_label: Optional[str] = None,
+        node_labels: Optional[Union[str, Iterable[str]]] = None,
         relationship_types: Optional[Union[str, Iterable[str]]] = None,
+        relationship_direction: Optional[RelationshipDirection] = RelationshipDirection.RIGHT,
         subgraph_query: str = None,
     ) -> "DeclarativeBase":
         """Override of base class method to support Memgraph's subgraph functionality.
@@ -137,8 +146,12 @@ class QueryBuilder(DeclarativeBase):
                     CALL export_util.json(graph, '/home/user')`
         """
 
-        if not (node_label is None and relationship_types is None):
-            subgraph_query = self.construct_subgraph_query(node_label=node_label, relationship_types=relationship_types)
+        if not (node_labels is None and relationship_types is None):
+            subgraph_query = self.construct_subgraph_query(
+                node_labels=node_labels,
+                relationship_types=relationship_types,
+                relationship_direction=relationship_direction,
+            )
 
         if subgraph_query is not None:
             self._query.append(ProjectPartialQuery(subgraph_query=subgraph_query))

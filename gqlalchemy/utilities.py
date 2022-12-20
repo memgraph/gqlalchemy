@@ -155,7 +155,7 @@ class CypherNode(CypherObject):
 
     def __init__(self, labels: Optional[Union[str, list]] = None) -> None:
         super().__init__()
-        if isinstance(labels, str):
+        if isinstance(labels, str) and labels:
             self.labels = [labels]
         else:
             self.labels = labels
