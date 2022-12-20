@@ -168,7 +168,7 @@ class CypherNode(CypherObject):
 
 
 class RelationshipDirection(Enum):
-    """Defines the direction of CypherRelationship object"""
+    """Defines the direction of CypherRelationship object."""
 
     UNDIRECTED = 1
     LEFT = 2
