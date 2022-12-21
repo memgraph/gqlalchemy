@@ -97,7 +97,7 @@ class QueryBuilder(DeclarativeBase):
             a string representing a MATCH query for a path with given node labels and relationship types.
         """
         if not node_labels or isinstance(node_labels, str):
-            node1 = second_node = CypherNode(node_labels)
+            first_node = second_node = CypherNode(node_labels)
         else:
             if len(node_labels) > 2:
                 raise ValueError("only two node labels are permitted, one for outgoing node and one for incoming node.")
