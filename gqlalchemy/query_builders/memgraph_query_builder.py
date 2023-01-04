@@ -80,7 +80,7 @@ class QueryBuilder(DeclarativeBase):
 
         return self
 
-    def construct_subgraph_query(
+    def _construct_subgraph_path(
         self,
         node_labels: Optional[Union[str, Iterable[str]]] = None,
         relationship_types: Optional[Union[str, Iterable[str]]] = None,
@@ -104,7 +104,7 @@ class QueryBuilder(DeclarativeBase):
             first_node = CypherNode(node_labels[0])
             second_node = CypherNode(node_labels[1])
 
-        query = f" MATCH p={first_node}{CypherRelationship(relationship_types, relationship_direction)}{second_node}"
+        query = f"{first_node}{CypherRelationship(relationship_types, relationship_direction)}{second_node}"
 
         return query
 
@@ -115,7 +115,7 @@ class QueryBuilder(DeclarativeBase):
         node_labels: Optional[Union[str, Iterable[str]]] = None,
         relationship_types: Optional[Union[str, Iterable[str]]] = None,
         relationship_direction: Optional[RelationshipDirection] = RelationshipDirection.RIGHT,
-        subgraph_query: str = None,
+        subgraph_path: str = None,
     ) -> "DeclarativeBase":
         """Override of base class method to support Memgraph's subgraph functionality.
 
@@ -128,10 +128,10 @@ class QueryBuilder(DeclarativeBase):
               format `query_module.procedure`.
             arguments: A string representing the arguments of the procedure in
               text format.
-            node_labels: Labels that define the subgraph.
+            node_labels: If string, used for both sides of the relationship, if list of two, used in order.
             relationship_types: Types of relationships to be used in the subgraph.
             relationship_direction: Direction of the relationship.
-            subgraph_query: Optional way to define the subgraph via a Cypher MATCH clause.
+            subgraph_path: Optional way to define the subgraph via a Cypher MATCH clause.
 
         Returns:
             A `DeclarativeBase` instance for constructing queries.
@@ -143,20 +143,20 @@ class QueryBuilder(DeclarativeBase):
 
             or
 
-            Python: `call('export_util.json', '/home/user', subgraph_query="MATCH (:LABEL)-[:TYPE]->(:LABEL)").execute()
+            Python: `call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()
             Cypher: `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
                     CALL export_util.json(graph, '/home/user')`
         """
 
         if not (node_labels is None and relationship_types is None):
-            subgraph_query = self.construct_subgraph_query(
+            subgraph_path = self._construct_subgraph_path(
                 node_labels=node_labels,
                 relationship_types=relationship_types,
                 relationship_direction=relationship_direction,
             )
 
-        if subgraph_query is not None:
-            self._query.append(ProjectPartialQuery(subgraph_query=subgraph_query))
+        if subgraph_path is not None:
+            self._query.append(ProjectPartialQuery(subgraph_path=subgraph_path))
 
             if isinstance(arguments, str):
                 arguments = (CypherVariable(name="graph"), arguments)
@@ -177,15 +177,17 @@ class LoadCsv(DeclarativeBase):
 
 
 class ProjectPartialQuery(PartialQuery):
-    def __init__(self, subgraph_query):
+    def __init__(self, subgraph_path: str):
         super().__init__(DeclarativeBaseTypes.MATCH)
-        self.query = subgraph_query
+        self._subgraph_path = subgraph_path
+
+    @property
+    def subgraph_path(self) -> str:
+        return self._subgraph_path
 
     def construct_query(self) -> str:
-        """Constructs a Project partial querty. Given a Match query, adds path identifier if needed
-        and appends the WITH clause."""
-        query = self.query
-        location = query.index("(")
-        if query[location - 1] != "=":
-            query = query[:location] + "p=" + query[location:]
-        return f" {query} WITH project(p) AS graph "
+        """Constructs a Project partial querty.
+
+        Given path part of a query (e.g. (:LABEL)-[:TYPE]->(:LABEL2)),
+        adds MATCH, a path identifier and appends the WITH clause."""
+        return f" MATCH p={self.subgraph_path} WITH project(p) AS graph "
