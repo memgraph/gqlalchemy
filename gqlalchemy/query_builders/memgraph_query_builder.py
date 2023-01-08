@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Union, Tuple, Iterable
+from typing import Optional, Union, Tuple, List
+from string import ascii_lowercase
 
 from gqlalchemy.query_builders.declarative_base import (  # noqa F401
     Call,
@@ -82,29 +83,24 @@ class QueryBuilder(DeclarativeBase):
 
     def _construct_subgraph_path(
         self,
-        node_labels: Optional[Union[str, Iterable[str]]] = None,
-        relationship_types: Optional[Union[str, Iterable[str]]] = None,
-        relationship_direction: Optional[RelationshipDirection] = RelationshipDirection.RIGHT,
+        relationship_types: Optional[Union[str, List[List[str]]]] = None,
+        relationship_directions: Optional[
+            Union[RelationshipDirection, List[RelationshipDirection]]
+        ] = RelationshipDirection.RIGHT,
     ) -> str:
-        """Constructs a MATCH query defining a subgraph using one or two node labels and relationship types.
+        """Constructs a MATCH query defining a subgraph using node labels and relationship types.
 
         Args:
-            node_labels: If string, used for both sides of the relationship, if list of two, used in order.
-            relationship_types: A string or iterable of types of relationships used in the subgraph.
-            relationship_direction: Enum representing direction.
+            relationship_types: A string or list of lists of types of relationships used in the subgraph.
+            relationship_directions: Enums representing directions.
 
         Returns:
             a string representing a MATCH query for a path with given node labels and relationship types.
         """
-        if not node_labels or isinstance(node_labels, str):
-            first_node = second_node = CypherNode(node_labels)
-        else:
-            if len(node_labels) > 2:
-                raise ValueError("only two node labels are permitted, one for outgoing node and one for incoming node.")
-            first_node = CypherNode(node_labels[0])
-            second_node = CypherNode(node_labels[1])
 
-        query = f"{first_node}{CypherRelationship(relationship_types, relationship_direction)}{second_node}"
+        query = f"{CypherNode(variable=ascii_lowercase[0])}"
+        for i in range(len(relationship_types)):
+            query += f"{CypherRelationship(relationship_types[i], relationship_directions[i])}{CypherNode()}"
 
         return query
 
@@ -112,9 +108,11 @@ class QueryBuilder(DeclarativeBase):
         self,
         procedure: str,
         arguments: Optional[Union[str, Tuple[Union[str, int, float]]]] = None,
-        node_labels: Optional[Union[str, Iterable[str]]] = None,
-        relationship_types: Optional[Union[str, Iterable[str]]] = None,
-        relationship_direction: Optional[RelationshipDirection] = RelationshipDirection.RIGHT,
+        node_labels: Optional[Union[str, List[List[str]]]] = None,
+        relationship_types: Optional[Union[str, List[List[str]]]] = None,
+        relationship_directions: Optional[
+            Union[RelationshipDirection, List[RelationshipDirection]]
+        ] = RelationshipDirection.RIGHT,
         subgraph_path: str = None,
     ) -> "DeclarativeBase":
         """Override of base class method to support Memgraph's subgraph functionality.
@@ -128,9 +126,11 @@ class QueryBuilder(DeclarativeBase):
               format `query_module.procedure`.
             arguments: A string representing the arguments of the procedure in
               text format.
-            node_labels: If string, used for both sides of the relationship, if list of two, used in order.
-            relationship_types: Types of relationships to be used in the subgraph.
-            relationship_direction: Direction of the relationship.
+            node_labels: Either a string, which is then used as the label for all nodes, or
+                         a list of lists defining all labels for every node
+            relationship_types: Types of relationships to be used in the subgraph. Either a
+                                single type or a list of lists defining all types for every relationship
+            relationship_directions: Directions of the relationships.
             subgraph_path: Optional way to define the subgraph via a Cypher MATCH clause.
 
         Returns:
@@ -138,8 +138,8 @@ class QueryBuilder(DeclarativeBase):
 
         Examples:
             Python: `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
-            Cypher: `MATCH p=(:LABEL)-[:TYPE1 | :TYPE2]->(:LABEL) WITH project(p) AS graph
-                    CALL export_util.json(graph, '/home/user')`
+            Cypher: `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
+                     WITH project(p) AS graph CALL export_util.json(graph, '/home/user')`
 
             or
 
@@ -149,14 +149,38 @@ class QueryBuilder(DeclarativeBase):
         """
 
         if not (node_labels is None and relationship_types is None):
-            subgraph_path = self._construct_subgraph_path(
-                node_labels=node_labels,
-                relationship_types=relationship_types,
-                relationship_direction=relationship_direction,
-            )
+            if isinstance(relationship_types, str):
+                relationship_types = [[relationship_types]] * (
+                    len(node_labels) - 1 if isinstance(node_labels, list) else 1
+                )
+
+            if isinstance(node_labels, str):
+                node_labels = [[node_labels]] * (len(relationship_types) + 1 if relationship_types else 2)
+
+            if isinstance(relationship_directions, RelationshipDirection):
+                relationship_directions = [relationship_directions] * (
+                    len(relationship_types) if relationship_types else 1
+                )
+
+            if (
+                node_labels
+                and relationship_types
+                and (
+                    len(node_labels) != len(relationship_types) + 1
+                    or len(relationship_types) != len(relationship_directions)
+                )
+            ):
+                raise ValueError(
+                    "number of items in node_labels should be one more than in relationship_types and relationship_directions"
+                )
+
+            subgraph_path = f"{CypherNode(variable=ascii_lowercase[0])}"
+            for i in range(len(relationship_directions)):
+                rel_types = relationship_types[i] if relationship_types else None
+                subgraph_path += f"{CypherRelationship(rel_types, relationship_directions[i])}{CypherNode(variable=ascii_lowercase[i + 1])}"
 
         if subgraph_path is not None:
-            self._query.append(ProjectPartialQuery(subgraph_path=subgraph_path))
+            self._query.append(ProjectPartialQuery(subgraph_path=subgraph_path, node_labels=node_labels))
 
             if isinstance(arguments, str):
                 arguments = (CypherVariable(name="graph"), arguments)
@@ -177,17 +201,28 @@ class LoadCsv(DeclarativeBase):
 
 
 class ProjectPartialQuery(PartialQuery):
-    def __init__(self, subgraph_path: str):
+    def __init__(self, subgraph_path: str, node_labels: Optional[List[List[str]]] = None):
         super().__init__(DeclarativeBaseTypes.MATCH)
         self._subgraph_path = subgraph_path
+        self._node_labels = node_labels
 
     @property
     def subgraph_path(self) -> str:
         return self._subgraph_path
+
+    @property
+    def node_labels(self) -> Optional[List[List[str]]]:
+        return self._node_labels
 
     def construct_query(self) -> str:
         """Constructs a Project partial querty.
 
         Given path part of a query (e.g. (:LABEL)-[:TYPE]->(:LABEL2)),
         adds MATCH, a path identifier and appends the WITH clause."""
-        return f" MATCH p={self.subgraph_path} WITH project(p) AS graph "
+        query = f" MATCH p={self.subgraph_path}"
+        if self.node_labels:
+            query += f" WHERE ({ascii_lowercase[0]}:" + f" or {ascii_lowercase[0]}:".join(self.node_labels[0]) + ")"
+            for i in range(1, len(self.node_labels)):
+                query += f" AND ({ascii_lowercase[i]}:" + f" or {ascii_lowercase[i]}:".join(self.node_labels[i]) + ")"
+
+        return query + " WITH project(p) AS graph "

@@ -153,18 +153,25 @@ class CypherObject(ABC):
 class CypherNode(CypherObject):
     """Represents a node in Cypher syntax."""
 
-    def __init__(self, labels: Optional[Union[str, list]] = None) -> None:
+    def __init__(self, variable: str = None, labels: Optional[Union[str, list]] = None) -> None:
         super().__init__()
         if isinstance(labels, str) and labels:
-            self.labels = [labels]
+            self._labels = [labels]
         else:
-            self.labels = labels
+            self._labels = labels
+        self._variable = variable
 
     def __str__(self) -> str:
-        if not self.labels:
-            return "()"
+        s = "("
 
-        return "(:" + ":".join(self.labels) + ")"
+        if self._variable:
+            s += self._variable
+
+        if not self._labels:
+            return s + ")"
+
+        s += ":" + ":".join(self._labels) + ")"
+        return s
 
 
 class RelationshipDirection(Enum):
