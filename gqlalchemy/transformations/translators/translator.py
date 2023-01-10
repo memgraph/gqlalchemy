@@ -4,6 +4,7 @@ from collections import defaultdict
 from constants import LABELS_CONCAT
 from numbers import Number
 from gqlalchemy.models import Node, Relationship
+from gqlalchemy.utilities import to_cypher_properties, to_cypher_value
 # TODO: fix the import order
 
 
@@ -59,6 +60,7 @@ class Translator(ABC):
         """
         if isinstance(obj, list):
             return len(obj) and Translator._is_most_inner_type_number(obj[0])
+        # Try to parser string into number
         return isinstance(obj, Number)
 
     def _parse_mem_graph(self, query_results):
@@ -84,6 +86,7 @@ class Translator(ABC):
                         mem_indexes[node_label] += 1
                         # Copy numeric features of a node
                         node_num_features = Translator.get_entity_numeric_properties(entity)
+                        node_num_features["test"] = 1
                         for num_feature_key, num_feature_val in node_num_features.items():
                             if num_feature_key not in node_features[node_label]:
                                 node_features[node_label][num_feature_key] = []
@@ -92,6 +95,7 @@ class Translator(ABC):
                     # Extract edge type and all numeric features
                     edge_type = entity._type if entity._type else self.default_edge_type
                     edge_num_features = Translator.get_entity_numeric_properties(entity)
+                    edge_num_features["test"] = 2
                     # Find descriptions of source and destination nodes. Cheap because we search only over row values, this is better than querying the database again.
                     source_node_index, dest_node_index = None, None
                     source_node_label, dest_node_label = None, None
@@ -113,3 +117,15 @@ class Translator(ABC):
                         edge_features[edge_triplet][num_feature_key].append(num_feature_val)
 
         return src_nodes, dest_nodes, node_features, edge_features, mem_indexes
+
+    def create_insert_query(self, source_node_label, source_node_properties, edge_type, edge_properties, dest_node_label, dest_node_properties):
+        return (f"MERGE (n:{source_node_label.upper()} {to_cypher_properties(source_node_properties)}) "
+                f"MERGE (m:{dest_node_label.upper()} {to_cypher_properties(dest_node_properties)}) "
+                f"MERGE (n)-[r:{edge_type.upper()} {to_cypher_properties(edge_properties)}]->(m)")
+
+
+    def get_properties(properties, entity_id):
+        properties_ret = {}
+        for property_key, property_values in properties.items():
+            properties_ret[property_key] = property_values[entity_id]
+        return properties_ret

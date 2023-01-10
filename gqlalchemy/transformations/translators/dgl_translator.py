@@ -1,6 +1,7 @@
 import dgl
 from translators.translator import Translator
 from gqlalchemy import Match
+from constants import DGL_ID
 import torch
 # TODO: check import order
 
@@ -17,18 +18,37 @@ class DGLTranslator(Translator):
     def __init__(self) -> None:
         super().__init__()
 
-    # for now, assume we can handle heterographs and homogenous graphs in the same way
     def to_cypher_queries(self, graph):
-        # For a graph of multiple edge types, it is required to specify the edge type in query.
-        if isinstance(graph, dgl.DGLHeteroGraph):
-            print(f"It is heterograph")
-        elif isinstance(graph, dgl.DGLGraph):
-            print(f"Homogeneous graph")
-        edges = graph.edges()  # 1D tensors
-        print(f"Edges: {edges}")
+        # Iterate over edge types. This handles both homogeneous and heterogeneous graphs.
+        # TODO: isolated nodes will not get inserted into the database
+        # TODO: decide what will be default label if dealing with the homogeneous graph
+        # TODO: capitalize only first letter
+        queries = []
+        for etype in graph.canonical_etypes:
+            source_node_label, edge_type, dest_node_label = etype
+            source_nodes, dest_nodes, eids = graph.edges(etype=etype, form="all")
+            # Get label and type properties
+            node_src_label_properties = graph.nodes[source_node_label].data
+            node_dest_label_properties = graph.nodes[dest_node_label].data
+            etype_properties = graph.edges[etype].data
+            for source_node_id, dest_node_id, eid in zip(source_nodes, dest_nodes, eids):
+                # Handle properties
+                source_node_properties, dest_node_properties, edge_properties = {}, {}, {}
+                # Copy source node properties
+                source_node_properties[DGL_ID] = int(source_node_id)
+                for property_name, property_value in node_src_label_properties.items():
+                    source_node_properties[property_name] = property_value[source_node_id].item()
+                # Copy destination node properties
+                dest_node_properties[DGL_ID] = int(dest_node_id)
+                for property_name, property_value in node_dest_label_properties.items():
+                    dest_node_properties[property_name] = property_value[dest_node_id].item()
+                # Copy edge features
+                for property_name, property_value in etype_properties.items():
+                    edge_properties[property_name] = etype_properties[eid].item()
 
-
-        return []
+                # Create query
+                queries.append(self.create_insert_query(source_node_label, source_node_properties, edge_type, edge_properties, dest_node_label, dest_node_properties))
+        return queries
 
     # TODO: add support for processing isolated nodes
     def get_instance(self):
