@@ -1,23 +1,28 @@
 from abc import ABC, abstractmethod
-from typing import Callable, List, Set, Union, Type, Dict, Tuple
+from typing import Callable, List, Set, Union, Dict, Tuple
 from collections import defaultdict
-from constants import LABELS_CONCAT
+from gqlalchemy.transformations.constants import LABELS_CONCAT
 from numbers import Number
 from gqlalchemy.models import Node, Relationship
-from gqlalchemy.utilities import to_cypher_properties, to_cypher_value
+from gqlalchemy.utilities import to_cypher_properties
+
 # TODO: fix the import order
 
 
 class Translator(ABC):
 
     # Lambda function to concat list of labels
-    merge_labels: Callable[[Set[str]], str] = lambda labels, default_node_label: LABELS_CONCAT.join([label for label in labels]) if len(labels) else default_node_label
+    merge_labels: Callable[[Set[str]], str] = (
+        lambda labels, default_node_label: LABELS_CONCAT.join([label for label in sorted(labels)])
+        if len(labels)
+        else default_node_label
+    )
 
+    @abstractmethod
     def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
         super().__init__()
         self.default_node_label = default_node_label
         self.default_edge_type = default_edge_type
-
 
     @abstractmethod
     def to_cypher_queries(graph):
@@ -28,7 +33,9 @@ class Translator(ABC):
         Raises:
             NotImplementedError: The method must be override by a specific translator.
         """
-        raise NotImplementedError("Subclasses must override this method to produce cypher queries for specific graph type.")
+        raise NotImplementedError(
+            "Subclasses must override this method to produce cypher queries for specific graph type."
+        )
 
     @abstractmethod
     def get_instance():
@@ -37,12 +44,13 @@ class Translator(ABC):
         Raises:
             NotImplementedError: The method must be override by a specific translator.
         """
-        raise NotImplementedError("Subclasses must override this method to correctly parse query results for specific graph type.")
+        raise NotImplementedError(
+            "Subclasses must override this method to correctly parse query results for specific graph type."
+        )
 
     @classmethod
     def get_entity_numeric_properties(cls, entity: Union[Node, Relationship]):
-        """
-        """
+        """ """
         numeric_properties = {}
         for key, val in entity._properties.items():
             if Translator._is_most_inner_type_number(val):
@@ -64,14 +72,23 @@ class Translator(ABC):
         return isinstance(obj, Number)
 
     def _parse_mem_graph(self, query_results):
-        """
-        """
+        """ """
         mem_indexes: Dict[str, int] = defaultdict(int)  # track current counter for the node type
-        node_features: Dict[str, Dict[str, List[int]]] = defaultdict(dict)  # node_label to prop_name to list of features for all nodes of that label
-        edge_features: Dict[Tuple[str, str, str], Dict[str, List[int]]] = defaultdict(dict)  # (source_node_label, edge_type, dest_node_label) to prop_name to list of features for all edges of that type
-        src_nodes: Dict[Tuple[str, str, str], List[int]] = defaultdict(list)  # key=(source_node_label, edge_type, destination_node_label), value=list of source nodes
-        dest_nodes: Dict[Tuple[str, str, str], List[int]] = defaultdict(list)  # key=(source_node_label, edge_type, destination_node_label), value=list of dest nodes
-        reindex: Dict[str, Dict[int, int]] = defaultdict(dict)  # Reindex structure for saving node_label to old_index to new_index
+        node_features: Dict[str, Dict[str, List[int]]] = defaultdict(
+            dict
+        )  # node_label to prop_name to list of features for all nodes of that label
+        edge_features: Dict[Tuple[str, str, str], Dict[str, List[int]]] = defaultdict(
+            dict
+        )  # (source_node_label, edge_type, dest_node_label) to prop_name to list of features for all edges of that type
+        src_nodes: Dict[Tuple[str, str, str], List[int]] = defaultdict(
+            list
+        )  # key=(source_node_label, edge_type, destination_node_label), value=list of source nodes
+        dest_nodes: Dict[Tuple[str, str, str], List[int]] = defaultdict(
+            list
+        )  # key=(source_node_label, edge_type, destination_node_label), value=list of dest nodes
+        reindex: Dict[str, Dict[int, int]] = defaultdict(
+            dict
+        )  # Reindex structure for saving node_label to old_index to new_index
 
         for row in query_results:
             row_values = row.values()
@@ -86,7 +103,7 @@ class Translator(ABC):
                         mem_indexes[node_label] += 1
                         # Copy numeric features of a node
                         node_num_features = Translator.get_entity_numeric_properties(entity)
-                        node_num_features["test"] = 1
+                        # node_num_features["test"] = 1
                         for num_feature_key, num_feature_val in node_num_features.items():
                             if num_feature_key not in node_features[node_label]:
                                 node_features[node_label][num_feature_key] = []
@@ -95,7 +112,7 @@ class Translator(ABC):
                     # Extract edge type and all numeric features
                     edge_type = entity._type if entity._type else self.default_edge_type
                     edge_num_features = Translator.get_entity_numeric_properties(entity)
-                    edge_num_features["test"] = 2
+                    # edge_num_features["test"] = 2
                     # Find descriptions of source and destination nodes. Cheap because we search only over row values, this is better than querying the database again.
                     source_node_index, dest_node_index = None, None
                     source_node_label, dest_node_label = None, None
@@ -118,11 +135,20 @@ class Translator(ABC):
 
         return src_nodes, dest_nodes, node_features, edge_features, mem_indexes
 
-    def create_insert_query(self, source_node_label, source_node_properties, edge_type, edge_properties, dest_node_label, dest_node_properties):
-        return (f"MERGE (n:{source_node_label.upper()} {to_cypher_properties(source_node_properties)}) "
-                f"MERGE (m:{dest_node_label.upper()} {to_cypher_properties(dest_node_properties)}) "
-                f"MERGE (n)-[r:{edge_type.upper()} {to_cypher_properties(edge_properties)}]->(m)")
-
+    def create_insert_query(
+        self,
+        source_node_label,
+        source_node_properties,
+        edge_type,
+        edge_properties,
+        dest_node_label,
+        dest_node_properties,
+    ):
+        return (
+            f"MERGE (n:{source_node_label.upper()} {to_cypher_properties(source_node_properties)}) "
+            f"MERGE (m:{dest_node_label.upper()} {to_cypher_properties(dest_node_properties)}) "
+            f"MERGE (n)-[r:{edge_type.upper()} {to_cypher_properties(edge_properties)}]->(m)"
+        )
 
     def get_properties(properties, entity_id):
         properties_ret = {}

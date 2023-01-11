@@ -3,7 +3,9 @@ from translators.translator import Translator
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
 import networkx as nx
+
 # TODO: fix the import order
+
 
 class NxTranslator(Translator):
     """Uses original ids from Memgraph. Labels are encoded as properties. Since Networkx allows
@@ -12,15 +14,15 @@ class NxTranslator(Translator):
     """
 
     # TODO: maybe we would like to have specific `weight` property for out users
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
+        super().__init__(default_node_label, default_edge_type)
 
     def to_cypher_queries(self, graph):
         return super().to_cypher_queries()
 
     def get_instance(self):
         # Get all nodes and edges from the database
-        query_results = Match().node(variable='n').to(variable='r').node(variable='m').return_().execute()
+        query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
 
         # Data structures
         graph_data = []  # List[Tuple[source_node_id, dest_node_id]]

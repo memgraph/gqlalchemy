@@ -1,9 +1,11 @@
 import dgl
-from translators.translator import Translator
+from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy import Match
-from constants import DGL_ID
+from gqlalchemy.transformations.constants import DGL_ID
 import torch
+
 # TODO: check import order
+
 
 class DGLTranslator(Translator):
     """Performs conversion from cypher queries to the DGL graph representation. DGL assigns to each edge a unique integer, called the edge ID,
@@ -15,8 +17,8 @@ class DGLTranslator(Translator):
     same name must have the same dimensionality and data type.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
+        super().__init__(default_node_label, default_edge_type)
 
     def to_cypher_queries(self, graph):
         # Iterate over edge types. This handles both homogeneous and heterogeneous graphs.
@@ -47,13 +49,23 @@ class DGLTranslator(Translator):
                     edge_properties[property_name] = etype_properties[eid].item()
 
                 # Create query
-                queries.append(self.create_insert_query(source_node_label, source_node_properties, edge_type, edge_properties, dest_node_label, dest_node_properties))
+                queries.append(
+                    self.create_insert_query(
+                        source_node_label,
+                        source_node_properties,
+                        edge_type,
+                        edge_properties,
+                        dest_node_label,
+                        dest_node_properties,
+                    )
+                )
         return queries
 
     # TODO: add support for processing isolated nodes
+    # TODO: add support when all nodes don't have same feature set. What if they don't even have the same dimensionality?
     def get_instance(self):
         # Get all nodes and edges from the database
-        query_results = Match().node(variable='n').to(variable='r').node(variable='m').return_().execute()
+        query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
 
         # Parse it into nice data structures
         src_nodes, dest_nodes, node_features, edge_features, _ = self._parse_mem_graph(query_results)
@@ -61,7 +73,10 @@ class DGLTranslator(Translator):
         graph_data = {}
         # Iterating over src_nodes and dest_nodes should be the same
         for type_triplet in src_nodes.keys():
-            graph_data[type_triplet] = (torch.tensor(src_nodes[type_triplet], dtype=torch.int32), torch.tensor(dest_nodes[type_triplet], dtype=torch.int32))
+            graph_data[type_triplet] = (
+                torch.tensor(src_nodes[type_triplet], dtype=torch.int32),
+                torch.tensor(dest_nodes[type_triplet], dtype=torch.int32),
+            )
 
         # Create heterograph
         graph = dgl.heterograph(graph_data)
@@ -73,6 +88,6 @@ class DGLTranslator(Translator):
         # Set edge features
         for edge_triplet, features_dict in edge_features.items():
             for feature_name, features in features_dict.items():
-                graph[edge_triplet].data[feature_name] = torch.tensor(features, dtype=torch.float32)
+                graph.edges[edge_triplet].data[feature_name] = torch.tensor(features, dtype=torch.float32)
 
         return graph

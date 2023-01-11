@@ -1,18 +1,14 @@
 from translators.translator import Translator
 from torch_geometric.data import HeteroData, Data
-from typing import Dict, List, Tuple
-from collections import defaultdict
 from gqlalchemy import Match
-from gqlalchemy.models import Node, Relationship
-from gqlalchemy.utilities import to_cypher_value
 import torch
 from constants import EDGE_INDEX, PYG_ID, NUM_NODES
 
+
 # TODO: Solve order import
 class PyGTranslator(Translator):
-
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
+        super().__init__(default_node_label, default_edge_type)
 
     def get_node_properties(graph, node_label, node_id):
         node_properties = {}
@@ -22,8 +18,6 @@ class PyGTranslator(Translator):
                     if property_name != NUM_NODES:
                         node_properties[property_name] = property_values[node_id]
         return node_properties
-
-
 
     def to_cypher_queries(self, graph):
         # For handling isolated nodes, you could make use of has_isolated_nodes
@@ -56,7 +50,16 @@ class PyGTranslator(Translator):
                 # Get edge properties
                 edge_properties = Translator.get_properties(etype_properties, eid)
                 eid += 1
-                queries.append(self.create_insert_query(self.default_node_label, source_node_properties, self.default_edge_type, edge_properties, self.default_node_label, dest_node_properties))
+                queries.append(
+                    self.create_insert_query(
+                        self.default_node_label,
+                        source_node_properties,
+                        self.default_edge_type,
+                        edge_properties,
+                        self.default_node_label,
+                        dest_node_properties,
+                    )
+                )
 
         elif isinstance(graph, HeteroData):
             for etype, etype_features in graph.edge_items():
@@ -78,7 +81,16 @@ class PyGTranslator(Translator):
                     edge_properties = Translator.get_properties(etype_features, eid)
                     eid += 1
                     # Create query
-                    queries.append(self.create_insert_query(source_node_label, source_node_properties, edge_type, edge_properties, dest_node_label, dest_node_properties))
+                    queries.append(
+                        self.create_insert_query(
+                            source_node_label,
+                            source_node_properties,
+                            edge_type,
+                            edge_properties,
+                            dest_node_label,
+                            dest_node_properties,
+                        )
+                    )
 
         return queries
 
@@ -87,7 +99,7 @@ class PyGTranslator(Translator):
         # TODO: needs testing, if it is node_attribute, if it is edge_attribute correctly set
         # TODO: specific handling of y values upon which the prediction is made
         # Knowledge: note and edge items don't save features
-        query_results = Match().node(variable='n').to(variable='r').node(variable='m').return_().execute()
+        query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
 
         # Parse it into nice data structures
         src_nodes, dest_nodes, node_features, edge_features, mem_indexes = self._parse_mem_graph(query_results)
@@ -98,7 +110,9 @@ class PyGTranslator(Translator):
         # Create edges in COO format
         # TODO: research about COO format
         for type_triplet in src_nodes.keys():
-            graph[type_triplet].edge_index = torch.tensor([src_nodes[type_triplet], dest_nodes[type_triplet]], dtype=torch.int32)
+            graph[type_triplet].edge_index = torch.tensor(
+                [src_nodes[type_triplet], dest_nodes[type_triplet]], dtype=torch.int32
+            )
 
         # Set node features
         for node_label, features_dict in node_features.items():
