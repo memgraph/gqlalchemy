@@ -1,10 +1,12 @@
+from typing import List
+
 import dgl
+import torch
+
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy import Match
 from gqlalchemy.transformations.constants import DGL_ID
-import torch
-
-# TODO: check import order
+from gqlalchemy.utilities import to_cypher_value
 
 
 class DGLTranslator(Translator):
@@ -21,10 +23,20 @@ class DGLTranslator(Translator):
         super().__init__(default_node_label, default_edge_type)
 
     def to_cypher_queries(self, graph):
-        # Iterate over edge types. This handles both homogeneous and heterogeneous graphs.
-        # TODO: isolated nodes will not get inserted into the database
-        # TODO: decide what will be default label if dealing with the homogeneous graph
-        # TODO: capitalize only first letter
+        """Produce cypher queries for data saved as part of the DGL graph. The method handles both homogeneous and heterogeneous graph. If the graph is homogeneous, a default DGL's labels will be used.
+         _N as a node label and _E as edge label. The method converts 1D as well as multidimensional features. If there are some isolated nodes inside DGL graph, they won't get transferred. Nodes and edges
+         created in Memgraph DB will, for the consistency reasons, have property `dgl_id` set to the id they have as part of the DGL graph. Note that this method doesn't insert anything inside the database,
+         it just creates cypher queries. To insert queries the following code can be used:
+         >>> memegraph = Memgraph()
+         dgl_graph = DGLGraph(...)
+         for query in DGLTranslator().to_cypher_queries(dgl_graph):
+            memgraph.execute(query)
+
+         Args:
+            graph: A reference to the DGL graph.
+        Returns:
+            cypher queries.
+        """
         queries = []
         for etype in graph.canonical_etypes:
             source_node_label, edge_type, dest_node_label = etype
@@ -39,14 +51,15 @@ class DGLTranslator(Translator):
                 # Copy source node properties
                 source_node_properties[DGL_ID] = int(source_node_id)
                 for property_name, property_value in node_src_label_properties.items():
-                    source_node_properties[property_name] = property_value[source_node_id].item()
+                    source_node_properties[property_name] = to_cypher_value(property_value[source_node_id])
                 # Copy destination node properties
                 dest_node_properties[DGL_ID] = int(dest_node_id)
                 for property_name, property_value in node_dest_label_properties.items():
-                    dest_node_properties[property_name] = property_value[dest_node_id].item()
+                    dest_node_properties[property_name] = to_cypher_value(property_value[dest_node_id])
                 # Copy edge features
+                edge_properties[DGL_ID] = int(eid)
                 for property_name, property_value in etype_properties.items():
-                    edge_properties[property_name] = etype_properties[eid].item()
+                    edge_properties[property_name] = to_cypher_value(property_value[eid])
 
                 # Create query
                 queries.append(
@@ -61,9 +74,14 @@ class DGLTranslator(Translator):
                 )
         return queries
 
-    # TODO: add support for processing isolated nodes
-    # TODO: add support when all nodes don't have same feature set. What if they don't even have the same dimensionality?
     def get_instance(self):
+        """Create instance of DGL graph from all edges that are inside Memgraph. Currently, isolated nodes are ignored because they don't contribute in message passing neural networks. Only numerical features
+        that are set on all nodes or all edges are transferred to the DGL instance since this is DGL's requirement. That means thay any string values properties won't be transferred, as well as numerical properties
+        that aren't set on all nodes. However, features of type list are transferred to the DGL and can be used as any other feature in the DGL graph. Regardless of data residing inside Memgraph database, the created
+        DGL graph is a heterograph instance.
+        Returns:
+            DGL heterograph instance.
+        """
         # Get all nodes and edges from the database
         query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
 
@@ -83,11 +101,31 @@ class DGLTranslator(Translator):
         # Set node features
         for node_label, features_dict in node_features.items():
             for feature_name, features in features_dict.items():
-                graph.nodes[node_label].data[feature_name] = torch.tensor(features, dtype=torch.float32)
+                features = DGLTranslator._validate_features(features, graph.num_nodes(node_label))
+                if not features is None:
+                    graph.nodes[node_label].data[feature_name] = features
 
         # Set edge features
         for edge_triplet, features_dict in edge_features.items():
             for feature_name, features in features_dict.items():
-                graph.edges[edge_triplet].data[feature_name] = torch.tensor(features, dtype=torch.float32)
+                features = DGLTranslator._validate_features(features, graph.num_edges(edge_triplet))
+                if not features is None:
+                    graph.edges[edge_triplet].data[feature_name] = features
 
         return graph
+
+    @classmethod
+    def _validate_features(cls, features: List, expected_num: int):
+        """Return true if features are okay to be set on all nodes/features.
+        Args:
+            features: To be set on all nodes. It can be anything that can be converted to torch tensor.
+            expected_num: This can be number of nodes or number of edges depending on whether features will be set on nodes or edges.
+        Returns:
+            None if features cannot be set or tensor of same features.
+        """
+        if len(features) != expected_num:
+            return None
+        try:
+            return torch.tensor(features, dtype=torch.float32)
+        except ValueError:
+            return None

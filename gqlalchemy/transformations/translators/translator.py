@@ -145,9 +145,9 @@ class Translator(ABC):
         dest_node_properties,
     ):
         return (
-            f"MERGE (n:{source_node_label.upper()} {to_cypher_properties(source_node_properties)}) "
-            f"MERGE (m:{dest_node_label.upper()} {to_cypher_properties(dest_node_properties)}) "
-            f"MERGE (n)-[r:{edge_type.upper()} {to_cypher_properties(edge_properties)}]->(m)"
+            f"MERGE (n:{source_node_label} {to_cypher_properties(source_node_properties)}) "
+            f"MERGE (m:{dest_node_label} {to_cypher_properties(dest_node_properties)}) "
+            f"MERGE (n)-[r:{edge_type} {to_cypher_properties(edge_properties)}]->(m)"
         )
 
     def get_properties(properties, entity_id):
