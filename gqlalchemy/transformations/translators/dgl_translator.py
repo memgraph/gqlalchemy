@@ -101,31 +101,16 @@ class DGLTranslator(Translator):
         # Set node features
         for node_label, features_dict in node_features.items():
             for feature_name, features in features_dict.items():
-                features = DGLTranslator._validate_features(features, graph.num_nodes(node_label))
+                features = Translator.validate_features(features, graph.num_nodes(node_label))
                 if not features is None:
                     graph.nodes[node_label].data[feature_name] = features
 
         # Set edge features
         for edge_triplet, features_dict in edge_features.items():
             for feature_name, features in features_dict.items():
-                features = DGLTranslator._validate_features(features, graph.num_edges(edge_triplet))
+                features = Translator.validate_features(features, graph.num_edges(edge_triplet))
                 if not features is None:
                     graph.edges[edge_triplet].data[feature_name] = features
 
         return graph
 
-    @classmethod
-    def _validate_features(cls, features: List, expected_num: int):
-        """Return true if features are okay to be set on all nodes/features.
-        Args:
-            features: To be set on all nodes. It can be anything that can be converted to torch tensor.
-            expected_num: This can be number of nodes or number of edges depending on whether features will be set on nodes or edges.
-        Returns:
-            None if features cannot be set or tensor of same features.
-        """
-        if len(features) != expected_num:
-            return None
-        try:
-            return torch.tensor(features, dtype=torch.float32)
-        except ValueError:
-            return None

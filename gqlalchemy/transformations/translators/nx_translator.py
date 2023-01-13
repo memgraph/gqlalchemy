@@ -1,10 +1,9 @@
-from constants import LABEL, EDGE_TYPE
-from translators.translator import Translator
-from gqlalchemy import Match
-from gqlalchemy.models import Node, Relationship
 import networkx as nx
 
-# TODO: fix the import order
+from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE
+from gqlalchemy.transformations.translators.translator import Translator
+from gqlalchemy import Match
+from gqlalchemy.models import Node, Relationship
 
 
 class NxTranslator(Translator):
@@ -21,6 +20,9 @@ class NxTranslator(Translator):
         return super().to_cypher_queries()
 
     def get_instance(self):
+        """Creates Networx instance of the graph from the data residing inside Memgraph. Since Networkx doesn't support labels in a way Memgraph does, labels
+        are encoded as a node and edge properties.
+        """
         # Get all nodes and edges from the database
         query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
 
@@ -34,17 +36,15 @@ class NxTranslator(Translator):
             row_values = row.values()
             for entity in row_values:
                 if isinstance(entity, Node) and entity._id not in node_info:
-                    node_properties = {}  # TODO: extract node properties
-                    node_properties[LABEL] = Translator.merge_labels(entity._labels, self.default_node_label)
-                    node_info[entity._id] = node_properties
+                    entity._properties[LABEL] = Translator.merge_labels(entity._labels, self.default_node_label)
+                    node_info[entity._id] = entity._properties
                 elif isinstance(entity, Relationship):
-                    edge_properties = {}  # TODO: extract edge properties
-                    edge_properties[EDGE_TYPE] = entity._type if entity._type else self.default_edge_type
-                    edge_info[(entity._start_node_id, entity._end_node_id)] = edge_properties
+                    entity._properties[EDGE_TYPE] = entity._type if entity._type else self.default_edge_type
+                    edge_info[(entity._start_node_id, entity._end_node_id)] = entity._properties
                     graph_data.append((entity._start_node_id, entity._end_node_id))
 
         # Create Nx graph
-        graph = nx.Graph(graph_data)
+        graph = nx.DiGraph(graph_data)
         nx.set_node_attributes(graph, node_info)
         nx.set_edge_attributes(graph, edge_info)
         return graph

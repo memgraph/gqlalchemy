@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Callable, List, Set, Union, Dict, Tuple
 from collections import defaultdict
-from gqlalchemy.transformations.constants import LABELS_CONCAT
 from numbers import Number
+
+import torch
+
+from gqlalchemy.transformations.constants import LABELS_CONCAT
 from gqlalchemy.models import Node, Relationship
 from gqlalchemy.utilities import to_cypher_properties
 
@@ -70,6 +73,23 @@ class Translator(ABC):
             return len(obj) and Translator._is_most_inner_type_number(obj[0])
         # Try to parser string into number
         return isinstance(obj, Number)
+
+    @classmethod
+    def validate_features(cls, features: List, expected_num: int):
+        """Return true if features are okay to be set on all nodes/features.
+        Args:
+            features: To be set on all nodes. It can be anything that can be converted to torch tensor.
+            expected_num: This can be number of nodes or number of edges depending on whether features will be set on nodes or edges.
+        Returns:
+            None if features cannot be set or tensor of same features.
+        """
+        if len(features) != expected_num:
+            return None
+        try:
+            return torch.tensor(features, dtype=torch.float32)
+        except ValueError:
+            return None
+
 
     def _parse_mem_graph(self, query_results):
         """ """

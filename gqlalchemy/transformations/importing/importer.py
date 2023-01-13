@@ -7,4 +7,5 @@ class Importer(ABC):
 
     @abstractmethod
     def to_cypher_queries():
+        # Simple selection
         raise NotImplementedError("Correct import strategy must be provided by subclasses.")
