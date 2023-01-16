@@ -1,3 +1,17 @@
+# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import Dict, Any, Set
 from numbers import Number
 
@@ -6,7 +20,7 @@ import dgl
 from dgl.data import TUDataset
 import torch
 
-from gqlalchemy import Memgraph, Match
+from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
 from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
 from gqlalchemy.transformations.translators.translator import Translator
@@ -17,6 +31,7 @@ from tests.transformations.utils import init_database
 ##########
 # UTILS
 ##########
+
 
 def _check_entity_exists_in_dgl(entity_data, properties: Dict[str, Any], translated_properties: Set[str] = {}):
     """Checks whether the node with `node label` and `node_properties` exists in the DGL.
@@ -39,7 +54,7 @@ def _check_entity_exists_in_dgl(entity_data, properties: Dict[str, Any], transla
     return False
 
 
-def _check_entity_exists_dgl_to_memgraph(entity_data, entity_id, properties: Dict[str, Any]):
+def _check_entity_exists_dgl_to_memgraph(entity_data, entity_id: int, properties: Dict[str, Any]):
     """Checks that all properties that are in DGL, exist in Memgraph too.
     Args:
         entity_data: `graph.nodes[node_label]` or `graph.edges[etype]`
@@ -65,7 +80,6 @@ def _check_all_edges_exist_memgraph_dgl(
         translator: Reference to the used DGLTranslator.
         total_num_edges: Total number of edges in the DGL graph, checked only when importing from DGL.
         direction: EXP for exporting Memgraph to DGL, IMP for DGL to Memgraph.
-        TODO: maybe it would be better to use static variables
     """
     query_results = list(Match().node(variable="n").to(variable="r").node(variable="m").return_().execute())
     assert total_num_edges is None or len(query_results) == total_num_edges

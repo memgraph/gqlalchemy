@@ -1,3 +1,17 @@
+# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from torch_geometric.data import HeteroData, Data
 import torch
 
@@ -5,12 +19,13 @@ from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy import Match
 from gqlalchemy.transformations.constants import EDGE_INDEX, PYG_ID, NUM_NODES
 
+
 class PyGTranslator(Translator):
     def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
         super().__init__(default_node_label, default_edge_type)
 
     @classmethod
-    def get_node_properties(cls, graph, node_label, node_id):
+    def get_node_properties(cls, graph, node_label: str, node_id: int):
         node_properties = {}
         for iter_node_label, iter_node_properties in graph.node_items():
             if iter_node_label == node_label:
@@ -37,7 +52,6 @@ class PyGTranslator(Translator):
                 etype_properties[property_key] = property_values
         return node_properties, etype_properties
 
-
     def to_cypher_queries(self, graph):
         """Produce cypher queries for data saved as part of thePyG graph. The method handles both homogeneous and heterogeneous graph.
         The method converts 1D as well as multidimensional features. If there are some isolated nodes inside the graph, they won't get transferred. Nodes and edges
@@ -53,7 +67,6 @@ class PyGTranslator(Translator):
         Returns:
             cypher queries.
         """
-        # TODO: abstract a bit more homogeneous and heterogeneous stuff
         queries = []
         if isinstance(graph, HeteroData):
             for etype, etype_features in graph.edge_items():
@@ -141,19 +154,18 @@ class PyGTranslator(Translator):
         for node_label, num_nodes_label in mem_indexes.items():
             graph[node_label].num_nodes = num_nodes_label
 
-
         # Set node features
         for node_label, features_dict in node_features.items():
             for feature_name, features in features_dict.items():
                 features = Translator.validate_features(features, graph[node_label].num_nodes)
-                if not features is None:
+                if features is not None:
                     setattr(graph[node_label], feature_name, torch.tensor(features, dtype=torch.float32))
 
         # Set edge features
         for edge_triplet, features_dict in edge_features.items():
             for feature_name, features in features_dict.items():
                 features = Translator.validate_features(features, graph[edge_triplet].num_edges)
-                if not features is None:
+                if features is not None:
                     setattr(graph[edge_triplet], feature_name, torch.tensor(features, dtype=torch.float32))
 
         # PyG offers a method to validate graph so if something is wrong an error will occur
