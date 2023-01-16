@@ -39,7 +39,7 @@ class DGLTranslator(Translator):
          _N as a node label and _E as edge label. The method converts 1D as well as multidimensional features. If there are some isolated nodes inside DGL graph, they won't get transferred. Nodes and edges
          created in Memgraph DB will, for the consistency reasons, have property `dgl_id` set to the id they have as part of the DGL graph. Note that this method doesn't insert anything inside the database,
          it just creates cypher queries. To insert queries the following code can be used:
-         >>> memegraph = Memgraph()
+         >>> memgraph = Memgraph()
          dgl_graph = DGLGraph(...)
          for query in DGLTranslator().to_cypher_queries(dgl_graph):
             memgraph.execute(query)
@@ -50,6 +50,8 @@ class DGLTranslator(Translator):
             cypher queries.
         """
         queries = []
+        if graph is None:
+            return queries
         for etype in graph.canonical_etypes:
             source_node_label, edge_type, dest_node_label = etype
             source_nodes, dest_nodes, eids = graph.edges(etype=etype, form="all")
@@ -107,6 +109,10 @@ class DGLTranslator(Translator):
                 torch.tensor(src_nodes[type_triplet], dtype=torch.int32),
                 torch.tensor(dest_nodes[type_triplet], dtype=torch.int32),
             )
+
+        # Fail safely when graph is empty
+        if len(graph_data) == 0:
+            return None
 
         # Create heterograph
         graph = dgl.heterograph(graph_data)

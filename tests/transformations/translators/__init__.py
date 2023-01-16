@@ -11,15 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from abc import ABC, abstractmethod
-
-
-class Importer(ABC):
-
-    def __init__(self) -> None:
-        super().__init__()
-
-    @abstractmethod
-    def translate(self, graph):
-        raise NotImplementedError("Correct import strategy must be provided by subclasses.")

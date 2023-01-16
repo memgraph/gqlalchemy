@@ -33,7 +33,7 @@ from gqlalchemy.models import (
     TriggerExecutionPhase,
 )
 from gqlalchemy.query_builders.memgraph_query_builder import Operator, QueryBuilder, Unwind
-
+from gqlalchemy.transformations.importing.importer import Importer
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
@@ -372,7 +372,7 @@ class PyArrowDataLoader(DataLoader):
         print("Data loaded.")
 
 
-class TableToGraphImporter:
+class TableToGraphImporter(Importer):
     """Implements translation of table data to graph data, and imports it to Memgraph."""
 
     _DIRECTION = {

@@ -26,6 +26,12 @@ class PyGTranslator(Translator):
 
     @classmethod
     def get_node_properties(cls, graph, node_label: str, node_id: int):
+        """Extracts node properties from heterogeneous graph based on the node_label.
+        Args:
+            graph: A reference to the PyG graph.
+            node_label: Node label
+            node_id: Node_id
+        """
         node_properties = {}
         for iter_node_label, iter_node_properties in graph.node_items():
             if iter_node_label == node_label:
@@ -68,6 +74,9 @@ class PyGTranslator(Translator):
             cypher queries.
         """
         queries = []
+        if graph is None:
+            return queries
+
         if isinstance(graph, HeteroData):
             for etype, etype_features in graph.edge_items():
                 source_node_label, edge_type, dest_node_label = etype

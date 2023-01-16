@@ -43,6 +43,8 @@ class NetworkXCypherBuilder:
 
     def yield_queries(self, graph: nx.Graph) -> Iterator[str]:
         """Generates Cypher queries for creating a graph."""
+        if graph is None:
+            return []
 
         if self._config.create_index:
             yield from self._nx_nodes_to_cypher_with_index(graph)
@@ -138,7 +140,6 @@ class NxTranslator(Translator):
     as dictionary entries. All properties are saved to Networkx data structure.
     """
 
-    # TODO: maybe we would like to have specific `weight` property for out users
     def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
         super().__init__(default_node_label, default_edge_type)
         self.__all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")

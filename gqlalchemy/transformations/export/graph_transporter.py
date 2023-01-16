@@ -12,24 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy import Memgraph
-from gqlalchemy.transformations.importing.importer import Importer
+from gqlalchemy.transformations.export.transporter import Transporter
 from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
 from gqlalchemy.transformations.translators.nx_translator import NxTranslator
 from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
 
-
-class GraphImporter(Importer):
-    """Imports dgl, pyg or networkx graph representations to Memgraph.
-    The following code will suffice for importing queries.
-    >>> importer = GraphImporter("dgl")
-    graph = DGLGraph(...)
-    importer.translate(graph)  # queries are inserted in this step
-    Args:
-        graph_type: The type of the graph.
+class GraphTransporter(Transporter):
+    """Here is a possible example for using this module:
+    >>> transporter = GraphTransported("dgl")
+    graph = transporter.export()
     """
 
     def __init__(self, graph_type: str) -> None:
+        """Initializes GraphTransporter. It is used for converting Memgraph graph to the specific graph type offered by some Python package (PyG, DGL, NX...)
+        Here is a possible example for using this module:
+        >>> transporter = GraphTransported("dgl")
+        graph = transporter.export()
+        Args:
+            graph_type: dgl, pyg or nx
+        """
         super().__init__()
         self.graph_type = graph_type.lower()
         if self.graph_type == "dgl":
@@ -41,11 +42,7 @@ class GraphImporter(Importer):
         else:
             raise ValueError("Unknown export option. Currently supported are DGL, PyG and Networkx.")
 
-    def translate(self, graph):
-        """Gets cypher queries using the underlying translator and then inserts all queries to Memgraph DB.
-        Args:
-            graph: dgl, pytorch geometric or nx graph instance.
+    def export(self):
+        """Creates graph instance for the wanted export option.
         """
-        memgraph = Memgraph()
-        for query in self.translator.to_cypher_queries(graph):
-            memgraph.execute(query)
+        return self.translator.get_instance()

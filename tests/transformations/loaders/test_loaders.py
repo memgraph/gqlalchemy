@@ -15,7 +15,7 @@
 import platform
 import pytest
 
-from gqlalchemy.loaders import (
+from gqlalchemy.transformations.importing.loaders import (
     CSVLocalFileSystemImporter,
     DataLoader,
     FeatherLocalFileSystemImporter,
