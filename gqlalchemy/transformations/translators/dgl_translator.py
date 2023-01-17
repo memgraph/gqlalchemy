@@ -16,9 +16,9 @@ import dgl
 import torch
 
 from gqlalchemy.transformations.translators.translator import Translator
-from gqlalchemy import Match
 from gqlalchemy.transformations.constants import DGL_ID
 from gqlalchemy.utilities import to_cypher_value
+from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
 
 
 class DGLTranslator(Translator):
@@ -31,8 +31,15 @@ class DGLTranslator(Translator):
     same name must have the same dimensionality and data type.
     """
 
-    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
-        super().__init__(default_node_label, default_edge_type)
+    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP",
+        host: str = MG_HOST,
+        port: int = MG_PORT,
+        username: str = MG_USERNAME,
+        password: str = MG_PASSWORD,
+        encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,) -> None:
+        super().__init__(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
 
     def to_cypher_queries(self, graph):
         """Produce cypher queries for data saved as part of the DGL graph. The method handles both homogeneous and heterogeneous graph. If the graph is homogeneous, a default DGL's labels will be used.
@@ -63,17 +70,14 @@ class DGLTranslator(Translator):
                 # Handle properties
                 source_node_properties, dest_node_properties, edge_properties = {}, {}, {}
                 # Copy source node properties
+                source_node_properties = dict(map(lambda pair: (pair[0], to_cypher_value(pair[1][source_node_id])), node_src_label_properties.items()))
                 source_node_properties[DGL_ID] = int(source_node_id)
-                for property_name, property_value in node_src_label_properties.items():
-                    source_node_properties[property_name] = to_cypher_value(property_value[source_node_id])
                 # Copy destination node properties
+                dest_node_properties = dict(map(lambda pair: (pair[0], to_cypher_value(pair[1][dest_node_id])), node_dest_label_properties.items()))
                 dest_node_properties[DGL_ID] = int(dest_node_id)
-                for property_name, property_value in node_dest_label_properties.items():
-                    dest_node_properties[property_name] = to_cypher_value(property_value[dest_node_id])
                 # Copy edge features
+                edge_properties = dict(map(lambda pair: (pair[0], to_cypher_value(pair[1][eid])), etype_properties.items()))
                 edge_properties[DGL_ID] = int(eid)
-                for property_name, property_value in etype_properties.items():
-                    edge_properties[property_name] = to_cypher_value(property_value[eid])
 
                 # Create query
                 queries.append(
@@ -97,7 +101,7 @@ class DGLTranslator(Translator):
             DGL heterograph instance.
         """
         # Get all nodes and edges from the database
-        query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
+        query_results = self.get_all_edges_from_db() 
 
         # Parse it into nice data structures
         src_nodes, dest_nodes, node_features, edge_features, _ = self._parse_mem_graph(query_results)

@@ -20,8 +20,19 @@ from numbers import Number
 import torch
 
 from gqlalchemy.transformations.constants import LABELS_CONCAT
+from gqlalchemy.memgraph_constants import (
+    MG_HOST,
+    MG_PORT,
+    MG_USERNAME,
+    MG_PASSWORD,
+    MG_ENCRYPTED,
+    MG_CLIENT_NAME,
+    MG_LAZY,
+)
 from gqlalchemy.models import Node, Relationship
 from gqlalchemy.utilities import to_cypher_properties
+from gqlalchemy import Memgraph, Match
+
 
 class Translator(ABC):
 
@@ -33,10 +44,22 @@ class Translator(ABC):
     )
 
     @abstractmethod
-    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
+    def __init__(
+        self,
+        default_node_label="NODE",
+        default_edge_type="RELATIONSHIP",
+        host: str = MG_HOST,
+        port: int = MG_PORT,
+        username: str = MG_USERNAME,
+        password: str = MG_PASSWORD,
+        encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,
+    ) -> None:
         super().__init__()
         self.default_node_label = default_node_label
         self.default_edge_type = default_edge_type
+        self.connection = Memgraph(host, port, username, password, encrypted, client_name, lazy)
 
     @abstractmethod
     def to_cypher_queries(graph):
@@ -61,15 +84,6 @@ class Translator(ABC):
         raise NotImplementedError(
             "Subclasses must override this method to correctly parse query results for specific graph type."
         )
-
-    @classmethod
-    def get_entity_numeric_properties(cls, entity: Union[Node, Relationship]):
-        """ """
-        numeric_properties = {}
-        for key, val in entity._properties.items():
-            if Translator._is_most_inner_type_number(val):
-                numeric_properties[key] = val
-        return numeric_properties
 
     @classmethod
     def _is_most_inner_type_number(cls, obj):
@@ -101,15 +115,21 @@ class Translator(ABC):
         except ValueError:
             return None
 
+    @classmethod
+    def get_properties(cls, properties, entity_id):
+        properties_ret = {}
+        for property_key, property_values in properties.items():
+            properties_ret[property_key] = property_values[entity_id]
+        return properties_ret
 
     def _parse_mem_graph(self, query_results):
         """ """
         mem_indexes: Dict[str, int] = defaultdict(int)  # track current counter for the node type
         node_features: Dict[str, Dict[str, List[int]]] = defaultdict(
-            dict
+            lambda: defaultdict(list)
         )  # node_label to prop_name to list of features for all nodes of that label
         edge_features: Dict[Tuple[str, str, str], Dict[str, List[int]]] = defaultdict(
-            dict
+            lambda: defaultdict(list)
         )  # (source_node_label, edge_type, dest_node_label) to prop_name to list of features for all edges of that type
         src_nodes: Dict[Tuple[str, str, str], List[int]] = defaultdict(
             list
@@ -125,6 +145,9 @@ class Translator(ABC):
             row_values = row.values()
             # print(f"Row values: {row_values}")
             for entity in row_values:
+                entity_num_features = dict(
+                    filter(lambda pair: Translator._is_most_inner_type_number(pair[1]), entity._properties.items())
+                )
                 if isinstance(entity, Node):
                     # Extract node label and all numeric features
                     node_label = Translator.merge_labels(entity._labels, self.default_node_label)
@@ -133,17 +156,11 @@ class Translator(ABC):
                         reindex[node_label][entity._id] = mem_indexes[node_label]
                         mem_indexes[node_label] += 1
                         # Copy numeric features of a node
-                        node_num_features = Translator.get_entity_numeric_properties(entity)
-                        # node_num_features["test"] = 1
-                        for num_feature_key, num_feature_val in node_num_features.items():
-                            if num_feature_key not in node_features[node_label]:
-                                node_features[node_label][num_feature_key] = []
+                        for num_feature_key, num_feature_val in entity_num_features.items():
                             node_features[node_label][num_feature_key].append(num_feature_val)  # this should fail
                 elif isinstance(entity, Relationship):
                     # Extract edge type and all numeric features
                     edge_type = entity._type if entity._type else self.default_edge_type
-                    edge_num_features = Translator.get_entity_numeric_properties(entity)
-                    # edge_num_features["test"] = 2
                     # Find descriptions of source and destination nodes. Cheap because we search only over row values, this is better than querying the database again.
                     source_node_index, dest_node_index = None, None
                     source_node_label, dest_node_label = None, None
@@ -159,9 +176,7 @@ class Translator(ABC):
                     src_nodes[edge_triplet].append(source_node_index)
                     dest_nodes[edge_triplet].append(dest_node_index)
                     # Save edge features
-                    for num_feature_key, num_feature_val in edge_num_features.items():
-                        if num_feature_key not in edge_features[edge_triplet]:
-                            edge_features[edge_triplet][num_feature_key] = []
+                    for num_feature_key, num_feature_val in entity_num_features.items():
                         edge_features[edge_triplet][num_feature_key].append(num_feature_val)
 
         return src_nodes, dest_nodes, node_features, edge_features, mem_indexes
@@ -180,9 +195,11 @@ class Translator(ABC):
             f"MERGE (m:{dest_node_label} {to_cypher_properties(dest_node_properties)}) "
             f"MERGE (n)-[r:{edge_type} {to_cypher_properties(edge_properties)}]->(m)"
         )
+    
+    def get_all_edges_from_db(self):
+        """Returns all edges from the database.
+        Returns:
+            Query results when finding all edges.
+        """
+        return Match(connection=self.connection).node(variable="n").to(variable="r").node(variable="m").return_().execute()
 
-    def get_properties(properties, entity_id):
-        properties_ret = {}
-        for property_key, property_values in properties.items():
-            properties_ret[property_key] = property_values[entity_id]
-        return properties_ret

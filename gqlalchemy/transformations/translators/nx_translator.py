@@ -23,10 +23,9 @@ import mgclient
 from gqlalchemy import Memgraph
 from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE
 from gqlalchemy.transformations.translators.translator import Translator
-from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship, MemgraphIndex
 from gqlalchemy.utilities import NetworkXCypherConfig, to_cypher_labels, to_cypher_properties, to_cypher_value
-
+from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
 
 class NetworkXGraphConstants:
     LABELS = "labels"
@@ -140,9 +139,17 @@ class NxTranslator(Translator):
     as dictionary entries. All properties are saved to Networkx data structure.
     """
 
-    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
-        super().__init__(default_node_label, default_edge_type)
-        self.__all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
+    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP",
+        host: str = MG_HOST,
+        port: int = MG_PORT,
+        username: str = MG_USERNAME,
+        password: str = MG_PASSWORD,
+        encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,) -> None:
+            self.__all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
+            super().__init__(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
+
 
     def to_cypher_queries(self, graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]:
         """Generates a Cypher query for creating a graph."""
@@ -246,8 +253,7 @@ class NxTranslator(Translator):
         are encoded as a node and edge properties.
         """
         # Get all nodes and edges from the database
-        query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
-
+        query_results = self.get_all_edges_from_db() 
         # Data structures
         graph_data = []  # List[Tuple[source_node_id, dest_node_id]]
         node_info = dict()  # Dict[id, Dict[prop: value]]

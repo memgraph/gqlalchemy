@@ -16,13 +16,20 @@ from torch_geometric.data import HeteroData, Data
 import torch
 
 from gqlalchemy.transformations.translators.translator import Translator
-from gqlalchemy import Match
 from gqlalchemy.transformations.constants import EDGE_INDEX, PYG_ID, NUM_NODES
-
+from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
 
 class PyGTranslator(Translator):
-    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP") -> None:
-        super().__init__(default_node_label, default_edge_type)
+    
+    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP",
+        host: str = MG_HOST,
+        port: int = MG_PORT,
+        username: str = MG_USERNAME,
+        password: str = MG_PASSWORD,
+        encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,) -> None:
+        super().__init__(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
 
     @classmethod
     def get_node_properties(cls, graph, node_label: str, node_id: int):
@@ -50,12 +57,8 @@ class PyGTranslator(Translator):
         """
         graph_data = graph.to_dict()
         graph_data.pop(EDGE_INDEX, None)
-        node_properties, etype_properties = {}, {}
-        for property_key, property_values in graph_data.items():
-            if graph.is_node_attr(property_key):
-                node_properties[property_key] = property_values
-            elif graph.is_edge_attr(property_key):
-                etype_properties[property_key] = property_values
+        node_properties = dict(filter(lambda pair: graph.is_node_attr(pair[0]), graph_data.items()))
+        etype_properties = dict(filter(lambda pair: graph.is_edge_attr(pair[0]), graph_data.items()))
         return node_properties, etype_properties
 
     def to_cypher_queries(self, graph):
@@ -115,12 +118,11 @@ class PyGTranslator(Translator):
             # Process edges
             eid = 0
             for src_node_id, dest_node_id in zip(src_nodes, dest_nodes):
-                # Get node properties
+                 # Get node properties
                 source_node_properties = Translator.get_properties(node_properties, src_node_id)
                 source_node_properties[PYG_ID] = int(src_node_id)
                 dest_node_properties = Translator.get_properties(node_properties, dest_node_id)
                 dest_node_properties[PYG_ID] = int(dest_node_id)
-                # Get edge properties
                 edge_properties = Translator.get_properties(etype_properties, eid)
                 edge_properties[PYG_ID] = eid
                 eid += 1
@@ -145,8 +147,7 @@ class PyGTranslator(Translator):
         Returns:
             PyG heterograph instance.
         """
-        query_results = Match().node(variable="n").to(variable="r").node(variable="m").return_().execute()
-
+        query_results = self.get_all_edges_from_db()
         # Parse it into nice data structures
         src_nodes, dest_nodes, node_features, edge_features, mem_indexes = self._parse_mem_graph(query_results)
 

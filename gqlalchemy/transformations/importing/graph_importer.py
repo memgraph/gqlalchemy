@@ -17,7 +17,7 @@ from gqlalchemy.transformations.importing.importer import Importer
 from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
 from gqlalchemy.transformations.translators.nx_translator import NxTranslator
 from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
-
+from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
 
 class GraphImporter(Importer):
     """Imports dgl, pyg or networkx graph representations to Memgraph.
@@ -29,17 +29,26 @@ class GraphImporter(Importer):
         graph_type: The type of the graph.
     """
 
-    def __init__(self, graph_type: str) -> None:
+    def __init__(self, graph_type: str,
+        default_node_label = "NODE",
+        default_edge_type = "RELATIONSHIP",
+        host: str = MG_HOST,
+        port: int = MG_PORT,
+        username: str = MG_USERNAME,
+        password: str = MG_PASSWORD,
+        encrypted: bool = MG_ENCRYPTED,
+        client_name: str = MG_CLIENT_NAME,
+        lazy: bool = MG_LAZY,) -> None:
         super().__init__()
         self.graph_type = graph_type.lower()
         if self.graph_type == "dgl":
-            self.translator = DGLTranslator()
+            self.translator = DGLTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == "pyg":
-            self.translator = PyGTranslator()
+            self.translator = PyGTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == "nx":
-            self.translator = NxTranslator()
+            self.translator = NxTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
         else:
-            raise ValueError("Unknown export option. Currently supported are DGL, PyG and Networkx.")
+            raise ValueError("Unknown import option. Currently supported are DGL, PyG and Networkx.")
 
     def translate(self, graph):
         """Gets cypher queries using the underlying translator and then inserts all queries to Memgraph DB.
