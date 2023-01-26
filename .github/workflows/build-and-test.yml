@@ -50,8 +50,8 @@ jobs:
       - name: Test project
         run: |
           poetry install
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
           poe install-pyg-cpu
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v3
         if: always()
@@ -115,8 +115,8 @@ jobs:
       - name: Test project
         run: |
           poetry install
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
           poe install-pyg-cpu
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Save Memgraph Logs
         uses: actions/upload-artifact@v3
         if: always()

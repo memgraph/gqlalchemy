@@ -79,7 +79,7 @@ def test_local_table_to_graph_importer_parquet(memgraph):
         "one_to_many_relations": {"example": []},
     }
     importer = ParquetLocalFileSystemImporter(
-        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
+        path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
     )
 
     importer.translate(drop_database_on_start=True)
@@ -93,7 +93,7 @@ def test_local_table_to_graph_importer_csv(memgraph):
         "one_to_many_relations": {"example": []},
     }
     importer = CSVLocalFileSystemImporter(
-        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
+        path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
     )
 
     importer.translate(drop_database_on_start=True)
@@ -111,7 +111,7 @@ def test_local_table_to_graph_importer_orc(memgraph):
             "one_to_many_relations": {"example": []},
         }
         importer = ORCLocalFileSystemImporter(
-            path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
+            path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
         )
 
         importer.translate(drop_database_on_start=True)
@@ -125,7 +125,7 @@ def test_local_table_to_graph_importer_feather(memgraph):
         "one_to_many_relations": {"example": []},
     }
     importer = FeatherLocalFileSystemImporter(
-        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
+        path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
     )
 
     importer.translate(drop_database_on_start=True)
