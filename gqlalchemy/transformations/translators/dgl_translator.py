@@ -18,7 +18,15 @@ import torch
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import DGL_ID
 from gqlalchemy.utilities import to_cypher_value
-from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
+from gqlalchemy.memgraph_constants import (
+    MG_HOST,
+    MG_PORT,
+    MG_USERNAME,
+    MG_PASSWORD,
+    MG_ENCRYPTED,
+    MG_CLIENT_NAME,
+    MG_LAZY,
+)
 
 
 class DGLTranslator(Translator):
@@ -31,15 +39,21 @@ class DGLTranslator(Translator):
     same name must have the same dimensionality and data type.
     """
 
-    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP",
+    def __init__(
+        self,
+        default_node_label="NODE",
+        default_edge_type="RELATIONSHIP",
         host: str = MG_HOST,
         port: int = MG_PORT,
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
-        lazy: bool = MG_LAZY,) -> None:
-        super().__init__(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
+        lazy: bool = MG_LAZY,
+    ) -> None:
+        super().__init__(
+            default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+        )
 
     def to_cypher_queries(self, graph):
         """Produce cypher queries for data saved as part of the DGL graph. The method handles both homogeneous and heterogeneous graph. If the graph is homogeneous, a default DGL's labels will be used.
@@ -70,13 +84,25 @@ class DGLTranslator(Translator):
                 # Handle properties
                 source_node_properties, dest_node_properties, edge_properties = {}, {}, {}
                 # Copy source node properties
-                source_node_properties = dict(map(lambda pair: (pair[0], to_cypher_value(pair[1][source_node_id])), node_src_label_properties.items()))
+                source_node_properties = dict(
+                    map(
+                        lambda pair: (pair[0], to_cypher_value(pair[1][source_node_id])),
+                        node_src_label_properties.items(),
+                    )
+                )
                 source_node_properties[DGL_ID] = int(source_node_id)
                 # Copy destination node properties
-                dest_node_properties = dict(map(lambda pair: (pair[0], to_cypher_value(pair[1][dest_node_id])), node_dest_label_properties.items()))
+                dest_node_properties = dict(
+                    map(
+                        lambda pair: (pair[0], to_cypher_value(pair[1][dest_node_id])),
+                        node_dest_label_properties.items(),
+                    )
+                )
                 dest_node_properties[DGL_ID] = int(dest_node_id)
                 # Copy edge features
-                edge_properties = dict(map(lambda pair: (pair[0], to_cypher_value(pair[1][eid])), etype_properties.items()))
+                edge_properties = dict(
+                    map(lambda pair: (pair[0], to_cypher_value(pair[1][eid])), etype_properties.items())
+                )
                 edge_properties[DGL_ID] = int(eid)
 
                 # Create query
@@ -101,7 +127,7 @@ class DGLTranslator(Translator):
             DGL heterograph instance.
         """
         # Get all nodes and edges from the database
-        query_results = self.get_all_edges_from_db() 
+        query_results = self.get_all_edges_from_db()
 
         # Parse it into nice data structures
         src_nodes, dest_nodes, node_features, edge_features, _ = self._parse_mem_graph(query_results)
@@ -123,15 +149,17 @@ class DGLTranslator(Translator):
         # Set node features
         for node_label, features_dict in node_features.items():
             for feature_name, features in features_dict.items():
-                features = Translator.validate_features(features, graph.num_nodes(node_label))
-                if features is not None:
-                    graph.nodes[node_label].data[feature_name] = features
+                translated_features = Translator.validate_features(features, graph.num_nodes(node_label))
+                if translated_features is None:
+                    continue
+                graph.nodes[node_label].data[feature_name] = translated_features
 
         # Set edge features
         for edge_triplet, features_dict in edge_features.items():
             for feature_name, features in features_dict.items():
-                features = Translator.validate_features(features, graph.num_edges(edge_triplet))
-                if features is not None:
-                    graph.edges[edge_triplet].data[feature_name] = features
+                translated_features = Translator.validate_features(features, graph.num_edges(edge_triplet))
+                if translated_features is None:
+                    continue
+                graph.edges[edge_triplet].data[feature_name] = translated_features
 
         return graph

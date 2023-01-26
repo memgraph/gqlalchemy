@@ -13,11 +13,13 @@
 # limitations under the License.
 
 from gqlalchemy import Memgraph
+from gqlalchemy.transformations.graph_type import GraphType
 from gqlalchemy.transformations.importing.importer import Importer
 from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
 from gqlalchemy.transformations.translators.nx_translator import NxTranslator
 from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
-from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
+import gqlalchemy.memgraph_constants as mg_consts
+
 
 class GraphImporter(Importer):
     """Imports dgl, pyg or networkx graph representations to Memgraph.
@@ -29,26 +31,35 @@ class GraphImporter(Importer):
         graph_type: The type of the graph.
     """
 
-    def __init__(self, graph_type: str,
-        default_node_label = "NODE",
-        default_edge_type = "RELATIONSHIP",
-        host: str = MG_HOST,
-        port: int = MG_PORT,
-        username: str = MG_USERNAME,
-        password: str = MG_PASSWORD,
-        encrypted: bool = MG_ENCRYPTED,
-        client_name: str = MG_CLIENT_NAME,
-        lazy: bool = MG_LAZY,) -> None:
+    def __init__(
+        self,
+        graph_type: str,
+        default_node_label="NODE",
+        default_edge_type="RELATIONSHIP",
+        host: str = mg_consts.MG_HOST,
+        port: int = mg_consts.MG_PORT,
+        username: str = mg_consts.MG_USERNAME,
+        password: str = mg_consts.MG_PASSWORD,
+        encrypted: bool = mg_consts.MG_ENCRYPTED,
+        client_name: str = mg_consts.MG_CLIENT_NAME,
+        lazy: bool = mg_consts.MG_LAZY,
+    ) -> None:
         super().__init__()
-        self.graph_type = graph_type.lower()
-        if self.graph_type == "dgl":
-            self.translator = DGLTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
-        elif self.graph_type == "pyg":
-            self.translator = PyGTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
-        elif self.graph_type == "nx":
-            self.translator = NxTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
+        self.graph_type = graph_type.upper()
+        if self.graph_type == GraphType.DGL.name:
+            self.translator = DGLTranslator(
+                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            )
+        elif self.graph_type == GraphType.PYG.name:
+            self.translator = PyGTranslator(
+                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            )
+        elif self.graph_type == GraphType.NX.name:
+            self.translator = NxTranslator(
+                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            )
         else:
-            raise ValueError("Unknown import option. Currently supported are DGL, PyG and Networkx.")
+            raise ValueError("Unknown import option. Currently supported options are: DGL, PyG and Networkx.")
 
     def translate(self, graph):
         """Gets cypher queries using the underlying translator and then inserts all queries to Memgraph DB.

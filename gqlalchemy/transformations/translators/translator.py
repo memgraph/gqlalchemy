@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Callable, List, Set, Union, Dict, Tuple
+from typing import Callable, List, Set, Dict, Tuple
 from collections import defaultdict
 from numbers import Number
 
@@ -195,11 +195,12 @@ class Translator(ABC):
             f"MERGE (m:{dest_node_label} {to_cypher_properties(dest_node_properties)}) "
             f"MERGE (n)-[r:{edge_type} {to_cypher_properties(edge_properties)}]->(m)"
         )
-    
+
     def get_all_edges_from_db(self):
         """Returns all edges from the database.
         Returns:
             Query results when finding all edges.
         """
-        return Match(connection=self.connection).node(variable="n").to(variable="r").node(variable="m").return_().execute()
-
+        return (
+            Match(connection=self.connection).node(variable="n").to(variable="r").node(variable="m").return_().execute()
+        )

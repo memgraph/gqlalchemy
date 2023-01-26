@@ -114,12 +114,14 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     return f"'{value}'"
 
+
 def is_numeric(value):
     try:
         float(value)
         return True
     except ValueError:
         return False
+
 
 def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=None) -> str:
     """Converts properties to a Cypher key-value properties."""

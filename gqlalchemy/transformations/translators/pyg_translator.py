@@ -17,19 +17,33 @@ import torch
 
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import EDGE_INDEX, PYG_ID, NUM_NODES
-from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
+from gqlalchemy.memgraph_constants import (
+    MG_HOST,
+    MG_PORT,
+    MG_USERNAME,
+    MG_PASSWORD,
+    MG_ENCRYPTED,
+    MG_CLIENT_NAME,
+    MG_LAZY,
+)
+
 
 class PyGTranslator(Translator):
-    
-    def __init__(self, default_node_label="NODE", default_edge_type="RELATIONSHIP",
+    def __init__(
+        self,
+        default_node_label="NODE",
+        default_edge_type="RELATIONSHIP",
         host: str = MG_HOST,
         port: int = MG_PORT,
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
-        lazy: bool = MG_LAZY,) -> None:
-        super().__init__(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
+        lazy: bool = MG_LAZY,
+    ) -> None:
+        super().__init__(
+            default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+        )
 
     @classmethod
     def get_node_properties(cls, graph, node_label: str, node_id: int):
@@ -41,10 +55,12 @@ class PyGTranslator(Translator):
         """
         node_properties = {}
         for iter_node_label, iter_node_properties in graph.node_items():
-            if iter_node_label == node_label:
-                for property_name, property_values in iter_node_properties.items():
-                    if property_name != NUM_NODES:
-                        node_properties[property_name] = property_values[node_id]
+            if iter_node_label != node_label:
+                continue
+            for property_name, property_values in iter_node_properties.items():
+                if property_name == NUM_NODES:
+                    continue
+                node_properties[property_name] = property_values[node_id]
         return node_properties
 
     @classmethod
@@ -118,7 +134,7 @@ class PyGTranslator(Translator):
             # Process edges
             eid = 0
             for src_node_id, dest_node_id in zip(src_nodes, dest_nodes):
-                 # Get node properties
+                # Get node properties
                 source_node_properties = Translator.get_properties(node_properties, src_node_id)
                 source_node_properties[PYG_ID] = int(src_node_id)
                 dest_node_properties = Translator.get_properties(node_properties, dest_node_id)

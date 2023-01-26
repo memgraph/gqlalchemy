@@ -35,7 +35,7 @@ from gqlalchemy.models import (
 )
 from gqlalchemy.vendors.database_client import DatabaseClient
 from gqlalchemy.graph_algorithms.query_modules import QueryModule
-from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
+import gqlalchemy.memgraph_constants as mg_consts
 
 __all__ = ("Memgraph",)
 
@@ -52,13 +52,13 @@ class MemgraphConstants:
 class Memgraph(DatabaseClient):
     def __init__(
         self,
-        host: str = MG_HOST,
-        port: int = MG_PORT,
-        username: str = MG_USERNAME,
-        password: str = MG_PASSWORD,
-        encrypted: bool = MG_ENCRYPTED,
-        client_name: str = MG_CLIENT_NAME,
-        lazy: bool = MG_LAZY,
+        host: str = mg_consts.MG_HOST,
+        port: int = mg_consts.MG_PORT,
+        username: str = mg_consts.MG_USERNAME,
+        password: str = mg_consts.MG_PASSWORD,
+        encrypted: bool = mg_consts.MG_ENCRYPTED,
+        client_name: str = mg_consts.MG_CLIENT_NAME,
+        lazy: bool = mg_consts.MG_LAZY,
     ):
         super().__init__(
             host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name

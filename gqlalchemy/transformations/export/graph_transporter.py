@@ -16,23 +16,29 @@ from gqlalchemy.transformations.export.transporter import Transporter
 from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
 from gqlalchemy.transformations.translators.nx_translator import NxTranslator
 from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
-from gqlalchemy.memgraph_constants import MG_HOST, MG_PORT, MG_USERNAME, MG_PASSWORD, MG_ENCRYPTED, MG_CLIENT_NAME, MG_LAZY
+from gqlalchemy.transformations.graph_type import GraphType
+import gqlalchemy.memgraph_constants as mg_consts
+
+
 class GraphTransporter(Transporter):
     """Here is a possible example for using this module:
     >>> transporter = GraphTransported("dgl")
     graph = transporter.export()
     """
 
-    def __init__(self, graph_type: str,
-        default_node_label = "NODE",
-        default_edge_type = "RELATIONSHIP",
-        host: str = MG_HOST,
-        port: int = MG_PORT,
-        username: str = MG_USERNAME,
-        password: str = MG_PASSWORD,
-        encrypted: bool = MG_ENCRYPTED,
-        client_name: str = MG_CLIENT_NAME,
-        lazy: bool = MG_LAZY,) -> None:
+    def __init__(
+        self,
+        graph_type: str,
+        default_node_label="NODE",
+        default_edge_type="RELATIONSHIP",
+        host: str = mg_consts.MG_HOST,
+        port: int = mg_consts.MG_PORT,
+        username: str = mg_consts.MG_USERNAME,
+        password: str = mg_consts.MG_PASSWORD,
+        encrypted: bool = mg_consts.MG_ENCRYPTED,
+        client_name: str = mg_consts.MG_CLIENT_NAME,
+        lazy: bool = mg_consts.MG_LAZY,
+    ) -> None:
         """Initializes GraphTransporter. It is used for converting Memgraph graph to the specific graph type offered by some Python package (PyG, DGL, NX...)
         Here is a possible example for using this module:
         >>> transporter = GraphTransported("dgl")
@@ -41,17 +47,22 @@ class GraphTransporter(Transporter):
             graph_type: dgl, pyg or nx
         """
         super().__init__()
-        self.graph_type = graph_type.lower()
-        if self.graph_type == "dgl":
-            self.translator = DGLTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
-        elif self.graph_type == "pyg":
-            self.translator = PyGTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
-        elif self.graph_type == "nx":
-            self.translator = NxTranslator(default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy)
+        self.graph_type = graph_type.upper()
+        if self.graph_type == GraphType.DGL.name:
+            self.translator = DGLTranslator(
+                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            )
+        elif self.graph_type == GraphType.PYG.name:
+            self.translator = PyGTranslator(
+                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            )
+        elif self.graph_type == GraphType.NX.name:
+            self.translator = NxTranslator(
+                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            )
         else:
             raise ValueError("Unknown export option. Currently supported are DGL, PyG and Networkx.")
 
     def export(self):
-        """Creates graph instance for the wanted export option.
-        """
+        """Creates graph instance for the wanted export option."""
         return self.translator.get_instance()
