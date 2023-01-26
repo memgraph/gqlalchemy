@@ -45,7 +45,6 @@ docker = "^5.0.3"
 torch = "^1.13.1"
 numpy = "^1.24.1"
 dgl = "^0.9.1"
-poethepoet = "^0.18.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
@@ -55,9 +54,6 @@ pytest-cov = "^2.12.0"
 pytest-flake8 = "1.0.7"
 pytest-timeout = "^1.4.2"
 pre-commit = "^2.15.0"
-
-[tool.poe.tasks]
-install-pyg-cpu = "pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
