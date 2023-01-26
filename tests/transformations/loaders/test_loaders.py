@@ -14,6 +14,7 @@
 
 import platform
 import pytest
+import os
 
 from gqlalchemy.transformations.importing.loaders import (
     CSVLocalFileSystemImporter,
@@ -119,6 +120,7 @@ def test_local_table_to_graph_importer_orc(memgraph):
 
 def test_local_table_to_graph_importer_feather(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+    print(f"OS: {os.getcwd()}")
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
