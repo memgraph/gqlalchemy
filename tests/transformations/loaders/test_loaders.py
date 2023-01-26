@@ -79,9 +79,8 @@ def test_local_table_to_graph_importer_parquet(memgraph):
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-    importer = ParquetLocalFileSystemImporter(
-        path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-    )
+    path = os.path.join(os.path.dirname(__file__), "data")
+    importer = ParquetLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
 
     importer.translate(drop_database_on_start=True)
 
@@ -93,9 +92,8 @@ def test_local_table_to_graph_importer_csv(memgraph):
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-    importer = CSVLocalFileSystemImporter(
-        path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-    )
+    path = os.path.join(os.path.dirname(__file__), "data")
+    importer = CSVLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
 
     importer.translate(drop_database_on_start=True)
 
@@ -111,23 +109,20 @@ def test_local_table_to_graph_importer_orc(memgraph):
             "name_mappings": {"example": {"label": "PERSON"}},
             "one_to_many_relations": {"example": []},
         }
-        importer = ORCLocalFileSystemImporter(
-            path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-        )
+        path = os.path.join(os.path.dirname(__file__), "data")
+        importer = ORCLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
 
         importer.translate(drop_database_on_start=True)
 
 
 def test_local_table_to_graph_importer_feather(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
-    print(f"OS: {os.getcwd()}")
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-    importer = FeatherLocalFileSystemImporter(
-        path="./tests/transformations/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-    )
+    path = os.path.join(os.path.dirname(__file__), "data")
+    importer = FeatherLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
 
     importer.translate(drop_database_on_start=True)
