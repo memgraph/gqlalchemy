@@ -126,11 +126,8 @@ class DGLTranslator(Translator):
         Returns:
             DGL heterograph instance.
         """
-        # Get all nodes and edges from the database
-        query_results = self.get_all_edges_from_db()
-
         # Parse it into nice data structures
-        src_nodes, dest_nodes, node_features, edge_features, _ = self._parse_mem_graph(query_results)
+        src_nodes, dest_nodes, node_features, edge_features, _ = self._parse_memgraph()
 
         graph_data = {}
         # Iterating over src_nodes and dest_nodes should be the same

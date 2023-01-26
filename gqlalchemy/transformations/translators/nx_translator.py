@@ -261,15 +261,15 @@ class NxTranslator(Translator):
         """Creates Networx instance of the graph from the data residing inside Memgraph. Since Networkx doesn't support labels in a way Memgraph does, labels
         are encoded as a node and edge properties.
         """
-        # Get all nodes and edges from the database
-        query_results = self.get_all_edges_from_db()
+        # Get all nodes and edges from the database (connected nodes)
+        rel_results = self.get_all_edges_from_db()
         # Data structures
         graph_data = []  # List[Tuple[source_node_id, dest_node_id]]
         node_info = dict()  # Dict[id, Dict[prop: value]]
         edge_info = dict()  # Dict[(source_node_id, dest_node_id), Dict[prop: value]]
 
         # Parse each row from query results
-        for row in query_results:
+        for row in rel_results:
             row_values = row.values()
             for entity in row_values:
                 entity_properties = entity._properties
@@ -285,4 +285,12 @@ class NxTranslator(Translator):
         graph = nx.DiGraph(graph_data)
         nx.set_node_attributes(graph, node_info)
         nx.set_edge_attributes(graph, edge_info)
+        # Process all isolated nodes
+        isolated_nodes_results = self.get_all_isolated_nodes_from_db()
+        for isolated_node in isolated_nodes_results:
+            isolated_node = isolated_node["n"]  #
+            entity_properties = isolated_node._properties
+            entity_properties[LABEL] = Translator.merge_labels(isolated_node._labels, self.default_node_label)
+            graph.add_node(isolated_node._id, **entity_properties)  # unpack dictionary
+
         return graph

@@ -24,8 +24,7 @@ from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.models import Node, Relationship
 from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE
 from gqlalchemy.utilities import NetworkXCypherConfig
-from gqlalchemy import Match
-from tests.transformations.utils import init_database
+from tests.transformations.common import execute_queries
 
 
 def _check_entity_exists_in_nx(graph_data, entity_properties, expected_num_features):
@@ -46,7 +45,8 @@ def _check_entity_exists_in_nx(graph_data, entity_properties, expected_num_featu
 def _check_nx_graph_structure(
     graph: nx.Graph, translator: NxTranslator, node_expected_num_features, edge_expected_num_features
 ):
-    query_results = list(Match().node(variable="n").to(variable="r").node(variable="m").return_().execute())
+    # Test all edges
+    query_results = translator.get_all_edges_from_db()
     for row in query_results:
         row_values = row.values()
         for entity in row_values:
@@ -58,9 +58,16 @@ def _check_nx_graph_structure(
                 entity_properties[EDGE_TYPE] = entity._type if entity._type else translator.default_edge_type
                 assert _check_entity_exists_in_nx(graph.edges(data=True), entity_properties, edge_expected_num_features)
 
+    # Test isolated nodes if any
+    isolated_nodes_results = translator.get_all_isolated_nodes_from_db()
+    for isolated_node in isolated_nodes_results:
+        isolated_node = isolated_node["n"]  #
+        entity_properties = isolated_node._properties
+        entity_properties[LABEL] = Translator.merge_labels(isolated_node._labels, translator.default_node_label)
+        assert _check_entity_exists_in_nx(graph.nodes(data=True), entity_properties, node_expected_num_features)
 
-def test_export_simple_graph():
-    memgraph = init_database()
+
+def test_export_simple_graph(memgraph):
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
     queries.append(f"CREATE (m:Node {{id: 2}})")
@@ -74,8 +81,7 @@ def test_export_simple_graph():
     queries.append(f"MATCH (n:Node {{id: 2}}), (m:Node {{id: 4}}) CREATE (n)-[r:CONNECTION {{edge_id: 6}}]->(m)")
     queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node {{id: 2}}) CREATE (n)-[r:CONNECTION {{edge_id: 7}}]->(m)")
     queries.append(f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8}}]->(m)")
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = NxTranslator()
     graph = translator.get_instance()
@@ -85,10 +91,34 @@ def test_export_simple_graph():
     memgraph.drop_database()
 
 
-def test_nx_export_graph_no_features_no_labels():
+def test_export_simple_graph_isolated_nodes(memgraph):
+    queries = []
+    queries.append(f"CREATE (m:Node {{id: 1}})")
+    queries.append(f"CREATE (m:Node {{id: 2}})")
+    queries.append(f"CREATE (m:Node {{id: 3}})")
+    queries.append(f"CREATE (m:Node {{id: 4}})")
+    queries.append(f"CREATE (m:Node {{id: 5}})")  # isolated node
+    queries.append(f"CREATE (m:Node {{id: 6}})")  # isolated node
+    queries.append(f"MATCH (n:Node {{id: 1}}), (m:Node {{id: 2}}) CREATE (n)-[r:CONNECTION {{edge_id: 1}}]->(m)")
+    queries.append(f"MATCH (n:Node {{id: 2}}), (m:Node {{id: 3}}) CREATE (n)-[r:CONNECTION {{edge_id: 2}}]->(m)")
+    queries.append(f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 4}}) CREATE (n)-[r:CONNECTION {{edge_id: 3}}]->(m)")
+    queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 4}}]->(m)")
+    queries.append(f"MATCH (n:Node {{id: 1}}), (m:Node {{id: 3}}) CREATE (n)-[r:CONNECTION {{edge_id: 5}}]->(m)")
+    queries.append(f"MATCH (n:Node {{id: 2}}), (m:Node {{id: 4}}) CREATE (n)-[r:CONNECTION {{edge_id: 6}}]->(m)")
+    queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node {{id: 2}}) CREATE (n)-[r:CONNECTION {{edge_id: 7}}]->(m)")
+    queries.append(f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8}}]->(m)")
+    execute_queries(memgraph, queries)
+    # Translate to DGL graph
+    translator = NxTranslator()
+    graph = translator.get_instance()
+    assert graph.number_of_edges() == 8
+    assert graph.number_of_nodes() == 6
+    _check_nx_graph_structure(graph, translator, 2, 2)
+
+
+def test_nx_export_graph_no_features_no_labels(memgraph):
     """Export graph which has all nodes and edges without properties."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m {{id: 1}})")
     queries.append(f"CREATE (m {{id: 2}})")
@@ -103,9 +133,7 @@ def test_nx_export_graph_no_features_no_labels():
     queries.append(f"MATCH (n {{id: 4}}), (m {{id: 2}}) CREATE (n)-[r:CONNECTION]->(m)")
     queries.append(f"MATCH (n {{id: 3}}), (m {{id: 1}}) CREATE (n)-[r:CONNECTION]->(m)")
     queries.append(f"MATCH (n) REMOVE n.id")
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to nx graph
     translator = NxTranslator()
     graph = translator.get_instance()
@@ -113,13 +141,11 @@ def test_nx_export_graph_no_features_no_labels():
     assert graph.number_of_nodes() == 4
     _check_nx_graph_structure(graph, translator, 1, 1)
     # Test some simple metadata properties
-    memgraph.drop_database()
 
 
-def test_nx_export_multiple_labels():
+def test_nx_export_multiple_labels(memgraph):
     """Tests exporting to nx when using multiple labels for nodes."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node:Mode {{id: 1}})")
     queries.append(f"CREATE (m:Node:Mode {{id: 2}})")
@@ -133,20 +159,17 @@ def test_nx_export_multiple_labels():
     queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node:Mode {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 4}}]->(m)")
     queries.append(f"MATCH (n:Node:Mode {{id: 1}}), (m:Node {{id: 3}}) CREATE (n)-[r:CONNECTION {{edge_id: 5}}]->(m)")
     queries.append(f"MATCH (n:Node:Mode {{id: 2}}), (m:Node {{id: 4}}) CREATE (n)-[r:CONNECTION {{edge_id: 6}}]->(m)")
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     translator = NxTranslator()
     graph = translator.get_instance()
     assert graph.number_of_edges() == 6
     assert graph.number_of_nodes() == 4
     _check_nx_graph_structure(graph, translator, 2, 2)
-    memgraph.drop_database()
 
 
-def test_nx_export_many_numerical_properties():
+def test_nx_export_many_numerical_properties(memgraph):
     """Test graph that has several numerical features on nodes and edges."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 30}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 32}})")
@@ -176,20 +199,17 @@ def test_nx_export_many_numerical_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 12}}]->(m)"
     )
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     translator = NxTranslator()
     graph = translator.get_instance()
     assert graph.number_of_edges() == 8
     assert graph.number_of_nodes() == 4
     _check_nx_graph_structure(graph, translator, 4, 4)
-    memgraph.drop_database()
 
 
-def test_nx_export_list_properties():
+def test_nx_export_list_properties(memgraph):
     """Test graph that has several numerical features on all nodes and edges together with lists that could represent feature vectors."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 30, lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 32, lst: [2, 2, 3, 3]}})")
@@ -219,20 +239,17 @@ def test_nx_export_list_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 12, edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     translator = NxTranslator()
     graph = translator.get_instance()
     assert graph.number_of_edges() == 8
     assert graph.number_of_nodes() == 4
     _check_nx_graph_structure(graph, translator, 5, 5)
-    memgraph.drop_database()
 
 
-def test_nx_export_various_dimensionality_list_properties():
+def test_nx_export_various_dimensionality_list_properties(memgraph):
     """When lists have various dimensions, they should get translated in the same way as when for all nodes are of the same dimension."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 30, lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 32, lst: [2, 2, 3, 3]}})")
@@ -262,20 +279,17 @@ def test_nx_export_various_dimensionality_list_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 12, edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     translator = NxTranslator()
     graph = translator.get_instance()
     assert graph.number_of_edges() == 8
     assert graph.number_of_nodes() == 4
     _check_nx_graph_structure(graph, translator, 5, 5)
-    memgraph.drop_database()
 
 
-def test_nx_export_non_numeric_properties():
+def test_nx_export_non_numeric_properties(memgraph):
     """Test graph which has some non-numeric properties. Non-numeric properties should be translated in the same way as those numeric."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 'one', lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 'two', lst: [2, 2, 3, 3]}})")
@@ -305,16 +319,12 @@ def test_nx_export_non_numeric_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 'mi', edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-
-    for query in queries:
-        memgraph.execute(query)
-
+    execute_queries(memgraph, queries)
     translator = NxTranslator()
     graph = translator.get_instance()
     assert graph.number_of_edges() == 8
     assert graph.number_of_nodes() == 4
     _check_nx_graph_structure(graph, translator, 5, 5)
-    memgraph.drop_database()
 
 
 def test_nx_create_nodes():

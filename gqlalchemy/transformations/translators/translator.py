@@ -122,8 +122,8 @@ class Translator(ABC):
             properties_ret[property_key] = property_values[entity_id]
         return properties_ret
 
-    def _parse_mem_graph(self, query_results):
-        """ """
+    def _parse_memgraph(self):
+        """Returns Memgraph's data parsed in a nice way to be used for creating DGL and PyG graphs."""
         mem_indexes: Dict[str, int] = defaultdict(int)  # track current counter for the node type
         node_features: Dict[str, Dict[str, List[int]]] = defaultdict(
             lambda: defaultdict(list)
@@ -141,7 +141,9 @@ class Translator(ABC):
             dict
         )  # Reindex structure for saving node_label to old_index to new_index
 
-        for row in query_results:
+        rel_results = self.get_all_edges_from_db()
+
+        for row in rel_results:
             row_values = row.values()
             # print(f"Row values: {row_values}")
             for entity in row_values:
@@ -203,4 +205,17 @@ class Translator(ABC):
         """
         return (
             Match(connection=self.connection).node(variable="n").to(variable="r").node(variable="m").return_().execute()
+        )
+
+    def get_all_isolated_nodes_from_db(self):
+        """Returns all isolated nodes from the database.
+        Returns:
+            Query results for finding all isolated nodes.
+        """
+        return (
+            Match(connection=self.connection)
+            .node(variable="n")
+            .add_custom_cypher("WHERE degree(n) = 0")
+            .return_()
+            .execute()
         )

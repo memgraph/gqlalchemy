@@ -26,7 +26,7 @@ from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import DGL_ID
 from gqlalchemy.utilities import to_cypher_value
-from tests.transformations.utils import init_database
+from tests.transformations.common import execute_queries
 
 ##########
 # UTILS
@@ -150,10 +150,9 @@ def _check_all_edges_exist_memgraph_dgl(
 ##########
 
 
-def test_dgl_export_multigraph():
+def test_dgl_export_multigraph(memgraph):
     """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
     queries.append(f"CREATE (m:Node {{id: 2}})")
@@ -167,9 +166,7 @@ def test_dgl_export_multigraph():
     queries.append(f"MATCH (n:Node {{id: 2}}), (m:Node {{id: 4}}) CREATE (n)-[r:CONNECTION {{edge_id: 6}}]->(m)")
     queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node {{id: 2}}) CREATE (n)-[r:CONNECTION {{edge_id: 7}}]->(m)")
     queries.append(f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8}}]->(m)")
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -187,13 +184,11 @@ def test_dgl_export_multigraph():
     translated_node_properties = {"id"}
     translated_edge_properties = {"edge_id"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_multiple_nodes_same_features():
+def test_dgl_multiple_nodes_same_features(memgraph):
     """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -203,9 +198,7 @@ def test_dgl_multiple_nodes_same_features():
     queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 4}}]->(m)")
     queries.append(f"MATCH (n:Node {{id: 1}}), (m:Node {{id: 3}}) CREATE (n)-[r:CONNECTION {{edge_id: 5}}]->(m)")
     queries.append(f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8}}]->(m)")
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -223,13 +216,11 @@ def test_dgl_multiple_nodes_same_features():
     translated_node_properties = {"id"}
     translated_edge_properties = {"edge_id"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_export_graph_no_features():
+def test_dgl_export_graph_no_features(memgraph):
     """Export graph which has all nodes and edges without properties."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
     queries.append(f"CREATE (m:Node {{id: 2}})")
@@ -244,9 +235,7 @@ def test_dgl_export_graph_no_features():
     queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node {{id: 2}}) CREATE (n)-[r:CONNECTION]->(m)")
     queries.append(f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION]->(m)")
     queries.append(f"MATCH (n:Node) REMOVE n.id")
-
-    for query in queries:
-        memgraph.execute(query)
+    memgraph = execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -262,13 +251,11 @@ def test_dgl_export_graph_no_features():
     assert len(graph.nodes[source_node_label].data.keys()) == 0
     assert len(graph.edges[(source_node_label, edge_type, dest_node_label)].data.keys()) == 0
     _check_all_edges_exist_memgraph_dgl(graph, translator)
-    memgraph.drop_database()
 
 
-def test_dgl_export_graph_no_features_no_labels():
+def test_dgl_export_graph_no_features_no_labels(memgraph):
     """Export graph which has all nodes and edges without properties."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m {{id: 1}})")
     queries.append(f"CREATE (m {{id: 2}})")
@@ -283,9 +270,7 @@ def test_dgl_export_graph_no_features_no_labels():
     queries.append(f"MATCH (n {{id: 4}}), (m {{id: 2}}) CREATE (n)-[r:CONNECTION]->(m)")
     queries.append(f"MATCH (n {{id: 3}}), (m {{id: 1}}) CREATE (n)-[r:CONNECTION]->(m)")
     queries.append(f"MATCH (n) REMOVE n.id")
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -303,13 +288,11 @@ def test_dgl_export_graph_no_features_no_labels():
     assert graph[can_etype].number_of_nodes() == 4
     assert graph[can_etype].number_of_edges() == 8
     _check_all_edges_exist_memgraph_dgl(graph, translator)
-    memgraph.drop_database()
 
 
-def test_dgl_export_multiple_labels():
+def test_dgl_export_multiple_labels(memgraph):
     """Tests exporting to DGL when using multiple labels for nodes."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node:Mode {{id: 1}})")
     queries.append(f"CREATE (m:Node:Mode {{id: 2}})")
@@ -323,8 +306,7 @@ def test_dgl_export_multiple_labels():
     queries.append(f"MATCH (n:Node {{id: 4}}), (m:Node:Mode {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 4}}]->(m)")
     queries.append(f"MATCH (n:Node:Mode {{id: 1}}), (m:Node {{id: 3}}) CREATE (n)-[r:CONNECTION {{edge_id: 5}}]->(m)")
     queries.append(f"MATCH (n:Node:Mode {{id: 2}}), (m:Node {{id: 4}}) CREATE (n)-[r:CONNECTION {{edge_id: 6}}]->(m)")
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -352,13 +334,11 @@ def test_dgl_export_multiple_labels():
     translated_node_properties = {"id"}
     translated_edge_properties = {"edge_id"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_export_many_numerical_properties():
+def test_dgl_export_many_numerical_properties(memgraph):
     """Test graph that has several numerical features on nodes and edges."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 30}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 32}})")
@@ -388,9 +368,7 @@ def test_dgl_export_many_numerical_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 12}}]->(m)"
     )
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -408,13 +386,11 @@ def test_dgl_export_many_numerical_properties():
     translated_node_properties = {"id", "num", "edem"}
     translated_edge_properties = {"edge_id", "edge_num", "edge_edem"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_export_list_properties():
+def test_dgl_export_list_properties(memgraph):
     """Test graph that has several numerical features on all nodes and edges together with lists that could represent feature vectors."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 30, lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 32, lst: [2, 2, 3, 3]}})")
@@ -444,9 +420,7 @@ def test_dgl_export_list_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 12, edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -464,12 +438,10 @@ def test_dgl_export_list_properties():
     translated_node_properties = {"id", "num", "edem", "lst"}
     translated_edge_properties = {"edge_id", "edge_num", "edge_edem", "edge_lst"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_export_various_dimensionality_list_properties():
+def test_dgl_export_various_dimensionality_list_properties(memgraph):
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 30, lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 32, lst: [2, 2, 3, 3]}})")
@@ -499,9 +471,7 @@ def test_dgl_export_various_dimensionality_list_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 12, edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -519,13 +489,11 @@ def test_dgl_export_various_dimensionality_list_properties():
     translated_node_properties = {"id", "num", "edem"}
     translated_edge_properties = {"edge_id", "edge_num", "edge_edem"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_export_non_numeric_properties():
+def test_dgl_export_non_numeric_properties(memgraph):
     """Test graph which has some non-numeric properties. Non-numeric properties will be discarded."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 'one', lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 'two', lst: [2, 2, 3, 3]}})")
@@ -555,9 +523,7 @@ def test_dgl_export_non_numeric_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 'mi', edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -575,13 +541,11 @@ def test_dgl_export_non_numeric_properties():
     translated_node_properties = {"id", "num", "lst"}
     translated_edge_properties = {"edge_id", "edge_num", "edge_lst"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_export_partially_existing_numeric_properties():
+def test_dgl_export_partially_existing_numeric_properties(memgraph):
     """Test graph for which some numeric feature is not set on all nodes. Then such a feature is ignored."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 212, lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 211, lst: [2, 2, 3, 3]}})")
@@ -611,9 +575,7 @@ def test_dgl_export_partially_existing_numeric_properties():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 'mi', edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -631,14 +593,12 @@ def test_dgl_export_partially_existing_numeric_properties():
     translated_node_properties = {"id", "lst"}
     translated_edge_properties = {"edge_id", "edge_lst"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
-def test_dgl_export_same_property_multiple_types():
+def test_dgl_export_same_property_multiple_types(memgraph):
     """Test graph for which some feature has multiple data types, e.g str and Number. Such feature won't be parsed for every node -> the policy is don't insert features on nodes
     and edges that cannot be set on all of them."""
     # Prepare queries
-    memgraph = init_database()
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1, num: 80, edem: 30, lst: [2, 3, 3, 2]}})")
     queries.append(f"CREATE (m:Node {{id: 2, num: 91, edem: 32, lst: [2, 2, 3, 3]}})")
@@ -668,9 +628,7 @@ def test_dgl_export_same_property_multiple_types():
     queries.append(
         f"MATCH (n:Node {{id: 3}}), (m:Node {{id: 1}}) CREATE (n)-[r:CONNECTION {{edge_id: 8, edge_num: 99, edge_edem: 12, edge_lst: [0, 1, 0, 1]}}]->(m)"
     )
-
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph, queries)
     # Translate to DGL graph
     translator = DGLTranslator()
     graph = translator.get_instance()
@@ -688,7 +646,6 @@ def test_dgl_export_same_property_multiple_types():
     translated_node_properties = {"id", "edem", "lst"}
     translated_edge_properties = {"edge_edem", "edge_lst"}
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
-    memgraph.drop_database()
 
 
 ##########
@@ -696,15 +653,14 @@ def test_dgl_export_same_property_multiple_types():
 ##########
 
 
-def get_dgl_translator_run_queries(graph, memgraph):
+def get_dgl_translator_run_queries(graph, memgraph_):
     translator = DGLTranslator()
     queries = translator.to_cypher_queries(graph)
-    for query in queries:
-        memgraph.execute(query)
+    execute_queries(memgraph_, queries)
     return translator
 
 
-def test_dgl_import_homogeneous():
+def test_dgl_import_homogeneous(memgraph):
     """Test homogenous graph conversion."""
     # Init graph
     src = np.array(
@@ -873,17 +829,14 @@ def test_dgl_import_homogeneous():
     )
     graph = dgl.DGLGraph((src, dst))
     # Initialize translator and insert into the MemgrapA
-    memgraph = init_database()
     # Let's test
     # Check all that are in Memgraph are in DGL too
     _check_all_edges_exist_memgraph_dgl(
         graph, get_dgl_translator_run_queries(graph, memgraph), total_num_edges=78, direction="IMP"
     )
 
-    memgraph.drop_database()
 
-
-def test_dgl_import_simple_heterogeneous():
+def test_dgl_import_simple_heterogeneous(memgraph):
     """Test heterogeneous graph conversion."""
     graph = dgl.heterograph(
         {
@@ -891,14 +844,12 @@ def test_dgl_import_simple_heterogeneous():
             ("user", "MINUS", "movie"): (np.array([2]), np.array([1])),
         }
     )
-    memgraph = init_database()
     _check_all_edges_exist_memgraph_dgl(
         graph, get_dgl_translator_run_queries(graph, memgraph), total_num_edges=4, direction="IMP"
     )
-    memgraph.drop_database()
 
 
-def test_dgl_import_simple_heterogeneous_with_features():
+def test_dgl_import_simple_heterogeneous_with_features(memgraph):
     """Simple heterogeneous graph for which also node and edge features are set."""
     graph = dgl.heterograph(
         {
@@ -917,14 +868,12 @@ def test_dgl_import_simple_heterogeneous_with_features():
     graph.edges[("user", "PLUS", "movie")].data["edge_prop2"] = torch.randn(size=(3, 1))
     graph.edges[("user", "MINUS", "movie")].data["edge_prop1"] = torch.randn(size=(1, 1))
 
-    memgraph = init_database()
     _check_all_edges_exist_memgraph_dgl(
         graph, get_dgl_translator_run_queries(graph, memgraph), total_num_edges=4, direction="IMP"
     )
-    memgraph.drop_database()
 
 
-def test_dgl_import_multidimensional_features():
+def test_dgl_import_multidimensional_features(memgraph):
     """Tests how conversion works when having multidimensional features."""
     graph = dgl.heterograph(
         {
@@ -943,20 +892,16 @@ def test_dgl_import_multidimensional_features():
     graph.edges[("user", "PLUS", "movie")].data["edge_prop2"] = torch.randn(size=(3, 3, 10))
     graph.edges[("user", "MINUS", "movie")].data["edge_prop1"] = torch.randn(size=(1, 4))
 
-    memgraph = init_database()
     _check_all_edges_exist_memgraph_dgl(
         graph, get_dgl_translator_run_queries(graph, memgraph), total_num_edges=4, direction="IMP"
     )
-    memgraph.drop_database()
 
 
-def test_dgl_import_custom_dataset():
+def test_dgl_import_custom_dataset(memgraph):
     """Tests how conversion from some custom DGL's dataset works."""
     dataset = TUDataset("ENZYMES")
     graph = dataset[0][0]
     # Get queries
-    memgraph = init_database()
     _check_all_edges_exist_memgraph_dgl(
         graph, get_dgl_translator_run_queries(graph, memgraph), total_num_edges=168, direction="IMP"
     )
-    memgraph.drop_database()

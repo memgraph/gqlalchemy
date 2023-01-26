@@ -163,9 +163,8 @@ class PyGTranslator(Translator):
         Returns:
             PyG heterograph instance.
         """
-        query_results = self.get_all_edges_from_db()
-        # Parse it into nice data structures
-        src_nodes, dest_nodes, node_features, edge_features, mem_indexes = self._parse_mem_graph(query_results)
+        # Parse into nice data structures
+        src_nodes, dest_nodes, node_features, edge_features, mem_indexes = self._parse_memgraph()
 
         # Create PyG heterograph
         graph = HeteroData()
