@@ -56,7 +56,7 @@ pytest-timeout = "^1.4.2"
 pre-commit = "^2.15.0"
 
 [tool.poe.tasks]
-install-pyg-cpu = "pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric"
+install-pyg-cpu = "pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
