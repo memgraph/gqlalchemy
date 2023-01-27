@@ -1,9 +1,3 @@
-# test files
-*.csv
-*.feather
-*.orc
-*.parquet
-
 # temp files
 tests/on_disk_storage.db
 
