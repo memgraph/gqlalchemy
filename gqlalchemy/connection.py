@@ -45,12 +45,12 @@ class Connection(ABC):
         self.client_name = client_name
 
     @abstractmethod
-    def execute(self, query: str) -> None:
+    def execute(self, query: str, parameters: Dict[str, Any] = {}) -> None:
         """Executes Cypher query without returning any results."""
         pass
 
     @abstractmethod
-    def execute_and_fetch(self, query: str) -> Iterator[Dict[str, Any]]:
+    def execute_and_fetch(self, query: str, parameters: Dict[str, Any] = {}) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         pass
 
@@ -78,17 +78,17 @@ class MemgraphConnection(Connection):
         self._connection = self._create_connection()
 
     @database_error_handler
-    def execute(self, query: str) -> None:
+    def execute(self, query: str, parameters: Dict[str, Any] = {}) -> None:
         """Executes Cypher query without returning any results."""
         cursor = self._connection.cursor()
-        cursor.execute(query)
+        cursor.execute(query, parameters)
         cursor.fetchall()
 
     @database_error_handler
-    def execute_and_fetch(self, query: str) -> Iterator[Dict[str, Any]]:
+    def execute_and_fetch(self, query: str, parameters: Dict[str, Any] = {}) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         cursor = self._connection.cursor()
-        cursor.execute(query)
+        cursor.execute(query, parameters)
         while True:
             row = cursor.fetchone()
             if row is None:
@@ -166,15 +166,15 @@ class Neo4jConnection(Connection):
         self.lazy = lazy
         self._connection = self._create_connection()
 
-    def execute(self, query: str) -> None:
+    def execute(self, query: str, parameters: Dict[str, Any] = {}) -> None:
         """Executes Cypher query without returning any results."""
         with self._connection.session() as session:
-            session.run(query)
+            session.run(query, parameters)
 
-    def execute_and_fetch(self, query: str) -> Iterator[Dict[str, Any]]:
+    def execute_and_fetch(self, query: str, parameters: Dict[str, Any] = {}) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         with self._connection.session() as session:
-            results = session.run(query)
+            results = session.run(query, parameters)
             columns = results.keys()
             for result in results:
                 yield {column: _convert_neo4j_value(result[column]) for column in columns}
