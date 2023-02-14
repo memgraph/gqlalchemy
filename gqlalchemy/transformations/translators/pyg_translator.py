@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2023 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ from gqlalchemy.memgraph_constants import (
 class PyGTranslator(Translator):
     def __init__(
         self,
-        default_node_label="NODE",
-        default_edge_type="RELATIONSHIP",
         host: str = MG_HOST,
         port: int = MG_PORT,
         username: str = MG_USERNAME,
@@ -42,7 +40,7 @@ class PyGTranslator(Translator):
         lazy: bool = MG_LAZY,
     ) -> None:
         super().__init__(
-            default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            host, port, username, password, encrypted, client_name, lazy
         )
 
     @classmethod
@@ -80,9 +78,9 @@ class PyGTranslator(Translator):
     def to_cypher_queries(self, graph):
         """Produce cypher queries for data saved as part of thePyG graph. The method handles both homogeneous and heterogeneous graph.
         The method converts 1D as well as multidimensional features. If there are some isolated nodes inside the graph, they won't get transferred. Nodes and edges
-         created in Memgraph DB will, for the consistency reasons, have property `pyg_id` set to the id they have as part of the PyG graph. Note that this method doesn't insert anything inside the database,
-         it just creates cypher queries. To insert queries the following code can be used:
-         >>> memegraph = Memgraph()
+         created in Memgraph DB will, for the consistency reasons, have property `pyg_id` set to the id they have as part of the PyG graph. Note that this method doesn't insert anything inside 
+         the database, it just creates cypher queries. To insert queries the following code can be used:
+         >>> memgraph = Memgraph()
          pyg_graph = HeteroData(...)
          for query in PyGTranslator().to_cypher_queries(pyg_graph):
             memgraph.execute(query)

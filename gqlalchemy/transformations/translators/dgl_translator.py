@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2023 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from typing import Union
 
 import dgl
 import torch
@@ -41,8 +43,6 @@ class DGLTranslator(Translator):
 
     def __init__(
         self,
-        default_node_label="NODE",
-        default_edge_type="RELATIONSHIP",
         host: str = MG_HOST,
         port: int = MG_PORT,
         username: str = MG_USERNAME,
@@ -52,10 +52,10 @@ class DGLTranslator(Translator):
         lazy: bool = MG_LAZY,
     ) -> None:
         super().__init__(
-            default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            host, port, username, password, encrypted, client_name, lazy
         )
 
-    def to_cypher_queries(self, graph):
+    def to_cypher_queries(self, graph: Union[dgl.DGLGraph, dgl.DGLHeteroGraph]):
         """Produce cypher queries for data saved as part of the DGL graph. The method handles both homogeneous and heterogeneous graph. If the graph is homogeneous, a default DGL's labels will be used.
          _N as a node label and _E as edge label. The method converts 1D as well as multidimensional features. If there are some isolated nodes inside DGL graph, they won't get transferred. Nodes and edges
          created in Memgraph DB will, for the consistency reasons, have property `dgl_id` set to the id they have as part of the DGL graph. Note that this method doesn't insert anything inside the database,
@@ -118,7 +118,7 @@ class DGLTranslator(Translator):
                 )
         return queries
 
-    def get_instance(self):
+    def get_instance(self) -> dgl.DGLHeteroGraph:
         """Create instance of DGL graph from all edges that are inside Memgraph. Currently, isolated nodes are ignored because they don't contribute in message passing neural networks. Only numerical features
         that are set on all nodes or all edges are transferred to the DGL instance since this is DGL's requirement. That means thay any string values properties won't be transferred, as well as numerical properties
         that aren't set on all nodes. However, features of type list are transferred to the DGL and can be used as any other feature in the DGL graph. Regardless of data residing inside Memgraph database, the created

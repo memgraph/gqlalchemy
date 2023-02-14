@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2023 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,8 +34,6 @@ class GraphImporter(Importer):
     def __init__(
         self,
         graph_type: str,
-        default_node_label="NODE",
-        default_edge_type="RELATIONSHIP",
         host: str = mg_consts.MG_HOST,
         port: int = mg_consts.MG_PORT,
         username: str = mg_consts.MG_USERNAME,
@@ -48,20 +46,20 @@ class GraphImporter(Importer):
         self.graph_type = graph_type.upper()
         if self.graph_type == GraphType.DGL.name:
             self.translator = DGLTranslator(
-                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+                host, port, username, password, encrypted, client_name, lazy
             )
         elif self.graph_type == GraphType.PYG.name:
             self.translator = PyGTranslator(
-                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+                host, port, username, password, encrypted, client_name, lazy
             )
         elif self.graph_type == GraphType.NX.name:
             self.translator = NxTranslator(
-                default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+                host, port, username, password, encrypted, client_name, lazy
             )
         else:
             raise ValueError("Unknown import option. Currently supported options are: DGL, PyG and Networkx.")
 
-    def translate(self, graph):
+    def translate(self, graph) -> None:
         """Gets cypher queries using the underlying translator and then inserts all queries to Memgraph DB.
         Args:
             graph: dgl, pytorch geometric or nx graph instance.

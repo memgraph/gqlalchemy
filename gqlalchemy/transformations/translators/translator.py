@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2023 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,8 +46,6 @@ class Translator(ABC):
     @abstractmethod
     def __init__(
         self,
-        default_node_label="NODE",
-        default_edge_type="RELATIONSHIP",
         host: str = MG_HOST,
         port: int = MG_PORT,
         username: str = MG_USERNAME,
@@ -57,8 +55,6 @@ class Translator(ABC):
         lazy: bool = MG_LAZY,
     ) -> None:
         super().__init__()
-        self.default_node_label = default_node_label
-        self.default_edge_type = default_edge_type
         self.connection = Memgraph(host, port, username, password, encrypted, client_name, lazy)
 
     @abstractmethod
@@ -145,7 +141,6 @@ class Translator(ABC):
 
         for row in rel_results:
             row_values = row.values()
-            # print(f"Row values: {row_values}")
             for entity in row_values:
                 entity_num_features = dict(
                     filter(lambda pair: Translator._is_most_inner_type_number(pair[1]), entity._properties.items())

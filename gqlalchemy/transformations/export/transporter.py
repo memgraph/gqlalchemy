@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2023 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ class Transporter(ABC):
     @abstractmethod
     def export(query_results):
         """Abstract method that will be overriden by subclasses that will know which correct graph type to create.
-        Args:
-            query_results: Results from the query execution obtained by calling `execute()` method of `mgclient`.
-
         Raises:
             NotImplementedError: The method must be override by a specific translator.
         """

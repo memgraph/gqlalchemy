@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2023 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -150,8 +150,6 @@ class NxTranslator(Translator):
 
     def __init__(
         self,
-        default_node_label="NODE",
-        default_edge_type="RELATIONSHIP",
         host: str = MG_HOST,
         port: int = MG_PORT,
         username: str = MG_USERNAME,
@@ -162,7 +160,7 @@ class NxTranslator(Translator):
     ) -> None:
         self.__all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
         super().__init__(
-            default_node_label, default_edge_type, host, port, username, password, encrypted, client_name, lazy
+            host, port, username, password, encrypted, client_name, lazy
         )
 
     def to_cypher_queries(self, graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]:
