@@ -21,7 +21,7 @@ import mgclient
 
 
 from gqlalchemy import Memgraph
-from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE
+from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE, DEFAULT_EDGE_TYPE, DEFAULT_NODE_LABEL
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.models import Node, Relationship, MemgraphIndex
 from gqlalchemy.utilities import NetworkXCypherConfig, to_cypher_labels, to_cypher_properties, to_cypher_value
@@ -159,9 +159,7 @@ class NxTranslator(Translator):
         lazy: bool = MG_LAZY,
     ) -> None:
         self.__all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
-        super().__init__(
-            host, port, username, password, encrypted, client_name, lazy
-        )
+        super().__init__(host, port, username, password, encrypted, client_name, lazy)
 
     def to_cypher_queries(self, graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]:
         """Generates a Cypher query for creating a graph."""
@@ -272,10 +270,10 @@ class NxTranslator(Translator):
             for entity in row_values:
                 entity_properties = entity._properties
                 if isinstance(entity, Node) and entity._id not in node_info:
-                    entity_properties[LABEL] = Translator.merge_labels(entity._labels, self.default_node_label)
+                    entity_properties[LABEL] = Translator.merge_labels(entity._labels, DEFAULT_NODE_LABEL)
                     node_info[entity._id] = entity_properties
                 elif isinstance(entity, Relationship):
-                    entity_properties[EDGE_TYPE] = entity._type if entity._type else self.default_edge_type
+                    entity_properties[EDGE_TYPE] = entity._type if entity._type else DEFAULT_EDGE_TYPE
                     edge_info[(entity._start_node_id, entity._end_node_id)] = entity_properties
                     graph_data.append((entity._start_node_id, entity._end_node_id))
 
@@ -288,7 +286,7 @@ class NxTranslator(Translator):
         for isolated_node in isolated_nodes_results:
             isolated_node = isolated_node["n"]  #
             entity_properties = isolated_node._properties
-            entity_properties[LABEL] = Translator.merge_labels(isolated_node._labels, self.default_node_label)
+            entity_properties[LABEL] = Translator.merge_labels(isolated_node._labels, DEFAULT_NODE_LABEL)
             graph.add_node(isolated_node._id, **entity_properties)  # unpack dictionary
 
         return graph

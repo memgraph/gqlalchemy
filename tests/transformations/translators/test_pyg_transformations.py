@@ -23,7 +23,7 @@ from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
 from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
 from gqlalchemy.transformations.translators.translator import Translator
-from gqlalchemy.transformations.constants import PYG_ID
+from gqlalchemy.transformations.constants import PYG_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
 
@@ -115,7 +115,7 @@ def _check_all_edges_exist_memgraph_pyg(
         row_values = row.values()
         for entity in row_values:
             if isinstance(entity, Node):
-                node_label = Translator.merge_labels(entity._labels, translator.default_node_label)
+                node_label = Translator.merge_labels(entity._labels, DEFAULT_NODE_LABEL)
                 if not entity._properties:
                     assert node_label in graph.node_types
                     continue
@@ -147,13 +147,13 @@ def _check_all_edges_exist_memgraph_pyg(
                 source_node_label, dest_node_label = None, None
                 for new_entity in row_values:
                     if new_entity._id == entity._start_node_id and isinstance(new_entity, Node):
-                        source_node_label = Translator.merge_labels(new_entity._labels, translator.default_node_label)
+                        source_node_label = Translator.merge_labels(new_entity._labels, DEFAULT_NODE_LABEL)
                     elif new_entity._id == entity._end_node_id and isinstance(new_entity, Node):
-                        dest_node_label = Translator.merge_labels(new_entity._labels, translator.default_node_label)
+                        dest_node_label = Translator.merge_labels(new_entity._labels, DEFAULT_NODE_LABEL)
                 if not entity._properties:
                     assert (
                         source_node_label,
-                        entity._type if entity._type else translator.default_edge_type,
+                        entity._type if entity._type else DEFAULT_EDGE_TYPE,
                         dest_node_label,
                     ) in graph.edge_types
                     continue
@@ -163,7 +163,7 @@ def _check_all_edges_exist_memgraph_pyg(
                         graph.edge_items(),
                         (
                             source_node_label,
-                            entity._type if entity._type else translator.default_edge_type,
+                            entity._type if entity._type else DEFAULT_EDGE_TYPE,
                             dest_node_label,
                         ),
                         entity._properties,
@@ -179,7 +179,7 @@ def _check_all_edges_exist_memgraph_pyg(
                             graph.edge_items(),
                             (
                                 source_node_label,
-                                entity._type if entity._type else translator.default_edge_type,
+                                entity._type if entity._type else DEFAULT_EDGE_TYPE,
                                 dest_node_label,
                             ),
                             entity._properties[PYG_ID],
@@ -322,9 +322,9 @@ def test_pyg_export_graph_no_features_no_labels(memgraph):
     # Test some simple metadata properties
     assert len(graph.edge_types) == 1
     source_node_label, edge_type, dest_node_label = (
-        translator.default_node_label,
+        DEFAULT_NODE_LABEL,
         "CONNECTION",
-        translator.default_node_label,
+        DEFAULT_NODE_LABEL,
     )  # default node label and default edge type
     assert len(graph.node_types) == 1
     assert graph.node_types[0] == source_node_label

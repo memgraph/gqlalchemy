@@ -19,7 +19,7 @@ from numbers import Number
 
 import torch
 
-from gqlalchemy.transformations.constants import LABELS_CONCAT
+from gqlalchemy.transformations.constants import LABELS_CONCAT, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
     MG_PORT,
@@ -147,7 +147,7 @@ class Translator(ABC):
                 )
                 if isinstance(entity, Node):
                     # Extract node label and all numeric features
-                    node_label = Translator.merge_labels(entity._labels, self.default_node_label)
+                    node_label = Translator.merge_labels(entity._labels, DEFAULT_NODE_LABEL)
                     # Index node to a new index
                     if entity._id not in reindex[node_label]:
                         reindex[node_label][entity._id] = mem_indexes[node_label]
@@ -157,16 +157,16 @@ class Translator(ABC):
                             node_features[node_label][num_feature_key].append(num_feature_val)  # this should fail
                 elif isinstance(entity, Relationship):
                     # Extract edge type and all numeric features
-                    edge_type = entity._type if entity._type else self.default_edge_type
+                    edge_type = entity._type if entity._type else DEFAULT_EDGE_TYPE
                     # Find descriptions of source and destination nodes. Cheap because we search only over row values, this is better than querying the database again.
                     source_node_index, dest_node_index = None, None
                     source_node_label, dest_node_label = None, None
                     for new_entity in row_values:
                         if new_entity._id == entity._start_node_id and isinstance(new_entity, Node):
-                            source_node_label = Translator.merge_labels(new_entity._labels, self.default_node_label)
+                            source_node_label = Translator.merge_labels(new_entity._labels, DEFAULT_NODE_LABEL)
                             source_node_index = reindex[source_node_label][new_entity._id]
                         elif new_entity._id == entity._end_node_id and isinstance(new_entity, Node):
-                            dest_node_label = Translator.merge_labels(new_entity._labels, self.default_node_label)
+                            dest_node_label = Translator.merge_labels(new_entity._labels, DEFAULT_NODE_LABEL)
                             dest_node_index = reindex[dest_node_label][new_entity._id]
                     # Append to the graph data
                     edge_triplet = (source_node_label, edge_type, dest_node_label)

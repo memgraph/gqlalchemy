@@ -22,7 +22,7 @@ from gqlalchemy.transformations.translators.nx_translator import (
 )
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.models import Node, Relationship
-from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE
+from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import NetworkXCypherConfig
 from tests.transformations.common import execute_queries
 
@@ -52,10 +52,10 @@ def _check_nx_graph_structure(
         for entity in row_values:
             entity_properties = entity._properties
             if isinstance(entity, Node):
-                entity_properties[LABEL] = Translator.merge_labels(entity._labels, translator.default_node_label)
+                entity_properties[LABEL] = Translator.merge_labels(entity._labels, DEFAULT_NODE_LABEL)
                 assert _check_entity_exists_in_nx(graph.nodes(data=True), entity_properties, node_expected_num_features)
             elif isinstance(entity, Relationship):
-                entity_properties[EDGE_TYPE] = entity._type if entity._type else translator.default_edge_type
+                entity_properties[EDGE_TYPE] = entity._type if entity._type else DEFAULT_EDGE_TYPE
                 assert _check_entity_exists_in_nx(graph.edges(data=True), entity_properties, edge_expected_num_features)
 
     # Test isolated nodes if any
@@ -63,7 +63,7 @@ def _check_nx_graph_structure(
     for isolated_node in isolated_nodes_results:
         isolated_node = isolated_node["n"]  #
         entity_properties = isolated_node._properties
-        entity_properties[LABEL] = Translator.merge_labels(isolated_node._labels, translator.default_node_label)
+        entity_properties[LABEL] = Translator.merge_labels(isolated_node._labels, DEFAULT_NODE_LABEL)
         assert _check_entity_exists_in_nx(graph.nodes(data=True), entity_properties, node_expected_num_features)
 
 

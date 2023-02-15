@@ -24,7 +24,7 @@ from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
 from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
 from gqlalchemy.transformations.translators.translator import Translator
-from gqlalchemy.transformations.constants import DGL_ID
+from gqlalchemy.transformations.constants import DGL_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
 
@@ -90,16 +90,16 @@ def _check_all_edges_exist_memgraph_dgl(
                 if direction == "EXP":
                     # If properties don't exist,just check that nodes with such label exist
                     if not entity._properties:
-                        assert Translator.merge_labels(entity._labels, translator.default_node_label) in graph.ntypes
+                        assert Translator.merge_labels(entity._labels, DEFAULT_NODE_LABEL) in graph.ntypes
                     else:
                         assert _check_entity_exists_in_dgl(
-                            graph.nodes[Translator.merge_labels(entity._labels, translator.default_node_label)].data,
+                            graph.nodes[Translator.merge_labels(entity._labels, DEFAULT_NODE_LABEL)].data,
                             entity._properties,
                             translated_node_properties,
                         )
                 else:
                     _check_entity_exists_dgl_to_memgraph(
-                        graph.nodes[Translator.merge_labels(entity._labels, translator.default_node_label)].data,
+                        graph.nodes[Translator.merge_labels(entity._labels, DEFAULT_NODE_LABEL)].data,
                         entity._properties[DGL_ID],
                         entity._properties,
                     )
@@ -108,15 +108,15 @@ def _check_all_edges_exist_memgraph_dgl(
                 source_node_label, dest_node_label = None, None
                 for new_entity in row_values:
                     if new_entity._id == entity._start_node_id and isinstance(new_entity, Node):
-                        source_node_label = Translator.merge_labels(new_entity._labels, translator.default_node_label)
+                        source_node_label = Translator.merge_labels(new_entity._labels, DEFAULT_NODE_LABEL)
                     elif new_entity._id == entity._end_node_id and isinstance(new_entity, Node):
-                        dest_node_label = Translator.merge_labels(new_entity._labels, translator.default_node_label)
+                        dest_node_label = Translator.merge_labels(new_entity._labels, DEFAULT_NODE_LABEL)
                 if direction == "EXP":
                     # If properties don't exist,just check that edges with such label exist
                     if not entity._properties:
                         assert (
                             source_node_label,
-                            entity._type if entity._type else translator.default_edge_type,
+                            entity._type if entity._type else DEFAULT_EDGE_TYPE,
                             dest_node_label,
                         ) in graph.canonical_etypes
                     else:
@@ -124,7 +124,7 @@ def _check_all_edges_exist_memgraph_dgl(
                             graph.edges[
                                 (
                                     source_node_label,
-                                    entity._type if entity._type else translator.default_edge_type,
+                                    entity._type if entity._type else DEFAULT_EDGE_TYPE,
                                     dest_node_label,
                                 )
                             ].data,
@@ -136,7 +136,7 @@ def _check_all_edges_exist_memgraph_dgl(
                         graph.edges[
                             (
                                 source_node_label,
-                                entity._type if entity._type else translator.default_edge_type,
+                                entity._type if entity._type else DEFAULT_EDGE_TYPE,
                                 dest_node_label,
                             )
                         ].data,
@@ -277,9 +277,9 @@ def test_dgl_export_graph_no_features_no_labels(memgraph):
     # Test some simple metadata properties
     assert len(graph.canonical_etypes) == 1
     source_node_label, edge_type, dest_node_label = (
-        translator.default_node_label,
+        DEFAULT_NODE_LABEL,
         "CONNECTION",
-        translator.default_node_label,
+        DEFAULT_NODE_LABEL,
     )  # default node label and default edge type
     assert len(graph.ntypes) == 1
     assert graph.ntypes[0] == source_node_label

@@ -16,7 +16,7 @@ from torch_geometric.data import HeteroData, Data
 import torch
 
 from gqlalchemy.transformations.translators.translator import Translator
-from gqlalchemy.transformations.constants import EDGE_INDEX, PYG_ID, NUM_NODES
+from gqlalchemy.transformations.constants import EDGE_INDEX, PYG_ID, NUM_NODES, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
     MG_PORT,
@@ -39,9 +39,7 @@ class PyGTranslator(Translator):
         client_name: str = MG_CLIENT_NAME,
         lazy: bool = MG_LAZY,
     ) -> None:
-        super().__init__(
-            host, port, username, password, encrypted, client_name, lazy
-        )
+        super().__init__(host, port, username, password, encrypted, client_name, lazy)
 
     @classmethod
     def get_node_properties(cls, graph, node_label: str, node_id: int):
@@ -78,7 +76,7 @@ class PyGTranslator(Translator):
     def to_cypher_queries(self, graph):
         """Produce cypher queries for data saved as part of thePyG graph. The method handles both homogeneous and heterogeneous graph.
         The method converts 1D as well as multidimensional features. If there are some isolated nodes inside the graph, they won't get transferred. Nodes and edges
-         created in Memgraph DB will, for the consistency reasons, have property `pyg_id` set to the id they have as part of the PyG graph. Note that this method doesn't insert anything inside 
+         created in Memgraph DB will, for the consistency reasons, have property `pyg_id` set to the id they have as part of the PyG graph. Note that this method doesn't insert anything inside
          the database, it just creates cypher queries. To insert queries the following code can be used:
          >>> memgraph = Memgraph()
          pyg_graph = HeteroData(...)
@@ -142,11 +140,11 @@ class PyGTranslator(Translator):
                 eid += 1
                 queries.append(
                     self.create_insert_query(
-                        self.default_node_label,
+                        DEFAULT_NODE_LABEL,
                         source_node_properties,
-                        self.default_edge_type,
+                        DEFAULT_EDGE_TYPE,
                         edge_properties,
-                        self.default_node_label,
+                        DEFAULT_NODE_LABEL,
                         dest_node_properties,
                     )
                 )

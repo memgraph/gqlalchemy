@@ -45,17 +45,11 @@ class GraphImporter(Importer):
         super().__init__()
         self.graph_type = graph_type.upper()
         if self.graph_type == GraphType.DGL.name:
-            self.translator = DGLTranslator(
-                host, port, username, password, encrypted, client_name, lazy
-            )
+            self.translator = DGLTranslator(host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.PYG.name:
-            self.translator = PyGTranslator(
-                host, port, username, password, encrypted, client_name, lazy
-            )
+            self.translator = PyGTranslator(host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.NX.name:
-            self.translator = NxTranslator(
-                host, port, username, password, encrypted, client_name, lazy
-            )
+            self.translator = NxTranslator(host, port, username, password, encrypted, client_name, lazy)
         else:
             raise ValueError("Unknown import option. Currently supported options are: DGL, PyG and Networkx.")
 
