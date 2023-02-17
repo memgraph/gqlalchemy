@@ -1,13 +1,14 @@
 [tool.poetry]
 name = "GQLAlchemy"
-version = "1.3.3"
+version = "1.3.2"
 description = "GQLAlchemy is library developed with purpose of assisting writing and running queries on Memgraph."
 repository = "https://github.com/memgraph/gqlalchemy"
 authors = [
+    "Boris Tasevski <boris.tasevski@memgraph.com>",
     "Bruno Sacaric <bruno.sacaric@memgraph.com>",
     "Josip Mrden <josip.mrden@memgraph.com>",
     "Katarina Supe <katarina.supe@memgraph.com>",
-    "Andi Skrgat <andi.skrgat@memgraph.com>",
+    "Niko Krvavica <niko.krvavica@memgraph.com>",
 ]
 license = "Apache-2.0"
 readme = "README.md"
