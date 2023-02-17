@@ -51,7 +51,9 @@ class DatabaseClient(ABC):
     def port(self):
         return self._port
 
-    def execute_and_fetch(self, query: str, parameters: Dict[str, Any] = {}, connection: Connection = None) -> Iterator[Dict[str, Any]]:
+    def execute_and_fetch(
+        self, query: str, parameters: Dict[str, Any] = {}, connection: Connection = None
+    ) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         connection = connection or self._get_cached_connection()
         return connection.execute_and_fetch(query, parameters)
