@@ -51,15 +51,17 @@ class DatabaseClient(ABC):
     def port(self):
         return self._port
 
-    def execute_and_fetch(self, query: str, connection: Connection = None) -> Iterator[Dict[str, Any]]:
+    def execute_and_fetch(
+        self, query: str, parameters: Dict[str, Any] = {}, connection: Connection = None
+    ) -> Iterator[Dict[str, Any]]:
         """Executes Cypher query and returns iterator of results."""
         connection = connection or self._get_cached_connection()
-        return connection.execute_and_fetch(query)
+        return connection.execute_and_fetch(query, parameters)
 
-    def execute(self, query: str, connection: Connection = None) -> None:
+    def execute(self, query: str, parameters: Dict[str, Any] = {}, connection: Connection = None) -> None:
         """Executes Cypher query without returning any results."""
         connection = connection or self._get_cached_connection()
-        connection.execute(query)
+        connection.execute(query, parameters)
 
     def create_index(self, index: Index) -> None:
         """Creates an index (label or label-property type) in the database."""

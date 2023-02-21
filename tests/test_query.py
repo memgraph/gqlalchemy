@@ -18,10 +18,10 @@ from typing import Any, Dict, Iterator
 from gqlalchemy import Memgraph, Node
 
 
-def query(command: str) -> Iterator[Dict[str, Any]]:
+def query(command: str, parameters: Dict[str, Any] = {}) -> Iterator[Dict[str, Any]]:
     """Queries Memgraph database and returns iterator of results"""
     db = Memgraph()
-    yield from db.execute_and_fetch(command)
+    yield from db.execute_and_fetch(command, parameters)
 
 
 @pytest.fixture
@@ -54,3 +54,26 @@ def test_query_create_count(clear_db):
 
     count_command = "MATCH (n) RETURN count(n) as cnt"
     assert list(query(count_command)) == [{"cnt": 2}]
+
+
+def test_query_with_params(clear_db):
+    parameters = {
+        "data": [
+            {"source": "uid1", "destination": "uid2", "operation": "op1"},
+            {"source": "uid2", "destination": "uid1", "operation": "op2"},
+            {"source": "uid1", "destination": "uid1", "operation": "op3"},
+        ]
+    }
+
+    unwind_command = """
+    UNWIND $data AS row
+        MERGE (n {uid: row.source})-[e:OPERATION {operation: row.operation}]->(m {uid: row.destination})
+        RETURN n, e, m
+    """
+
+    unwind_results = list(query(unwind_command, parameters))
+    assert len(unwind_results) == 3
+    assert set(unwind_results[0].keys()) == {"n", "m", "e"}
+
+    get_operations_command = "MATCH (n)-[e]->(m) RETURN collect(e.operation) as ops"
+    assert list(query(get_operations_command)) == [{"ops": ["op1", "op2", "op3"]}]
