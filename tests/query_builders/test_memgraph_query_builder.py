@@ -27,13 +27,14 @@ from gqlalchemy.query_builders.memgraph_query_builder import (
     Unwind,
     With,
 )
+
 from gqlalchemy.graph_algorithms.integrated_algorithms import (
     BreadthFirstSearch,
     DepthFirstSearch,
     WeightedShortestPath,
     AllShortestPath,
 )
-from gqlalchemy.utilities import PropertyVariable
+from gqlalchemy.utilities import CypherVariable, RelationshipDirection
 
 
 def test_invalid_match_chain_throws_exception():
@@ -53,6 +54,82 @@ def test_load_csv_no_header(memgraph):
     query_builder = QueryBuilder().load_csv(path="path/to/my/file.csv", header=False, row="row").return_()
     expected_query = " LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN * "
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_labels_and_types(memgraph):
+    label = "LABEL"
+    types = [["TYPE1", "TYPE2"]]
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_labels=label, relationship_types=types)
+    expected_query = " MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_labels(memgraph):
+    label = "LABEL"
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", node_labels=label)
+    expected_query = " MATCH p=(a)-->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_multiple_labels(memgraph):
+    labels = [["LABEL1"], ["LABEL2"]]
+    query_builder = QueryBuilder().call(
+        "export_util.json", "/home/user", node_labels=labels, relationship_directions=RelationshipDirection.LEFT
+    )
+    expected_query = " MATCH p=(a)<--(b) WHERE (a:LABEL1) AND (b:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_type(memgraph):
+    relationship_type = "TYPE1"
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", relationship_types=relationship_type)
+    expected_query = " MATCH p=(a)-[:TYPE1]->(b) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_call_subgraph_with_many(memgraph):
+    node_labels = [["COMP", "DEVICE"], ["USER"], ["SERVICE", "GATEWAY"]]
+    relationship_types = [["OWNER", "RENTEE"], ["USES", "MAKES"]]
+    relationship_directions = [RelationshipDirection.LEFT, RelationshipDirection.RIGHT]
+    query_builder = QueryBuilder().call(
+        "export_util.json",
+        "/home/user",
+        relationship_types=relationship_types,
+        node_labels=node_labels,
+        relationship_directions=relationship_directions,
+    )
+    expected_query = " MATCH p=(a)<-[:OWNER | :RENTEE]-(b)-[:USES | :MAKES]->(c) WHERE (a:COMP or a:DEVICE) AND (b:USER) AND (c:SERVICE or c:GATEWAY) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+@pytest.mark.parametrize(
+    "subgraph_path, expected_query",
+    [
+        (
+            "(n:LABEL1)-[:TYPE1]->(m:LABEL2)",
+            " MATCH p=(n:LABEL1)-[:TYPE1]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') ",
+        ),
+        (
+            "(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2)",
+            " MATCH p=(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') ",
+        ),
+    ],
+)
+def test_call_subgraph_with_query(memgraph, subgraph_path, expected_query):
+    query_builder = QueryBuilder().call("export_util.json", "/home/user", subgraph_path=subgraph_path)
+    with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
 
@@ -393,7 +470,7 @@ class TestMemgraphBaseClasses:
         mock.assert_called_with(expected_query)
 
     def test_base_class_foreach(self, memgraph):
-        update_clause = Create().node(variable="n", id=PropertyVariable(name="i"))
+        update_clause = Create().node(variable="n", id=CypherVariable(name="i"))
         query_builder = Foreach(variable="i", expression="[1, 2, 3]", update_clauses=update_clause.construct_query())
         expected_query = " FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) ) "
 
