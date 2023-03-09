@@ -15,6 +15,7 @@
 from abc import ABC, abstractmethod
 import math
 import numpy as np
+import torch
 
 from datetime import datetime, date, time, timedelta
 from enum import Enum
@@ -72,6 +73,14 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
         config = NetworkXCypherConfig()
 
     value_type = type(value)
+    if isinstance(value, torch.Tensor):
+        if value.squeeze().size() == 1:
+            return value.squeeze().item()
+        else:
+            return value.tolist()
+
+    if isinstance(value_type, str) and is_numeric(value):
+        return float(value)
 
     if value_type == CypherVariable:
         return str(value)
@@ -105,6 +114,14 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
         return "null"
 
     return f"'{value}'"
+
+
+def is_numeric(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 
 def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=None) -> str:

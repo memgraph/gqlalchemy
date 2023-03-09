@@ -35,16 +35,9 @@ from gqlalchemy.models import (
 )
 from gqlalchemy.vendors.database_client import DatabaseClient
 from gqlalchemy.graph_algorithms.query_modules import QueryModule
+import gqlalchemy.memgraph_constants as mg_consts
 
 __all__ = ("Memgraph",)
-
-MG_HOST = os.getenv("MG_HOST", "127.0.0.1")
-MG_PORT = int(os.getenv("MG_PORT", "7687"))
-MG_USERNAME = os.getenv("MG_USERNAME", "")
-MG_PASSWORD = os.getenv("MG_PASSWORD", "")
-MG_ENCRYPTED = os.getenv("MG_ENCRYPT", "false").lower() == "true"
-MG_CLIENT_NAME = os.getenv("MG_CLIENT_NAME", "GQLAlchemy")
-MG_LAZY = os.getenv("MG_LAZY", "false").lower() == "true"
 
 
 class MemgraphConstants:
@@ -59,13 +52,13 @@ class MemgraphConstants:
 class Memgraph(DatabaseClient):
     def __init__(
         self,
-        host: str = MG_HOST,
-        port: int = MG_PORT,
-        username: str = MG_USERNAME,
-        password: str = MG_PASSWORD,
-        encrypted: bool = MG_ENCRYPTED,
-        client_name: str = MG_CLIENT_NAME,
-        lazy: bool = MG_LAZY,
+        host: str = mg_consts.MG_HOST,
+        port: int = mg_consts.MG_PORT,
+        username: str = mg_consts.MG_USERNAME,
+        password: str = mg_consts.MG_PASSWORD,
+        encrypted: bool = mg_consts.MG_ENCRYPTED,
+        client_name: str = mg_consts.MG_CLIENT_NAME,
+        lazy: bool = mg_consts.MG_LAZY,
     ):
         super().__init__(
             host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name

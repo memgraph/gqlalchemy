@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2023 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ from gqlalchemy.models import (
     TriggerExecutionPhase,
 )
 from gqlalchemy.query_builders.memgraph_query_builder import Operator, QueryBuilder, Unwind
-
+from gqlalchemy.transformations.importing.importer import Importer
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
@@ -372,7 +372,7 @@ class PyArrowDataLoader(DataLoader):
         print("Data loaded.")
 
 
-class TableToGraphImporter:
+class TableToGraphImporter(Importer):
     """Implements translation of table data to graph data, and imports it to Memgraph."""
 
     _DIRECTION = {
