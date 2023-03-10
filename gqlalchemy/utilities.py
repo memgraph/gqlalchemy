@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC, abstractmethod
 import math
 import numpy as np
+import torch
 
 from datetime import datetime, date, time, timedelta
 from enum import Enum
@@ -71,8 +73,16 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
         config = NetworkXCypherConfig()
 
     value_type = type(value)
+    if isinstance(value, torch.Tensor):
+        if value.squeeze().size() == 1:
+            return value.squeeze().item()
+        else:
+            return value.tolist()
 
-    if value_type == PropertyVariable:
+    if isinstance(value_type, str) and is_numeric(value):
+        return float(value)
+
+    if value_type == CypherVariable:
         return str(value)
 
     if isinstance(value, (timedelta, time, datetime, date)):
@@ -104,6 +114,14 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
         return "null"
 
     return f"'{value}'"
+
+
+def is_numeric(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 
 def to_cypher_properties(properties: Optional[Dict[str, Any]] = None, config=None) -> str:
@@ -139,9 +157,82 @@ def to_cypher_qm_arguments(arguments: Optional[Union[str, Tuple[Union[str, int, 
     return arguments
 
 
-class PropertyVariable:
-    """Class for support of using a variable as a node or edge property. Used
-    to avoid the quotes given to property values.
+class CypherObject(ABC):
+    """Abstract method representing an object in cypher syntax, such as nodes
+    and relationships.
+    """
+
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
+
+
+class CypherNode(CypherObject):
+    """Represents a node in Cypher syntax."""
+
+    def __init__(self, variable: str = None, labels: Optional[Union[str, list]] = None) -> None:
+        super().__init__()
+        if isinstance(labels, str) and labels:
+            self._labels = [labels]
+        else:
+            self._labels = labels
+        self._variable = variable
+
+    def __str__(self) -> str:
+        s = "("
+
+        if self._variable:
+            s += self._variable
+
+        if not self._labels:
+            return s + ")"
+
+        s += ":" + ":".join(self._labels) + ")"
+        return s
+
+
+class RelationshipDirection(Enum):
+    """Defines the direction of CypherRelationship object."""
+
+    UNDIRECTED = 1
+    LEFT = 2
+    RIGHT = 3
+
+
+class CypherRelationship(CypherObject):
+    """Represents a relationship in Cypher syntax. Multiple types can not be
+    set on a relationship, only queried.
+    """
+
+    def __init__(
+        self,
+        types: Optional[Union[str, list]] = None,
+        direction: Optional[RelationshipDirection] = RelationshipDirection.UNDIRECTED,
+    ) -> None:
+        super().__init__()
+        if isinstance(types, str):
+            self.types = [types]
+        else:
+            self.types = types
+        self.direction = direction
+
+    def __str__(self) -> str:
+        if self.types:
+            cypher_relationship = "-[:" + " | :".join(self.types) + "]-"
+        else:
+            cypher_relationship = "--"
+
+        if self.direction == RelationshipDirection.LEFT:
+            return "<" + cypher_relationship
+        elif self.direction == RelationshipDirection.RIGHT:
+            return cypher_relationship + ">"
+        else:
+            return cypher_relationship
+
+
+class CypherVariable:
+    """Class for support of using a variable as value in Cypher. Used
+    to avoid the quotes given to property values and query module arguments.
     """
 
     def __init__(self, name: str) -> None:

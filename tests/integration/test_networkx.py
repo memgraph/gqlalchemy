@@ -19,7 +19,7 @@ import networkx as nx
 
 from gqlalchemy import Memgraph
 from gqlalchemy.models import MemgraphIndex
-from gqlalchemy.transformations import nx_graph_to_memgraph_parallel, nx_to_cypher
+from gqlalchemy.transformations.translators.nx_translator import NxTranslator
 from gqlalchemy.utilities import NetworkXCypherConfig
 
 
@@ -50,7 +50,8 @@ def test_simple_nx_to_memgraph(memgraph: Memgraph):
     graph.add_nodes_from([1, 2, 3])
     graph.add_edges_from([(1, 2), (1, 3)])
 
-    for query in nx_to_cypher(graph):
+    translator = NxTranslator()
+    for query in translator.to_cypher_queries(graph):
         memgraph.execute(query)
 
     actual_nodes = list(memgraph.execute_and_fetch("MATCH (n) RETURN n ORDER BY n.id"))
@@ -81,7 +82,8 @@ def test_simple_index_nx_to_memgraph(memgraph: Memgraph):
         MemgraphIndex("L3", "id"),
     }
 
-    for query in nx_to_cypher(graph, NetworkXCypherConfig(create_index=True)):
+    translator = NxTranslator()
+    for query in translator.to_cypher_queries(graph, NetworkXCypherConfig(create_index=True)):
         memgraph.execute(query)
     actual_indexes = set(memgraph.get_indexes())
 
@@ -99,7 +101,8 @@ def test_nx_to_memgraph(memgraph: Memgraph):
     graph.add_nodes_from(expected_nodes)
     graph.add_edges_from(expected_edges)
 
-    for query in nx_to_cypher(graph):
+    translator = NxTranslator()
+    for query in translator.to_cypher_queries(graph):
         memgraph.execute(query)
 
     actual_nodes = list(memgraph.execute_and_fetch("MATCH (n) RETURN n ORDER BY n.id"))
@@ -124,14 +127,16 @@ def test_nx_to_memgraph(memgraph: Memgraph):
 def test_big_nx_to_memgraph_with_manual_index(memgraph: Memgraph, random_nx_graph: nx.Graph):
     memgraph.create_index(MemgraphIndex("Label", "id"))
 
-    for query in nx_to_cypher(random_nx_graph):
+    translator = NxTranslator()
+    for query in translator.to_cypher_queries(random_nx_graph):
         memgraph.execute(query)
 
 
 @pytest.mark.timeout(60)
 @pytest.mark.slow
 def test_big_nx_to_memgraph(memgraph: Memgraph, random_nx_graph: nx.Graph):
-    for query in nx_to_cypher(random_nx_graph, NetworkXCypherConfig(create_index=True)):
+    translator = NxTranslator()
+    for query in translator.to_cypher_queries(random_nx_graph, NetworkXCypherConfig(create_index=True)):
         memgraph.execute(query)
 
 
@@ -139,5 +144,5 @@ def test_big_nx_to_memgraph(memgraph: Memgraph, random_nx_graph: nx.Graph):
 @pytest.mark.slow
 def test_huge_nx_to_memgraph_parallel_with_index(memgraph: Memgraph, big_random_nx_graph: nx.Graph):
     memgraph.create_index(MemgraphIndex("Label", "id"))
-
-    nx_graph_to_memgraph_parallel(big_random_nx_graph)
+    translator = NxTranslator()
+    translator.nx_graph_to_memgraph_parallel(big_random_nx_graph)

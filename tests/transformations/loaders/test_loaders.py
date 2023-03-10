@@ -14,8 +14,9 @@
 
 import platform
 import pytest
+import os
 
-from gqlalchemy.loaders import (
+from gqlalchemy.transformations.importing.loaders import (
     CSVLocalFileSystemImporter,
     DataLoader,
     FeatherLocalFileSystemImporter,
@@ -24,6 +25,9 @@ from gqlalchemy.loaders import (
     ORCLocalFileSystemImporter,
     ParquetLocalFileSystemImporter,
 )
+
+
+path = os.path.join(os.path.dirname(__file__), "data")
 
 
 class TestFileSystemHandler(FileSystemHandler):
@@ -78,10 +82,7 @@ def test_local_table_to_graph_importer_parquet(memgraph):
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-    importer = ParquetLocalFileSystemImporter(
-        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-    )
-
+    importer = ParquetLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
     importer.translate(drop_database_on_start=True)
 
 
@@ -92,10 +93,7 @@ def test_local_table_to_graph_importer_csv(memgraph):
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-    importer = CSVLocalFileSystemImporter(
-        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-    )
-
+    importer = CSVLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
     importer.translate(drop_database_on_start=True)
 
 
@@ -110,10 +108,7 @@ def test_local_table_to_graph_importer_orc(memgraph):
             "name_mappings": {"example": {"label": "PERSON"}},
             "one_to_many_relations": {"example": []},
         }
-        importer = ORCLocalFileSystemImporter(
-            path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-        )
-
+        importer = ORCLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
         importer.translate(drop_database_on_start=True)
 
 
@@ -124,8 +119,5 @@ def test_local_table_to_graph_importer_feather(memgraph):
         "name_mappings": {"example": {"label": "PERSON"}},
         "one_to_many_relations": {"example": []},
     }
-    importer = FeatherLocalFileSystemImporter(
-        path="./tests/loaders/data", data_configuration=my_configuration, memgraph=memgraph
-    )
-
+    importer = FeatherLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
     importer.translate(drop_database_on_start=True)

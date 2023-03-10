@@ -707,7 +707,7 @@ class DeclarativeBase(ABC):
 
             Call procedure with arguments:
 
-            Python: `call('json_util.load_from_url', 'https://some-url.com').yield_('objects').return_(results='objects').execute()
+            Python: `call('json_util.load_from_url', "'https://some-url.com'").yield_('objects').return_(results='objects').execute()
             Cypher: `CALL json_util.load_from_url(https://some-url.com) YIELD objects RETURN objects;`
         """
         self._query.append(CallPartialQuery(procedure, arguments))
