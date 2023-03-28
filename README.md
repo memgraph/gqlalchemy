@@ -14,20 +14,18 @@
 
 An Object Graph Mapper or OGM provides a developer-friendly workflow that allows for writing object-oriented notation to communicate with graph databases. Instead of writing Cypher queries, you will be able to write object-oriented code, which the OGM will automatically translate into Cypher queries.
 
-GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
-([PyPI](https://pypi.org/project/pymgclient/) /
-[Documentation](https://memgraph.github.io/pymgclient/) /
-[GitHub](https://github.com/memgraph/pymgclient)).
+
 
 ## Installation
 
-Before you install `gqlalchemy`, make sure that you have `cmake` installed by running:
-```
-cmake --version
-```
-You can install `cmake` by following the [official instructions](https://cgold.readthedocs.io/en/latest/first-step/installation.html#).
+GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
+([PyPI](https://pypi.org/project/pymgclient/) /
+[Documentation](https://memgraph.github.io/pymgclient/) /
+[GitHub](https://github.com/memgraph/pymgclient)). 
 
-To install `gqlalchemy`, simply run the following command:
+To install GQLAlchemy, you first need to install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites).
+
+After you installed the prerequisites, simply run the following command:
 ```
 pip install gqlalchemy
 ```
