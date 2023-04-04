@@ -49,7 +49,7 @@ jobs:
           docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.7
       - name: Test project
         run: |
-          poetry install --all-extras
+          poetry install --extras "arrow ml"
           poe install-pyg-cpu
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Use the Upload Artifact GitHub Action
@@ -114,7 +114,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Test project
         run: |
-          poetry install --all-extras
+          poetry install --extras "arrow ml"
           poe install-pyg-cpu
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Save Memgraph Logs
