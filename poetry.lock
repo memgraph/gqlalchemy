@@ -648,7 +648,7 @@ name = "dgl"
 version = "0.9.1"
 description = "Deep Graph Library"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "dgl-0.9.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7b9848c2c643d7b4d4c1969d05e511aff776b101c69573defd3382107b25a5c9"},
@@ -1172,7 +1172,7 @@ name = "nvidia-cublas-cu11"
 version = "11.10.3.66"
 description = "CUBLAS native runtime libraries"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3"
 files = [
     {file = "nvidia_cublas_cu11-11.10.3.66-py3-none-manylinux1_x86_64.whl", hash = "sha256:d32e4d75f94ddfb93ea0a5dda08389bcc65d8916a25cb9f37ac89edaeed3bded"},
@@ -1188,7 +1188,7 @@ name = "nvidia-cuda-nvrtc-cu11"
 version = "11.7.99"
 description = "NVRTC native runtime libraries"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3"
 files = [
     {file = "nvidia_cuda_nvrtc_cu11-11.7.99-2-py3-none-manylinux1_x86_64.whl", hash = "sha256:9f1562822ea264b7e34ed5930567e89242d266448e936b85bc97a3370feabb03"},
@@ -1205,7 +1205,7 @@ name = "nvidia-cuda-runtime-cu11"
 version = "11.7.99"
 description = "CUDA Runtime native Libraries"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3"
 files = [
     {file = "nvidia_cuda_runtime_cu11-11.7.99-py3-none-manylinux1_x86_64.whl", hash = "sha256:cc768314ae58d2641f07eac350f40f99dcb35719c4faff4bc458a7cd2b119e31"},
@@ -1221,7 +1221,7 @@ name = "nvidia-cudnn-cu11"
 version = "8.5.0.96"
 description = "cuDNN runtime libraries"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3"
 files = [
     {file = "nvidia_cudnn_cu11-8.5.0.96-2-py3-none-manylinux1_x86_64.whl", hash = "sha256:402f40adfc6f418f9dae9ab402e773cfed9beae52333f6d86ae3107a1b9527e7"},
@@ -1359,7 +1359,7 @@ name = "pyarrow"
 version = "9.0.0"
 description = "Python library for Apache Arrow"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "pyarrow-9.0.0-cp310-cp310-macosx_10_13_universal2.whl", hash = "sha256:767cafb14278165ad539a2918c14c1b73cf20689747c21375c38e3fe62884902"},
@@ -1742,7 +1742,7 @@ name = "scipy"
 version = "1.9.3"
 description = "Fundamental algorithms for scientific computing in Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "scipy-1.9.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:1884b66a54887e21addf9c16fb588720a8309a57b2e258ae1c7986d4444d3bc0"},
@@ -1834,7 +1834,7 @@ name = "torch"
 version = "1.13.1"
 description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7.0"
 files = [
     {file = "torch-1.13.1-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:fd12043868a34a8da7d490bf6db66991108b00ffbeecb034228bfcbbd4197143"},
@@ -1875,7 +1875,7 @@ name = "tqdm"
 version = "4.65.0"
 description = "Fast, Extensible Progress Meter"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "tqdm-4.65.0-py3-none-any.whl", hash = "sha256:c4f53a17fe37e132815abceec022631be8ffe1b9381c2e6e30aa70edc99e9671"},
@@ -1963,7 +1963,7 @@ name = "wheel"
 version = "0.40.0"
 description = "A built-package format for Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "wheel-0.40.0-py3-none-any.whl", hash = "sha256:d236b20e7cb522daf2390fa84c55eea81c5c30190f90f29ae2ca1ad8355bf247"},
@@ -2061,7 +2061,12 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[extras]
+all = ["pyarrow", "torch", "dgl"]
+arrow = ["pyarrow"]
+ml = ["torch", "dgl"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "6c72682866569925100ef99cc62843624f8c8229bacfa5d9cc7608d43776af67"
+content-hash = "f824ae4a8e49431a930beebf928bba4ed82d5b3f1f4ec19d6e7212c86a75bf26"
