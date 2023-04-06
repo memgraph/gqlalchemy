@@ -25,19 +25,31 @@ GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
 
 To install GQLAlchemy, you first need to install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites).
 
-After you installed the prerequisites, simply run the following command:
-```
-pip install gqlalchemy
-```
+After you have installed the prerequisites, run the following command:
+
+`pip install gqlalchemy`
+
+With the above command, you get the basic GQLAlchemy capabilities. To add additional import/export capabilities, install GQLAlchemy with one of the following commands:
+
+- `pip install gqlalchemy[arrow]` # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
+- `pip install gqlalchemy[torch]` # PyTorch support
+- `pip install gqlalchemy[dgl]` # DGL support
+
+- `pip install gqlalchemy[ml]` # Bundle of [torch] and [dgl]
+
+- `pip install gqlalchemy[all]` # All of the above
+
 
 If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through pip.
 
 ## Build & Test
 
 The project uses [Poetry](https://python-poetry.org/) to build the GQLAlchemy Python library. To build and run tests, execute the following command:
-`poetry install`
+
+`poetry install --all-extras`
 
 Before starting the tests, make sure you have an active Memgraph instance running. Execute the following command:
+
 `poetry run pytest .`
 
 ## GQLAlchemy capabilities
