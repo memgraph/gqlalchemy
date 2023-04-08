@@ -96,6 +96,7 @@ def test_list_property(database):
 def test_dict_property(database):
     class User(Node):
         my_dict: dict
+
     expected_dict = dict(x=1, y=-2, z=3.1, d=20, testPoint=True, label="testPoint")
     user = User(my_dict=expected_dict).save(database)
 
