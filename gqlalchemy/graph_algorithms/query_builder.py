@@ -29,10 +29,10 @@ class MemgraphQueryBuilder(QueryBuilder):
     def __init__(self, connection: Optional[Union[Connection, Memgraph]] = None):
         super().__init__(connection)
 
-    def example_procedure(self, required_arg: Any, optional_arg=None) -> DeclarativeBase:
+    def example_c_procedure(self, required_arg: Any, optional_arg=None) -> DeclarativeBase:
         return self.call("example.procedure", (required_arg, optional_arg))
 
-    def example_write_procedure(self, required_arg: str) -> DeclarativeBase:
+    def example_c_write_procedure(self, required_arg: str) -> DeclarativeBase:
         return self.call("example.write_procedure", (required_arg))
 
     def graph_analyzer_analyze(self, analyses: Optional[List[str]] = None) -> DeclarativeBase:

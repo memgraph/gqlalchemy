@@ -28,7 +28,7 @@ from gqlalchemy.exceptions import (
 from gqlalchemy import Field, InvalidMatchChainException, Node, QueryBuilder, Relationship
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builders.declarative_base import Operator, Order, _ResultPartialQuery
-from gqlalchemy.utilities import PropertyVariable
+from gqlalchemy.utilities import CypherVariable
 
 
 @pytest.mark.parametrize("vendor", ["neo4j_query_builder", "memgraph_query_builder"], indirect=True)
@@ -1600,7 +1600,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .with_(results={"[1,2,3]": "list"})
             .unwind("list", "element")
             .create()
-            .node(num=PropertyVariable(name="element"))
+            .node(num=CypherVariable(name="element"))
         )
 
         expected_query = " WITH [1,2,3] AS list UNWIND list AS element CREATE ( {num: element})"
@@ -1616,7 +1616,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .with_(results={"15": "number"})
             .create()
             .node(variable="n")
-            .to(relationship_type="REL", num=PropertyVariable(name="number"))
+            .to(relationship_type="REL", num=CypherVariable(name="number"))
             .node(variable="m")
         )
 
@@ -1628,7 +1628,7 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_foreach(self, vendor):
-        update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable(name="i"))
+        update_clause = QueryBuilder().create().node(variable="n", id=CypherVariable(name="i"))
         query_builder = vendor[1].foreach(
             variable="i", expression="[1, 2, 3]", update_clause=update_clause.construct_query()
         )
@@ -1640,7 +1640,7 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_foreach_multiple_update_clauses(self, vendor):
-        variable_li = PropertyVariable(name="li")
+        variable_li = CypherVariable(name="li")
         update_clause_1 = QueryBuilder().create().node(labels="F4", prop=variable_li)
         update_clause_2 = QueryBuilder().create().node(labels="F5", prop2=variable_li)
         query = (
@@ -1664,7 +1664,7 @@ class TestMemgraphNeo4jQueryBuilder:
         mock.assert_called_with(expected_query)
 
     def test_foreach_nested(self, vendor):
-        create_query = QueryBuilder().create().node(variable="u", prop=PropertyVariable(name="j"))
+        create_query = QueryBuilder().create().node(variable="u", prop=CypherVariable(name="j"))
         nested_query = QueryBuilder().foreach(
             variable="j", expression="i", update_clause=create_query.construct_query()
         )
