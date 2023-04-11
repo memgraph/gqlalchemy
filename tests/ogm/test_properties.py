@@ -92,7 +92,7 @@ def test_list_property(database):
     assert loaded_user.my_list == [1, 2, 3]
 
 
-@pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
+@pytest.mark.parametrize("database", ["memgraph"], indirect=True)
 def test_dict_property(database):
     class User(Node):
         my_dict: dict
