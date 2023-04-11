@@ -376,7 +376,7 @@ class GraphObject(BaseModel):
         elif isinstance(value, list):
             return "[" + ", ".join(self.escape_value(val) for val in value) + "]"
         elif value_type == dict:
-            return "{" + ", ".join(f"{val}: {self.escape_value(val)}" for key, val in value.items()) + "}"
+            return "{" + ", ".join(f"{key}: {self.escape_value(val)}" for key, val in value.items()) + "}"
         if isinstance(value, (timedelta, time, datetime, date)):
             return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
         else:
