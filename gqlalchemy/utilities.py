@@ -13,9 +13,15 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
+import inspect
 import math
+
 import numpy as np
-import torch
+
+try:
+    import torch
+except ModuleNotFoundError:
+    torch = None
 
 from datetime import datetime, date, time, timedelta
 from enum import Enum
@@ -67,13 +73,27 @@ def _format_timedelta(duration: timedelta) -> str:
     return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
 
 
+def _is_torch_tensor(value):
+    for cls in inspect.getmro(type(value)):
+        try:
+            if cls.__module__ == "torch" and cls.__name__ == "Tensor":
+                return True
+        except:
+            pass
+    return False
+
+
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid Cypher type."""
     if config is None:
         config = NetworkXCypherConfig()
 
     value_type = type(value)
-    if isinstance(value, torch.Tensor):
+
+    if _is_torch_tensor(value):
+        if torch is None:
+            raise ModuleNotFoundError("No module named 'torch'")
+
         if value.squeeze().size() == 1:
             return value.squeeze().item()
         else:

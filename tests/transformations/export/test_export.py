@@ -1,9 +1,9 @@
 import pytest
 
-from gqlalchemy.transformations.export.graph_transporter import GraphTransporter
-from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
-from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
-from gqlalchemy.transformations.translators.nx_translator import NxTranslator
+GraphTransporter = pytest.importorskip("gqlalchemy.transformations.export.graph_transporter.GraphTransporter")
+DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
+NxTranslator = pytest.importorskip("gqlalchemy.transformations.translators.nx_translator.NxTranslator")
+PyGTranslator = pytest.importorskip("gqlalchemy.transformations.translators.pyg_translator.PyGTranslator")
 
 
 @pytest.mark.parametrize(

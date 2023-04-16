@@ -17,8 +17,6 @@ from typing import Callable, List, Set, Dict, Tuple
 from collections import defaultdict
 from numbers import Number
 
-import torch
-
 from gqlalchemy.transformations.constants import LABELS_CONCAT, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
@@ -35,7 +33,6 @@ from gqlalchemy import Memgraph, Match
 
 
 class Translator(ABC):
-
     # Lambda function to concat list of labels
     merge_labels: Callable[[Set[str]], str] = (
         lambda labels, default_node_label: LABELS_CONCAT.join([label for label in sorted(labels)])
@@ -94,22 +91,6 @@ class Translator(ABC):
             return len(obj) and Translator._is_most_inner_type_number(obj[0])
         # Try to parser string into number
         return isinstance(obj, Number)
-
-    @classmethod
-    def validate_features(cls, features: List, expected_num: int):
-        """Return true if features are okay to be set on all nodes/features.
-        Args:
-            features: To be set on all nodes. It can be anything that can be converted to torch tensor.
-            expected_num: This can be number of nodes or number of edges depending on whether features will be set on nodes or edges.
-        Returns:
-            None if features cannot be set or tensor of same features.
-        """
-        if len(features) != expected_num:
-            return None
-        try:
-            return torch.tensor(features, dtype=torch.float32)
-        except ValueError:
-            return None
 
     @classmethod
     def get_properties(cls, properties, entity_id):

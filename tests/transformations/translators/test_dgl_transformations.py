@@ -12,17 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Any, Set
 from numbers import Number
+import pytest
+from typing import Dict, Any, Set
 
 import numpy as np
-import dgl
-from dgl.data import TUDataset
-import torch
+
+dgl = pytest.importorskip("dgl")
+TUDataset = pytest.importorskip("dgl.data.TUDataset")
+torch = pytest.importorskip("torch")
 
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
-from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
+DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import DGL_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
@@ -150,6 +152,7 @@ def _check_all_edges_exist_memgraph_dgl(
 ##########
 
 
+@pytest.mark.extras
 def test_dgl_export_multigraph(memgraph):
     """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
     # Prepare queries
@@ -186,6 +189,7 @@ def test_dgl_export_multigraph(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_multiple_nodes_same_features(memgraph):
     """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
     # Prepare queries
@@ -218,6 +222,7 @@ def test_dgl_multiple_nodes_same_features(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_export_graph_no_features(memgraph):
     """Export graph which has all nodes and edges without properties."""
     # Prepare queries
@@ -253,6 +258,7 @@ def test_dgl_export_graph_no_features(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator)
 
 
+@pytest.mark.extras
 def test_dgl_export_graph_no_features_no_labels(memgraph):
     """Export graph which has all nodes and edges without properties."""
     # Prepare queries
@@ -290,6 +296,7 @@ def test_dgl_export_graph_no_features_no_labels(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator)
 
 
+@pytest.mark.extras
 def test_dgl_export_multiple_labels(memgraph):
     """Tests exporting to DGL when using multiple labels for nodes."""
     # Prepare queries
@@ -336,6 +343,7 @@ def test_dgl_export_multiple_labels(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_export_many_numerical_properties(memgraph):
     """Test graph that has several numerical features on nodes and edges."""
     # Prepare queries
@@ -388,6 +396,7 @@ def test_dgl_export_many_numerical_properties(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_export_list_properties(memgraph):
     """Test graph that has several numerical features on all nodes and edges together with lists that could represent feature vectors."""
     # Prepare queries
@@ -440,6 +449,7 @@ def test_dgl_export_list_properties(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_export_various_dimensionality_list_properties(memgraph):
     # Prepare queries
     queries = []
@@ -491,6 +501,7 @@ def test_dgl_export_various_dimensionality_list_properties(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_export_non_numeric_properties(memgraph):
     """Test graph which has some non-numeric properties. Non-numeric properties will be discarded."""
     # Prepare queries
@@ -543,6 +554,7 @@ def test_dgl_export_non_numeric_properties(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_export_partially_existing_numeric_properties(memgraph):
     """Test graph for which some numeric feature is not set on all nodes. Then such a feature is ignored."""
     # Prepare queries
@@ -595,6 +607,7 @@ def test_dgl_export_partially_existing_numeric_properties(memgraph):
     _check_all_edges_exist_memgraph_dgl(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_dgl_export_same_property_multiple_types(memgraph):
     """Test graph for which some feature has multiple data types, e.g str and Number. Such feature won't be parsed for every node -> the policy is don't insert features on nodes
     and edges that cannot be set on all of them."""
@@ -660,6 +673,7 @@ def get_dgl_translator_run_queries(graph, memgraph_):
     return translator
 
 
+@pytest.mark.extras
 def test_dgl_import_homogeneous(memgraph):
     """Test homogenous graph conversion."""
     # Init graph
@@ -836,6 +850,7 @@ def test_dgl_import_homogeneous(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_dgl_import_simple_heterogeneous(memgraph):
     """Test heterogeneous graph conversion."""
     graph = dgl.heterograph(
@@ -849,6 +864,7 @@ def test_dgl_import_simple_heterogeneous(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_dgl_import_simple_heterogeneous_with_features(memgraph):
     """Simple heterogeneous graph for which also node and edge features are set."""
     graph = dgl.heterograph(
@@ -873,6 +889,7 @@ def test_dgl_import_simple_heterogeneous_with_features(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_dgl_import_multidimensional_features(memgraph):
     """Tests how conversion works when having multidimensional features."""
     graph = dgl.heterograph(
@@ -897,6 +914,7 @@ def test_dgl_import_multidimensional_features(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_dgl_import_custom_dataset(memgraph):
     """Tests how conversion from some custom DGL's dataset works."""
     dataset = TUDataset("ENZYMES")

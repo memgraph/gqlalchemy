@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Any, Set
 from numbers import Number
+import pytest
+from typing import Dict, Any, Set
 
-from torch_geometric.data import Data, HeteroData
-from torch_geometric.datasets import FakeDataset, FakeHeteroDataset
-import torch
+Data = pytest.importorskip("torch_geometric.data.Data")
+HeteroData = pytest.importorskip("torch_geometric.data.HeteroData")
+FakeDataset = pytest.importorskip("torch_geometric.datasets.FakeDataset")
+FakeHeteroDataset = pytest.importorskip("torch_geometric.datasets.FakeHeteroDataset")
+torch = pytest.importorskip("torch")
 
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
@@ -192,6 +195,7 @@ def _check_all_edges_exist_memgraph_pyg(
 ##########
 
 
+@pytest.mark.extras
 def test_pyg_export_multigraph(memgraph):
     """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
     # Prepare queries
@@ -230,6 +234,7 @@ def test_pyg_export_multigraph(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_multiple_nodes_same_features(memgraph):
     """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
     # Prepare queries
@@ -263,6 +268,7 @@ def test_pyg_multiple_nodes_same_features(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_graph_no_features(memgraph):
     """Export graph which has all nodes and edges without properties."""
     # Prepare queries
@@ -298,6 +304,7 @@ def test_pyg_export_graph_no_features(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator)
 
 
+@pytest.mark.extras
 def test_pyg_export_graph_no_features_no_labels(memgraph):
     """Export graph which has all nodes and edges without properties."""
     # Prepare queries
@@ -335,6 +342,7 @@ def test_pyg_export_graph_no_features_no_labels(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator)
 
 
+@pytest.mark.extras
 def test_pyg_export_multiple_labels(memgraph):
     """Tests exporting to pyg when using multiple labels for nodes."""
     # Prepare queries
@@ -381,6 +389,7 @@ def test_pyg_export_multiple_labels(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_many_numerical_properties(memgraph):
     """Test graph that has several numerical features on nodes and edges."""
     # Prepare queries
@@ -433,6 +442,7 @@ def test_pyg_export_many_numerical_properties(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_list_properties(memgraph):
     """Test graph that has several numerical features on all nodes and edges together with lists that could represent feature vectors."""
     # Prepare queries
@@ -485,6 +495,7 @@ def test_pyg_export_list_properties(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_list_properties_x_y(memgraph):
     """Test graph that has several numerical features on all nodes and edges together with lists that could represent feature vectors."""
     # Prepare queries
@@ -537,6 +548,7 @@ def test_pyg_export_list_properties_x_y(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_various_dimensionality_list_properties(memgraph):
     # Prepare queries
     queries = []
@@ -588,6 +600,7 @@ def test_pyg_export_various_dimensionality_list_properties(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_non_numeric_properties(memgraph):
     """Test graph which has some non-numeric properties. Non-numeric properties will be discarded."""
     # Prepare queries
@@ -640,6 +653,7 @@ def test_pyg_export_non_numeric_properties(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_partially_existing_numeric_properties(memgraph):
     """Test graph for which some numeric feature is not set on all nodes. Then such a feature is ignored."""
     # Prepare queries
@@ -692,6 +706,7 @@ def test_pyg_export_partially_existing_numeric_properties(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, translator, translated_node_properties, translated_edge_properties)
 
 
+@pytest.mark.extras
 def test_pyg_export_same_property_multiple_types(memgraph):
     """Test graph for which some feature has multiple data types, e.g str and Number. Such feature won't be parsed for every node -> the policy is don't insert features on nodes
     and edges that cannot be set on all of them."""
@@ -757,6 +772,7 @@ def get_pyg_translator_run_queries(graph, memgraph_):
     return translator
 
 
+@pytest.mark.extras
 def test_pyg_import_homogeneous(memgraph):
     """Test homogenous graph conversion."""
     # Init graph
@@ -932,6 +948,7 @@ def test_pyg_import_homogeneous(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_pyg_import_simple_heterogeneous(memgraph):
     """Test heterogeneous graph conversion."""
     graph = HeteroData()
@@ -942,6 +959,7 @@ def test_pyg_import_simple_heterogeneous(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_pyg_import_simple_heterogeneous_with_features(memgraph):
     """Simple heterogeneous graph for which also node and edge features are set."""
     graph = HeteroData()
@@ -965,6 +983,7 @@ def test_pyg_import_simple_heterogeneous_with_features(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_pyg_import_multidimensional_features(memgraph):
     """Tests how conversion works when having multidimensional features."""
     # Set node features
@@ -989,6 +1008,7 @@ def test_pyg_import_multidimensional_features(memgraph):
     )
 
 
+@pytest.mark.extras
 def test_pyg_import_custom_dataset(memgraph):
     """Tests how conversion from some custom pyg's dataset works."""
     graph = FakeDataset(avg_num_nodes=100, avg_degree=4, num_channels=10)[0]
@@ -996,6 +1016,7 @@ def test_pyg_import_custom_dataset(memgraph):
     _check_all_edges_exist_memgraph_pyg(graph, get_pyg_translator_run_queries(graph, memgraph), direction="IMP")
 
 
+@pytest.mark.extras
 def test_pyg_import_custom_hetero_dataset(memgraph):
     """Tests how conversion from some custom pyg's dataset works."""
     graph = FakeHeteroDataset(avg_num_nodes=100, avg_degree=4, num_channels=10)[0]
