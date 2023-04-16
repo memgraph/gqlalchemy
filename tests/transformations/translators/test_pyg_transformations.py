@@ -30,6 +30,8 @@ from gqlalchemy.transformations.constants import PYG_ID, DEFAULT_NODE_LABEL, DEF
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
 
+pytestmark = pytest.mark.extras
+
 # TODO: test number of properties that were converted
 
 ##########

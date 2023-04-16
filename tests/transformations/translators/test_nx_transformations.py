@@ -27,6 +27,8 @@ from gqlalchemy.transformations.constants import LABEL, EDGE_TYPE, DEFAULT_NODE_
 from gqlalchemy.utilities import NetworkXCypherConfig
 from tests.transformations.common import execute_queries
 
+pytestmark = pytest.mark.extras
+
 
 def _check_entity_exists_in_nx(graph_data, entity_properties, expected_num_features):
     """Checks that entity with `entity_properties` exists in the Nx graph.

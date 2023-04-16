@@ -20,6 +20,7 @@ NxTranslator = pytest.importorskip("gqlalchemy.transformations.translators.nx_tr
 PyGTranslator = pytest.importorskip("gqlalchemy.transformations.translators.pyg_translator.PyGTranslator")
 
 
+@pytest.mark.extras
 @pytest.mark.parametrize(
     "graph_type, translator_type", [("DGL", DGLTranslator), ("pyG", PyGTranslator), ("Nx", NxTranslator)]
 )
