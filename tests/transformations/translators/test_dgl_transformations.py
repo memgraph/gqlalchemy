@@ -18,18 +18,19 @@ from typing import Dict, Any, Set
 
 import numpy as np
 
-dgl = pytest.importorskip("dgl")
-TUDataset = pytest.importorskip("dgl.data.TUDataset")
-torch = pytest.importorskip("torch")
 
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
 
-DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import DGL_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
+
+dgl = pytest.importorskip("dgl")
+TUDataset = pytest.importorskip("dgl.data.TUDataset")
+torch = pytest.importorskip("torch")
+DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
 
 pytestmark = pytest.mark.extras
 

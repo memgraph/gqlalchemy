@@ -16,12 +16,6 @@ from numbers import Number
 import pytest
 from typing import Dict, Any, Set
 
-Data = pytest.importorskip("torch_geometric.data.Data")
-HeteroData = pytest.importorskip("torch_geometric.data.HeteroData")
-FakeDataset = pytest.importorskip("torch_geometric.datasets.FakeDataset")
-FakeHeteroDataset = pytest.importorskip("torch_geometric.datasets.FakeHeteroDataset")
-torch = pytest.importorskip("torch")
-
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
 from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
@@ -29,6 +23,12 @@ from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import PYG_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
+
+Data = pytest.importorskip("torch_geometric.data.Data")
+HeteroData = pytest.importorskip("torch_geometric.data.HeteroData")
+FakeDataset = pytest.importorskip("torch_geometric.datasets.FakeDataset")
+FakeHeteroDataset = pytest.importorskip("torch_geometric.datasets.FakeHeteroDataset")
+torch = pytest.importorskip("torch")
 
 pytestmark = pytest.mark.extras
 

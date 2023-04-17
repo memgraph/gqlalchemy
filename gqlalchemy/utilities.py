@@ -78,7 +78,7 @@ def _is_torch_tensor(value):
         try:
             if cls.__module__ == "torch" and cls.__name__ == "Tensor":
                 return True
-        except:
+        except Exception:
             pass
     return False
 
