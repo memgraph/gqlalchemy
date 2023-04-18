@@ -76,6 +76,7 @@ def test_custom_data_loader(dummy_loader):
 
 
 @pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_parquet(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
     my_configuration = {
@@ -88,6 +89,7 @@ def test_local_table_to_graph_importer_parquet(memgraph):
 
 
 @pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_csv(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
     my_configuration = {
@@ -100,6 +102,7 @@ def test_local_table_to_graph_importer_csv(memgraph):
 
 
 @pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_orc(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
     if platform.system() == "Windows":
@@ -116,6 +119,7 @@ def test_local_table_to_graph_importer_orc(memgraph):
 
 
 @pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_feather(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
     my_configuration = {
