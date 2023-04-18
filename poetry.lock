@@ -2027,11 +2027,9 @@ multidict = ">=4.0"
 [extras]
 all = ["pyarrow", "torch", "dgl"]
 arrow = ["pyarrow"]
-dgl = ["dgl"]
-ml = ["torch", "dgl"]
-torch = ["torch"]
+dgl = ["torch", "dgl"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "0430b0a58c324ead3a6104b34b43ae75f99dc1a247bf92da8a40e483654285c7"
+content-hash = "9576caf6b0660b4af862dbe238db9a02d5b5bd8cbe1e6e25a0906d3f76703bcd"
