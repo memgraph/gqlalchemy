@@ -12,7 +12,10 @@ class DatabaseClient(ABC)
 #### execute\_and\_fetch
 
 ```python
-def execute_and_fetch(query: str, connection: Connection = None) -> Iterator[Dict[str, Any]]
+def execute_and_fetch(
+        query: str,
+        parameters: Dict[str, Any] = {},
+        connection: Connection = None) -> Iterator[Dict[str, Any]]
 ```
 
 Executes Cypher query and returns iterator of results.
@@ -20,7 +23,9 @@ Executes Cypher query and returns iterator of results.
 #### execute
 
 ```python
-def execute(query: str, connection: Connection = None) -> None
+def execute(query: str,
+            parameters: Dict[str, Any] = {},
+            connection: Connection = None) -> None
 ```
 
 Executes Cypher query without returning any results.
@@ -120,7 +125,8 @@ Creates new database connection.
 #### get\_variable\_assume\_one
 
 ```python
-def get_variable_assume_one(query_result: Iterator[Dict[str, Any]], variable_name: str) -> Any
+def get_variable_assume_one(query_result: Iterator[Dict[str, Any]],
+                            variable_name: str) -> Any
 ```
 
 Returns a single result from the query_result (usually gotten from
@@ -217,7 +223,8 @@ multiple relationships like that in database, throws GQLAlchemyError.
 #### load\_relationship\_with\_id
 
 ```python
-def load_relationship_with_id(relationship: Relationship) -> Optional[Relationship]
+def load_relationship_with_id(
+        relationship: Relationship) -> Optional[Relationship]
 ```
 
 Loads a relationship from the database using the internal id.
@@ -225,7 +232,8 @@ Loads a relationship from the database using the internal id.
 #### load\_relationship\_with\_start\_node\_id\_and\_end\_node\_id
 
 ```python
-def load_relationship_with_start_node_id_and_end_node_id(relationship: Relationship) -> Optional[Relationship]
+def load_relationship_with_start_node_id_and_end_node_id(
+        relationship: Relationship) -> Optional[Relationship]
 ```
 
 Loads a relationship from the database using start node and end node id
@@ -256,7 +264,8 @@ Saves a list of relationships to the database.
 #### save\_relationship\_with\_id
 
 ```python
-def save_relationship_with_id(relationship: Relationship) -> Optional[Relationship]
+def save_relationship_with_id(
+        relationship: Relationship) -> Optional[Relationship]
 ```
 
 Saves a relationship to the database using the relationship._id.

@@ -110,7 +110,12 @@ class GraphObject(BaseModel)
 #### \_\_init\_subclass\_\_
 
 ```python
-def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None)
+def __init_subclass__(cls,
+                      type=None,
+                      label=None,
+                      labels=None,
+                      index=None,
+                      db=None)
 ```
 
 Stores the subclass by type if type is specified, or by class name

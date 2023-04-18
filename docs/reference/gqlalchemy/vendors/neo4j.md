@@ -28,7 +28,8 @@ Ensures that database indexes match input indexes.
 #### get\_constraints
 
 ```python
-def get_constraints() -> List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]]
+def get_constraints(
+) -> List[Union[Neo4jConstraintExists, Neo4jConstraintUnique]]
 ```
 
 Returns a list of all database constraints (label and label-property types).

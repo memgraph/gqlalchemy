@@ -28,7 +28,8 @@ Ensures that database indexes match input indexes.
 #### get\_constraints
 
 ```python
-def get_constraints() -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]
+def get_constraints(
+) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]
 ```
 
 Returns a list of all database constraints (label and label-property types).
@@ -183,7 +184,8 @@ relationship, use `load_relationship` first.
 #### get\_procedures
 
 ```python
-def get_procedures(starts_with: Optional[str] = None, update: bool = False) -> List["QueryModule"]
+def get_procedures(starts_with: Optional[str] = None,
+                   update: bool = False) -> List["QueryModule"]
 ```
 
 Return query procedures.
