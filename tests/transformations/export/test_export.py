@@ -23,7 +23,6 @@ def test_export_pyg():
     transporter.export()  # even with empty graph we should check that something doesn't fail
 
 
-@pytest.mark.extras
 def test_export_nx():
     from gqlalchemy.transformations.translators.nx_translator import NxTranslator
 
