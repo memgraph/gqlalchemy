@@ -50,7 +50,7 @@ dgl = { version = "^0.9.1", optional = true }
 
 [tool.poetry.extras]
 arrow = ["pyarrow"]
-dgl = ["torch", "dgl"]
+ml = ["torch", "dgl"]
 all = ["pyarrow", "torch", "dgl"]
 
 [tool.poetry.group.dev.dependencies]
