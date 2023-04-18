@@ -44,7 +44,7 @@ SQLitePropertyDatabase("path-to-sqlite-db", db)
 """
 
 MISSING_OPTIONAL_DEPENDENCY = """
-No module named '{module_name}'
+No module named '{dependency_name}'
 """
 
 MISSING_ORDER = """
@@ -203,9 +203,9 @@ class GQLAlchemyFileNotFoundError(GQLAlchemyError):
         self.message = FILE_NOT_FOUND.format(path=path)
 
 
-def raise_if_not_imported(module, module_name):
-    if not module:
-        raise ModuleNotFoundError(MISSING_OPTIONAL_DEPENDENCY.format(module_name=module_name))
+def raise_if_not_imported(dependency, dependency_name):
+    if not dependency:
+        raise ModuleNotFoundError(MISSING_OPTIONAL_DEPENDENCY.format(dependency_name=dependency_name))
 
 
 def database_error_handler(func):

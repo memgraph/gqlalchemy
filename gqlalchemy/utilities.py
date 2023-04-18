@@ -92,7 +92,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     value_type = type(value)
 
     if _is_torch_tensor(value):
-        raise_if_not_imported(module=torch, module_name="torch")
+        raise_if_not_imported(dependency=torch, dependency_name="torch")
 
         if value.squeeze().size() == 1:
             return value.squeeze().item()

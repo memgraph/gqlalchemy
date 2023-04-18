@@ -57,10 +57,10 @@ class GraphTransporter(Transporter):
         super().__init__()
         self.graph_type = graph_type.upper()
         if self.graph_type == GraphType.DGL.name:
-            raise_if_not_imported(module=DGLTranslator, module_name="dgl")
+            raise_if_not_imported(dependency=DGLTranslator, dependency_name="dgl")
             self.translator = DGLTranslator(host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.PYG.name:
-            raise_if_not_imported(module=PyGTranslator, module_name="torch_geometric")
+            raise_if_not_imported(dependency=PyGTranslator, dependency_name="torch_geometric")
             self.translator = PyGTranslator(host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.NX.name:
             self.translator = NxTranslator(host, port, username, password, encrypted, client_name, lazy)

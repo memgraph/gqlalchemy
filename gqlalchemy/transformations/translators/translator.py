@@ -107,7 +107,7 @@ class Translator(ABC):
         Returns:
             None if features cannot be set or tensor of same features.
         """
-        raise_if_not_imported(module=torch, module_name="torch")
+        raise_if_not_imported(dependency=torch, dependency_name="torch")
 
         if len(features) != expected_num:
             return None
