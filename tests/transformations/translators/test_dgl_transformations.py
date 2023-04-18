@@ -12,21 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Any, Set
 from numbers import Number
+import pytest
+from typing import Dict, Any, Set
 
 import numpy as np
-import dgl
-from dgl.data import TUDataset
-import torch
+
 
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
-from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
+
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import DGL_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
+
+dgl = pytest.importorskip("dgl")
+TUDataset = pytest.importorskip("dgl.data.TUDataset")
+torch = pytest.importorskip("torch")
+DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
+
+pytestmark = [pytest.mark.extras, pytest.mark.dgl]
 
 ##########
 # UTILS
