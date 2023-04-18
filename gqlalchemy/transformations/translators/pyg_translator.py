@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-
 from torch_geometric.data import HeteroData, Data
 import torch
 
@@ -42,22 +40,6 @@ class PyGTranslator(Translator):
         lazy: bool = MG_LAZY,
     ) -> None:
         super().__init__(host, port, username, password, encrypted, client_name, lazy)
-
-    @classmethod
-    def validate_features(cls, features: List, expected_num: int):
-        """Return true if features are okay to be set on all nodes/features.
-        Args:
-            features: To be set on all nodes. It can be anything that can be converted to torch tensor.
-            expected_num: This can be number of nodes or number of edges depending on whether features will be set on nodes or edges.
-        Returns:
-            None if features cannot be set or tensor of same features.
-        """
-        if len(features) != expected_num:
-            return None
-        try:
-            return torch.tensor(features, dtype=torch.float32)
-        except ValueError:
-            return None
 
     @classmethod
     def get_node_properties(cls, graph, node_label: str, node_id: int):
