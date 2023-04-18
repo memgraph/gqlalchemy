@@ -14,8 +14,6 @@
 
 An Object Graph Mapper or OGM provides a developer-friendly workflow that allows for writing object-oriented notation to communicate with graph databases. Instead of writing Cypher queries, you will be able to write object-oriented code, which the OGM will automatically translate into Cypher queries.
 
-
-
 ## Installation
 
 GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
@@ -40,7 +38,7 @@ If you intend to use GQLAlchemy with PyTorch Geometric support, that library mus
 
 ```bash
 pip install gqlalchemy[torch_pyg] # prerequisite
-# <add PyTorch Geometric installation commands>
+pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html"
 ```
 
 If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through pip.
