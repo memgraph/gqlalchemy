@@ -13,8 +13,11 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
+from datetime import datetime, date, time, timedelta
+from enum import Enum
 import inspect
 import math
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -22,10 +25,6 @@ try:
     import torch
 except ModuleNotFoundError:
     torch = None
-
-from datetime import datetime, date, time, timedelta
-from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class DatetimeKeywords(Enum):
