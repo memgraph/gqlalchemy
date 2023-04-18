@@ -14,17 +14,32 @@
 
 import pytest
 
-GraphImporter = pytest.importorskip("gqlalchemy.transformations.importing.graph_importer.GraphImporter")
-DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
-NxTranslator = pytest.importorskip("gqlalchemy.transformations.translators.nx_translator.NxTranslator")
-PyGTranslator = pytest.importorskip("gqlalchemy.transformations.translators.pyg_translator.PyGTranslator")
+from gqlalchemy.transformations.importing.graph_importer import GraphImporter
 
 
 @pytest.mark.extras
-@pytest.mark.parametrize(
-    "graph_type, translator_type", [("DGL", DGLTranslator), ("pyG", PyGTranslator), ("Nx", NxTranslator)]
-)
-def test_import_selection_strategy(graph_type, translator_type):
-    importer = GraphImporter(graph_type)
-    assert isinstance(importer.translator, translator_type)
+@pytest.mark.dgl
+def test_import_dgl():
+    DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
+
+    importer = GraphImporter(graph_type="DGL")
+    assert isinstance(importer.translator, DGLTranslator)
+    importer.translate(None)  # it should fail safely no matter what
+
+
+@pytest.mark.extras
+@pytest.mark.pyg
+def test_import_pyg():
+    PyGTranslator = pytest.importorskip("gqlalchemy.transformations.translators.pyg_translator.PyGTranslator")
+
+    importer = GraphImporter(graph_type="pyG")
+    assert isinstance(importer.translator, PyGTranslator)
+    importer.translate(None)  # it should fail safely no matter what
+
+
+def test_import_nx():
+    from gqlalchemy.transformations.translators.nx_translator import NxTranslator
+
+    importer = GraphImporter(graph_type="Nx")
+    assert isinstance(importer.translator, NxTranslator)
     importer.translate(None)  # it should fail safely no matter what
