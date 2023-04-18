@@ -43,6 +43,10 @@ db = Memgraph()
 SQLitePropertyDatabase("path-to-sqlite-db", db)
 """
 
+MISSING_OPTIONAL_DEPENDENCY = """
+No module named '{module_name}'
+"""
+
 MISSING_ORDER = """
 The second argument of the tuple must be order: ASC, ASCENDING, DESC or DESCENDING.
 """
@@ -197,6 +201,11 @@ class GQLAlchemyFileNotFoundError(GQLAlchemyError):
     def __init__(self, path):
         super().__init__()
         self.message = FILE_NOT_FOUND.format(path=path)
+
+
+def raise_if_not_imported(module, module_name):
+    if not module:
+        raise ModuleNotFoundError(MISSING_OPTIONAL_DEPENDENCY.format(module_name=module_name))
 
 
 def database_error_handler(func):

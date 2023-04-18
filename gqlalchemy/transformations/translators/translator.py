@@ -22,6 +22,7 @@ try:
 except ModuleNotFoundError:
     torch = None
 
+from gqlalchemy.exceptions import raise_if_not_imported
 from gqlalchemy.transformations.constants import LABELS_CONCAT, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
@@ -106,8 +107,7 @@ class Translator(ABC):
         Returns:
             None if features cannot be set or tensor of same features.
         """
-        if torch is None:
-            raise ModuleNotFoundError("No module named 'torch'")
+        raise_if_not_imported(module=torch, module_name="torch")
 
         if len(features) != expected_num:
             return None

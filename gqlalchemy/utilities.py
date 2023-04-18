@@ -26,6 +26,8 @@ try:
 except ModuleNotFoundError:
     torch = None
 
+from gqlalchemy.exceptions import raise_if_not_imported
+
 
 class DatetimeKeywords(Enum):
     DURATION = "duration"
@@ -90,8 +92,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     value_type = type(value)
 
     if _is_torch_tensor(value):
-        if torch is None:
-            raise ModuleNotFoundError("No module named 'torch'")
+        raise_if_not_imported(module=torch, module_name="torch")
 
         if value.squeeze().size() == 1:
             return value.squeeze().item()
