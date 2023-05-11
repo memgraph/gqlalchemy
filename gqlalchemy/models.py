@@ -563,7 +563,7 @@ class GetOrCreateMixin:
         """
         try:
             return self.load(db=db), False
-        except gqlalchemy.exceptions.GQLAlchemyError:
+        except GQLAlchemyError:
             return self.save(db=db), True
 
 
