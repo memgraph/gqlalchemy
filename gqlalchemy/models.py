@@ -550,7 +550,7 @@ class NodeMetaclass(BaseModel.__class__):
 class GetOrCreateMixin:
     """Add a shortcut to either get or create a graph object in the database.
     """
-    def get_or_create(self, db: "Database") -> typing.Tuple["UniqueGraphObject", bool]:
+    def get_or_create(self, db: "Database") -> Tuple["UniqueGraphObject", bool]:
         """Return the graph entity and a flag for whether it was created in the database.
         
         Args:
