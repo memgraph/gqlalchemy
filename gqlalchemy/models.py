@@ -547,7 +547,27 @@ class NodeMetaclass(BaseModel.__class__):
         return cls
 
 
-class Node(UniqueGraphObject, metaclass=NodeMetaclass):
+class GetOrCreateMixin:
+    """Add a shortcut to either get or create a graph object in the database.
+    """
+    def get_or_create(self, db: "Database") -> typing.Tuple["UniqueGraphObject", bool]:
+        """Return the graph entity and a flag for whether it was created in the database.
+        
+        Args:
+            db: The database instance to operate on.
+        
+        Returns:
+            A tuple with the first component being the graph entity,
+            and the second being a boolean that is True if the entity
+            was created in the database, False if it was loaded instead.
+        """
+        try:
+            return self.load(db=db), False
+        except gqlalchemy.exceptions.GQLAlchemyError:
+            return self.save(db=db), True
+
+
+class Node(UniqueGraphObject, GetOrCreateMixin, metaclass=NodeMetaclass):
     _labels: Set[str] = PrivateAttr()
 
     def __init__(self, **data):
@@ -634,7 +654,7 @@ class RelationshipMetaclass(BaseModel.__class__):
         return cls
 
 
-class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
+class Relationship(UniqueGraphObject, GetOrCreateMixin, metaclass=RelationshipMetaclass):
     _end_node_id: int = PrivateAttr()
     _start_node_id: int = PrivateAttr()
     _type: str = PrivateAttr()
