@@ -28,11 +28,11 @@ so we can get all the needed information to resolve the issue.
 
 ### Branch `main`
 
-The base branch of the project is the **`main`** branch. Whenever there is a change on the `main` branch, a new release of GQLAlchemy is created in the [GitHub repository](https://github.com/memgraph/gqlalchemy/releases) and on [PyPI](https://pypi.org/project/GQLAlchemy/). 
+The base branch of the project is the **`main`** branch. Whenever the next [milestone](https://github.com/memgraph/gqlalchemy/milestones?state=open) is reached, a new release of GQLAlchemy is created in the [GitHub repository](https://github.com/memgraph/gqlalchemy/releases) and on [PyPI](https://pypi.org/project/GQLAlchemy/). Also, new branch `release/<version>` is created for every major or minor release. 
 
-### Branch `develop`
+### Branch `release/<version>`
 
-The **`develop`** branch is where new releases of GQLAlchemy are developed. You can track the progress of each release through [GitHub Projects](https://github.com/memgraph/gqlalchemy/projects?type=beta). When the release is finished, the `develop` branch will be merged into `main` and the newly updated `main` branch will be used to create a new release. 
+The **`release/<version>`** branch is where new releases of GQLAlchemy are published to. You can track the progress of each release through [GitHub Milestones](https://github.com/memgraph/gqlalchemy/milestones?state=open). When the release is finished on the `main` branch, the new `release/<version>` branch will be published. 
 
 ## Contributing new features or bug fixes
 
@@ -44,7 +44,7 @@ There are two main types of contributions:
 1. **Critical bug fixes**
 2. **New features or low priority bug fixes**
 
-Critical bug fixes should be applied to the `main` branch because a patch release will be created and published once the bug is fixed. Non-critical bug fixes and features can be added to the `develop` branch and will be included in the next planned release.
+Both types of fixes should be applied to the `main` branch.
 
 In order for a pull request to be merged, a review by two code owners is required and the tests need to pass remotely.
 
