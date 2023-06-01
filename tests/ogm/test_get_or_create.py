@@ -1,4 +1,3 @@
-
 # Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +57,6 @@ def test_get_or_create_relationship(database):
 
     class Follows(Relationship):
         _type = "FOLLOWS"
-
 
     node_from, created = User(id=1).get_or_create(database)
     assert created is True
