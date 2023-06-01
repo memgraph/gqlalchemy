@@ -13,7 +13,27 @@
 
 import pytest
 
-from gqlalchemy import Node, Field, Relationship, GQLAlchemyError
+from gqlalchemy import Node, Field, Relationship, GQLAlchemyError, Match
+
+
+def count_streamer_nodes() -> int:
+    """Return a count of all streamer nodes"""
+    return (
+        Match()
+        .node("Streamer", variable="s")
+        .return_({"count(s)": "frequency"})
+    )["frequency"]
+
+
+def count_follows_relationships() -> int:
+    """Return a count of all FOLLOWS relationships between Streamers."""
+    return (
+        Match()
+        .node("Streamer", variable="s")
+        .to(edge_label="FOLLOWS", variable="r")
+        .node("Streamer", variable="t")
+        .return_({"count(r)": "frequency"})
+    )["frequency"]
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
@@ -32,6 +52,7 @@ def test_get_or_create_node(database):
     with pytest.raises(GQLAlchemyError):
         database.load_node(non_existent_streamer)
 
+    start_count = count_streamer_nodes()
     streamer, created = non_existent_streamer.get_or_create(database)
     assert created is True, "Node.get_or_create should create this node since it doesn't yet exist."
     assert streamer.name == "Mislav"
@@ -40,6 +61,9 @@ def test_get_or_create_node(database):
     assert streamer.totalViewCount == 7777
     assert streamer._labels == {"Streamer", "User"}
 
+    after_create_count = count_streamer_nodes()
+    assert after_create_count == start_count + 1, "Since the node was created, the count should be incremented by 1."
+
     streamer, created = non_existent_streamer.get_or_create(database)
     assert created is False, "Node.get_or_create should not create this node but load it instead."
     assert streamer.name == "Mislav"
@@ -47,6 +71,9 @@ def test_get_or_create_node(database):
     assert streamer.followers == 777
     assert streamer.totalViewCount == 7777
     assert streamer._labels == {"Streamer", "User"}
+
+    after_load_count = count_streamer_nodes()
+    assert after_create_count == after_load_count, "A loaded node should not increase the count."
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
@@ -66,6 +93,7 @@ def test_get_or_create_relationship(database):
     assert created is True
     assert node_to.id == 1
 
+    start_count = count_follows_relationships()
     # Assert that loading a relationship that doesn't yet exist raises GQLAlchemyError.
     non_existent_relationship = Follows(_start_node_id=1, _end_node_id=2)
     with pytest.raises(GQLAlchemyError):
@@ -76,6 +104,12 @@ def test_get_or_create_relationship(database):
     assert relationship.id is not None
     created_id = relationship.id
 
+    after_create_count = count_follows_relationships()
+    assert after_create_count == start_count + 1, "Since the relationship was created, the count should be incremented by 1."
+
     relationship, created = non_existent_relationship.get_or_create(database)
     assert created is False, "Relationship.get_or_create should not create this relationship but load it instead."
     assert relationship.id == created_id
+
+    after_load_count = count_follows_relationships()
+    assert after_create_count == after_load_count, "A loaded relationship should not increase the count."
