@@ -709,7 +709,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
         self._id = relationship._id
         return self
 
-    def get_or_create(self, db: "Database") -> Tuple["Node", bool]:  # noqa F821
+    def get_or_create(self, db: "Database") -> Tuple["Relationship", bool]:  # noqa F821
         """Return the relationship and a flag for whether it was created in the database.
 
         Args:
