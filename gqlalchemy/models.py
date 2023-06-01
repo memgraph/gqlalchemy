@@ -546,6 +546,7 @@ class NodeMetaclass(BaseModel.__class__):
 
         return cls
 
+
 class Node(UniqueGraphObject, metaclass=NodeMetaclass):
     _labels: Set[str] = PrivateAttr()
 
@@ -618,7 +619,6 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
             setattr(self, field, getattr(node, field))
         self._id = node._id
         return self
-
 
     def get_or_create(self, db: "Database") -> Tuple["Node", bool]:  # noqa F821
         """Return the node and a flag for whether it was created in the database.
