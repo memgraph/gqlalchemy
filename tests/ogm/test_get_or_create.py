@@ -18,11 +18,7 @@ from gqlalchemy import Node, Field, Relationship, GQLAlchemyError, Match
 
 def count_streamer_nodes() -> int:
     """Return a count of all streamer nodes"""
-    return (
-        Match()
-        .node("Streamer", variable="s")
-        .return_({"count(s)": "frequency"})
-    )["frequency"]
+    return (Match().node("Streamer", variable="s").return_({"count(s)": "frequency"}))["frequency"]
 
 
 def count_follows_relationships() -> int:
@@ -105,7 +101,9 @@ def test_get_or_create_relationship(database):
     created_id = relationship.id
 
     after_create_count = count_follows_relationships()
-    assert after_create_count == start_count + 1, "Since the relationship was created, the count should be incremented by 1."
+    assert (
+        after_create_count == start_count + 1
+    ), "Since the relationship was created, the count should be incremented by 1."
 
     relationship, created = non_existent_relationship.get_or_create(database)
     assert created is False, "Relationship.get_or_create should not create this relationship but load it instead."
