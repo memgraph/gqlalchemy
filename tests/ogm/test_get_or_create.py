@@ -18,7 +18,7 @@ from gqlalchemy import Node, Field, Relationship, GQLAlchemyError, Match
 
 def count_streamer_nodes() -> int:
     """Return a count of all streamer nodes"""
-    return (Match().node("Streamer", variable="s").return_({"count(s)": "frequency"}))["frequency"]
+    return (Match().node("Streamer", variable="s").return_({"count(s)": "frequency"}).execute())["frequency"]
 
 
 def count_follows_relationships() -> int:
@@ -29,6 +29,7 @@ def count_follows_relationships() -> int:
         .to(edge_label="FOLLOWS", variable="r")
         .node("Streamer", variable="t")
         .return_({"count(r)": "frequency"})
+        .execute()
     )["frequency"]
 
 
@@ -81,13 +82,15 @@ def test_get_or_create_relationship(database):
     class Follows(Relationship):
         _type = "FOLLOWS"
 
-    node_from, created = User(id=1).get_or_create(database)
+    node_from, created = User(id=1, name="foo").get_or_create(database)
     assert created is True
     assert node_from.id == 1
+    assert node_from.name == "foo"
 
-    node_to, created = User(id=2).get_or_create(database)
+    node_to, created = User(id=2, name="bar").get_or_create(database)
     assert created is True
     assert node_to.id == 1
+    assert node_to.name == "bar"
 
     start_count = count_follows_relationships()
     # Assert that loading a relationship that doesn't yet exist raises GQLAlchemyError.
