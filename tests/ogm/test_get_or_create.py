@@ -18,12 +18,7 @@ from gqlalchemy import Node, Field, Relationship, GQLAlchemyError, Match
 
 def count_streamer_nodes() -> int:
     """Return a count of all streamer nodes"""
-    return list(
-        Match()
-        .node("Streamer", variable="s")
-        .return_({"count(s)": "frequency"})
-        .execute()
-    )[0]["frequency"]
+    return list(Match().node("Streamer", variable="s").return_({"count(s)": "frequency"}).execute())[0]["frequency"]
 
 
 def count_follows_relationships() -> int:
