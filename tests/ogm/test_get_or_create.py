@@ -18,19 +18,24 @@ from gqlalchemy import Node, Field, Relationship, GQLAlchemyError, Match
 
 def count_streamer_nodes() -> int:
     """Return a count of all streamer nodes"""
-    return (Match().node("Streamer", variable="s").return_({"count(s)": "frequency"}).execute())["frequency"]
+    return list(
+        Match()
+        .node("Streamer", variable="s")
+        .return_({"count(s)": "frequency"})
+        .execute()
+    )[0]["frequency"]
 
 
 def count_follows_relationships() -> int:
     """Return a count of all FOLLOWS relationships between Streamers."""
-    return (
+    return list(
         Match()
         .node("Streamer", variable="s")
         .to(edge_label="FOLLOWS", variable="r")
         .node("Streamer", variable="t")
         .return_({"count(r)": "frequency"})
         .execute()
-    )["frequency"]
+    )[0]["frequency"]
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
@@ -84,12 +89,12 @@ def test_get_or_create_relationship(database):
 
     node_from, created = User(id=1, name="foo").get_or_create(database)
     assert created is True
-    assert node_from.id == 1
+    assert node_from.id == "1"
     assert node_from.name == "foo"
 
     node_to, created = User(id=2, name="bar").get_or_create(database)
     assert created is True
-    assert node_to.id == 1
+    assert node_to.id == "2"
     assert node_to.name == "bar"
 
     start_count = count_follows_relationships()
