@@ -99,7 +99,7 @@ class ProjectPartialQuery(PartialQuery)
 def construct_query() -> str
 ```
 
-Constructs a Project partial querty.
+Constructs a Project partial query.
 
 Given path part of a query (e.g. (:LABEL)-[:TYPE]-&gt;(:LABEL2)),
 adds MATCH, a path identifier and appends the WITH clause.
