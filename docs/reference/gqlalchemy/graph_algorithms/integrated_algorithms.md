@@ -138,7 +138,7 @@ If bounds are specified, returns them in grammar-defined form.
 class WeightedShortestPath(IntegratedAlgorithm)
 ```
 
-Build a Djikstra shortest path call for a Cypher query.
+Build a Dijkstra shortest path call for a Cypher query.
 
 The weighted shortest path algorithm can be called in Memgraph with Cypher
 queries such as:
@@ -172,7 +172,7 @@ def __init__(upper_bound: int = None,
 class AllShortestPath(IntegratedAlgorithm)
 ```
 
-Build a Djikstra shortest path call for a Cypher query.
+Build a Dijkstra shortest path call for a Cypher query.
 
 The weighted shortest path algorithm can be called in Memgraph with Cypher
 queries such as:
