@@ -25,8 +25,8 @@ QM_FIELD_IS_WRITE = "is_write"
 QM_FIELD_PATH = "path"
 QM_FIELD_SIGNATURE = "signature"
 
-LEFT_PARANTHESES = "("
-RIGHT_PARANTHESES = ")"
+LEFT_PARENTHESIS = "("
+RIGHT_PARENTHESIS = ")"
 EQUALS_DELIMITER = " = "
 NAME_TYPE_DELIMITER = " :: "
 COMMA_SEP = ", "
@@ -116,11 +116,11 @@ def parse_query_module_signature(signature: str) -> Tuple[List[Dict[str, str]], 
     Args:
         signature: module signature as returned by Cypher CALL operation
     """
-    end_arguments_parentheses = signature.index(RIGHT_PARANTHESES)
-    arguments_field = signature[signature.index(LEFT_PARANTHESES) + 1 : end_arguments_parentheses]
+    end_arguments_parenthesis = signature.index(RIGHT_PARENTHESIS)
+    arguments_field = signature[signature.index(LEFT_PARENTHESIS) + 1 : end_arguments_parenthesis]
     returns_field = signature[
-        signature.index(LEFT_PARANTHESES, end_arguments_parentheses)
-        + 1 : signature.index(RIGHT_PARANTHESES, end_arguments_parentheses + 1)
+        signature.index(LEFT_PARENTHESIS, end_arguments_parenthesis)
+        + 1 : signature.index(RIGHT_PARENTHESIS, end_arguments_parenthesis + 1)
     ]
 
     arguments = parse_field(
@@ -143,7 +143,7 @@ def parse_field(
     """Parse a field of arguments or returns from Query Module signature.
 
     Args:
-        vars_field: signature field inside parentheses
+        vars_field: signature field inside parenthesis
     """
     if len(vars_field) == 0:
         return []
