@@ -118,7 +118,7 @@ class DGLTranslator(Translator):
 
     def get_instance(self) -> dgl.DGLHeteroGraph:
         """Create instance of DGL graph from all edges that are inside Memgraph. Currently, isolated nodes are ignored because they don't contribute in message passing neural networks. Only numerical features
-        that are set on all nodes or all edges are transferred to the DGL instance since this is DGL's requirement. That means thay any string values properties won't be transferred, as well as numerical properties
+        that are set on all nodes or all edges are transferred to the DGL instance since this is DGL's requirement. That means that any string values properties won't be transferred, as well as numerical properties
         that aren't set on all nodes. However, features of type list are transferred to the DGL and can be used as any other feature in the DGL graph. Regardless of data residing inside Memgraph database, the created
         DGL graph is a heterograph instance.
         Returns:
