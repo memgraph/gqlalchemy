@@ -26,9 +26,9 @@ Generates Cypher queries for creating a graph by query groups.
 class NxTranslator(Translator)
 ```
 
-Uses original ids from Memgraph. Labels are encoded as properties. Since Networkx allows
+Uses original ids from Memgraph. Labels are encoded as properties. Since NetworkX allows
 that nodes have properties of different dimensionality, this modules makes use of it and stores properties
-as dictionary entries. All properties are saved to Networkx data structure.
+as dictionary entries. All properties are saved to NetworkX data structure.
 
 #### to\_cypher\_queries
 
@@ -54,6 +54,6 @@ Generates Cypher queries and inserts data into Memgraph in parallel.
 def get_instance()
 ```
 
-Creates Networx instance of the graph from the data residing inside Memgraph. Since Networkx doesn&#x27;t support labels in a way Memgraph does, labels
+Creates NetworkX instance of the graph from the data residing inside Memgraph. Since NetworkX doesn&#x27;t support labels in a way Memgraph does, labels
 are encoded as a node and edge properties.
 

@@ -64,7 +64,7 @@ class GraphImporter(Importer):
         elif self.graph_type == GraphType.NX.name:
             self.translator = NxTranslator(host, port, username, password, encrypted, client_name, lazy)
         else:
-            raise ValueError("Unknown import option. Currently supported options are: DGL, PyG and Networkx.")
+            raise ValueError("Unknown import option. Currently supported options are: DGL, PyG and NetworkX.")
 
     def translate(self, graph) -> None:
         """Gets cypher queries using the underlying translator and then inserts all queries to Memgraph DB.
