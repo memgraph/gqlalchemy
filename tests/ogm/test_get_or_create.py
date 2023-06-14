@@ -13,29 +13,7 @@
 
 import pytest
 
-from gqlalchemy import Node, Field, Relationship, GQLAlchemyError, Match
-
-
-def count_streamer_nodes() -> int:
-    """Return a count of all streamer nodes"""
-    results = Match().node("Streamer", variable="s").return_({"count(s)": "frequency"})
-    print(results.construct_query())
-    results = list(results.execute())
-    return results[0]["frequency"]
-
-
-def count_follows_relationships() -> int:
-    """Return a count of all FOLLOWS relationships between Streamers."""
-    results = (
-        Match()
-        .node("Streamer", variable="s")
-        .to(variable="r")
-        .node("Streamer", variable="t")
-        .return_({"count(r)": "frequency"})
-    )
-    print(results.construct_query())
-    results = list(results.execute())
-    return results[0]["frequency"]
+from gqlalchemy import Node, Field, Relationship, GQLAlchemyError
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
