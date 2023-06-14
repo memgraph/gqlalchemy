@@ -1115,7 +1115,7 @@ class DeclarativeBase(ABC):
             A `DeclarativeBase` instance for constructing queries.
 
         Example:
-            Pipe the result from first part of the query for the futher use:
+            Pipe the result from first part of the query for the further use:
 
             Python: `match().node(variable='n').with('n').execute()`
             Cypher: `MATCH (n) WITH n;

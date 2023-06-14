@@ -728,7 +728,7 @@ used as starting points or criteria in the next.
 
 **Example**:
 
-  Pipe the result from first part of the query for the futher use:
+  Pipe the result from first part of the query for the further use:
   
 - `Python` - `match().node(variable=&#x27;n&#x27;).with(&#x27;n&#x27;).execute()`
 - `Cypher` - `MATCH (n) WITH n;
