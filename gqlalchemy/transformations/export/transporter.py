@@ -21,7 +21,7 @@ class Transporter(ABC):
 
     @abstractmethod
     def export(query_results):
-        """Abstract method that will be overriden by subclasses that will know which correct graph type to create.
+        """Abstract method that will be overridden by subclasses that will know which correct graph type to create.
         Raises:
             NotImplementedError: The method must be override by a specific translator.
         """

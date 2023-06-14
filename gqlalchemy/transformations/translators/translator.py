@@ -62,7 +62,7 @@ class Translator(ABC):
 
     @abstractmethod
     def to_cypher_queries(graph):
-        """Abstract method which doesn't know how to produce cypher queries for a specific graph type and thus needs to be overriden.
+        """Abstract method which doesn't know how to produce cypher queries for a specific graph type and thus needs to be overridden.
         Args:
             graph: Can be of any type supported by the derived Translator object.
 
@@ -75,7 +75,7 @@ class Translator(ABC):
 
     @abstractmethod
     def get_instance():
-        """Abstract method which doesn't know how to create the concrete instance so it needs to be overriden.
+        """Abstract method which doesn't know how to create the concrete instance so it needs to be overridden.
 
         Raises:
             NotImplementedError: The method must be override by a specific translator.
