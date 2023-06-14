@@ -18,19 +18,24 @@ from gqlalchemy import Node, Field, Relationship, GQLAlchemyError, Match
 
 def count_streamer_nodes() -> int:
     """Return a count of all streamer nodes"""
-    return list(Match().node("Streamer", variable="s").return_({"count(s)": "frequency"}).execute())[0]["frequency"]
+    results = Match().node("Streamer", variable="s").return_({"count(s)": "frequency"})
+    print(results.construct_query())
+    results = list(results.execute())
+    return results[0]["frequency"]
 
 
 def count_follows_relationships() -> int:
     """Return a count of all FOLLOWS relationships between Streamers."""
-    return list(
+    results = (
         Match()
         .node("Streamer", variable="s")
-        .to(edge_label="FOLLOWS", variable="r")
+        .to(variable="r")
         .node("Streamer", variable="t")
         .return_({"count(r)": "frequency"})
-        .execute()
-    )[0]["frequency"]
+    )
+    print(results.construct_query())
+    results = list(results.execute())
+    return results[0]["frequency"]
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
@@ -49,7 +54,6 @@ def test_get_or_create_node(database):
     with pytest.raises(GQLAlchemyError):
         database.load_node(non_existent_streamer)
 
-    start_count = count_streamer_nodes()
     streamer, created = non_existent_streamer.get_or_create(database)
     assert created is True, "Node.get_or_create should create this node since it doesn't yet exist."
     assert streamer.name == "Mislav"
@@ -58,59 +62,49 @@ def test_get_or_create_node(database):
     assert streamer.totalViewCount == 7777
     assert streamer._labels == {"Streamer", "User"}
 
-    after_create_count = count_streamer_nodes()
-    assert after_create_count == start_count + 1, "Since the node was created, the count should be incremented by 1."
+    assert streamer._id is not None, "Since the streamer was created, it should not have a None _id."
 
-    streamer, created = non_existent_streamer.get_or_create(database)
+    streamer_other, created = non_existent_streamer.get_or_create(database)
     assert created is False, "Node.get_or_create should not create this node but load it instead."
-    assert streamer.name == "Mislav"
-    assert streamer.id == "7"
-    assert streamer.followers == 777
-    assert streamer.totalViewCount == 7777
-    assert streamer._labels == {"Streamer", "User"}
+    assert streamer_other.name == "Mislav"
+    assert streamer_other.id == "7"
+    assert streamer_other.followers == 777
+    assert streamer_other.totalViewCount == 7777
+    assert streamer_other._labels == {"Streamer", "User"}
 
-    after_load_count = count_streamer_nodes()
-    assert after_create_count == after_load_count, "A loaded node should not increase the count."
+    assert (
+        streamer_other._id == streamer._id
+    ), "Since the other streamer wasn't created, it should have the same underlying _id property."
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
 def test_get_or_create_relationship(database):
     class User(Node):
         name: str = Field(unique=True, db=database)
-        id: str = Field(index=True, db=database)
 
     class Follows(Relationship):
         _type = "FOLLOWS"
 
-    node_from, created = User(id=1, name="foo").get_or_create(database)
+    node_from, created = User(name="foo").get_or_create(database)
     assert created is True
-    assert node_from.id == "1"
     assert node_from.name == "foo"
 
-    node_to, created = User(id=2, name="bar").get_or_create(database)
+    node_to, created = User(name="bar").get_or_create(database)
     assert created is True
-    assert node_to.id == "2"
     assert node_to.name == "bar"
 
-    start_count = count_follows_relationships()
+    assert node_from._id != node_to._id, "Since a new node was created, it should have a different id."
+
     # Assert that loading a relationship that doesn't yet exist raises GQLAlchemyError.
-    non_existent_relationship = Follows(_start_node_id=1, _end_node_id=2)
+    non_existent_relationship = Follows(_start_node_id=node_from._id, _end_node_id=node_to._id)
     with pytest.raises(GQLAlchemyError):
         database.load_relationship(non_existent_relationship)
 
     relationship, created = non_existent_relationship.get_or_create(database)
     assert created is True, "Relationship.get_or_create should create this relationship since it doesn't yet exist."
-    assert relationship.id is not None
-    created_id = relationship.id
+    assert relationship._id is not None
+    created_id = relationship._id
 
-    after_create_count = count_follows_relationships()
-    assert (
-        after_create_count == start_count + 1
-    ), "Since the relationship was created, the count should be incremented by 1."
-
-    relationship, created = non_existent_relationship.get_or_create(database)
+    relationship_loaded, created = non_existent_relationship.get_or_create(database)
     assert created is False, "Relationship.get_or_create should not create this relationship but load it instead."
-    assert relationship.id == created_id
-
-    after_load_count = count_follows_relationships()
-    assert after_create_count == after_load_count, "A loaded relationship should not increase the count."
+    assert relationship_loaded._id == created_id
