@@ -834,7 +834,7 @@ def test_dgl_import_homogeneous(memgraph):
         ]
     )
     graph = dgl.DGLGraph((src, dst))
-    # Initialize translator and insert into the MemgrapA
+    # Initialize translator and insert into the Memgraph
     # Let's test
     # Check all that are in Memgraph are in DGL too
     _check_all_edges_exist_memgraph_dgl(

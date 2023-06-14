@@ -926,7 +926,7 @@ def test_pyg_import_homogeneous(memgraph):
         32,
     ]
     graph = Data(edge_index=torch.tensor([src, dst], dtype=torch.int32))
-    # Initialize translator and insert into the MemgrapA
+    # Initialize translator and insert into the Memgraph
     # Let's test
     # Check all that are in Memgraph are in pyg too
     _check_all_edges_exist_memgraph_pyg(
