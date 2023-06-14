@@ -157,7 +157,7 @@ def _check_all_edges_exist_memgraph_dgl(
 
 
 def test_dgl_export_multigraph(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -193,7 +193,7 @@ def test_dgl_export_multigraph(memgraph):
 
 
 def test_dgl_multiple_nodes_same_features(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
