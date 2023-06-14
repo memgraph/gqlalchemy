@@ -28,7 +28,7 @@ QM_FIELD_SIGNATURE = "signature"
 LEFT_PARANTHESES = "("
 RIGHT_PARANTHESES = ")"
 EQUALS_DELIMITER = " = "
-NAME_TYPE_DELIMITIER = " :: "
+NAME_TYPE_DELIMITER = " :: "
 COMMA_SEP = ", "
 STRING_TYPE = "STRING"
 QUOTATION_MARK = '"'
@@ -125,12 +125,12 @@ def parse_query_module_signature(signature: str) -> Tuple[List[Dict[str, str]], 
 
     arguments = parse_field(
         vars_field=arguments_field.strip(),
-        name_type_delimiter=NAME_TYPE_DELIMITIER,
+        name_type_delimiter=NAME_TYPE_DELIMITER,
         default_value_delimiter=EQUALS_DELIMITER,
     )
     returns = parse_field(
         vars_field=returns_field.strip(),
-        name_type_delimiter=NAME_TYPE_DELIMITIER,
+        name_type_delimiter=NAME_TYPE_DELIMITER,
         default_value_delimiter=EQUALS_DELIMITER,
     )
 
@@ -138,7 +138,7 @@ def parse_query_module_signature(signature: str) -> Tuple[List[Dict[str, str]], 
 
 
 def parse_field(
-    vars_field: str, name_type_delimiter: str = NAME_TYPE_DELIMITIER, default_value_delimiter: str = EQUALS_DELIMITER
+    vars_field: str, name_type_delimiter: str = NAME_TYPE_DELIMITER, default_value_delimiter: str = EQUALS_DELIMITER
 ) -> List[Dict[str, str]]:
     """Parse a field of arguments or returns from Query Module signature.
 
