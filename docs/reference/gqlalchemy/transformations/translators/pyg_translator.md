@@ -67,7 +67,7 @@ def get_instance()
 
 Create instance of PyG graph from all edges that are inside Memgraph. Currently, isolated nodes are ignored because they don&#x27;t contribute in message passing neural networks. Only numerical features
 that are set on all nodes or all edges are transferred to the PyG instance since this is PyG&#x27;s requirement. That means thay any string values properties won&#x27;t be transferred, as well as numerical properties
-that aren&#x27;t set on all nodes. However, features thata re of type list are transferred to the PyG instance and can be used as any other feature in the PyG graph. Regardless of data residing inside Memgraph database, the created
+that aren&#x27;t set on all nodes. However, features that are of type list are transferred to the PyG instance and can be used as any other feature in the PyG graph. Regardless of data residing inside Memgraph database, the created
 PyG graph is a heterograph instance.
 
 **Returns**:
