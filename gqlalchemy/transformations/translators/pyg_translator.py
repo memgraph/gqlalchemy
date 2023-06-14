@@ -171,7 +171,7 @@ class PyGTranslator(Translator):
                 [src_nodes[type_triplet], dest_nodes[type_triplet]], dtype=torch.int32
             )
 
-        # Set number of nodes, otherwise PyG inferes automatically and warnings can occur
+        # Set number of nodes, otherwise PyG infers automatically and warnings can occur
         for node_label, num_nodes_label in mem_indexes.items():
             graph[node_label].num_nodes = num_nodes_label
 
