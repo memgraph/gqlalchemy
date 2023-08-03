@@ -1,9 +1,4 @@
----
-id: memgraph-docker-instance
-title: How to manage Memgraph Docker instances in Python
-sidebar_label: Manage Memgraph Docker instances
-slug: /how-to-guides/memgraph-docker-instance
----
+# How to manage Memgraph Docker instances in Python
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 

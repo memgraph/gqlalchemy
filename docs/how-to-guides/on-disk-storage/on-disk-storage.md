@@ -1,9 +1,4 @@
----
-id: on-disk-storage
-title: How to use on-disk storage
-sidebar_label: Use on-disk storage
-slug: /how-to-guides/on-disk-storage
----
+# How to use on-disk storage
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 

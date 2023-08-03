@@ -1,9 +1,4 @@
----
-id: pulsar-streams
-title: How to manage Pulsar streams
-sidebar_label: Pulsar streams
-slug: /how-to-guides/streams/manage-pulsar-streams
----
+# How to manage Pulsar streams
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 

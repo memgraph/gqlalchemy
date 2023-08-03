@@ -1,8 +1,4 @@
----
-id: changelog
-title: Changelog
-sidebar_label: Changelog
----
+# Changelog
 
 ## v1.4.1 - April 19, 2023
 

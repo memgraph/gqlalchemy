@@ -1,9 +1,4 @@
----
-id: import-data
-title: Import data
-sidebar_label: Import data
-slug: /import-data
----
+# Import data
 
 You can import data in the following formats:
 - [**CSV**](#csv)

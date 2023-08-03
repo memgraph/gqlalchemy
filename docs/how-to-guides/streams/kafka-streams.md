@@ -1,9 +1,4 @@
----
-id: kafka-streams
-title: How to manage Kafka streams
-sidebar_label: Kafka streams
-slug: /how-to-guides/streams/manage-kafka-streams
----
+# How to manage Kafka streams
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 

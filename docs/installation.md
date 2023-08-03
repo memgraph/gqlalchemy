@@ -1,8 +1,4 @@
----
-id: installation
-title: How to install GQLAlchemy
-sidebar_label: Installation
----
+# How to install GQLAlchemy
 
 There are two main ways of installing GQLAlchemy: with package managers such
 as pip and Poetry, and by building it from source.

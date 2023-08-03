@@ -1,7 +1,4 @@
----
-title: How to use query builder
-sidebar_label: Use query builder
----
+# How to use query builder
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

@@ -1,9 +1,4 @@
----
-id: getting-started
-title: Getting started with GQLAlchemy
-sidebar_label: Getting started
-slug: /
----
+# Getting started with GQLAlchemy
 
 [![GQLAlchemy](https://img.shields.io/badge/source-GQLAlchemy-FB6E00?style=for-the-badge&logo=github&logoColor=white)](https://github.com/memgraph/gqlalchemy)
 

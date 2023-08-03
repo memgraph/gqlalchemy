@@ -1,9 +1,4 @@
----
-id: import-python-graphs
-title: How to import Python graphs into Memgraph
-sidebar_label: Import Python graphs into Memgraph
-slug: /how-to-guides/import-python-graphs
----
+# How to import Python graphs into Memgraph
 
 GQLAlchemy holds translators that can import Python graphs ([NetworkX](https://networkx.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/) or [DGL](https://www.dgl.ai/) graphs) into Memgraph. These translators take the Python graph object and translate it to the appropriate Cypher queries. The Cypher queries are then executed to create a graph inside Memgraph. 
 

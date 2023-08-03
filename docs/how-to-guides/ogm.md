@@ -1,9 +1,14 @@
----
-title: How to use object graph mapper
-sidebar_label: Use object graph mapper
----
+# How to use object graph mapper
 
-import Neo4jOption from '../templates/_neo4j_option.mdx';
+:::important
+
+You can also use this feature with Neo4j:
+
+```python
+db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+```
+
+:::
 
 Through this guide, you will learn how to use GQLAlchemy object graph mapper to:
 - [**Map nodes and relationships**](#map-nodes-and-relationships)

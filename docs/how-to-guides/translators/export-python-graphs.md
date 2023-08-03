@@ -1,9 +1,4 @@
----
-id: export-python-graphs
-title: How to export data from Memgraph into Python graphs
-sidebar_label: Export data from Memgraph into Python graphs
-slug: /how-to-guides/export-python-graphs
----
+# How to export data from Memgraph into Python graphs
 
 GQLAlchemy holds translators that can export Memgraph graphs into Python graphs ([NetworkX](https://networkx.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/) or [DGL](https://www.dgl.ai/) graphs). These translators create a Python graph instance from the graph stored in Memgraph. 
 

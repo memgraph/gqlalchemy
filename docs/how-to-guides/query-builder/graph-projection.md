@@ -1,8 +1,4 @@
----
-id: graph-projection
-title: How to create a graph projection
-sidebar_label: Create a graph projection
----
+# How to create a graph projection
 
 [![Related -
 How-to](https://img.shields.io/static/v1?label=Related&message=How-to&color=blue&style=for-the-badge)](/mage/how-to-guides/run-a-subgraph-module)

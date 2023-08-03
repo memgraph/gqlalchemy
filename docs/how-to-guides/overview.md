@@ -1,9 +1,4 @@
----
-id: overview
-title: How-to guides overview
-sidebar_label: How-to guides overview
-slug: /how-to-guides
----
+# How-to guides overview
 
 import OptionalDependenciesNote from '../templates/_optional_dependencies_note.mdx';
 

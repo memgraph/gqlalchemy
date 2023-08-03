@@ -1,9 +1,4 @@
----
-id: table-to-graph-importer
-title: How to import table data to a graph database
-sidebar_label: Import table data as a graph
-slug: /how-to-guides/table-to-graph-importer
----
+# How to import table data to a graph database
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 

@@ -1,9 +1,4 @@
----
-id: triggers
-title: How to manage database triggers
-sidebar_label: Manage database triggers
-slug: /how-to-guides/triggers
----
+# How to manage database triggers
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 

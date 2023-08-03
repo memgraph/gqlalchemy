@@ -1,9 +1,4 @@
----
-id: memgraph-binary-instance
-title: How to manage Memgraph binary instances in Python
-sidebar_label: Manage Memgraph binary instances
-slug: /how-to-guides/memgraph-binary-instance
----
+# How to manage Memgraph binary instances in Python
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 

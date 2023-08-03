@@ -1,9 +1,4 @@
----
-id: custom-file-system-importer
-title: How to make a custom file system importer
-sidebar_label: Make a custom file system importer
-slug: /how-to-guides/custom-file-system-importer
----
+# How to make a custom file system importer
 
 import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
 
