@@ -10,22 +10,22 @@ language, you will find the how-to guides very useful.
 
 Object graph mapper (OGM) in GQLAlchemy maps Python classes to nodes and
 relationships in graph database and converts function calls to Cypher queries.
-To learn more about how to use OGM, take at [**OGM how-to guide**](/how-to-guides/ogm.md).
+To learn more about how to use OGM, take at [**OGM how-to guide**](ogm.md).
 
 ## Query builder
 
 When working with GQLAlchemy, you can connect to the database and execute Cypher
 queries using the query builder. To learn more about how to create a query using
-query builder, check out the [**query builder how-to guide**](/how-to-guides/query-builder.md).
+query builder, check out the [**query builder how-to guide**](query-builder.md).
 
 ## Stream & trigger support
 
 You can create streams and database triggers directly from GQLAlchemy. Check out
 the following guides:
 
-- [**Kafka streams**](/how-to-guides/streams/kafka-streams.md)
-- [**Pulsar streams**](/how-to-guides/streams/pulsar-streams.md)
-- [**Triggers**](/how-to-guides/triggers/triggers.md)
+- [**Kafka streams**](streams/kafka-streams.md)
+- [**Pulsar streams**](streams/pulsar-streams.md)
+- [**Triggers**](triggers/triggers.md)
 
 ## Import data from different sources
 
@@ -41,12 +41,12 @@ You can use `loaders.py` which implements loading data from the local file
 system, as well as Azure Blob and Amazon S3 remote file systems:
 
 - **[Import table data to a graph
-  database](/how-to-guides/loaders/import-table-data-to-graph-database.md)**
+  database](loaders/import-table-data-to-graph-database.md)**
 
 The other way to import data is to implement a custom file system importer:
 
 - **[Implement a custom file system
-  importer](/how-to-guides/loaders/make-a-custom-file-system-importer.md)**
+  importer](loaders/make-a-custom-file-system-importer.md)**
   
 ## Instance runner
 
@@ -54,9 +54,9 @@ There are two ways of managing a Memgraph instance with the `instance_runner`
 module:
 
 - **[Manage a Memgraph instance with
-Docker](/how-to-guides/instance-runner/memgraph-docker-instance.md)**
+Docker](instance-runner/memgraph-docker-instance.md)**
 - **[Manage a Memgraph instance from a
-  binary](/how-to-guides/instance-runner/memgraph-binary-instance.md)**
+  binary](instance-runner/memgraph-binary-instance.md)**
 
 ## On-disk storage
 
@@ -65,7 +65,7 @@ an on-disk storage solution for large properties that don’t need to be used in
 any of the graph algorithms. Learn how to use on-disk storage in the following
 guide:
 
-- [**On-disk storage**](/how-to-guides/on-disk-storage/on-disk-storage.md)
+- [**On-disk storage**](on-disk-storage/on-disk-storage.md)
 
 ## Graph projections
 
