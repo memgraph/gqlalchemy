@@ -1,12 +1,16 @@
 # How to manage database triggers
 
-import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
-
 Because Memgraph supports database triggers on `CREATE`, `UPDATE` and `DELETE`
 operations, GQLAlchemy also implements a simple interface for maintaining these
 triggers. 
 
-<Neo4jWarning/>
+!!! info
+    You can also use this feature with Neo4j:
+
+    ```python
+    db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+    ```
+
 
 ## 1. Create the trigger
 

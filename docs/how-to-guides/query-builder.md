@@ -37,9 +37,9 @@ Through this guide, you will learn how to use GQLAlchemy query builder to:
 >Hopefully, this guide will teach you how to properly use GQLAlchemy query builder. If you
 >have any more questions, join our community and ping us on [Discord](https://discord.gg/memgraph).
 
-:::info
-To test the above features, you must install [GQLAlchemy](/gqlalchemy/installation) and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph [Quick start](/memgraph/#quick-start).
-:::
+!!! info 
+    To test the above features, you must install [GQLAlchemy](/gqlalchemy/installation) and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph [Quick start](/memgraph/#quick-start).
+
 
 ## Create nodes and relationships
 
@@ -290,12 +290,12 @@ CREATE (c:Country {name: 'Germany'}) SET c.population = 83000001;
 </TabItem>
 </Tabs>
 
-:::info
-`Operator` is an enumeration class defined in the
-[`declarative_base.py`](https://github.com/memgraph/gqlalchemy/blob/main/gqlalchemy/query_builders/declarative_base.py#L84-L94). It can be imported from `gqlalchemy.query_builders.memgraph_query_builder`. 
+!!! info 
+    `Operator` is an enumeration class defined in the
+    [`declarative_base.py`](https://github.com/memgraph/gqlalchemy/blob/main/gqlalchemy/query_builders/declarative_base.py#L84-L94). It can be imported from `gqlalchemy.query_builders.memgraph_query_builder`. 
 
-If you don't want to import it, you can use strings `"="`, `">="`, `">"`, `"<>"`, `":"`, `"<"`, `"<="`, `"!="` or `"+="` instead.
-:::
+    If you don't want to import it, you can use strings `"="`, `">="`, `">"`, `"<>"`, `":"`, `"<"`, `"<="`, `"!="` or `"+="` instead.
+
 
 To **set a property of already existing node**, first match the node and then set its property. 
 
@@ -530,16 +530,14 @@ MATCH (p1:Person)-[:FRIENDS_WITH]->(p2:Person) WHERE p1.name < p2.name RETURN *;
 
 Keyword arguments that can be used in filtering methods are `literal` and `expression`. Usually we use `literal` for property values and `expression` for property names and labels. That is because property names and labels shouldn't be quoted in Cypher statements. 
 
-:::info
-You will probably see the `GQLAlchemySubclassNotFoundWarning` warning. This happens if you did not define a Python class which maps to a graph object in the database. To do that, check the [object graph mapper how-to guide](/gqlalchemy/how-to-guides/ogm). To ignore such warnings, you can do the following before query execution:
+!!! info 
+    You will probably see the `GQLAlchemySubclassNotFoundWarning` warning. This happens if you did not define a Python class which maps to a graph object in the database. To do that, check the [object graph mapper how-to guide](/gqlalchemy/how-to-guides/ogm). To ignore such warnings, you can do the following before query execution:
 
-```python
-from gqlalchemy import models
+    ```python
+    from gqlalchemy import models
 
-models.IGNORE_SUBCLASSNOTFOUNDWARNING = True
-```
-:::
-
+    models.IGNORE_SUBCLASSNOTFOUNDWARNING = True
+    ```
 
 Standard boolean operators like `NOT`, `AND`, `OR` and `XOR` are used in the
 Cypher query language. To have `NOT` within `WHERE` clause, you need to use
@@ -965,12 +963,11 @@ MATCH (n) RETURN * ORDER BY n.name ASCENDING;
 </TabItem>
 </Tabs>
 
-:::info
-`Order` is an enumeration class defined in the
-[`declarative_base.py`](https://github.com/memgraph/gqlalchemy/blob/main/gqlalchemy/query_builders/declarative_base.py#L97-L101). It can be imported from `gqlalchemy.query_builders.memgraph_query_builder`. 
+!!! info 
+    `Order` is an enumeration class defined in the
+    [`declarative_base.py`](https://github.com/memgraph/gqlalchemy/blob/main/gqlalchemy/query_builders/declarative_base.py#L97-L101). It can be imported from `gqlalchemy.query_builders.memgraph_query_builder`. 
 
-If you don't want to import it, you can use strings `"ASC"`, `"ASCENDING"`, `"DESC"` or `"DESCENDING"` instead.
-:::
+    If you don't want to import it, you can use strings `"ASC"`, `"ASCENDING"`, `"DESC"` or `"DESCENDING"` instead.
 
 To order the query results in descending order, you need to specify the `DESC`
 or `DESCENDING` keyword. Hence, the argument of the `order_by()` method must be

@@ -1,14 +1,11 @@
 # How to use object graph mapper
 
-:::important
+!!! info 
+    You can also use this feature with Neo4j:
 
-You can also use this feature with Neo4j:
-
-```python
-db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
-```
-
-:::
+    ```python
+    db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+    ```
 
 Through this guide, you will learn how to use GQLAlchemy object graph mapper to:
 - [**Map nodes and relationships**](#map-nodes-and-relationships)
@@ -23,9 +20,8 @@ Through this guide, you will learn how to use GQLAlchemy object graph mapper to:
 >Hopefully, this guide will teach you how to properly use GQLAlchemy object graph mapper. If you
 >have any more questions, join our community and ping us on [Discord](https://discord.gg/memgraph).
 
-:::info
-To test the above features, you must [install GQLAlchemy](/gqlalchemy/installation) and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph [Quick start](/memgraph/#quick-start).
-:::
+!!! info 
+    To test the above features, you must [install GQLAlchemy](/gqlalchemy/installation) and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph [Quick start](/memgraph/#quick-start).
 
 ## Map nodes and relationships
 
@@ -83,9 +79,8 @@ class ChatsWith(Relationship, type="CHATS_WITH"):
     pass
 ```
 
-:::info
-Objects are modeled using GQLAlchemy’s Object Graph Mapper (OGM) which provides schema validation, so you can be sure that the data inside Memgraph is accurate. If you tried saving data that is not following the defined schema, you will get a `ValidationError`. 
-:::
+!!! info 
+    Objects are modeled using GQLAlchemy’s Object Graph Mapper (OGM) which provides schema validation, so you can be sure that the data inside Memgraph is accurate. If you tried saving data that is not following the defined schema, you will get a `ValidationError`. 
 
 To use the above classes, you need to [save](#save-nodes-and-relationships) or [load](#load-nodes-and-relationships) data first. 
 
@@ -131,9 +126,8 @@ language = Language(name="en")
 db.save_node(language)
 ```
 
-:::caution
-The `save()` and `save_node()` procedures will save nodes in Memgraph even if they already exist. This means that if you run the above code twice, you will have duplicate nodes in the database. To avoid that, [add constraints](#create-constraints) for properties or first [load](#load-nodes-and-relationships) the node from the database to check if it already exists.
-:::
+!!! danger 
+    The `save()` and `save_node()` procedures will save nodes in Memgraph even if they already exist. This means that if you run the above code twice, you will have duplicate nodes in the database. To avoid that, [add constraints](#create-constraints) for properties or first [load](#load-nodes-and-relationships) the node from the database to check if it already exists.
 
 To **save relationships** using the object graph mapper, first define relationship classes:
 
@@ -159,9 +153,8 @@ Speaks(_start_node_id=john._id, _end_node_id=language._id, since="2023-02-14").s
 
 The property `_id` is an **internal Memgraph id** - an id given to each node upon saving to the database. This means that you have to first load nodes from the database or save them to variables in order to create a relationship between them.
 
-:::info
-Objects are modeled using GQLAlchemy’s Object Graph Mapper (OGM) which provides schema validation, so you can be sure that the data inside Memgraph is accurate. If you tried saving data that is not following the defined schema, you will get `ValidationError`. 
-:::
+!!! info 
+    Objects are modeled using GQLAlchemy’s Object Graph Mapper (OGM) which provides schema validation, so you can be sure that the data inside Memgraph is accurate. If you tried saving data that is not following the defined schema, you will get `ValidationError`. 
 
 **Another way of saving relationships** is by using the `save_relationship()` procedure:
 
@@ -175,10 +168,8 @@ db.save_relationship(
 )
 ```
 
-:::caution
-The `save()` and `save_relationship()` procedures will save relationships in Memgraph even if they already exist. This means that if you run the above code twice, you will have duplicate relationships in the database. To avoid that, first [load](#load-nodes-and-relationships) the relationship from the database to check if it already exists.
-:::
-
+!!! danger 
+    The `save()` and `save_relationship()` procedures will save relationships in Memgraph even if they already exist. This means that if you run the above code twice, you will have duplicate relationships in the database. To avoid that, first [load](#load-nodes-and-relationships) the relationship from the database to check if it already exists.
 
 ## Load nodes and relationships
 

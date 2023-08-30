@@ -1,11 +1,14 @@
 # How to manage Memgraph binary instances in Python
 
-import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
-
 Through this guide, you will learn how to start, stop, connect to and monitor
 Memgraph instances with GQLAlchemy.
 
-<Neo4jWarning/>
+!!! info
+    You can also use this feature with Neo4j:
+
+    ```python
+    db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+    ```
 
 First, perform all the necessary imports:
 
@@ -15,13 +18,10 @@ from gqlalchemy.instance_runner import MemgraphInstanceBinary
 
 ## Start the Memgraph instance
 
-:::warning
-
-In order to start a Memgraph instance that you installed using `dpkg`, you need
-to run the binary file as user `memgraph`. Otherwise, the process won't have the
-right access rights to the needed directories and files.
-
-:::
+!!! warning
+    In order to start a Memgraph instance that you installed using `dpkg`, you need
+    to run the binary file as user `memgraph`. Otherwise, the process won't have the
+    right access rights to the needed directories and files.
 
 The following code will create a Memgraph instance, start it and return a
 connection object:

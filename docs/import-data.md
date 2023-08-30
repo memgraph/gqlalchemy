@@ -10,9 +10,8 @@ You can import data in the following formats:
 Besides that, you can create data directly from code using the [**object graph mapper**](/gqlalchemy/how-to-guides/ogm) or [**query builder**](/gqlalchemy/how-to-guides/query-builder).
 
 
-:::tip
-The fastest way to import data into Memgraph is by using the [LOAD CSV clause](/memgraph/import-data/load-csv-clause). It's recommended to first [create indexes](/memgraph/next/how-to-guides/indexes) using the `CREATE INDEX` clause. You can create them by [executing the Cypher query](/memgraph/connect-to-memgraph/drivers/python) or using [object graph mapper](/gqlalchemy/how-to-guides/ogm#create-indexes).
-:::
+!!! tip 
+    The fastest way to import data into Memgraph is by using the [LOAD CSV clause](/memgraph/import-data/load-csv-clause). It's recommended to first [create indexes](/memgraph/next/how-to-guides/indexes) using the `CREATE INDEX` clause. You can create them by [executing the Cypher query](/memgraph/connect-to-memgraph/drivers/python) or using [object graph mapper](/gqlalchemy/how-to-guides/ogm#create-indexes).
 
 ## CSV
 
@@ -27,10 +26,8 @@ To import JSON files into Memgraph via GQLAlchemy, you can call procedures from 
 
 To import Parquet, ORC or IPC/Feather/Arrow file into Memgraph via GQLAlchemy, [transform table data from a file into a graph](/gqlalchemy/how-to-guides/table-to-graph-importer). 
 
-:::note
-If you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by [making a custom file system importer](/gqlalchemy/how-to-guides/custom-file-system-importer).
-:::
-
+!!! note 
+    If you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by [making a custom file system importer](/gqlalchemy/how-to-guides/custom-file-system-importer).
 
 ## Python graphs - NetworkX, PyG or DGL graph
 

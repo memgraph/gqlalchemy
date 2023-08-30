@@ -1,7 +1,5 @@
 # How-to guides overview
 
-import OptionalDependenciesNote from '../templates/_optional_dependencies_note.mdx';
-
 This section will teach you how to use object graph mapper (OGM) and query
 builder from the GQLAlchemy. Here you will find step-by-step guides for the most
 common usage of OGM and query builder, depending on the current GQLAlchemy
@@ -31,7 +29,9 @@ the following guides:
 
 ## Import data from different sources
 
-<OptionalDependenciesNote/>
+!!! info
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](/gqlalchemy/installation) with the relevant optional dependencies.
+
 
 You can translate table data from a file to graph data and import it to
 Memgraph. Currently, we support reading of CSV, Parquet, ORC and

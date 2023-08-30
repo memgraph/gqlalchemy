@@ -1,11 +1,15 @@
 # How to manage Memgraph Docker instances in Python
 
-import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
-
 Through this guide, you will learn how to start, stop, connect to and monitor
 Memgraph instances with GQLAlchemy.
 
-<Neo4jWarning/>
+!!! info
+    You can also use this feature with Neo4j:
+
+    ```python
+    db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+    ```
+
 
 First, perform all the necessary imports:
 

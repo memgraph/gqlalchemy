@@ -10,9 +10,8 @@ To install GQLAlchemy, you will need the following:
 - **Python 3.8 - 3.10**
 - GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`, so you need to install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites).
 
-:::caution
-GQLAlchemy can't be installed with Python 3.11 [(#203)](https://github.com/memgraph/gqlalchemy/issues/203) and on Windows with Python >= 3.10 [(#179)](https://github.com/memgraph/gqlalchemy/issues/179). If this is currently a blocker for you, please let us know by commenting on opened issues.
-:::
+!!! danger 
+    GQLAlchemy can't be installed with Python 3.11 [(#203)](https://github.com/memgraph/gqlalchemy/issues/203) and on Windows with Python >= 3.10 [(#179)](https://github.com/memgraph/gqlalchemy/issues/179). If this is currently a blocker for you, please let us know by commenting on opened issues.
 
 ## Install with pip {#pip}
 
@@ -34,12 +33,11 @@ pip install gqlalchemy[dgl] # DGL support (also includes torch)
 pip install gqlalchemy[all] # All of the above
 ```
 
-:::note
-If you are using zsh terminal, you need to pass literal square brackets as an argument to a command:
-```
-pip install 'gqlalchemy[arrow]'
-```
-:::
+!!! note 
+    If you are using zsh terminal, you need to pass literal square brackets as an argument to a command:
+    ```
+    pip install 'gqlalchemy[arrow]'
+    ```
 
 ## Build from source
 

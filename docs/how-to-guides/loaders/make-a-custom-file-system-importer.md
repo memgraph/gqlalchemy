@@ -1,9 +1,5 @@
 # How to make a custom file system importer
 
-import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
-
-import OptionalDependenciesNote from '../../templates/_optional_dependencies_note.mdx';
-
 > To learn how to import table data from a file to the Memgraph database, head
 > over to the [How to import table
 > data](/how-to-guides/loaders/import-table-data-to-graph-database.md) guide.
@@ -13,9 +9,15 @@ If you want to read from a file system not currently supported by
 your own by extending abstract classes `FileSystemHandler` and `DataLoader`,
 respectively.
 
-<Neo4jWarning/>
+!!! info
+    You can also use this feature with Neo4j:
 
-<OptionalDependenciesNote/>
+    ```python
+    db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+    ```
+
+!!! info
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](/gqlalchemy/installation) with the relevant optional dependencies.
 
 ## Implementing a new `FileSystemHandler`
 

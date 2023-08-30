@@ -1,7 +1,5 @@
 # How to use on-disk storage
 
-import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
-
 Since Memgraph is an in-memory graph database, the GQLAlchemy library provides
 an on-disk storage solution for large properties not used in graph algorithms.
 This is useful when nodes or relationships have metadata that doesn’t need to be
@@ -10,7 +8,13 @@ can be fetched after. In this how-to guide, you'll learn how to use an SQL
 database to store node properties seamlessly as if they were being stored in
 Memgraph.
 
-<Neo4jWarning/>
+!!! info
+    You can also use this feature with Neo4j:
+
+    ```python
+    db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+    ```
+
 
 ## Connect to Memgraph and an SQL database
 

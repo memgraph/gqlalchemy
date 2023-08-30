@@ -40,13 +40,10 @@
 - Updated all dependencies [#194](https://github.com/memgraph/gqlalchemy/pull/194)
 
 ## v1.3 - Jun 14, 2022
-:::warning
+!!! warning
+    ### Breaking Changes
 
-### Breaking Changes
-
-- Renamed keyword argument `edge_label` to `relationship_type` in `to()` and `from()` methods in the query builder. [#145](https://github.com/memgraph/gqlalchemy/pull/145)
-
-:::
+    - Renamed keyword argument `edge_label` to `relationship_type` in `to()` and `from()` methods in the query builder. [#145](https://github.com/memgraph/gqlalchemy/pull/145)
 
 ### Major Features and Improvements
 
@@ -83,17 +80,14 @@
 
 ## v1.2 - Apr 12, 2022
 
-:::warning
+!!! warning
+    ### Breaking Changes
 
-### Breaking Changes
-
-- Ordering query results as in GQLAlchemy older than 1.2 will not be possible.
-- `where()`, `and_where()` and `or_where()` methods can't be used as in
-  GQLAlchemy older than 1.2.
-- Setting up the `bootstrap_servers` argument when creating a stream as in
-  GQLAlchemy older than 1.2 will not be possible.
-
-:::
+    - Ordering query results as in GQLAlchemy older than 1.2 will not be possible.
+    - `where()`, `and_where()` and `or_where()` methods can't be used as in
+      GQLAlchemy older than 1.2.
+    - Setting up the `bootstrap_servers` argument when creating a stream as in
+      GQLAlchemy older than 1.2 will not be possible.
 
 ### Major Features and Improvements
 

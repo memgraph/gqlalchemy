@@ -1,11 +1,15 @@
 # How to manage Pulsar streams
 
-import Neo4jWarning from '../../templates/_neo4j_warning.mdx';
-
 The stream functionality enables Memgraph to connect to a Kafka, Pulsar or
 Redpanda cluster and run graph analytics on the data stream.
 
-<Neo4jWarning/>
+!!! info
+    You can also use this feature with Neo4j:
+
+    ```python
+    db = Neo4j(host="localhost", port="7687", username="neo4j", password="test")
+    ```
+
 
 ## 1. Create a Pulsar stream in Memgraph
 
