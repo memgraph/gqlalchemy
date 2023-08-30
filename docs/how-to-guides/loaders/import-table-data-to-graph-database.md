@@ -5,7 +5,7 @@ file to graph data and import it to **Memgraph**. Currently, we support reading
 of CSV, Parquet, ORC and IPC/Feather/Arrow file formats via the **PyArrow** package.
 
 > Make sure you have a running Memgraph instance. If you're not sure how to run
-> Memgraph, check out the Memgraph [Quick start](/memgraph/#quick-start).
+> Memgraph, check out the Memgraph [Quick start](https://memgraph.com/docs/getting-started).
 
 The `loaders.py` module implements loading data from the local file system, as
 well as Azure Blob and Amazon S3 remote file systems. Depending on where your

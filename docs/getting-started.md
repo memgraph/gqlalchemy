@@ -10,19 +10,19 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow for writing
 
 ### 1. Install GQLAlchemy
 
-Either install GQLAlchemy through [pip](/installation.md#pip) or [build it from
-source](/installation.md#source). If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through [pip](/installation.md#pip).
+Either install GQLAlchemy through [pip](installation.md#pip) or [build it from
+source](installation.md#source). If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through [pip](installation.md#pip).
 
 !!! danger 
     GQLAlchemy can't be installed with Python 3.11 [(#203)](https://github.com/memgraph/gqlalchemy/issues/203) and on Windows with Python > 3.9 [(#179)](https://github.com/memgraph/gqlalchemy/issues/179). If this is currently a blocker for you, please let us know by commenting on opened issues.
 
 ### 2. Connect to Memgraph
 
-Check the [Python quick start guide](/memgraph/connect-to-memgraph/drivers/python) to learn how to connect to Memgraph using GQLAlchemy.
+Check the [Python quick start guide](https://memgraph.com/docs) to learn how to connect to Memgraph using GQLAlchemy.
 
 ### 3. Learn how to use GQLAlchemy
 
-With the help of the [How-to guides](/how-to-guides/overview.md) you can learn how to use GQLAlchemy's features, such as object graph mapper and query builder. 
+With the help of the [How-to guides](how-to-guides/overview.md) you can learn how to use GQLAlchemy's features, such as object graph mapper and query builder. 
 
 ### 3. Check the reference guide
 

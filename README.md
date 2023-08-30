@@ -62,7 +62,7 @@ poetry install -E arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arro
 poetry install -E dgl # DGL support (also includes torch)
 ```
 
-To run the tests, make sure you have an [active Memgraph instance](/memgraph), and execute one of the following commands:
+To run the tests, make sure you have an [active Memgraph instance](https://memgraph.com/docs/getting-started), and execute one of the following commands:
 
 ```bash
 poetry run pytest . -k "not slow" # If all extras installed
