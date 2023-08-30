@@ -1,3 +1,4 @@
+
 site_name: GQLAlchemy Documentation
 markdown_extensions:
   - admonition
@@ -23,6 +24,7 @@ nav:
     - Overview: 'how-to-guides/overview.md'
     - OGM: 'how-to-guides/ogm.md'
     - Query Builder: 'how-to-guides/query-builder.md'
+    - Graph Projection: 'how-to-guides/query-builder/graph-projection.md'
     - Data:
       - Memgraph Binary Instance: 'how-to-guides/instance-runner/memgraph-binary-instance.md'
       - Memgraph Docker Instance: 'how-to-guides/instance-runner/memgraph-docker-instance.md'
@@ -44,6 +46,8 @@ nav:
     - Instance Runner: 'reference/gqlalchemy/instance_runner.md'
     - Loaders: 'reference/gqlalchemy/loaders.md'
     - Models: 'reference/gqlalchemy/models.md'
+    - Transformations: 'reference/gqlalchemy/transformations.md'
+    - Utilities: 'reference/gqlalchemy/utilities.md'
     - Graph Algorithms:
       - Integrated Algorithms: 'reference/gqlalchemy/graph_algorithms/integrated_algorithms.md'
       - Query Builder: 'reference/gqlalchemy/graph_algorithms/query_builder.md'
