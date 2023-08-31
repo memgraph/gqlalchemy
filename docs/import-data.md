@@ -15,7 +15,7 @@ Besides that, you can create data directly from code using the [**object graph m
 
 ## CSV
 
-To import CSV file into Memgraph via GQLAlchemy, you can use the [`LOAD CSV` clause](/memgraph/import-data/load-csv-clause). That clause can be used by [executing the Cypher query](/memgraph/connect-to-memgraph/drivers/python) or by [building the query with the query builder](how-to-guides/query-builder.md#load-csv-file). Another way of importing CSV data into Memgraph is by [translating it into a graph](/gqlalchemy/how-to-guides/table-to-graph-importer).
+To import CSV file into Memgraph via GQLAlchemy, you can use the [`LOAD CSV` clause](/memgraph/import-data/load-csv-clause). That clause can be used by [executing the Cypher query](/memgraph/connect-to-memgraph/drivers/python) or by [building the query with the query builder](how-to-guides/query-builder.md#load-csv-file). Another way of importing CSV data into Memgraph is by [translating it into a graph](how-to-guides/loaders/import-table-data-to-graph-database.md).
 
 ## JSON
 
@@ -24,22 +24,22 @@ To import JSON files into Memgraph via GQLAlchemy, you can call procedures from 
 
 ## Parquet, ORC or IPC/Feather/Arrow 
 
-To import Parquet, ORC or IPC/Feather/Arrow file into Memgraph via GQLAlchemy, [transform table data from a file into a graph](/gqlalchemy/how-to-guides/table-to-graph-importer). 
+To import Parquet, ORC or IPC/Feather/Arrow file into Memgraph via GQLAlchemy, [transform table data from a file into a graph](how-to-guides/loaders/import-table-data-to-graph-database.md). 
 
 !!! note 
-    If you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by [making a custom file system importer](/gqlalchemy/how-to-guides/custom-file-system-importer).
+    If you want to read from a file system not currently supported by GQLAlchemy, or use a file type currently not readable, you can implement your own by [making a custom file system importer](how-to-guides/loaders/make-a-custom-file-system-importer.md).
 
 ## Python graphs - NetworkX, PyG or DGL graph
 
-To import NetworkX, PyG or DGL graph into Memgraph via GQLAlchemy, [transform the source graph into Memgraph graph](/gqlalchemy/how-to-guides/import-python-graphs).
+To import NetworkX, PyG or DGL graph into Memgraph via GQLAlchemy, [transform the source graph into Memgraph graph](how-to-guides/translators/import-python-graphs.md).
 
 ## Kafka, RedPanda or Pulsar data stream
 
-To consume Kafka, RedPanda or Pulsar data stream, you can write a [appropriate Cypher queries](/memgraph/import-data/data-streams/manage-streams) and [execute](/memgraph/connect-to-memgraph/drivers/python) them, or use GQLAlchemy stream manager for [Kafka, RedPanda](/gqlalchemy/how-to-guides/streams/manage-kafka-streams) or [Pulsar](/gqlalchemy/how-to-guides/streams/manage-pulsar-streams) streams.
+To consume Kafka, RedPanda or Pulsar data stream, you can write a [appropriate Cypher queries](/memgraph/import-data/data-streams/manage-streams) and [execute](/memgraph/connect-to-memgraph/drivers/python) them, or use GQLAlchemy stream manager for [Kafka, RedPanda](how-to-guides/streams/kafka-streams.md) or [Pulsar](how-to-guides/streams/pulsar-streams.md) streams.
 
 
 ## Learn more
 
-To learn how to utilize the GQLAlchemy library with Memgraph, check out the [how-to guides](/gqlalchemy/how-to-guides) or sign up for the [Getting started with Memgraph and Python course](https://app.livestorm.co/memgraph/getting-started-with-memgraph-and-python-on-demand).
+To learn how to utilize the GQLAlchemy library with Memgraph, check out the [how-to guides](how-to-guides/overview.md) or sign up for the [Getting started with Memgraph and Python course](https://app.livestorm.co/memgraph/getting-started-with-memgraph-and-python-on-demand).
 
 

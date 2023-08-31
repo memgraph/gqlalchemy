@@ -5,7 +5,7 @@ GQLAlchemy holds translators that can export Memgraph graphs into Python graphs 
 [![docs-source](https://img.shields.io/badge/source-examples-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/tests/transformations/translators)
 [![docs-source](https://img.shields.io/badge/source-translators-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/gqlalchemy/transformations/translators)
 [![Related - Under the
-hood](https://img.shields.io/static/v1?label=Related&message=Under%20the%20hood&color=orange&style=for-the-badge)](/under-the-hood/python-graph-translators.md)
+hood](https://img.shields.io/static/v1?label=Related&message=Under%20the%20hood&color=orange&style=for-the-badge)](../../under-the-hood/python-graph-translators.md)
 
 In this guide you will learn how to:
 - [**Export data from Memgraph into NetworkX graph**](#export-data-from-memgraph-into-networkx-graph)
@@ -189,4 +189,4 @@ This means that the DGL graph has the correct number of node and edge types, tot
 
 ## Learn more
 
-Head over to the [**Under the hood**](/gqlalchemy/under-the-hood/python-graph-translators) section to read about implementation details. If you want to learn more about using NetworkX with Memgraph with interesting resources and courses, head over to the [**Memgraph for NetworkX developers**](https://memgraph.com/memgraph-for-networkx?utm_source=docs&utm_medium=referral&utm_campaign=networkx_ppp&utm_term=docsgqla%2Bhowto&utm_content=textlink) website. If you have any questions or want to connect with the Memgraph community, [**join our Discord server**](https://www.discord.gg/memgraph).
+Head over to the [**Under the hood**](../../under-the-hood/python-graph-translators.md) section to read about implementation details. If you want to learn more about using NetworkX with Memgraph with interesting resources and courses, head over to the [**Memgraph for NetworkX developers**](https://memgraph.com/memgraph-for-networkx?utm_source=docs&utm_medium=referral&utm_campaign=networkx_ppp&utm_term=docsgqla%2Bhowto&utm_content=textlink) website. If you have any questions or want to connect with the Memgraph community, [**join our Discord server**](https://www.discord.gg/memgraph).

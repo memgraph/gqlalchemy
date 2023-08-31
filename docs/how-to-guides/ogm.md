@@ -21,7 +21,7 @@ Through this guide, you will learn how to use GQLAlchemy object graph mapper to:
 >have any more questions, join our community and ping us on [Discord](https://discord.gg/memgraph).
 
 !!! info 
-    To test the above features, you must [install GQLAlchemy](/gqlalchemy/installation) and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph [Quick start](https://memgraph.com/docs/getting-started)).
+    To test the above features, you must [install GQLAlchemy](../installation.md) and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph [Quick start](https://memgraph.com/docs/getting-started)).
 
 ## Map nodes and relationships
 

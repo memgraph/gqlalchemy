@@ -30,7 +30,7 @@ the following guides:
 ## Import data from different sources
 
 !!! info
-    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](/gqlalchemy/installation) with the relevant optional dependencies.
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../installation.md) with the relevant optional dependencies.
 
 
 You can translate table data from a file to graph data and import it to
@@ -73,7 +73,7 @@ As subgraphs are mainly used with Memgraph's query modules (graph algorithms),
 QueryBuilder's `call()` method enables specifying the subgraph to use with a
 certain algorithm.
 
-- [**Create a graph projection**](/gqlalchemy/how-to-guides/query-builder/graph-projection)
+- [**Create a graph projection**](query-builder/graph-projection.md)
 
 ## Transform Python graphs into Memgraph graphs
 

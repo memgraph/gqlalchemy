@@ -2,7 +2,7 @@
 
 > To learn how to import table data from a file to the Memgraph database, head
 > over to the [How to import table
-> data](/how-to-guides/loaders/import-table-data-to-graph-database.md) guide.
+> data](import-table-data-to-graph-database.md) guide.
 
 If you want to read from a file system not currently supported by
 **GQLAlchemy**, or use a file type currently not readable, you can implement
@@ -17,7 +17,7 @@ respectively.
     ```
 
 !!! info
-    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](/gqlalchemy/installation) with the relevant optional dependencies.
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../../installation.md) with the relevant optional dependencies.
 
 ## Implementing a new `FileSystemHandler`
 

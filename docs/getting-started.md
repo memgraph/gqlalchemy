@@ -26,4 +26,4 @@ With the help of the [How-to guides](how-to-guides/overview.md) you can learn ho
 
 ### 3. Check the reference guide
 
-Don't forget to check the [Reference guide](/gqlalchemy/reference) if you want to find out which methods GQLAlchemy has and how to use it. If the reference guide is not clear enough, head over to the [GQLAlchemy repository](https://github.com/memgraph/gqlalchemy) and inspect the source code. While you're there, feel free to give us a star or contribute to this open-source Python library.
+Don't forget to check the [Reference guide](reference/gqlalchemy/overview.md) if you want to find out which methods GQLAlchemy has and how to use it. If the reference guide is not clear enough, head over to the [GQLAlchemy repository](https://github.com/memgraph/gqlalchemy) and inspect the source code. While you're there, feel free to give us a star or contribute to this open-source Python library.

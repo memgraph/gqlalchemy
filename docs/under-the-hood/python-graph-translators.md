@@ -8,9 +8,9 @@ sidebar_label: Python graph translators
 In this under the hood content you can learn more about GQLAlchemy **Python graph translators**. 
 
 [![Related -
-How-to](https://img.shields.io/static/v1?label=Related&message=How%20to%20import&color=blue&style=for-the-badge)](/how-to-guides/translators/import-python-graphs.md)
+How-to](https://img.shields.io/static/v1?label=Related&message=How%20to%20import&color=blue&style=for-the-badge)](../how-to-guides/translators/import-python-graphs.md)
 [![Related -
-How-to](https://img.shields.io/static/v1?label=Related&message=How%20to%20export&color=blue&style=for-the-badge)](/how-to-guides/translators/export-python-graphs.md)
+How-to](https://img.shields.io/static/v1?label=Related&message=How%20to%20export&color=blue&style=for-the-badge)](../how-to-guides/translators/export-python-graphs.md)
 [![docs-source](https://img.shields.io/badge/source-examples-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/tests/transformations/translators)
 [![docs-source](https://img.shields.io/badge/source-translators-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/gqlalchemy/transformations/translators)
 

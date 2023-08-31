@@ -40,6 +40,7 @@ nav:
     - Overview: 'under-the-hood/overview.md'
     - Python Graph Translators: 'under-the-hood/python-graph-translators.md'
   - Reference:
+    - Overview: 'reference/gqlalchemy/overview.md'
     - Connection: 'reference/gqlalchemy/connection.md'
     - Disk Storage: 'reference/gqlalchemy/disk_storage.md'
     - Exceptions: 'reference/gqlalchemy/exceptions.md'
