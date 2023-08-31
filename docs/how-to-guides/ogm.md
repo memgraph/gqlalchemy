@@ -352,7 +352,7 @@ db.create_index(index1)
 db.create_index(index2)
 ```
 
-To learn more about indexes, head over to the [indexing reference guide](/memgraph/reference-guide/indexing).
+To learn more about indexes, head over to the [indexing reference guide](https://memgraph.com/docs/fundamentals/indexes).
 
 ## Create constraints 
 
@@ -369,7 +369,7 @@ The above is the same as running the Cypher query:
 CREATE CONSTRAINT ON (n:Language) ASSERT n.name IS UNIQUE;
 ```
 
-Read more about it at [uniqueness constraint how-to guide](/memgraph/how-to-guides/constraints/uniqueness-constraint).
+Read more about it at [uniqueness constraint how-to guide](https://memgraph.com/docs/fundamentals/constraints).
 
 Existence constraint enforces that each vertex that has a specific label also must have the specified property.  Here is how you can **enforce existence constraint** with GQLAlchemy's OGM:
 
@@ -386,7 +386,7 @@ The above is the same as running the Cypher query:
 CREATE CONSTRAINT ON (n:Streamer) ASSERT EXISTS (n.username);
 ```
 
-Read more about it at [existence constraint how-to guide](/memgraph/how-to-guides/constraints/existence-constraint).
+Read more about it at [existence constraint how-to guide](https://memgraph.com/docs/fundamentals/constraints).
 
 To check which constraints have been created, run: 
 

@@ -1,7 +1,7 @@
 # How to create a graph projection
 
 [![Related -
-How-to](https://img.shields.io/static/v1?label=Related&message=How-to&color=blue&style=for-the-badge)](/mage/how-to-guides/run-a-subgraph-module)
+How-to](https://img.shields.io/static/v1?label=Related&message=How-to&color=blue&style=for-the-badge)](https://memgraph.com/docs/advanced-algorithms/run-algorithms)
 [![Related - Under the
 Hood](https://img.shields.io/static/v1?label=Related&message=Under%20the%20hood&color=orange&style=for-the-badge)](https://memgraph.com/blog/how-we-designed-and-implemented-graph-projection-feature)
 

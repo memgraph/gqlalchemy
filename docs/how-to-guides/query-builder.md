@@ -178,7 +178,7 @@ CREATE (leslie)-[:FRIENDS_WITH]->(ron);
 </TabItem>
 </Tabs>
 
-Read more about `CREATE` clause in the [Cypher manual](/docs/cypher-manual/clauses/create).
+Read more about `CREATE` clause in the [Cypher manual](https://memgraph.com/docs/querying/clauses/create).
 
 ## Merge nodes and relationships
 
@@ -250,7 +250,7 @@ MERGE (leslie)-[:FRIENDS_WITH]->(ron);
 </TabItem>
 </Tabs>
 
-Read more about `MERGE` clause in the [Cypher manual](/docs/cypher-manual/clauses/merge).
+Read more about `MERGE` clause in the [Cypher manual](https://memgraph.com/docs/querying/clauses/merge).
 
 ## Set or update properties and labels
 

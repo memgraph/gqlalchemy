@@ -52,7 +52,7 @@ memgraph.execute_and_fetch("RETURN 'Memgraph is running' AS result"))[0]["result
 
 ## Pass configuration flags
 
-You can pass [configuration flags](/memgraph/reference-guide/configuration)
+You can pass [configuration flags](htps://memgraph.com/docs/configuration/configuration-settings)
 using a dictionary:
 
 ```python

@@ -57,7 +57,7 @@ python3 networkx-graph.py
 
 ### Explore the graph
 
-[Connect to Memgraph](/docs/memgraph-lab/connect-to-memgraph#connecting-to-memgraph) via Memgraph Lab which is running at `localhost:3000`. Open the **Query Execution** section and write the following query:
+[Connect to Memgraph](htps://memgraph.com/docs/data-visualization/install-and-connect) via Memgraph Lab which is running at `localhost:3000`. Open the **Query Execution** section and write the following query:
 
 ```cypher
 MATCH (n)-[r]->(m)
@@ -127,7 +127,7 @@ python3 pyg-graph.py
 
 ### Explore the graph
 
-[Connect to Memgraph](/docs/memgraph-lab/connect-to-memgraph#connecting-to-memgraph) via Memgraph Lab which is running at `localhost:3000`. Open the **Query Execution** section and write the following query:
+[Connect to Memgraph](htps://memgraph.com/docs/data-visualization/install-and-connect) via Memgraph Lab which is running at `localhost:3000`. Open the **Query Execution** section and write the following query:
 
 ```cypher
 MATCH (n)-[r]->(m)
@@ -193,7 +193,7 @@ python3 dgl-graph.py
 
 ### 3. Explore the graph
 
-[Connect to Memgraph](/docs/memgraph-lab/connect-to-memgraph#connecting-to-memgraph) via Memgraph Lab which is running at `localhost:3000`. Open the **Query Execution** section and write the following query:
+[Connect to Memgraph](htps://memgraph.com/docs/data-visualization/install-and-connect) via Memgraph Lab which is running at `localhost:3000`. Open the **Query Execution** section and write the following query:
 
 ```cypher
 MATCH (n)-[r]->(m)
