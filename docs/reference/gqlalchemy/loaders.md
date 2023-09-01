@@ -1,8 +1,3 @@
----
-sidebar_label: loaders
-title: gqlalchemy.loaders
----
-
 ## ForeignKeyMapping Objects
 
 ```python

@@ -1,8 +1,3 @@
----
-sidebar_label: memgraph_query_builder
-title: gqlalchemy.query_builders.memgraph_query_builder
----
-
 ## QueryBuilder Objects
 
 ```python

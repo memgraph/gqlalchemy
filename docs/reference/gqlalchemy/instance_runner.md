@@ -1,8 +1,3 @@
----
-sidebar_label: instance_runner
-title: gqlalchemy.instance_runner
----
-
 #### wait\_for\_port
 
 ```python

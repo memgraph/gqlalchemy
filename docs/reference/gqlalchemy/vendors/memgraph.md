@@ -1,8 +1,3 @@
----
-sidebar_label: memgraph
-title: gqlalchemy.vendors.memgraph
----
-
 ## Memgraph Objects
 
 ```python

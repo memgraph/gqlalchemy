@@ -1,8 +1,3 @@
----
-sidebar_label: utilities
-title: gqlalchemy.utilities
----
-
 #### to\_cypher\_value
 
 ```python
