@@ -1,11 +1,14 @@
 
 site_name: GQLAlchemy Documentation
+
 markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
 theme:
   name: 'material'
+  logo: 'assets/memgraph-logo.svg'
+  site_favicon: 'aassets/favicon.png'
   font:
     text: 'Roboto'
     code: 'Roboto Mono' 
