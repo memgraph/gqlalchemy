@@ -1,8 +1,3 @@
----
-sidebar_label: database_client
-title: gqlalchemy.vendors.database_client
----
-
 ## DatabaseClient Objects
 
 ```python

@@ -1,8 +1,3 @@
----
-sidebar_label: declarative_base
-title: gqlalchemy.query_builders.declarative_base
----
-
 ## WhereConditionPartialQuery Objects
 
 ```python

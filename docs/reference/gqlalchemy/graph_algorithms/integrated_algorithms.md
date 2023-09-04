@@ -1,8 +1,3 @@
----
-sidebar_label: integrated_algorithms
-title: gqlalchemy.graph_algorithms.integrated_algorithms
----
-
 ## IntegratedAlgorithm Objects
 
 ```python

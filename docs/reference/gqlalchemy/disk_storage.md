@@ -1,8 +1,3 @@
----
-sidebar_label: disk_storage
-title: gqlalchemy.disk_storage
----
-
 ## OnDiskPropertyDatabase Objects
 
 ```python

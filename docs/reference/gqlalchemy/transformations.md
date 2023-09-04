@@ -1,8 +1,3 @@
----
-sidebar_label: transformations
-title: gqlalchemy.transformations
----
-
 #### nx\_to\_cypher
 
 ```python

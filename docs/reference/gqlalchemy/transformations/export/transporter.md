@@ -1,8 +1,3 @@
----
-sidebar_label: transporter
-title: gqlalchemy.transformations.export.transporter
----
-
 ## Transporter Objects
 
 ```python

@@ -1,8 +1,3 @@
----
-sidebar_label: pyg_translator
-title: gqlalchemy.transformations.translators.pyg_translator
----
-
 ## PyGTranslator Objects
 
 ```python
