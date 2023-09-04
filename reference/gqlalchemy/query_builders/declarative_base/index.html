@@ -1,0 +1,3467 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../graph_algorithms/query_modules/">
+      
+      
+        <link rel="next" href="../memgraph_query_builder/">
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>Declarative Base - GQLAlchemy Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#whereconditionpartialquery-objects" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="GQLAlchemy Documentation" class="md-header__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GQLAlchemy Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Declarative Base
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="GQLAlchemy Documentation" class="md-nav__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    GQLAlchemy Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../import-data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How-To Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            How-To Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/ogm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OGM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/query-builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/query-builder/graph-projection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Projection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_5" >
+        
+          <label class="md-nav__link" for="__nav_6_5" id="__nav_6_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Data
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_5">
+            <span class="md-nav__icon md-icon"></span>
+            Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/instance-runner/memgraph-binary-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Binary Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/instance-runner/memgraph-docker-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Docker Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/loaders/import-table-data-to-graph-database/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Table Data to Graph Database
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/loaders/make-a-custom-file-system-importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Make a Custom File System Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/on-disk-storage/on-disk-storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    On-Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/streams/kafka-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kafka Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/streams/pulsar-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pulsar Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/translators/export-python-graphs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export Python Graphs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/translators/import-python-graphs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Python Graphs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../how-to-guides/triggers/triggers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Triggers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Under the Hood
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Under the Hood
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../under-the-hood/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../under-the-hood/python-graph-translators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python Graph Translators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../connection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Connection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../disk_storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Exceptions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../instance_runner/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Instance Runner
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_10" >
+        
+          <label class="md-nav__link" for="__nav_8_10" id="__nav_8_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Graph Algorithms
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_10">
+            <span class="md-nav__icon md-icon"></span>
+            Graph Algorithms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph_algorithms/integrated_algorithms/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrated Algorithms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph_algorithms/query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph_algorithms/query_modules/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_11" checked>
+        
+          <label class="md-nav__link" for="__nav_8_11" id="__nav_8_11_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Query Builders
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_11_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8_11">
+            <span class="md-nav__icon md-icon"></span>
+            Query Builders
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Declarative Base
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Declarative Base
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#whereconditionpartialquery-objects" class="md-nav__link">
+    WhereConditionPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="WhereConditionPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nodepartialquery-objects" class="md-nav__link">
+    NodePartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="NodePartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_1" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationshippartialquery-objects" class="md-nav__link">
+    RelationshipPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="RelationshipPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_2" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unwindpartialquery-objects" class="md-nav__link">
+    UnwindPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="UnwindPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_3" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dict_to_alias_statement" class="md-nav__link">
+    dict_to_alias_statement
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_resultpartialquery-objects" class="md-nav__link">
+    _ResultPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="_ResultPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_4" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unionpartialquery-objects" class="md-nav__link">
+    UnionPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="UnionPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_5" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deletepartialquery-objects" class="md-nav__link">
+    DeletePartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="DeletePartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_6" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#removepartialquery-objects" class="md-nav__link">
+    RemovePartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="RemovePartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_7" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orderbypartialquery-objects" class="md-nav__link">
+    OrderByPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="OrderByPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_8" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitpartialquery-objects" class="md-nav__link">
+    LimitPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="LimitPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_9" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#skippartialquery-objects" class="md-nav__link">
+    SkipPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="SkipPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_10" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreachpartialquery-objects" class="md-nav__link">
+    ForeachPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ForeachPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_11" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setpartialquery-objects" class="md-nav__link">
+    SetPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="SetPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_12" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declarativebase-objects" class="md-nav__link">
+    DeclarativeBase Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="DeclarativeBase Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#match" class="md-nav__link">
+    match
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge" class="md-nav__link">
+    merge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create" class="md-nav__link">
+    create
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#call" class="md-nav__link">
+    call
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node" class="md-nav__link">
+    node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#to" class="md-nav__link">
+    to
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from_" class="md-nav__link">
+    from_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where" class="md-nav__link">
+    where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where_not" class="md-nav__link">
+    where_not
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and_where" class="md-nav__link">
+    and_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and_not_where" class="md-nav__link">
+    and_not_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#or_where" class="md-nav__link">
+    or_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#or_not_where" class="md-nav__link">
+    or_not_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xor_where" class="md-nav__link">
+    xor_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xor_not_where" class="md-nav__link">
+    xor_not_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unwind" class="md-nav__link">
+    unwind
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with_" class="md-nav__link">
+    with_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#union" class="md-nav__link">
+    union
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete" class="md-nav__link">
+    delete
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yield_" class="md-nav__link">
+    yield_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#return_" class="md-nav__link">
+    return_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#order_by" class="md-nav__link">
+    order_by
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limit" class="md-nav__link">
+    limit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip" class="md-nav__link">
+    skip
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_custom_cypher" class="md-nav__link">
+    add_custom_cypher
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_single" class="md-nav__link">
+    get_single
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#foreach" class="md-nav__link">
+    foreach
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_" class="md-nav__link">
+    set_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute" class="md-nav__link">
+    execute
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../memgraph_query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12" >
+        
+          <label class="md-nav__link" for="__nav_8_12" id="__nav_8_12_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12">
+            <span class="md-nav__icon md-icon"></span>
+            Transformations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_1" >
+        
+          <label class="md-nav__link" for="__nav_8_12_1" id="__nav_8_12_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Export
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_1">
+            <span class="md-nav__icon md-icon"></span>
+            Export
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/export/graph_transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/export/transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_2" >
+        
+          <label class="md-nav__link" for="__nav_8_12_2" id="__nav_8_12_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Importing
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_2">
+            <span class="md-nav__icon md-icon"></span>
+            Importing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/importing/graph_importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/importing/loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_3" >
+        
+          <label class="md-nav__link" for="__nav_8_12_3" id="__nav_8_12_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Translators
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_3">
+            <span class="md-nav__icon md-icon"></span>
+            Translators
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/translators/dgl_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DGL Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/translators/nx_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    NX Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/translators/pyg_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyG Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transformations/translators/translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_13" >
+        
+          <label class="md-nav__link" for="__nav_8_13" id="__nav_8_13_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Vendors
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_13">
+            <span class="md-nav__icon md-icon"></span>
+            Vendors
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/database_client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Database Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/memgraph/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/neo4j/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Neo4j
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#whereconditionpartialquery-objects" class="md-nav__link">
+    WhereConditionPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="WhereConditionPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nodepartialquery-objects" class="md-nav__link">
+    NodePartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="NodePartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_1" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationshippartialquery-objects" class="md-nav__link">
+    RelationshipPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="RelationshipPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_2" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unwindpartialquery-objects" class="md-nav__link">
+    UnwindPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="UnwindPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_3" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dict_to_alias_statement" class="md-nav__link">
+    dict_to_alias_statement
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_resultpartialquery-objects" class="md-nav__link">
+    _ResultPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="_ResultPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_4" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unionpartialquery-objects" class="md-nav__link">
+    UnionPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="UnionPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_5" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deletepartialquery-objects" class="md-nav__link">
+    DeletePartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="DeletePartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_6" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#removepartialquery-objects" class="md-nav__link">
+    RemovePartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="RemovePartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_7" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orderbypartialquery-objects" class="md-nav__link">
+    OrderByPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="OrderByPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_8" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitpartialquery-objects" class="md-nav__link">
+    LimitPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="LimitPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_9" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#skippartialquery-objects" class="md-nav__link">
+    SkipPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="SkipPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_10" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreachpartialquery-objects" class="md-nav__link">
+    ForeachPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ForeachPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_11" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setpartialquery-objects" class="md-nav__link">
+    SetPartialQuery Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="SetPartialQuery Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construct_query_12" class="md-nav__link">
+    construct_query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declarativebase-objects" class="md-nav__link">
+    DeclarativeBase Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="DeclarativeBase Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#match" class="md-nav__link">
+    match
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge" class="md-nav__link">
+    merge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create" class="md-nav__link">
+    create
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#call" class="md-nav__link">
+    call
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node" class="md-nav__link">
+    node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#to" class="md-nav__link">
+    to
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from_" class="md-nav__link">
+    from_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where" class="md-nav__link">
+    where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where_not" class="md-nav__link">
+    where_not
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and_where" class="md-nav__link">
+    and_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and_not_where" class="md-nav__link">
+    and_not_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#or_where" class="md-nav__link">
+    or_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#or_not_where" class="md-nav__link">
+    or_not_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xor_where" class="md-nav__link">
+    xor_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xor_not_where" class="md-nav__link">
+    xor_not_where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unwind" class="md-nav__link">
+    unwind
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with_" class="md-nav__link">
+    with_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#union" class="md-nav__link">
+    union
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete" class="md-nav__link">
+    delete
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yield_" class="md-nav__link">
+    yield_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#return_" class="md-nav__link">
+    return_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#order_by" class="md-nav__link">
+    order_by
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limit" class="md-nav__link">
+    limit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip" class="md-nav__link">
+    skip
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_custom_cypher" class="md-nav__link">
+    add_custom_cypher
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_single" class="md-nav__link">
+    get_single
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#foreach" class="md-nav__link">
+    foreach
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_" class="md-nav__link">
+    set_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute" class="md-nav__link">
+    execute
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Declarative Base</h1>
+
+<h2 id="whereconditionpartialquery-objects">WhereConditionPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">WhereConditionPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Constructs a where partial query.</p>
+<h2 id="nodepartialquery-objects">NodePartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">NodePartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_1">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Constructs a node partial query.</p>
+<h2 id="relationshippartialquery-objects">RelationshipPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">RelationshipPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_2">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Constructs a relationship partial query.</p>
+<h2 id="unwindpartialquery-objects">UnwindPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UnwindPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_3">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Constructs an unwind partial query.</p>
+<h4 id="dict_to_alias_statement">dict_to_alias_statement</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">dict_to_alias_statement</span><span class="p">(</span><span class="n">alias_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a string expression of alias statements from a dictionary of
+expression, variable name dictionary.</p>
+<h2 id="_resultpartialquery-objects">_ResultPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">_ResultPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_4">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a RETURN/YIELD/WITH statement Cypher partial query.</p>
+<h2 id="unionpartialquery-objects">UnionPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_5">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a UNION statement Cypher partial query.</p>
+<h2 id="deletepartialquery-objects">DeletePartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DeletePartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_6">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a DELETE statement Cypher partial query.</p>
+<h2 id="removepartialquery-objects">RemovePartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">RemovePartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_7">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a REMOVE statement Cypher partial query.</p>
+<h2 id="orderbypartialquery-objects">OrderByPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">OrderByPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_8">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a ORDER BY statement Cypher partial query.</p>
+<h2 id="limitpartialquery-objects">LimitPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LimitPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_9">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a LIMIT statement Cypher partial query.</p>
+<h2 id="skippartialquery-objects">SkipPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">SkipPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_10">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a SKIP statement Cypher partial query.</p>
+<h2 id="foreachpartialquery-objects">ForeachPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ForeachPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_11">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Creates a FOREACH statement Cypher partial query.</p>
+<h2 id="setpartialquery-objects">SetPartialQuery Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">SetPartialQuery</span><span class="p">(</span><span class="n">PartialQuery</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="construct_query_12">construct_query</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">construct_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Constructs a set partial query.</p>
+<h2 id="declarativebase-objects">DeclarativeBase Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DeclarativeBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="match">match</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="n">optional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Obtain data from the database by matching it to a given pattern.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>optional</code> - A bool indicating if missing parts of the pattern will be
+  filled with null values.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Examples</strong>:</p>
+<p>Get all nodes with a certain label:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Country&amp;#x27;, variable=&amp;#x27;c&amp;#x27;).return_(results=&amp;#x27;c&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (c:Country) RETURN c;</code></li>
+</ul>
+<p>Get a relationship of a certain type that connects two nodes with certain label:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Town&amp;#x27;, variable=&amp;#x27;t&amp;#x27;).to(relationship_type=&amp;#x27;BELONGS_TO&amp;#x27;, variable=&amp;#x27;b&amp;#x27;).node(labels=&amp;#x27;Country&amp;#x27;, variable=&amp;#x27;c&amp;#x27;).return_(results=&amp;#x27;b&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (t:Town)-[b:BELONGS_TO]-&amp;gt;(c:Country) RETURN b;</code></li>
+</ul>
+<h4 id="merge">merge</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">merge</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Ensure that a pattern you are looking for exists in the database.
+This means that if the pattern is not found, it will be created. In a
+way, this clause is like a combination of MATCH and CREATE.</p>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Merge node with properties:</p>
+<ul>
+<li><code>Python</code> - <code>merge().node(variable=&amp;#x27;city&amp;#x27;).where(item=&amp;#x27;city.name&amp;#x27;, operator=Operator.EQUAL, literal=&amp;#x27;London&amp;#x27;).return_(results=&amp;#x27;city&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MERGE (city) WHERE city.name = &amp;#x27;London&amp;#x27; RETURN city;</code></li>
+</ul>
+<h4 id="create">create</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Create nodes and relationships in a graph.</p>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Create a single node:</p>
+<ul>
+<li><code>Python</code> - <code>create().node(labels=&amp;#x27;Person&amp;#x27;, variable=&amp;#x27;p&amp;#x27;).return_(results=&amp;#x27;p&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>CREATE (p:Person) RETURN p;</code></li>
+</ul>
+<h4 id="call">call</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+    <span class="n">procedure</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">arguments</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Call a query module procedure.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>procedure</code> - A string representing the name of the procedure in the
+  format <code>query_module.procedure</code>.</li>
+<li><code>arguments</code> - A string representing the arguments of the procedure in
+  text format.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Examples</strong>:</p>
+<p>Call procedure with no arguments:</p>
+<ul>
+<li><code>Python</code> - <code>call(&amp;#x27;pagerank.get&amp;#x27;).yield_().return_().execute()</code></li>
+<li><code>Cypher</code> - <code>CALL pagerank.get() YIELD * RETURN *;</code></li>
+</ul>
+<p>Call procedure with arguments:</p>
+<ul>
+<li><code>Python</code> - `call(&#x27;json_util.load_from_url&#x27;, &quot;&#x27;https://some-url.com&#x27;&quot;).yield_(&#x27;objects&#x27;).return_(results=&#x27;objects&#x27;).execute()</li>
+<li><code>Cypher</code> - <code>CALL json_util.load_from_url(https://some-url.com) YIELD objects RETURN objects;</code></li>
+</ul>
+<h4 id="node">node</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+         <span class="n">variable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+         <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Node&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+         <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Add a node pattern to the query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>labels</code> - A string or list of strings representing the labels of the
+  node.</li>
+<li><code>variable</code> - A string representing the name of the variable for storing
+  results of the node pattern.</li>
+<li><code>node</code> - A <code>Node</code> object to construct the pattern from.</li>
+<li><code>**kwargs</code> - Arguments representing the properties of the node.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Create a node and return it:</p>
+<ul>
+<li><code>Python</code> - <code>create().node(labels=&amp;#x27;Person&amp;#x27;, variable=&amp;#x27;n&amp;#x27;, first_name=&amp;#x27;Kate&amp;#x27;).return_(results=&amp;#x27;n&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>CREATE (n:Person {first_name: &amp;#x27;Kate&amp;#x27;}) RETURN n;</code></li>
+</ul>
+<h4 id="to">to</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+       <span class="n">directed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+       <span class="n">variable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+       <span class="n">relationship</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Relationship&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+       <span class="n">algorithm</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IntegratedAlgorithm</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Add a relationship pattern to the query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>relationship_type</code> - A string representing the type of the relationship.</li>
+<li><code>directed</code> - A bool indicating if the relationship is directed.</li>
+<li><code>variable</code> - A string representing the name of the variable for storing
+  results of the relationship pattern.</li>
+<li><code>relationship</code> - A <code>Relationship</code> object to construct the pattern from.</li>
+<li><code>algorithm</code> - algorithm object to use over graph data.</li>
+<li><code>**kwargs</code> - Arguments representing the properties of the relationship.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Match and return a relationship:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Town&amp;#x27;, variable=&amp;#x27;t&amp;#x27;).to(relationship_type=&amp;#x27;BELONGS_TO&amp;#x27;, variable=&amp;#x27;b&amp;#x27;).node(labels=&amp;#x27;Country&amp;#x27;, variable=&amp;#x27;c&amp;#x27;).return_(results=&amp;#x27;b&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (t:Town)-[b:BELONGS_TO]-&amp;gt;(c:Country) RETURN b;</code></li>
+</ul>
+<h4 id="from_">from_</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">from_</span><span class="p">(</span><span class="n">relationship_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+          <span class="n">directed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+          <span class="n">variable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+          <span class="n">relationship</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Relationship&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+          <span class="n">algorithm</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IntegratedAlgorithm</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+          <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Match&quot;</span>
+</code></pre></div>
+<p>Add a relationship pattern to the query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>relationship_type</code> - A string representing the type of the relationship.</li>
+<li><code>directed</code> - A bool indicating if the relationship is directed.</li>
+<li><code>variable</code> - A string representing the name of the variable for storing
+  results of the relationship pattern.</li>
+<li><code>relationship</code> - A <code>Relationship</code> object to construct the pattern from.</li>
+<li><code>**kwargs</code> - Arguments representing the properties of the relationship.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Match and return a relationship:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Country&amp;#x27;, variable=&amp;#x27;c&amp;#x27;).from_(relationship_type=&amp;#x27;BELONGS_TO&amp;#x27;, variable=&amp;#x27;b&amp;#x27;).node(labels=&amp;#x27;Town&amp;#x27;, variable=&amp;#x27;t&amp;#x27;).return_(results=&amp;#x27;b&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (c:Country)&amp;lt;-[b:BELONGS_TO]-(t:Town) RETURN b;</code></li>
+</ul>
+<h4 id="where">where</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">where</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates a WHERE statement Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>GQLAlchemyLiteralAndExpressionMissingInWhere</code> - Raises an error when neither literal nor expression keyword arguments were provided.</li>
+<li><code>GQLAlchemyExtraKeywordArgumentsInWhere</code> - Raises an error when both literal and expression keyword arguments were provided.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by the equality of <code>name</code> properties of two connected nodes.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).to().node(variable=&amp;#x27;m&amp;#x27;).where(item=&amp;#x27;n.name&amp;#x27;, operator=Operator.EQUAL, expression=&amp;#x27;m.name&amp;#x27;).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n)-[]-&amp;gt;(m) WHERE n.name = m.name RETURN *;</code></li>
+</ul>
+<p>Filtering query results by the node label.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;User&amp;#x27;).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n:User RETURN *;</code></li>
+</ul>
+<p>Filtering query results by the comparison of node property and literal.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n.age&amp;#x27;, operator=Operator.GREATER_THAN, literal=18).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n.age &amp;gt; 18 RETURN *;</code></li>
+</ul>
+<h4 id="where_not">where_not</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">where_not</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates a WHERE NOT statement Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>GQLAlchemyLiteralAndExpressionMissingInWhere</code> - Raises an error when neither literal nor expression keyword arguments were provided.</li>
+<li><code>GQLAlchemyExtraKeywordArgumentsInWhere</code> - Raises an error when both literal and expression keyword arguments were provided.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by the equality of <code>name</code> properties of two connected nodes.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).to().node(variable=&amp;#x27;m&amp;#x27;).where_not(item=&amp;#x27;n.name&amp;#x27;, operator=&amp;#x27;=&amp;#x27;, expression=&amp;#x27;m.name&amp;#x27;).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n)-[]-&amp;gt;(m) WHERE NOT n.name = m.name RETURN *;</code></li>
+</ul>
+<h4 id="and_where">and_where</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">and_where</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates an AND statement as a part of WHERE Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by node label or the comparison of node property and literal.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;User&amp;#x27;).and_where(item=&amp;#x27;n.age&amp;#x27;, operator=Operator.GREATER_THAN, literal=18).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n:User AND n.age &amp;gt; 18 RETURN *;</code></li>
+</ul>
+<h4 id="and_not_where">and_not_where</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">and_not_where</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates an AND NOT statement as a part of WHERE Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by node label or the comparison of node property and literal.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;User&amp;#x27;).and_not_where(item=&amp;#x27;n.age&amp;#x27;, operator=Operator.GREATER_THAN, literal=18).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n:User AND NOT n.age &amp;gt; 18 RETURN *;</code></li>
+</ul>
+<h4 id="or_where">or_where</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">or_where</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates an OR statement as a part of WHERE Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by node label or the comparison of node property and literal.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;User&amp;#x27;).or_where(item=&amp;#x27;n.age&amp;#x27;, operator=Operator.GREATER_THAN, literal=18).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n:User OR n.age &amp;gt; 18 RETURN *;</code></li>
+</ul>
+<h4 id="or_not_where">or_not_where</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">or_not_where</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates an OR NOT statement as a part of WHERE Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by node label or the comparison of node property and literal.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;User&amp;#x27;).or_not_where(item=&amp;#x27;n.age&amp;#x27;, operator=Operator.GREATER_THAN, literal=18).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n:User OR NOT n.age &amp;gt; 18 RETURN *;</code></li>
+</ul>
+<h4 id="xor_where">xor_where</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">xor_where</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates an XOR statement as a part of WHERE Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by node label or the comparison of node property and literal.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;User&amp;#x27;).xor_where(item=&amp;#x27;n.age&amp;#x27;, operator=Operator.GREATER_THAN, literal=18).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n:User XOR n.age &amp;gt; 18 RETURN *;</code></li>
+</ul>
+<h4 id="xor_not_where">xor_not_where</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">xor_not_where</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates an XOR NOT statement as a part of WHERE Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - A string representing the operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Filtering query results by node label or the comparison of node property and literal.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;User&amp;#x27;).xor_not_where(item=&amp;#x27;n.age&amp;#x27;, operator=Operator.GREATER_THAN, literal=18).return_()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n:User XOR NOT n.age &amp;gt; 18 RETURN *;</code></li>
+</ul>
+<h4 id="unwind">unwind</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">unwind</span><span class="p">(</span><span class="n">list_expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Unwind a list of values as individual rows.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>list_expression</code> - A list of strings representing the list of values.</li>
+<li><code>variable</code> - A string representing the variable name for unwinding results.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<ul>
+<li><code>Python</code> - <code>unwind(list_expression=&amp;quot;[1, 2, 3, null]&amp;quot;, variable=&amp;quot;x&amp;quot;).return_(results=[&amp;quot;x&amp;quot;, (&amp;quot;&amp;#x27;val&amp;#x27;&amp;quot;, &amp;quot;y&amp;quot;)]).execute()</code></li>
+<li><code>Cypher</code> - <code>UNWIND [1, 2, 3, null] AS x RETURN x, &amp;#x27;val&amp;#x27; AS y;</code></li>
+</ul>
+<h4 id="with_">with_</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">with_</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+                            <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span>
+                            <span class="n">Set</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span> <span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Chain together parts of a query, piping the results from one to be
+used as starting points or criteria in the next.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>results</code> - A dictionary mapping variables in the first query with
+  aliases in the second query.</li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>GQLAlchemyResultQueryTypeError</code> - Raises an error when the provided argument is of wrong type.</li>
+<li><code>GQLAlchemyTooLargeTupleInResultQuery</code> - Raises an error when the given tuple has length larger than 2.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Pipe the result from first part of the query for the futher use:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).with(&amp;#x27;n&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - `MATCH (n) WITH n;</li>
+</ul>
+<h4 id="union">union</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">union</span><span class="p">(</span><span class="n">include_duplicates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Combine the result of multiple queries.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>include_duplicates</code> - A bool indicating if duplicates should be
+  included.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Examples</strong>:</p>
+<p>Combine querties and retain duplicates:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;quot;c&amp;quot;, labels=&amp;quot;Country&amp;quot;).return_(results=(&amp;quot;c.name&amp;quot;, &amp;quot;columnName&amp;quot;)).union().match().node(variable=&amp;quot;p&amp;quot;, labels=&amp;quot;Person&amp;quot;).return_(results=(&amp;quot;p.name&amp;quot;, &amp;quot;columnName&amp;quot;)).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (c:Country) RETURN c.name AS columnName UNION ALL MATCH (p:Person) RETURN p.name AS columnName;</code></li>
+</ul>
+<p>Combine queries and remove duplicates:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;quot;c&amp;quot;, labels=&amp;quot;Country&amp;quot;).return_(results=(&amp;quot;c.name&amp;quot;, &amp;quot;columnName&amp;quot;)).union(include_duplicates=False).match().node(variable=&amp;quot;p&amp;quot;, labels=&amp;quot;Person&amp;quot;).return_(results=(&amp;quot;p.name&amp;quot;, &amp;quot;columnName&amp;quot;)).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (c:Country) RETURN c.name AS columnName UNION MATCH (p:Person) RETURN p.name AS columnName;</code></li>
+</ul>
+<h4 id="delete">delete</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">variable_expressions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+           <span class="n">detach</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Delete nodes and relationships from the database.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>variable_expressions</code> - A string or list of strings indicating which node(s)
+  and/or relationship(s) should be removed.</li>
+<li><code>detach</code> - A bool indicating if relationships should be deleted along
+  with a node.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Delete a node:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Node1&amp;#x27;, variable=&amp;#x27;n1&amp;#x27;).delete(variable_expressions=&amp;#x27;n1&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n1:Node1) DELETE n1;</code></li>
+</ul>
+<h4 id="remove">remove</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Remove labels and properties from nodes and relationships.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>items</code> - A string or list of strings indicating which label(s) and/or properties
+  should be removed.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Remove a property from a node:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Country&amp;#x27;, variable=&amp;#x27;n&amp;#x27;, name=&amp;#x27;United Kingdom&amp;#x27;).remove(items=&amp;#x27;n.name&amp;#x27;).return_(results=&amp;#x27;n&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n:Country {name: &amp;#x27;United Kingdom&amp;#x27;}) REMOVE n.name RETURN n;</code></li>
+</ul>
+<h4 id="yield_">yield_</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">yield_</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+                            <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span>
+                            <span class="n">Set</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span> <span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Yield data from the query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>results</code> - A dictionary mapping items that are returned with alias names.</li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>GQLAlchemyResultQueryTypeError</code> - Raises an error when the provided argument is of wrong type.</li>
+<li><code>GQLAlchemyTooLargeTupleInResultQuery</code> - Raises an error when the given tuple has length larger than 2.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Examples</strong>:</p>
+<p>Yield all data from a query:</p>
+<ul>
+<li><code>Python</code> - <code>call(procedure=&amp;#x27;pagerank.get&amp;#x27;).yield_().return_().execute()</code></li>
+<li><code>Cypher</code> - <code>CALL pagerank.get() YIELD * RETURN *;</code></li>
+</ul>
+<p>Yield some data from a query:</p>
+<ul>
+<li><code>Python</code> - <code>.call(procedure=&amp;#x27;pagerank.get&amp;#x27;).yield_(results=[&amp;#x27;node&amp;#x27;, &amp;#x27;rank&amp;#x27;]).return_(results=[&amp;#x27;node&amp;#x27;,&amp;#x27;rank&amp;#x27;]).execute()</code></li>
+<li><code>Cypher</code> - <code>CALL pagerank.get() YIELD node, rank RETURN node, rank;</code></li>
+</ul>
+<h4 id="return_">return_</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">return_</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+                            <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span>
+                            <span class="n">Set</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span> <span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Return data from the query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>results</code> - An optional string, tuple or iterable of strings and tuples for alias names.</li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>GQLAlchemyResultQueryTypeError</code> - Raises an error when the provided argument is of wrong type.</li>
+<li><code>GQLAlchemyTooLargeTupleInResultQuery</code> - Raises an error when the given tuple has length larger than 2.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Examples</strong>:</p>
+<p>Return all variables from a query:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Person&amp;#x27;, variable=&amp;#x27;p&amp;#x27;).return_().execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (p:Person) RETURN *;</code></li>
+</ul>
+<p>Return specific variables from a query:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Person&amp;#x27;, variable=&amp;#x27;p1&amp;#x27;).to().node(labels=&amp;#x27;Person&amp;#x27;, variable=&amp;#x27;p2&amp;#x27;).return_(results=[(&amp;#x27;p1&amp;#x27;,&amp;#x27;first&amp;#x27;), &amp;#x27;p2&amp;#x27;]).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (p1:Person)-[]-&amp;gt;(p2:Person) RETURN p1 AS first, p2;</code></li>
+</ul>
+<h4 id="order_by">order_by</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">order_by</span><span class="p">(</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Order</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span>
+                                                                    <span class="n">Order</span><span class="p">]]]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Creates an ORDER BY statement Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>properties</code> - Properties and order (DESC/DESCENDING/ASC/ASCENDING) by which the query results will be ordered.</li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>GQLAlchemyOrderByTypeError</code> - Raises an error when the given ordering is of the wrong type.</li>
+<li><code>GQLAlchemyMissingOrder</code> - Raises an error when the given property is neither string nor tuple.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Examples</strong>:</p>
+<p>Ordering query results by the property <code>n.name</code> in ascending order
+  and by the property <code>n.last_name</code> in descending order:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).return_().order_by(properties=[&amp;#x27;n.name&amp;#x27;, (&amp;#x27;n.last_name&amp;#x27;, Order.DESC)]).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) RETURN * ORDER BY n.name, n.last_name DESC;</code></li>
+</ul>
+<h4 id="limit">limit</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">limit</span><span class="p">(</span><span class="n">integer_expression</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Limit the number of records when returning results.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>integer_expression</code> - An integer indicating how many records to limit
+  the results to.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Limit the number of returned results:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(labels=&amp;#x27;Person&amp;#x27;, variable=&amp;#x27;p&amp;#x27;).return_().limit(integer_expression=&amp;#x27;10&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (p:Person) RETURN * LIMIT 10;</code></li>
+</ul>
+<h4 id="skip">skip</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">skip</span><span class="p">(</span><span class="n">integer_expression</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Skip a number of records when returning results.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>integer_expression</code> - An integer indicating how many records to skip
+  in the results.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>Skip the first result:</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).return_(results=&amp;#x27;n&amp;#x27;).skip(integer_expression=&amp;#x27;1&amp;#x27;).execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) RETURN n SKIP 1;</code></li>
+</ul>
+<h4 id="add_custom_cypher">add_custom_cypher</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_custom_cypher</span><span class="p">(</span><span class="n">custom_cypher</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Inject custom Cypher code into the query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>custom_cypher</code> - A string representing the Cypher code to be injected
+  into the query.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<h4 id="get_single">get_single</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_single</span><span class="p">(</span><span class="n">retrieve</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span>
+</code></pre></div>
+<p>Returns a single result with a <code>retrieve</code> variable name.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>retrieve</code> - A string representing the results variable to be returned.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>An iterator of dictionaries containing the results of the query.</p>
+<h4 id="foreach">foreach</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">foreach</span><span class="p">(</span>
+        <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">update_clause</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeclarativeBase&quot;</span>
+</code></pre></div>
+<p>Iterate over a list of elements and for every iteration run every update clause.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>variable</code> - The variable name that stores each element.</li>
+<li><code>expression</code> - Any expression that results in a list.</li>
+<li><code>update_clauses</code> - One or more Cypher update clauses:
+  SET, REMOVE, CREATE, MERGE, DELETE, FOREACH.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
+<p><strong>Example</strong>:</p>
+<p>For each number in a list, create a node:</p>
+<ul>
+<li><code>Python</code> - <code>update_clause = QueryBuilder().create().node(variable=&amp;quot;n&amp;quot;, id=PropertyVariable(&amp;quot;i&amp;quot;))</code>
+  <code>query_builder = QueryBuilder().foreach(&amp;quot;i&amp;quot;, &amp;quot;[1, 2, 3]&amp;quot;, update_clause.construct_query())</code></li>
+<li><code>Cypher</code> - <code>FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) )</code></li>
+</ul>
+<h4 id="set_">set_</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">set_</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+<p>Creates a SET statement Cypher partial query.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>item</code> - A string representing variable or property.</li>
+<li><code>operator</code> - An assignment, increment or label filter operator.</li>
+</ul>
+<p>Kwargs:
+- <code>literal</code> - A value that will be converted to Cypher value, such as int, float, string, etc.
+- <code>expression</code> - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).</p>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>GQLAlchemyLiteralAndExpressionMissingInWhere</code> - Raises an error when neither literal nor expression keyword arguments were provided.</li>
+<li><code>GQLAlchemyExtraKeywordArgumentsInWhere</code> - Raises an error when both literal and expression keyword arguments were provided.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>self</code> - A partial Cypher query built from the given parameters.</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<p>Set or update a property.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n.name&amp;#x27;, operator=Operator.EQUAL, literal=&amp;#x27;Germany&amp;#x27;).set_(item=&amp;#x27;n.population&amp;#x27;, operator=Operator.ASSIGNMENT, literal=83000001).return_().execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n.name = &amp;#x27;Germany&amp;#x27; SET n.population = 83000001 RETURN *;</code></li>
+</ul>
+<p>Set or update multiple properties.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n.name&amp;#x27;, operator=Operator.EQUAL, literal=&amp;#x27;Germany&amp;#x27;).set_(item=&amp;#x27;n.population&amp;#x27;, operator=Operator.ASSIGNMENT, literal=83000001).set_(item=&amp;#x27;n.capital&amp;#x27;, operator=Operator.ASSIGNMENT, literal=&amp;#x27;Berlin&amp;#x27;).return_().execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n.name = &amp;#x27;Germany&amp;#x27; SET n.population = 83000001 SET n.capital = &amp;#x27;Berlin&amp;#x27; RETURN *;</code></li>
+</ul>
+<p>Set node label.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).where(item=&amp;#x27;n.name&amp;#x27;, operator=Operator.EQUAL, literal=&amp;#x27;Germany&amp;#x27;).set_(item=&amp;#x27;n&amp;#x27;, operator=Operator.LABEL_FILTER, expression=&amp;#x27;Land&amp;#x27;).return_().execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (n) WHERE n.name = &amp;#x27;Germany&amp;#x27; SET n:Land RETURN *;</code></li>
+</ul>
+<p>Replace all properties using map.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;c&amp;#x27;, labels=&amp;#x27;Country&amp;#x27;).where(item=&amp;#x27;c.name&amp;#x27;, operator=Operator.EQUAL, literal=&amp;#x27;Germany&amp;#x27;).set_(item=&amp;#x27;c&amp;#x27;, operator=Operator.ASSIGNMENT, literal={&amp;#x27;name&amp;#x27;: &amp;#x27;Germany&amp;#x27;, &amp;#x27;population&amp;#x27;: &amp;#x27;85000000&amp;#x27;}).return_().execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (c:Country) WHERE c.name = &amp;#x27;Germany&amp;#x27; SET c = {name: &amp;#x27;Germany&amp;#x27;, population: &amp;#x27;85000000&amp;#x27;} RETURN *;</code></li>
+</ul>
+<p>Update all properties using map.</p>
+<ul>
+<li><code>Python</code> - <code>match().node(variable=&amp;#x27;c&amp;#x27;, labels=&amp;#x27;Country&amp;#x27;).where(item=&amp;#x27;c.name&amp;#x27;, operator=Operator.EQUAL, literal=&amp;#x27;Germany&amp;#x27;).set_(item=&amp;#x27;c&amp;#x27;, operator=Operator.INCREMENT, literal={&amp;#x27;name&amp;#x27;: &amp;#x27;Germany&amp;#x27;, &amp;#x27;population&amp;#x27;: &amp;#x27;85000000&amp;#x27;}).return_().execute()</code></li>
+<li><code>Cypher</code> - <code>MATCH (c:Country) WHERE c.name = &amp;#x27;Germany&amp;#x27; SET c += {name: &amp;#x27;Germany&amp;#x27;, population: &amp;#x27;85000000&amp;#x27;} RETURN *;</code></li>
+</ul>
+<h4 id="execute">execute</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">execute</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+</code></pre></div>
+<p>Executes the Cypher query and returns the results.</p>
+<p><strong>Returns</strong>:</p>
+<p>An iterator of dictionaries containing the results of the query.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+    
+  </body>
+</html>

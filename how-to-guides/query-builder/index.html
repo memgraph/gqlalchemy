@@ -1,0 +1,3431 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../ogm/">
+      
+      
+        <link rel="next" href="graph-projection/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>Query Builder - GQLAlchemy Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#how-to-use-query-builder" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GQLAlchemy Documentation" class="md-header__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GQLAlchemy Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Query Builder
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GQLAlchemy Documentation" class="md-nav__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    GQLAlchemy Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../import-data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How-To Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            How-To Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ogm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OGM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#create-nodes-and-relationships" class="md-nav__link">
+    Create nodes and relationships
+  </a>
+  
+    <nav class="md-nav" aria-label="Create nodes and relationships">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-a-node" class="md-nav__link">
+    Create a node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-a-relationship" class="md-nav__link">
+    Create a relationship
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-nodes-and-relationships" class="md-nav__link">
+    Merge nodes and relationships
+  </a>
+  
+    <nav class="md-nav" aria-label="Merge nodes and relationships">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#merge-a-node" class="md-nav__link">
+    Merge a node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-a-relationship" class="md-nav__link">
+    Merge a relationship
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-or-update-properties-and-labels" class="md-nav__link">
+    Set or update properties and labels
+  </a>
+  
+    <nav class="md-nav" aria-label="Set or update properties and labels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-a-property" class="md-nav__link">
+    Set a property
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-a-label" class="md-nav__link">
+    Set a label
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replace-all-properties" class="md-nav__link">
+    Replace all properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-all-properties" class="md-nav__link">
+    Update all properties
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter-data" class="md-nav__link">
+    Filter data
+  </a>
+  
+    <nav class="md-nav" aria-label="Filter data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filter-data-by-property-comparison" class="md-nav__link">
+    Filter data by property comparison
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-data-by-property-value" class="md-nav__link">
+    Filter data by property value
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-data-by-label" class="md-nav__link">
+    Filter data by label
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-results" class="md-nav__link">
+    Return results
+  </a>
+  
+    <nav class="md-nav" aria-label="Return results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#return-all-variables-from-a-query" class="md-nav__link">
+    Return all variables from a query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#return-specific-variables-from-a-query" class="md-nav__link">
+    Return specific variables from a query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limit-the-number-of-returned-results" class="md-nav__link">
+    Limit the number of returned results
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#order-the-returned-results" class="md-nav__link">
+    Order the returned results
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#order-by-a-list-of-values" class="md-nav__link">
+    Order by a list of values
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delete-and-remove-objects" class="md-nav__link">
+    Delete and remove objects
+  </a>
+  
+    <nav class="md-nav" aria-label="Delete and remove objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-node" class="md-nav__link">
+    Delete a node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-relationship" class="md-nav__link">
+    Delete a relationship
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove-properties" class="md-nav__link">
+    Remove properties
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#call-procedures" class="md-nav__link">
+    Call procedures
+  </a>
+  
+    <nav class="md-nav" aria-label="Call procedures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#call-procedure-with-no-arguments" class="md-nav__link">
+    Call procedure with no arguments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#call-procedure-with-arguments" class="md-nav__link">
+    Call procedure with arguments
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-csv-file" class="md-nav__link">
+    Load CSV file
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="graph-projection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Projection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_5" >
+        
+          <label class="md-nav__link" for="__nav_6_5" id="__nav_6_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Data
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_5">
+            <span class="md-nav__icon md-icon"></span>
+            Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../instance-runner/memgraph-binary-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Binary Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../instance-runner/memgraph-docker-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Docker Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loaders/import-table-data-to-graph-database/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Table Data to Graph Database
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loaders/make-a-custom-file-system-importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Make a Custom File System Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../on-disk-storage/on-disk-storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    On-Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../streams/kafka-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kafka Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../streams/pulsar-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pulsar Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../translators/export-python-graphs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export Python Graphs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../translators/import-python-graphs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Python Graphs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../triggers/triggers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Triggers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Under the Hood
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Under the Hood
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../under-the-hood/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../under-the-hood/python-graph-translators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python Graph Translators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/connection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Connection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/disk_storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Exceptions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/instance_runner/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Instance Runner
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/utilities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_10" >
+        
+          <label class="md-nav__link" for="__nav_8_10" id="__nav_8_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Graph Algorithms
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_10">
+            <span class="md-nav__icon md-icon"></span>
+            Graph Algorithms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/graph_algorithms/integrated_algorithms/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrated Algorithms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/graph_algorithms/query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/graph_algorithms/query_modules/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_11" >
+        
+          <label class="md-nav__link" for="__nav_8_11" id="__nav_8_11_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Query Builders
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_11">
+            <span class="md-nav__icon md-icon"></span>
+            Query Builders
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/query_builders/declarative_base/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Declarative Base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/query_builders/memgraph_query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12" >
+        
+          <label class="md-nav__link" for="__nav_8_12" id="__nav_8_12_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12">
+            <span class="md-nav__icon md-icon"></span>
+            Transformations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_1" >
+        
+          <label class="md-nav__link" for="__nav_8_12_1" id="__nav_8_12_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Export
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_1">
+            <span class="md-nav__icon md-icon"></span>
+            Export
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/export/graph_transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/export/transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_2" >
+        
+          <label class="md-nav__link" for="__nav_8_12_2" id="__nav_8_12_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Importing
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_2">
+            <span class="md-nav__icon md-icon"></span>
+            Importing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/importing/graph_importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/importing/loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_3" >
+        
+          <label class="md-nav__link" for="__nav_8_12_3" id="__nav_8_12_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Translators
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_3">
+            <span class="md-nav__icon md-icon"></span>
+            Translators
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/translators/dgl_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DGL Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/translators/nx_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    NX Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/translators/pyg_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyG Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/transformations/translators/translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_13" >
+        
+          <label class="md-nav__link" for="__nav_8_13" id="__nav_8_13_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Vendors
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_13">
+            <span class="md-nav__icon md-icon"></span>
+            Vendors
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/vendors/database_client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Database Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/vendors/memgraph/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/gqlalchemy/vendors/neo4j/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Neo4j
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#create-nodes-and-relationships" class="md-nav__link">
+    Create nodes and relationships
+  </a>
+  
+    <nav class="md-nav" aria-label="Create nodes and relationships">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-a-node" class="md-nav__link">
+    Create a node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-a-relationship" class="md-nav__link">
+    Create a relationship
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-nodes-and-relationships" class="md-nav__link">
+    Merge nodes and relationships
+  </a>
+  
+    <nav class="md-nav" aria-label="Merge nodes and relationships">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#merge-a-node" class="md-nav__link">
+    Merge a node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-a-relationship" class="md-nav__link">
+    Merge a relationship
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-or-update-properties-and-labels" class="md-nav__link">
+    Set or update properties and labels
+  </a>
+  
+    <nav class="md-nav" aria-label="Set or update properties and labels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-a-property" class="md-nav__link">
+    Set a property
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-a-label" class="md-nav__link">
+    Set a label
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replace-all-properties" class="md-nav__link">
+    Replace all properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-all-properties" class="md-nav__link">
+    Update all properties
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter-data" class="md-nav__link">
+    Filter data
+  </a>
+  
+    <nav class="md-nav" aria-label="Filter data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filter-data-by-property-comparison" class="md-nav__link">
+    Filter data by property comparison
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-data-by-property-value" class="md-nav__link">
+    Filter data by property value
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-data-by-label" class="md-nav__link">
+    Filter data by label
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-results" class="md-nav__link">
+    Return results
+  </a>
+  
+    <nav class="md-nav" aria-label="Return results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#return-all-variables-from-a-query" class="md-nav__link">
+    Return all variables from a query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#return-specific-variables-from-a-query" class="md-nav__link">
+    Return specific variables from a query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limit-the-number-of-returned-results" class="md-nav__link">
+    Limit the number of returned results
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#order-the-returned-results" class="md-nav__link">
+    Order the returned results
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#order-by-a-list-of-values" class="md-nav__link">
+    Order by a list of values
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delete-and-remove-objects" class="md-nav__link">
+    Delete and remove objects
+  </a>
+  
+    <nav class="md-nav" aria-label="Delete and remove objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-node" class="md-nav__link">
+    Delete a node
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-relationship" class="md-nav__link">
+    Delete a relationship
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove-properties" class="md-nav__link">
+    Remove properties
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#call-procedures" class="md-nav__link">
+    Call procedures
+  </a>
+  
+    <nav class="md-nav" aria-label="Call procedures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#call-procedure-with-no-arguments" class="md-nav__link">
+    Call procedure with no arguments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#call-procedure-with-arguments" class="md-nav__link">
+    Call procedure with arguments
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-csv-file" class="md-nav__link">
+    Load CSV file
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="how-to-use-query-builder">How to use query builder</h1>
+<p>import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<p>Through this guide, you will learn how to use GQLAlchemy query builder to:
+- <a href="#create-nodes-and-relationships"><strong>Create nodes and relationships</strong></a>
+    - <a href="#create-a-node"><strong>Create a node</strong></a>
+    - <a href="#create-a-relationship"><strong>Create a relationship</strong></a>
+- <a href="#merge-nodes-and-relationships"><strong>Merge nodes and relationships</strong></a>
+    - <a href="#merge-a-node"><strong>Merge a node</strong></a>
+    - <a href="#merge-a-relationship"><strong>Merge a relationship</strong></a>
+- <a href="#set-or-update-properties-and-labels"><strong>Set or update properties and labels</strong></a>
+    - <a href="#set-a-property"><strong>Set a property</strong></a>
+    - <a href="#set-a-label"><strong>Set a label</strong></a>
+    - <a href="#replace-all-properties"><strong>Replace all properties</strong></a>
+    - <a href="#update-all-properties"><strong>Update all properties</strong></a>
+- <a href="#filter-data"><strong>Filter data</strong></a>
+    - <a href="#filter-data-by-property-comparison"><strong>Filter data by property comparison</strong></a>
+    - <a href="#filter-data-by-property-value"><strong>Filter data by property value</strong></a>
+    - <a href="#filter-data-by-label"><strong>Filter data by label</strong></a>
+- <a href="#return-results"><strong>Return results</strong></a>
+    - <a href="#return-all-variables-from-a-query"><strong>Return all variables from a query</strong></a>
+    - <a href="#return-specific-variables-from-a-query"><strong>Return specific variables from a query</strong></a>
+    - <a href="#limit-the-number-of-returned-results"><strong>Limit the number of returned results</strong></a>
+    - <a href="#order-the-returned-results"><strong>Order the returned results</strong></a>
+    - <a href="#order-by-a-list-of-values"><strong>Order by a list of values</strong></a>
+- <a href="#delete-and-remove-objects"><strong>Delete and remove objects</strong></a>
+    - <a href="#delete-a-node"><strong>Delete a node</strong></a>
+    - <a href="#delete-a-relationship"><strong>Delete a relationship</strong></a>
+    - <a href="#remove-properties"><strong>Remove properties</strong></a>
+- <a href="#call-procedures"><strong>Call procedures</strong></a>
+    - <a href="#call-procedure-with-no-arguments"><strong>Call procedure with no arguments</strong></a>
+    - <a href="#call-procedure-with-arguments"><strong>Call procedure with arguments</strong></a>
+- <a href="#load-csv-file"><strong>Load CSV file</strong></a></p>
+<blockquote>
+<p>Hopefully, this guide will teach you how to properly use GQLAlchemy query builder. If you
+have any more questions, join our community and ping us on <a href="https://discord.gg/memgraph">Discord</a>.</p>
+</blockquote>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>To test the above features, you must install <a href="../../installation/">GQLAlchemy</a> and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph <a href="https://memgraph.com/docs/getting-started">Quick start</a>).</p>
+</div>
+<h2 id="create-nodes-and-relationships">Create nodes and relationships</h2>
+<p>Methods <a href="../../reference/gqlalchemy/query_builders/declarative_base/#create"><code>create()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#merge"><code>merge()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#match"><code>match()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#node"><code>node()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#to"><code>to()</code></a> and <a href="../../reference/gqlalchemy/query_builders/declarative_base/#from_"><code>from_()</code></a> are most often used when building a query to create or merge nodes and relationships.</p>
+<h3 id="create-a-node">Create a node</h3>
+<p>To <strong>create a node</strong> with label <code>Person</code> and a property <code>name</code> of value "Ron", run the following code:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">create</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="n">create</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ron&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="p">(:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Ron</span><span class="err">&#39;</span><span class="p">});</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="create-a-relationship">Create a relationship</h3>
+<p>To <strong>create a relationship</strong> of type <code>FRIENDS_WITH</code> with property <code>since</code> from one <code>Person</code> node to another, run the following code:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'},
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">create</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">create</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">&quot;2023-02-16&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ron&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+  </TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="p">(:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Leslie</span><span class="err">&#39;</span><span class="p">})</span><span class="o">-[</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="w"> </span><span class="p">{</span><span class="n">since</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="m">2023</span><span class="err">-</span><span class="m">02</span><span class="err">-</span><span class="m">16</span><span class="err">&#39;</span><span class="p">}</span><span class="o">]-&gt;</span><span class="p">(:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Ron</span><span class="err">&#39;</span><span class="p">});</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>Since you are creating a relationship between two nodes, without first matching the existing nodes or merging the relationships, the nodes will be created too.</p>
+<p>To <strong>create a relationship</strong> of type <code>FRIENDS_WITH</code> from one <code>Person</code> node to another <strong>in an opposite direction</strong>, run the following code:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'},
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">create</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">create</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">from</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ron&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+  </TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="p">(:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Leslie</span><span class="err">&#39;</span><span class="p">})</span><span class="o">&lt;-[</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="o">]-</span><span class="p">(:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Ron</span><span class="err">&#39;</span><span class="p">});</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>Again, since you are creating a relationship between two nodes, without first matching the existing nodes or merging the relationships, the nodes will be created too.</p>
+<p>To <strong>create a relationship between existing nodes</strong>, first match the existing nodes and then create a relationship by running the following code:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'},
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">create</span><span class="p">,</span> <span class="n">match</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;leslie&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ron&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;ron&quot;</span><span class="p">)</span>
+    <span class="n">create</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;leslie&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;ron&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+  </TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">leslie</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Leslie</span><span class="err">&#39;</span><span class="p">})</span>
+<span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">ron</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Ron</span><span class="err">&#39;</span><span class="p">})</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">leslie</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">ron</span><span class="p">);</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>Read more about <code>CREATE</code> clause in the <a href="https://memgraph.com/docs/querying/clauses/create">Cypher manual</a>.</p>
+<h2 id="merge-nodes-and-relationships">Merge nodes and relationships</h2>
+<h3 id="merge-a-node">Merge a node</h3>
+<p>To <strong>merge a node</strong>, run the following code:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'},
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">merge</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="n">merge</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MERGE</span><span class="w"> </span><span class="p">(:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Leslie</span><span class="err">&#39;</span><span class="p">});</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="merge-a-relationship">Merge a relationship</h3>
+<p>To <strong>merge a relationship</strong>, first match the existing nodes and then merge the relationship by running the following code:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'},
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span><span class="p">,</span> <span class="n">merge</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;leslie&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ron&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;ron&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">merge</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;leslie&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;ron&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+  </TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">leslie</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Leslie</span><span class="err">&#39;</span><span class="p">})</span>
+<span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">ron</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Ron</span><span class="err">&#39;</span><span class="p">})</span>
+<span class="k">MERGE</span><span class="w"> </span><span class="p">(</span><span class="n">leslie</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">ron</span><span class="p">);</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>Read more about <code>MERGE</code> clause in the <a href="https://memgraph.com/docs/querying/clauses/merge">Cypher manual</a>.</p>
+<h2 id="set-or-update-properties-and-labels">Set or update properties and labels</h2>
+<p>The <a href="../../reference/gqlalchemy/query_builders/declarative_base/#set_"><code>set_()</code></a> method is used to set labels on nodes, and properties on nodes and relationships. When being set, labels and properties can be updated or created, depending on the operator used as the argument of <code>set_()</code> method.</p>
+<h3 id="set-a-property">Set a property</h3>
+<p>To <strong>set a property</strong> of a graph object use the <strong>assignment operator</strong> from the query builder or a simple equals sign as a string - <code>"="</code>.</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">create</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.population&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">83000001</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="p">:</span><span class="n">Country</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Germany</span><span class="err">&#39;</span><span class="p">})</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">population</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="m">83000001</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p><code>Operator</code> is an enumeration class defined in the
+<a href="https://github.com/memgraph/gqlalchemy/blob/main/gqlalchemy/query_builders/declarative_base.py#L84-L94"><code>declarative_base.py</code></a>. It can be imported from <code>gqlalchemy.query_builders.memgraph_query_builder</code>. </p>
+<p>If you don't want to import it, you can use strings <code>"="</code>, <code>"&gt;="</code>, <code>"&gt;"</code>, <code>"&lt;&gt;"</code>, <code>":"</code>, <code>"&lt;"</code>, <code>"&lt;="</code>, <code>"!="</code> or <code>"+="</code> instead.</p>
+</div>
+<p>To <strong>set a property of already existing node</strong>, first match the node and then set its property. </p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.population&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="p">:</span><span class="n">Country</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Germany</span><span class="err">&#39;</span><span class="p">})</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">population</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="m">10000</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>To <strong>set multiple properties of a node</strong>, run the following code:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;n.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;n.population&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">83000001</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;n.capital&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Berlin&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Germany</span><span class="err">&#39;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">population</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="m">83000001</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">capital</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Berlin</span><span class="err">&#39;</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>If a node already has the properties we are setting, they will be updated to a new value. Otherwise, the properties will be created and their value will be set.</p>
+<h3 id="set-a-label">Set a label</h3>
+<p>To <strong>set a label of a node</strong>, run the following code:</p>
+<p><Tabs
+  defaultValuße="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">Match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="n">Match</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">LABEL_FILTER</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;Land&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Germany</span><span class="err">&#39;</span><span class="p">})</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">c</span><span class="p">:</span><span class="n">Land</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>If a node already has a label, then it will have both old and new label. </p>
+<h3 id="replace-all-properties">Replace all properties</h3>
+<p>With Cypher, it is possible to <strong>replace all properties using a map</strong> within a <code>SET</code> clause. Here is how to do it with query builder:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_</span><span class="p">(</span>
+        <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span>
+        <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span>
+        <span class="n">literal</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;country_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Germany&quot;</span><span class="p">,</span> <span class="s2">&quot;population&quot;</span><span class="p">:</span> <span class="mi">85000000</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+  </TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="p">:</span><span class="n">Country</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Germany</span><span class="err">&#39;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="n">country_name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Germany</span><span class="err">&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">population</span><span class="p">:</span><span class="w"> </span><span class="m">85000000</span><span class="p">};</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>The properties that are not a part of the graph objects, but are in the map, will be set. The properties that are not in the map, but are a part of the graph objects, will be removed. If a property is both in map and a graph object property, it will be updated to a new value set in map.</p>
+<h3 id="update-all-properties">Update all properties</h3>
+<p>With Cypher, it is also possible to <strong>update all properties using a map</strong> within a <code>SET</code> clause by  using the <strong>increment operator</strong> (<code>+=</code>). Here is how to do it with query builder:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.country_name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_</span><span class="p">(</span>
+        <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span>
+        <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">INCREMENT</span><span class="p">,</span>
+        <span class="n">literal</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;population&quot;</span><span class="p">:</span> <span class="s2">&quot;85000000&quot;</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+  </TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="p">:</span><span class="n">Country</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">country_name</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Germany</span><span class="err">&#39;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="err">+</span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="n">population</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="m">85000000</span><span class="err">&#39;</span><span class="p">};</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>All the properties in the map (value of the <code>literal</code> argument) that are on a graph object will be updated. The properties that are not on a graph object but are in the map will be added. Properties that are not present in the map will be left as is.</p>
+<h2 id="filter-data">Filter data</h2>
+<p>You can use the methods <a href="../../reference/gqlalchemy/query_builders/declarative_base/#where"><code>where()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#where_not"><code>where_not()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#or_where"><code>or_where()</code></a>,
+<a href="../../reference/gqlalchemy/query_builders/declarative_base/#or_where_node"><code>or_where_not()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#and_where"><code>and_where()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#and_where_not"><code>and_where_not()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#xor_where"><code>xor_where()</code></a> and
+<a href="../../reference/gqlalchemy/query_builders/declarative_base/#xor_where_not"><code>xor_where_not()</code></a> to construct queries that will filter data.</p>
+<h3 id="filter-data-by-property-comparison">Filter data by property comparison</h3>
+<p>To <strong>filter data by comparing properties</strong> of two nodes, run the following code:</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">LESS_THAN</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p1</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">p2</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="p">&lt;</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>Keyword arguments that can be used in filtering methods are <code>literal</code> and <code>expression</code>. Usually we use <code>literal</code> for property values and <code>expression</code> for property names and labels. That is because property names and labels shouldn't be quoted in Cypher statements. </p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>You will probably see the <code>GQLAlchemySubclassNotFoundWarning</code> warning. This happens if you did not define a Python class which maps to a graph object in the database. To do that, check the <a href="../ogm/">object graph mapper how-to guide</a>. To ignore such warnings, you can do the following before query execution:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="n">models</span><span class="o">.</span><span class="n">IGNORE_SUBCLASSNOTFOUNDWARNING</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+</div>
+<p>Standard boolean operators like <code>NOT</code>, <code>AND</code>, <code>OR</code> and <code>XOR</code> are used in the
+Cypher query language. To have <code>NOT</code> within <code>WHERE</code> clause, you need to use
+<code>where_not()</code> method.</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where_not</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">LESS_THAN</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p1</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">p2</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="p">&lt;</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>In a similar way, you can use <code>AND</code> and <code>AND NOT</code> clauses which correspond to
+the methods <code>and_where()</code> and <code>and_not_where()</code>. Using the query below you can
+find all persons with the same <code>address</code> and <code>last_name</code>, but different
+<code>name</code>.</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.address&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.address&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">and_where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.last_name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.last_name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">and_not_where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p1</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">p2</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">address</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">address</span>
+<span class="n">AND</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">last_name</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">last_name</span>
+<span class="n">AND</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">name</span>
+<span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>The same goes for the <code>OR</code>, <code>OR NOT</code>, <code>XOR</code> and <code>XOR NOT</code> clauses, which
+correspond to the methods <code>or_where()</code>, <code>or_not_where()</code>, <code>xor_where()</code> and
+<code>xor_not_where()</code>.</p>
+<h3 id="filter-data-by-property-value">Filter data by property value</h3>
+<p>You can <strong>filter data by comparing the property of a graph object to some value</strong> (a
+literal). Below you can see how to compare <code>age</code> property of a node to the
+integer.</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p.age&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">GREATER_THAN</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">age</span><span class="w"> </span><span class="p">&gt;</span><span class="w"> </span><span class="m">18</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>The third keyword argument is <code>literal</code> since we wanted the property <code>age</code> to be saved as an integer. If we used <code>expression</code> keyword argument instead of <code>literal</code>, then the <code>age</code> property would be a string (it would be quoted in Cypher query). Instead of <code>Operator.GREATER_THAN</code>, a simple string of value <code>"&gt;"</code> can be used.</p>
+<p>Just like in <a href="#filter-data-by-property-comparison">property comparison</a>, it is possible to use different boolean operators to further filter the data.</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p.age&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">GREATER_THAN</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">or_where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">age</span><span class="w"> </span><span class="p">&gt;</span><span class="w"> </span><span class="m">18</span><span class="w"> </span><span class="n">OR</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;John&quot;</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>The <code>literal</code> keyword is used again since you want <code>John</code> to be quoted in the
+Cypher query (to be saved as a string in the database).</p>
+<h3 id="filter-data-by-label">Filter data by label</h3>
+<p>Nodes can be filtered by their label using the <code>WHERE</code> clause instead of
+specifying it directly in the <code>MATCH</code> clause. You have to use <code>expression</code> as
+the third keyword argument again since you don't want the quotes surrounding the
+label in the Cypher clause.</p>
+<p>To <strong>filter data by label</strong> use the following code:</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">LABEL_FILTER</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">p</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>Just like in <a href="#filter-data-by-property-comparison">property comparison</a>, it is possible to use different boolean operators to further filter the data.</p>
+<h2 id="return-results">Return results</h2>
+<p>You can use the methods <a href="../../reference/gqlalchemy/query_builders/declarative_base/#return_"><code>return_()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#limit"><code>limit()</code></a>, <a href="../../reference/gqlalchemy/query_builders/declarative_base/#skip"><code>skip()</code></a> and <a href="../../reference/gqlalchemy/query_builders/declarative_base/#order_by"><code>order_by()</code></a> to
+construct queries that will return data from the database.</p>
+<h3 id="return-all-variables-from-a-query">Return all variables from a query</h3>
+<p>To <strong>return all the variables from a query</strong>, use the <code>return_()</code> method at the
+end of the query:</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="return-specific-variables-from-a-query">Return specific variables from a query</h3>
+<p>To <strong>return only a subset of variables</strong> from a query, specify them in the
+<code>return_()</code> method:</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;p1&quot;</span><span class="p">,</span> <span class="s2">&quot;first&quot;</span><span class="p">),</span> <span class="s2">&quot;p2&quot;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is one pair:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;first&quot;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;p2&quot;</span><span class="p">])</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p1</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="o">-[]-&gt;</span><span class="p">(</span><span class="n">p2</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">p2</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="limit-the-number-of-returned-results">Limit the number of returned results</h3>
+<p>To <strong>limit the number of returned results</strong>, use the <code>limit()</code> method after the
+<code>return_()</code> method:</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="m">3</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="order-the-returned-results">Order the returned results</h3>
+<p>The default ordering in the Cypher query language is ascending (<code>ASC</code> or
+<code>ASCENDING</code>), and if you want the descending order, you need to add the <code>DESC</code>
+or <code>DESCENDING</code> keyword to the <code>ORDER BY</code> clause.</p>
+<p>To <strong>order the return results by one value</strong>, use the <code>order_by(properties)</code> method,
+where <code>properties</code> can be a string (a property) or a tuple of two strings (a
+property and an order).</p>
+<p>The following query will order the results in an ascending (default) order by
+the property <code>name</code> of a node.</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="s2">&quot;n.name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">name</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>You can also emphasize that you want an ascending order:</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Order</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;n.name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">ASC</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">ASC</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>The same can be done with the keyword <code>ASCENDING</code>:</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Order</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;n.name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">ASCENDING</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p><code>Order</code> is an enumeration class defined in the
+<a href="https://github.com/memgraph/gqlalchemy/blob/main/gqlalchemy/query_builders/declarative_base.py#L97-L101"><code>declarative_base.py</code></a>. It can be imported from <code>gqlalchemy.query_builders.memgraph_query_builder</code>. </p>
+<p>If you don't want to import it, you can use strings <code>"ASC"</code>, <code>"ASCENDING"</code>, <code>"DESC"</code> or <code>"DESCENDING"</code> instead.</p>
+</div>
+<p>To order the query results in descending order, you need to specify the <code>DESC</code>
+or <code>DESCENDING</code> keyword. Hence, the argument of the <code>order_by()</code> method must be
+a tuple.</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Order</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;n.name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">DESC</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<p>Similarly, you can use <code>Order.DESCENDING</code> to get <code>DESCENDING</code> keyword in <code>ORDER BY</code> clause.</p>
+<h3 id="order-by-a-list-of-values">Order by a list of values</h3>
+<p>To <strong>order the returned results by more than one value</strong>, use the
+<code>order_by(properties)</code> method, where <code>properties</code> can be a list of strings or
+tuples of strings (list of properties with or without order).</p>
+<p>The following query will order the results in ascending order by the property
+<code>id</code>, then again in ascending (default) order by the property <code>name</code> of a node.
+After that, it will order the results in descending order by the property
+<code>last_name</code>, then in ascending order by the property <code>age</code> of a node. Lastly,
+the query will order the results in descending order by the node property
+<code>middle_name</code>.</p>
+<p><Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Order</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+        <span class="n">properties</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;n.id&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">ASC</span><span class="p">),</span>
+            <span class="s2">&quot;n.name&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;n.last_name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">DESC</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;n.age&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;n.middle_name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">DESCENDING</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span>
+<span class="k">RETURN</span><span class="w"> </span><span class="p">*</span><span class="w"> </span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">ASC</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">last_name</span><span class="w"> </span><span class="k">DESC</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">age</span><span class="w"> </span><span class="k">ASCENDING</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">middle_name</span><span class="w"> </span><span class="k">DESCENDING</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h2 id="delete-and-remove-objects">Delete and remove objects</h2>
+<p>You can use the methods <a href="../../reference/gqlalchemy/query_builders/declarative_base/#delete"><code>delete()</code></a> and <a href="../../reference/gqlalchemy/query_builders/declarative_base/#remove"><code>remove()</code></a> to construct queries that will
+remove nodes and relationships or properties and labels.</p>
+<h3 id="delete-a-node">Delete a node</h3>
+<p>To <strong>delete a node</strong> from the database, use the <code>delete()</code> method:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Harry&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
+    <span class="n">variable_expressions</span><span class="o">=</span><span class="s2">&quot;p&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Harry</span><span class="err">&#39;</span><span class="p">})</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="n">p</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="delete-a-relationship">Delete a relationship</h3>
+<p>To <strong>delete a relationship</strong> from the database, use the <code>delete()</code> method:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+    <span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;f&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">variable_expressions</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Leslie</span><span class="err">&#39;</span><span class="p">})</span><span class="o">-[</span><span class="n">f</span><span class="p">:</span><span class="n">FRIENDS_WITH</span><span class="o">]-&gt;</span><span class="p">(:</span><span class="n">Person</span><span class="p">)</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="n">f</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="remove-properties">Remove properties</h3>
+<p>To remove a property (or properties) from the database, use the <code>remove()</code> method:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span>
+    <span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;p.name&quot;</span><span class="p">,</span> <span class="s2">&quot;p.last_name&quot;</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Jane</span><span class="err">&#39;</span><span class="p">})</span><span class="w"> </span><span class="k">REMOVE</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">last_name</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h2 id="call-procedures">Call procedures</h2>
+<p>You can use the methods <a href="../../reference/gqlalchemy/query_builders/declarative_base/#call"><code>call()</code></a> and <a href="../../reference/gqlalchemy/query_builders/declarative_base/#yield_"><code>yield_()</code></a> to construct queries that will
+call procedure and return results from them.</p>
+<h3 id="call-procedure-with-no-arguments">Call procedure with no arguments</h3>
+<p>To call a procedure with no arguments, don't specify the arguments in the
+<code>call()</code> method:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">call</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;pagerank.get&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">yield_</span><span class="p">()</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="k">CALL</span><span class="w"> </span><span class="n">pagerank</span><span class="p">.</span><span class="n">get</span><span class="p">()</span><span class="w"> </span><span class="k">YIELD</span><span class="w"> </span><span class="p">*</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="p">*;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<h3 id="call-procedure-with-arguments">Call procedure with arguments</h3>
+<p>To call a procedure with arguments, specify the arguments as a string in the
+<code>call()</code> method:</p>
+<p><Tabs
+  defaultValue="gqlalchemy"
+  values={[
+    {label: 'GQLAlchemy', value: 'gqlalchemy'},
+    {label: 'Cypher', value: 'cypher'}
+  ]}>
+  <TabItem value="gqlalchemy"></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">call</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="n">call</span><span class="p">(</span>
+        <span class="s2">&quot;json_util.load_from_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&#39;https://download.memgraph.com/asset/mage/data.json&#39;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">yield_</span><span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="s2">&quot;objects&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Load from URL with argument:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p></TabItem>
+  <TabItem value="cypher"></p>
+<div class="highlight"><pre><span></span><code><span class="c1">CALL json_util.load_from_url(&#39;https://download.memgraph.com/asset/mage/data.json&#39;) </span>
+<span class="k">YIELD</span><span class="w"> </span><span class="n">objects</span><span class="w"> </span>
+<span class="k">RETURN</span><span class="w"> </span><span class="n">objects</span><span class="p">;</span>
+</code></pre></div>
+<p></TabItem>
+</Tabs></p>
+<details>
+<summary> <b>Code example using all of the above mentioned queries</b> </summary>
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">create</span><span class="p">,</span> <span class="n">merge</span><span class="p">,</span> <span class="n">Memgraph</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">call</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.query_builders.memgraph_query_builder</span> <span class="kn">import</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">Order</span>
+
+
+<span class="n">db</span> <span class="o">=</span> <span class="n">Memgraph</span><span class="p">()</span>
+<span class="c1"># clean database</span>
+<span class="n">db</span><span class="o">.</span><span class="n">drop_database</span><span class="p">()</span>
+
+<span class="c1"># create nodes and a relationship between them</span>
+
+<span class="n">create</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">node</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ron&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+
+<span class="c1"># merge a node</span>
+<span class="n">merge</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="c1"># create nodes and a relationship between them</span>
+<span class="n">create</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;James&quot;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s2">&quot;street&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">19</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">&quot;2023-02-16&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">node</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;James&quot;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s2">&quot;street&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">8</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+
+<span class="c1"># merge a relationship between existing nodes</span>
+
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;leslie&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ron&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;ron&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;leslie&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">node</span><span class="p">(</span>
+    <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;ron&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+
+<span class="c1"># set a property</span>
+<span class="n">create</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span>
+    <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.population&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">83000001</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="c1"># update a property</span>
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span>
+    <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.population&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">10000</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+
+<span class="c1"># update multiple properties</span>
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;n.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span>
+    <span class="n">item</span><span class="o">=</span><span class="s2">&quot;n.population&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">83000001</span>
+<span class="p">)</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;n.capital&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Berlin&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+
+<span class="c1"># replace all properties</span>
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span>
+    <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span>
+    <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">ASSIGNMENT</span><span class="p">,</span>
+    <span class="n">literal</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;country_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Germany&quot;</span><span class="p">,</span> <span class="s2">&quot;population&quot;</span><span class="p">:</span> <span class="mi">85000000</span><span class="p">},</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+
+<span class="c1"># update multiple properties</span>
+
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c.country_name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;Germany&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span>
+    <span class="n">item</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span>
+    <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">INCREMENT</span><span class="p">,</span>
+    <span class="n">literal</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;population&quot;</span><span class="p">:</span> <span class="s2">&quot;85000000&quot;</span><span class="p">},</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+
+<span class="n">models</span><span class="o">.</span><span class="n">IGNORE_SUBCLASSNOTFOUNDWARNING</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">LESS_THAN</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filter by property comparison:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where_not</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">LESS_THAN</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filter by property comparison (negation):&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.address&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.address&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">and_where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.last_name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.last_name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">and_not_where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p1.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;p2.name&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filter by property comparison + logical operators:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p.age&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">GREATER_THAN</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filter by property value:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p.age&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">GREATER_THAN</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">or_where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p.name&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filter by property value + logical operators:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">LABEL_FILTER</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filter by label:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Return all:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p2&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;p1&quot;</span><span class="p">,</span> <span class="s2">&quot;first&quot;</span><span class="p">),</span> <span class="s2">&quot;p2&quot;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is one pair:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;first&quot;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;p2&quot;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">()</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Limit results:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="s2">&quot;n.name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Order descending:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;n.name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Order ascending:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;n.name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">DESC</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Order descending with ordering:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="k">match</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+        <span class="n">properties</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;n.id&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">ASC</span><span class="p">),</span>
+            <span class="s2">&quot;n.name&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;n.last_name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">DESC</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;n.age&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;n.middle_name&quot;</span><span class="p">,</span> <span class="n">Order</span><span class="o">.</span><span class="n">DESCENDING</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mix of ordering:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># create a node to delete</span>
+<span class="n">create</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Harry&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="c1"># delete a node</span>
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Harry&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
+    <span class="n">variable_expressions</span><span class="o">=</span><span class="s2">&quot;p&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="c1"># delete a relationship between Leslie and her friends</span>
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Leslie&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+    <span class="n">relationship_type</span><span class="o">=</span><span class="s2">&quot;FRIENDS_WITH&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;f&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">variable_expressions</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="c1"># remove name and last_name properties from Jane</span>
+<span class="k">match</span><span class="p">()</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span>
+    <span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;p.name&quot;</span><span class="p">,</span> <span class="s2">&quot;p.last_name&quot;</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="c1"># calculate PageRank</span>
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;pagerank.get&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">yield_</span><span class="p">()</span><span class="o">.</span><span class="n">return_</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PageRank:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load JSON from URL with arguments</span>
+<span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="n">call</span><span class="p">(</span>
+        <span class="s2">&quot;json_util.load_from_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&#39;https://download.memgraph.com/asset/mage/data.json&#39;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">yield_</span><span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">return_</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="s2">&quot;objects&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Load from URL with argument:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+</details>
+
+<h2 id="load-csv-file">Load CSV file</h2>
+<p>To load a CSV file using query builder, use the <code>load_csv()</code> procedure. Here is an example CSV file:
+<div class="highlight"><pre><span></span><code>id,name,age,city
+100,Daniel,30,London
+101,Alex,15,Paris
+102,Sarah,17,London
+103,Mia,25,Zagreb
+104,Lucy,21,Paris
+</code></pre></div></p>
+<p>To load it, run the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">load_csv</span><span class="p">,</span> <span class="n">Memgraph</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.utilities</span> <span class="kn">import</span> <span class="n">CypherVariable</span>
+
+<span class="n">db</span> <span class="o">=</span> <span class="n">Memgraph</span><span class="p">()</span>
+
+<span class="n">load_csv</span><span class="p">(</span>
+      <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path-to/people_nodes.csv&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="s2">&quot;row&quot;</span>
+  <span class="p">)</span>
+  <span class="o">.</span><span class="n">create</span><span class="p">()</span>
+  <span class="o">.</span><span class="n">node</span><span class="p">(</span>
+      <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">,</span>
+      <span class="n">labels</span><span class="o">=</span><span class="s2">&quot;Person&quot;</span><span class="p">,</span>
+      <span class="nb">id</span><span class="o">=</span><span class="n">CypherVariable</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;row.id&quot;</span><span class="p">),</span>
+      <span class="n">name</span><span class="o">=</span><span class="n">CypherVariable</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;row.name&quot;</span><span class="p">),</span>
+      <span class="n">age</span><span class="o">=</span><span class="n">CypherVariable</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ToInteger(row.age)&quot;</span><span class="p">),</span>
+      <span class="n">city</span><span class="o">=</span><span class="n">CypherVariable</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;row.city&quot;</span><span class="p">),</span>
+  <span class="p">)</span>
+  <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+<blockquote>
+<p>Hopefully, this guide has taught you how to properly use GQLAlchemy query builder. If you
+have any more questions, join our community and ping us on <a href="https://discord.gg/memgraph">Discord</a>.</p>
+</blockquote>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+    
+  </body>
+</html>

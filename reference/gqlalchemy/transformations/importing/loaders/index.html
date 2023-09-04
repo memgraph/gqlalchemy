@@ -1,0 +1,3391 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../graph_importer/">
+      
+      
+        <link rel="next" href="../../translators/dgl_translator/">
+      
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>Loaders - GQLAlchemy Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#foreignkeymapping-objects" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../.." title="GQLAlchemy Documentation" class="md-header__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../../../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GQLAlchemy Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Loaders
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="GQLAlchemy Documentation" class="md-nav__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../../../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    GQLAlchemy Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../import-data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How-To Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            How-To Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/ogm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OGM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/query-builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/query-builder/graph-projection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Projection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_5" >
+        
+          <label class="md-nav__link" for="__nav_6_5" id="__nav_6_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Data
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_5">
+            <span class="md-nav__icon md-icon"></span>
+            Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/instance-runner/memgraph-binary-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Binary Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/instance-runner/memgraph-docker-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Docker Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/loaders/import-table-data-to-graph-database/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Table Data to Graph Database
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/loaders/make-a-custom-file-system-importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Make a Custom File System Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/on-disk-storage/on-disk-storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    On-Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/streams/kafka-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kafka Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/streams/pulsar-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pulsar Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/translators/export-python-graphs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export Python Graphs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/translators/import-python-graphs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Python Graphs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../how-to-guides/triggers/triggers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Triggers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Under the Hood
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Under the Hood
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../under-the-hood/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../under-the-hood/python-graph-translators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python Graph Translators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../connection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Connection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../disk_storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Exceptions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../instance_runner/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Instance Runner
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../utilities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_10" >
+        
+          <label class="md-nav__link" for="__nav_8_10" id="__nav_8_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Graph Algorithms
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_10">
+            <span class="md-nav__icon md-icon"></span>
+            Graph Algorithms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../graph_algorithms/integrated_algorithms/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrated Algorithms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../graph_algorithms/query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../graph_algorithms/query_modules/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_11" >
+        
+          <label class="md-nav__link" for="__nav_8_11" id="__nav_8_11_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Query Builders
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_11">
+            <span class="md-nav__icon md-icon"></span>
+            Query Builders
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../query_builders/declarative_base/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Declarative Base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../query_builders/memgraph_query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12" checked>
+        
+          <label class="md-nav__link" for="__nav_8_12" id="__nav_8_12_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_12_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8_12">
+            <span class="md-nav__icon md-icon"></span>
+            Transformations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_1" >
+        
+          <label class="md-nav__link" for="__nav_8_12_1" id="__nav_8_12_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Export
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_1">
+            <span class="md-nav__icon md-icon"></span>
+            Export
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../export/graph_transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../export/transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_2" checked>
+        
+          <label class="md-nav__link" for="__nav_8_12_2" id="__nav_8_12_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Importing
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8_12_2">
+            <span class="md-nav__icon md-icon"></span>
+            Importing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../graph_importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#foreignkeymapping-objects" class="md-nav__link">
+    ForeignKeyMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#onetomanymapping-objects" class="md-nav__link">
+    OneToManyMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manytomanymapping-objects" class="md-nav__link">
+    ManyToManyMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tablemapping-objects" class="md-nav__link">
+    TableMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namemappings-objects" class="md-nav__link">
+    NameMappings Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namemapper-objects" class="md-nav__link">
+    NameMapper Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="NameMapper Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_label" class="md-nav__link">
+    get_label
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_property_name" class="md-nav__link">
+    get_property_name
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filesystemhandler-objects" class="md-nav__link">
+    FileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_path" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3filesystemhandler-objects" class="md-nav__link">
+    S3FileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="S3FileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_path_1" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#azureblobfilesystemhandler-objects" class="md-nav__link">
+    AzureBlobFileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="AzureBlobFileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___1" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_path_2" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#localfilesystemhandler-objects" class="md-nav__link">
+    LocalFileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="LocalFileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___2" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_path_3" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataloader-objects" class="md-nav__link">
+    DataLoader Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="DataLoader Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___3" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load_data" class="md-nav__link">
+    load_data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowfiletypeenum-objects" class="md-nav__link">
+    PyArrowFileTypeEnum Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowdataloader-objects" class="md-nav__link">
+    PyArrowDataLoader Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowDataLoader Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___4" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load_data_1" class="md-nav__link">
+    load_data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tabletographimporter-objects" class="md-nav__link">
+    TableToGraphImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="TableToGraphImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___5" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translate" class="md-nav__link">
+    translate
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowimporter-objects" class="md-nav__link">
+    PyArrowImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___6" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrows3importer-objects" class="md-nav__link">
+    PyArrowS3Importer Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowS3Importer Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___7" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowazureblobimporter-objects" class="md-nav__link">
+    PyArrowAzureBlobImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowAzureBlobImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___8" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowlocalfilesystemimporter-objects" class="md-nav__link">
+    PyArrowLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___9" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parquets3filesystemimporter-objects" class="md-nav__link">
+    ParquetS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ParquetS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___10" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csvs3filesystemimporter-objects" class="md-nav__link">
+    CSVS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="CSVS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___11" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orcs3filesystemimporter-objects" class="md-nav__link">
+    ORCS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ORCS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___12" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feathers3filesystemimporter-objects" class="md-nav__link">
+    FeatherS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FeatherS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___13" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parquetazureblobfilesystemimporter-objects" class="md-nav__link">
+    ParquetAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ParquetAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___14" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csvazureblobfilesystemimporter-objects" class="md-nav__link">
+    CSVAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="CSVAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___15" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orcazureblobfilesystemimporter-objects" class="md-nav__link">
+    ORCAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ORCAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___16" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#featherazureblobfilesystemimporter-objects" class="md-nav__link">
+    FeatherAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FeatherAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___17" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parquetlocalfilesystemimporter-objects" class="md-nav__link">
+    ParquetLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ParquetLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___18" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csvlocalfilesystemimporter-objects" class="md-nav__link">
+    CSVLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="CSVLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___19" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orclocalfilesystemimporter-objects" class="md-nav__link">
+    ORCLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ORCLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___20" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#featherlocalfilesystemimporter-objects" class="md-nav__link">
+    FeatherLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FeatherLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___21" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_3" >
+        
+          <label class="md-nav__link" for="__nav_8_12_3" id="__nav_8_12_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Translators
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_3">
+            <span class="md-nav__icon md-icon"></span>
+            Translators
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../translators/dgl_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DGL Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../translators/nx_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    NX Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../translators/pyg_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyG Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../translators/translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_13" >
+        
+          <label class="md-nav__link" for="__nav_8_13" id="__nav_8_13_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Vendors
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_13">
+            <span class="md-nav__icon md-icon"></span>
+            Vendors
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../vendors/database_client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Database Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../vendors/memgraph/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../vendors/neo4j/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Neo4j
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#foreignkeymapping-objects" class="md-nav__link">
+    ForeignKeyMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#onetomanymapping-objects" class="md-nav__link">
+    OneToManyMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manytomanymapping-objects" class="md-nav__link">
+    ManyToManyMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tablemapping-objects" class="md-nav__link">
+    TableMapping Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namemappings-objects" class="md-nav__link">
+    NameMappings Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namemapper-objects" class="md-nav__link">
+    NameMapper Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="NameMapper Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_label" class="md-nav__link">
+    get_label
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_property_name" class="md-nav__link">
+    get_property_name
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filesystemhandler-objects" class="md-nav__link">
+    FileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_path" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3filesystemhandler-objects" class="md-nav__link">
+    S3FileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="S3FileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_path_1" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#azureblobfilesystemhandler-objects" class="md-nav__link">
+    AzureBlobFileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="AzureBlobFileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___1" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_path_2" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#localfilesystemhandler-objects" class="md-nav__link">
+    LocalFileSystemHandler Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="LocalFileSystemHandler Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___2" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_path_3" class="md-nav__link">
+    get_path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataloader-objects" class="md-nav__link">
+    DataLoader Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="DataLoader Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___3" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load_data" class="md-nav__link">
+    load_data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowfiletypeenum-objects" class="md-nav__link">
+    PyArrowFileTypeEnum Objects
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowdataloader-objects" class="md-nav__link">
+    PyArrowDataLoader Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowDataLoader Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___4" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load_data_1" class="md-nav__link">
+    load_data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tabletographimporter-objects" class="md-nav__link">
+    TableToGraphImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="TableToGraphImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___5" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translate" class="md-nav__link">
+    translate
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowimporter-objects" class="md-nav__link">
+    PyArrowImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___6" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrows3importer-objects" class="md-nav__link">
+    PyArrowS3Importer Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowS3Importer Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___7" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowazureblobimporter-objects" class="md-nav__link">
+    PyArrowAzureBlobImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowAzureBlobImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___8" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyarrowlocalfilesystemimporter-objects" class="md-nav__link">
+    PyArrowLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="PyArrowLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___9" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parquets3filesystemimporter-objects" class="md-nav__link">
+    ParquetS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ParquetS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___10" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csvs3filesystemimporter-objects" class="md-nav__link">
+    CSVS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="CSVS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___11" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orcs3filesystemimporter-objects" class="md-nav__link">
+    ORCS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ORCS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___12" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feathers3filesystemimporter-objects" class="md-nav__link">
+    FeatherS3FileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FeatherS3FileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___13" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parquetazureblobfilesystemimporter-objects" class="md-nav__link">
+    ParquetAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ParquetAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___14" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csvazureblobfilesystemimporter-objects" class="md-nav__link">
+    CSVAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="CSVAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___15" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orcazureblobfilesystemimporter-objects" class="md-nav__link">
+    ORCAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ORCAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___16" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#featherazureblobfilesystemimporter-objects" class="md-nav__link">
+    FeatherAzureBlobFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FeatherAzureBlobFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___17" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parquetlocalfilesystemimporter-objects" class="md-nav__link">
+    ParquetLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ParquetLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___18" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csvlocalfilesystemimporter-objects" class="md-nav__link">
+    CSVLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="CSVLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___19" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orclocalfilesystemimporter-objects" class="md-nav__link">
+    ORCLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="ORCLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___20" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#featherlocalfilesystemimporter-objects" class="md-nav__link">
+    FeatherLocalFileSystemImporter Objects
+  </a>
+  
+    <nav class="md-nav" aria-label="FeatherLocalFileSystemImporter Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init___21" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Loaders</h1>
+
+<h2 id="foreignkeymapping-objects">ForeignKeyMapping Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ForeignKeyMapping</span><span class="p">()</span>
+</code></pre></div>
+<p>Class that contains the full description of a single foreign key in a table.</p>
+<p><strong>Attributes</strong>:</p>
+<ul>
+<li><code>column_name</code> - Column name that holds the foreign key.</li>
+<li><code>reference_table</code> - Name of a table from which the foreign key is taken.</li>
+<li><code>reference_key</code> - Column name in the referenced table from which the foreign key is taken.</li>
+</ul>
+<h2 id="onetomanymapping-objects">OneToManyMapping Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">OneToManyMapping</span><span class="p">()</span>
+</code></pre></div>
+<p>Class that holds the full description of a single one to many mapping in a table.</p>
+<p><strong>Attributes</strong>:</p>
+<ul>
+<li><code>foreign_key</code> - Foreign key used for mapping.</li>
+<li><code>label</code> - Label which will be applied to the relationship created from this object.</li>
+<li><code>from_entity</code> - Direction of the relationship created from the mapping object.</li>
+<li><code>parameters</code> - Parameters that will be added to the relationship created from this object (Optional).</li>
+</ul>
+<h2 id="manytomanymapping-objects">ManyToManyMapping Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ManyToManyMapping</span><span class="p">()</span>
+</code></pre></div>
+<p>Class that holds the full description of a single many to many mapping in a table.
+Many to many mapping is intended to be used in case of associative tables.</p>
+<p><strong>Attributes</strong>:</p>
+<ul>
+<li><code>foreign_key_from</code> - Describes the source of the relationship.</li>
+<li><code>foreign_key_to</code> - Describes the destination of the relationship.</li>
+<li><code>label</code> - Label to be applied to the newly created relationship.</li>
+<li><code>parameters</code> - Parameters that will be added to the relationship created from this object (Optional).</li>
+</ul>
+<h2 id="tablemapping-objects">TableMapping Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TableMapping</span><span class="p">()</span>
+</code></pre></div>
+<p>Class that holds the full description of all of the mappings for a single table.</p>
+<p><strong>Attributes</strong>:</p>
+<ul>
+<li><code>table_name</code> - Name of the table.</li>
+<li><code>mapping</code> - All of the mappings in the table (Optional).</li>
+<li><code>indices</code> - List of the indices to be created for this table (Optional).</li>
+</ul>
+<h2 id="namemappings-objects">NameMappings Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">NameMappings</span><span class="p">()</span>
+</code></pre></div>
+<p>Class that contains new label name and all of the column name mappings for a single table.</p>
+<p><strong>Attributes</strong>:</p>
+<ul>
+<li><code>label</code> - New label (Optional).</li>
+<li><code>column_names_mapping</code> - Dictionary containing key-value pairs in form (&quot;column name&quot;, &quot;property name&quot;) (Optional).</li>
+</ul>
+<h2 id="namemapper-objects">NameMapper Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">NameMapper</span><span class="p">()</span>
+</code></pre></div>
+<p>Class that holds all name mappings for all of the collections.</p>
+<h4 id="get_label">get_label</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_label</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Returns label for given collection.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>collection_name</code> - Original collection name.</li>
+</ul>
+<h4 id="get_property_name">get_property_name</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_property_name</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">column_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Returns property name for column from collection.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>collection_name</code> - Original collection name.</li>
+<li><code>column_name</code> - Original column name.</li>
+</ul>
+<h2 id="filesystemhandler-objects">FileSystemHandler Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">FileSystemHandler</span><span class="p">(</span><span class="n">ABC</span><span class="p">)</span>
+</code></pre></div>
+<p>Abstract class for defining FileSystemHandler.</p>
+<p>Inherit this class, define a custom data source and initialize the
+connection.</p>
+<h4 id="get_path">get_path</h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
+<span class="k">def</span> <span class="nf">get_path</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Returns complete path in specific file system. Used to read the file system
+for a specific file.</p>
+<h2 id="s3filesystemhandler-objects">S3FileSystemHandler Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">S3FileSystemHandler</span><span class="p">(</span><span class="n">FileSystemHandler</span><span class="p">)</span>
+</code></pre></div>
+<p>Handles connection to Amazon S3 service via PyArrow.</p>
+<h4 id="__init__">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+<p>Initializes connection and data bucket.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>bucket_name</code> - Name of the bucket on S3 from which to read the data</li>
+</ul>
+<p>Kwargs:
+- <code>access_key</code> - S3 access key.
+- <code>secret_key</code> - S3 secret key.
+- <code>region</code> - S3 region.
+- <code>session_token</code> - S3 session token (Optional).</p>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>KeyError</code> - kwargs doesn&#x27;t contain necessary fields.</li>
+</ul>
+<h4 id="get_path_1">get_path</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_path</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Get file path in file system.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>collection_name</code> - Name of the file to read.</li>
+</ul>
+<h2 id="azureblobfilesystemhandler-objects">AzureBlobFileSystemHandler Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">AzureBlobFileSystemHandler</span><span class="p">(</span><span class="n">FileSystemHandler</span><span class="p">)</span>
+</code></pre></div>
+<p>Handles connection to Azure Blob service via adlfs package.</p>
+<h4 id="__init___1">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">container_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Initializes connection and data container.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>container_name</code> - Name of the Blob container storing data.</li>
+</ul>
+<p>Kwargs:
+- <code>account_name</code> - Account name from Azure Blob.
+- <code>account_key</code> - Account key for Azure Blob (Optional - if using sas_token).
+- <code>sas_token</code> - Shared access signature token for authentification (Optional).</p>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>KeyError</code> - kwargs doesn&#x27;t contain necessary fields.</li>
+</ul>
+<h4 id="get_path_2">get_path</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_path</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Get file path in file system.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>collection_name</code> - Name of the file to read.</li>
+</ul>
+<h2 id="localfilesystemhandler-objects">LocalFileSystemHandler Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LocalFileSystemHandler</span><span class="p">(</span><span class="n">FileSystemHandler</span><span class="p">)</span>
+</code></pre></div>
+<p>Handles a local filesystem.</p>
+<h4 id="__init___2">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Initializes an fsspec local file system and sets path to data.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>path</code> - path to the local storage location.</li>
+</ul>
+<h4 id="get_path_3">get_path</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_path</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Get file path in the local file system.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>collection_name</code> - Name of the file to read.</li>
+</ul>
+<h2 id="dataloader-objects">DataLoader Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DataLoader</span><span class="p">(</span><span class="n">ABC</span><span class="p">)</span>
+</code></pre></div>
+<p>Implements loading of a data type from file system service to TableToGraphImporter.</p>
+<h4 id="__init___3">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">file_system_handler</span><span class="p">:</span> <span class="n">FileSystemHandler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>file_extension</code> - File format to be read.</li>
+<li><code>file_system_handler</code> - Object for handling of the file system service.</li>
+</ul>
+<h4 id="load_data">load_data</h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
+<span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_cross_table</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Override this method in the derived class. Intended to be used for reading data from data format.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>collection_name</code> - Name of the file to read.</li>
+<li><code>is_cross_table</code> - Indicate whether or not the collection contains associative table (default=False).</li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>NotImplementedError</code> - The method is not implemented in the extended class.</li>
+</ul>
+<h2 id="pyarrowfiletypeenum-objects">PyArrowFileTypeEnum Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyArrowFileTypeEnum</span><span class="p">(</span><span class="n">Enum</span><span class="p">)</span>
+</code></pre></div>
+<p>Enumerates file types supported by PyArrow</p>
+<h2 id="pyarrowdataloader-objects">PyArrowDataLoader Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyArrowDataLoader</span><span class="p">(</span><span class="n">DataLoader</span><span class="p">)</span>
+</code></pre></div>
+<p>Loads data using PyArrow.</p>
+<p>PyArrow currently supports &quot;parquet&quot;, &quot;ipc&quot;/&quot;arrow&quot;/&quot;feather&quot;, &quot;csv&quot;,
+and &quot;orc&quot;, see pyarrow.dataset.dataset for up-to-date info.
+ds.dataset in load_data accepts any fsspec subclass, making this DataLoader
+compatible with fsspec-compatible filesystems.</p>
+<h4 id="__init___4">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">file_extension_enum</span><span class="p">:</span> <span class="n">PyArrowFileTypeEnum</span><span class="p">,</span>
+             <span class="n">file_system_handler</span><span class="p">:</span> <span class="n">FileSystemHandler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>file_extension_enum</code> - The file format to be read.</li>
+<li><code>file_system_handler</code> - Object for handling of the file system service.</li>
+</ul>
+<h4 id="load_data_1">load_data</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+              <span class="n">is_cross_table</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+              <span class="n">columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Generator for loading data.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>collection_name</code> - Name of the file to read.</li>
+<li><code>is_cross_table</code> - Flag signifying whether it is a cross table.</li>
+<li><code>columns</code> - Table columns to read.</li>
+</ul>
+<h2 id="tabletographimporter-objects">TableToGraphImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">TableToGraphImporter</span><span class="p">(</span><span class="n">Importer</span><span class="p">)</span>
+</code></pre></div>
+<p>Implements translation of table data to graph data, and imports it to Memgraph.</p>
+<h4 id="__init___5">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">data_loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>data_loader</code> - Object for loading data.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+</ul>
+<h4 id="translate">translate</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">drop_database_on_start</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Performs the translations.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>drop_database_on_start</code> - Indicate whether or not the database should be dropped prior to the start of the translations.</li>
+</ul>
+<h2 id="pyarrowimporter-objects">PyArrowImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyArrowImporter</span><span class="p">(</span><span class="n">TableToGraphImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>TableToGraphImporter wrapper for use with PyArrow for reading data.</p>
+<h4 id="__init___6">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">file_system_handler</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">file_extension_enum</span><span class="p">:</span> <span class="n">PyArrowFileTypeEnum</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>file_system_handler</code> - File system to read from.</li>
+<li><code>file_extension_enum</code> - File format to be read.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>ValueError</code> - PyArrow doesn&#x27;t support ORC on Windows.</li>
+</ul>
+<h2 id="pyarrows3importer-objects">PyArrowS3Importer Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyArrowS3Importer</span><span class="p">(</span><span class="n">PyArrowImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowImporter wrapper for use with the Amazon S3 File System.</p>
+<h4 id="__init___7">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">file_extension_enum</span><span class="p">:</span> <span class="n">PyArrowFileTypeEnum</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>bucket_name</code> - Name of the bucket in S3 to read from.</li>
+<li><code>file_extension_enum</code> - File format to be read.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for S3FileSystem.</li>
+</ul>
+<h2 id="pyarrowazureblobimporter-objects">PyArrowAzureBlobImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyArrowAzureBlobImporter</span><span class="p">(</span><span class="n">PyArrowImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowImporter wrapper for use with the Azure Blob File System.</p>
+<h4 id="__init___8">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">container_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">file_extension_enum</span><span class="p">:</span> <span class="n">PyArrowFileTypeEnum</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>container_name</code> - Name of the container in Azure Blob to read from.</li>
+<li><code>file_extension_enum</code> - File format to be read.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for AzureBlobFileSystem.</li>
+</ul>
+<h2 id="pyarrowlocalfilesystemimporter-objects">PyArrowLocalFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyArrowLocalFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowImporter wrapper for use with the Local File System.</p>
+<h4 id="__init___9">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">file_extension_enum</span><span class="p">:</span> <span class="n">PyArrowFileTypeEnum</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>path</code> - Full path to the directory to read from.</li>
+<li><code>file_extension_enum</code> - File format to be read.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+</ul>
+<h2 id="parquets3filesystemimporter-objects">ParquetS3FileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ParquetS3FileSystemImporter</span><span class="p">(</span><span class="n">PyArrowS3Importer</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowS3Importer wrapper for use with the S3 file system and the parquet file type.</p>
+<h4 id="__init___10">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>bucket_name</code> - Name of the bucket in S3 to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for S3FileSystem.</li>
+</ul>
+<h2 id="csvs3filesystemimporter-objects">CSVS3FileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">CSVS3FileSystemImporter</span><span class="p">(</span><span class="n">PyArrowS3Importer</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowS3Importer wrapper for use with the S3 file system and the CSV file type.</p>
+<h4 id="__init___11">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>bucket_name</code> - Name of the bucket in S3 to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for S3FileSystem.</li>
+</ul>
+<h2 id="orcs3filesystemimporter-objects">ORCS3FileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ORCS3FileSystemImporter</span><span class="p">(</span><span class="n">PyArrowS3Importer</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowS3Importer wrapper for use with the S3 file system and the ORC file type.</p>
+<h4 id="__init___12">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>bucket_name</code> - Name of the bucket in S3 to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for S3FileSystem.</li>
+</ul>
+<h2 id="feathers3filesystemimporter-objects">FeatherS3FileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">FeatherS3FileSystemImporter</span><span class="p">(</span><span class="n">PyArrowS3Importer</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowS3Importer wrapper for use with the S3 file system and the feather file type.</p>
+<h4 id="__init___13">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>bucket_name</code> - Name of the bucket in S3 to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for S3FileSystem.</li>
+</ul>
+<h2 id="parquetazureblobfilesystemimporter-objects">ParquetAzureBlobFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ParquetAzureBlobFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowAzureBlobImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the parquet file type.</p>
+<h4 id="__init___14">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">container_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>container_name</code> - Name of the container in Azure Blob storage to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for AzureBlobFileSystem.</li>
+</ul>
+<h2 id="csvazureblobfilesystemimporter-objects">CSVAzureBlobFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">CSVAzureBlobFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowAzureBlobImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the CSV file type.</p>
+<h4 id="__init___15">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">container_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>container_name</code> - Name of the container in Azure Blob storage to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for AzureBlobFileSystem.</li>
+</ul>
+<h2 id="orcazureblobfilesystemimporter-objects">ORCAzureBlobFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ORCAzureBlobFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowAzureBlobImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the CSV file type.</p>
+<h4 id="__init___16">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>container_name</code> - Name of the container in Blob storage to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for AzureBlobFileSystem.</li>
+</ul>
+<h2 id="featherazureblobfilesystemimporter-objects">FeatherAzureBlobFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">FeatherAzureBlobFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowAzureBlobImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowAzureBlobImporter wrapper for use with the Azure Blob file system and the Feather file type.</p>
+<h4 id="__init___17">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>container_name</code> - Name of the container in Blob storage to read from.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for AzureBlobFileSystem.</li>
+</ul>
+<h2 id="parquetlocalfilesystemimporter-objects">ParquetLocalFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ParquetLocalFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowLocalFileSystemImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowLocalFileSystemImporter wrapper for use with the local file system and the parquet file type.</p>
+<h4 id="__init___18">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>path</code> - Full path to directory.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for LocalFileSystem.</li>
+</ul>
+<h2 id="csvlocalfilesystemimporter-objects">CSVLocalFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">CSVLocalFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowLocalFileSystemImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowLocalFileSystemImporter wrapper for use with the local file system and the CSV file type.</p>
+<h4 id="__init___19">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>path</code> - Full path to directory.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for LocalFileSystem.</li>
+</ul>
+<h2 id="orclocalfilesystemimporter-objects">ORCLocalFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ORCLocalFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowLocalFileSystemImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowLocalFileSystemImporter wrapper for use with the local file system and the ORC file type.</p>
+<h4 id="__init___20">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>path</code> - Full path to directory.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for LocalFileSystem.</li>
+</ul>
+<h2 id="featherlocalfilesystemimporter-objects">FeatherLocalFileSystemImporter Objects</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">FeatherLocalFileSystemImporter</span><span class="p">(</span><span class="n">PyArrowLocalFileSystemImporter</span><span class="p">)</span>
+</code></pre></div>
+<p>PyArrowLocalFileSystemImporter wrapper for use with the local file system and the Feather/IPC/Arrow file type.</p>
+<h4 id="__init___21">__init__</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">data_configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+             <span class="n">memgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Memgraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>path</code> - Full path to directory.</li>
+<li><code>data_configuration</code> - Configuration for the translations.</li>
+<li><code>memgraph</code> - Connection to Memgraph (Optional).</li>
+<li><code>**kwargs</code> - Specified for LocalFileSystem.</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+    
+  </body>
+</html>

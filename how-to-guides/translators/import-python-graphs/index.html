@@ -1,0 +1,2106 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../export-python-graphs/">
+      
+      
+        <link rel="next" href="../../triggers/triggers/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>Import Python Graphs - GQLAlchemy Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#how-to-import-python-graphs-into-memgraph" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="GQLAlchemy Documentation" class="md-header__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GQLAlchemy Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Import Python Graphs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="GQLAlchemy Documentation" class="md-nav__button md-logo" aria-label="GQLAlchemy Documentation" data-md-component="logo">
+      
+  <img src="../../../assets/memgraph-logo.svg" alt="logo">
+
+    </a>
+    GQLAlchemy Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/memgraph/gqlalchemy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    memgraph/gqlalchemy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../import-data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How-To Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            How-To Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ogm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OGM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../query-builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../query-builder/graph-projection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Projection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_5" checked>
+        
+          <label class="md-nav__link" for="__nav_6_5" id="__nav_6_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Data
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_5">
+            <span class="md-nav__icon md-icon"></span>
+            Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../instance-runner/memgraph-binary-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Binary Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../instance-runner/memgraph-docker-instance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Docker Instance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../loaders/import-table-data-to-graph-database/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import Table Data to Graph Database
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../loaders/make-a-custom-file-system-importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Make a Custom File System Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../on-disk-storage/on-disk-storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    On-Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../streams/kafka-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kafka Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../streams/pulsar-streams/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pulsar Streams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../export-python-graphs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export Python Graphs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Import Python Graphs
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Import Python Graphs
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general-prerequisites" class="md-nav__link">
+    General prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-networkx-graph-into-memgraph" class="md-nav__link">
+    Import NetworkX graph into Memgraph
+  </a>
+  
+    <nav class="md-nav" aria-label="Import NetworkX graph into Memgraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-and-run-a-python-script" class="md-nav__link">
+    Create and run a Python script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explore-the-graph" class="md-nav__link">
+    Explore the graph
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-pyg-graph-into-memgraph" class="md-nav__link">
+    Import PyG graph into Memgraph
+  </a>
+  
+    <nav class="md-nav" aria-label="Import PyG graph into Memgraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_1" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-and-run-a-python-script_1" class="md-nav__link">
+    Create and run a Python script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explore-the-graph_1" class="md-nav__link">
+    Explore the graph
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-dgl-graph-into-memgraph" class="md-nav__link">
+    Import DGL graph into Memgraph
+  </a>
+  
+    <nav class="md-nav" aria-label="Import DGL graph into Memgraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_2" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-and-run-a-python-script_2" class="md-nav__link">
+    Create and run a Python script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-explore-the-graph" class="md-nav__link">
+    3. Explore the graph
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learn-more" class="md-nav__link">
+    Learn more
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../triggers/triggers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Triggers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Under the Hood
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Under the Hood
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../under-the-hood/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../under-the-hood/python-graph-translators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python Graph Translators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/connection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Connection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/disk_storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disk Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Exceptions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/instance_runner/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Instance Runner
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/utilities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_10" >
+        
+          <label class="md-nav__link" for="__nav_8_10" id="__nav_8_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Graph Algorithms
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_10">
+            <span class="md-nav__icon md-icon"></span>
+            Graph Algorithms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/graph_algorithms/integrated_algorithms/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrated Algorithms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/graph_algorithms/query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/graph_algorithms/query_modules/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_11" >
+        
+          <label class="md-nav__link" for="__nav_8_11" id="__nav_8_11_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Query Builders
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_11">
+            <span class="md-nav__icon md-icon"></span>
+            Query Builders
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/query_builders/declarative_base/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Declarative Base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/query_builders/memgraph_query_builder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph Query Builder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12" >
+        
+          <label class="md-nav__link" for="__nav_8_12" id="__nav_8_12_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Transformations
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12">
+            <span class="md-nav__icon md-icon"></span>
+            Transformations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_1" >
+        
+          <label class="md-nav__link" for="__nav_8_12_1" id="__nav_8_12_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Export
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_1">
+            <span class="md-nav__icon md-icon"></span>
+            Export
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/export/graph_transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/export/transporter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transporter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_2" >
+        
+          <label class="md-nav__link" for="__nav_8_12_2" id="__nav_8_12_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Importing
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_2">
+            <span class="md-nav__icon md-icon"></span>
+            Importing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/importing/graph_importer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Graph Importer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/importing/loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_12_3" >
+        
+          <label class="md-nav__link" for="__nav_8_12_3" id="__nav_8_12_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Translators
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_12_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12_3">
+            <span class="md-nav__icon md-icon"></span>
+            Translators
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/translators/dgl_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DGL Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/translators/nx_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    NX Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/translators/pyg_translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyG Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/transformations/translators/translator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Translator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_13" >
+        
+          <label class="md-nav__link" for="__nav_8_13" id="__nav_8_13_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Vendors
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_13">
+            <span class="md-nav__icon md-icon"></span>
+            Vendors
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/vendors/database_client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Database Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/vendors/memgraph/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Memgraph
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/gqlalchemy/vendors/neo4j/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Neo4j
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general-prerequisites" class="md-nav__link">
+    General prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-networkx-graph-into-memgraph" class="md-nav__link">
+    Import NetworkX graph into Memgraph
+  </a>
+  
+    <nav class="md-nav" aria-label="Import NetworkX graph into Memgraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-and-run-a-python-script" class="md-nav__link">
+    Create and run a Python script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explore-the-graph" class="md-nav__link">
+    Explore the graph
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-pyg-graph-into-memgraph" class="md-nav__link">
+    Import PyG graph into Memgraph
+  </a>
+  
+    <nav class="md-nav" aria-label="Import PyG graph into Memgraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_1" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-and-run-a-python-script_1" class="md-nav__link">
+    Create and run a Python script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explore-the-graph_1" class="md-nav__link">
+    Explore the graph
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-dgl-graph-into-memgraph" class="md-nav__link">
+    Import DGL graph into Memgraph
+  </a>
+  
+    <nav class="md-nav" aria-label="Import DGL graph into Memgraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_2" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-and-run-a-python-script_2" class="md-nav__link">
+    Create and run a Python script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-explore-the-graph" class="md-nav__link">
+    3. Explore the graph
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learn-more" class="md-nav__link">
+    Learn more
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="how-to-import-python-graphs-into-memgraph">How to import Python graphs into Memgraph</h1>
+<p>GQLAlchemy holds translators that can import Python graphs (<a href="https://networkx.org/">NetworkX</a>, <a href="https://pytorch-geometric.readthedocs.io/en/latest/">PyG</a> or <a href="https://www.dgl.ai/">DGL</a> graphs) into Memgraph. These translators take the Python graph object and translate it to the appropriate Cypher queries. The Cypher queries are then executed to create a graph inside Memgraph. </p>
+<p><a href="https://github.com/memgraph/gqlalchemy/tree/main/tests/transformations/translators"><img alt="docs-source" src="https://img.shields.io/badge/source-examples-FB6E00?logo=github&amp;style=for-the-badge" /></a>
+<a href="https://github.com/memgraph/gqlalchemy/tree/main/gqlalchemy/transformations/translators"><img alt="docs-source" src="https://img.shields.io/badge/source-translators-FB6E00?logo=github&amp;style=for-the-badge" /></a>
+<a href="../../../under-the-hood/python-graph-translators/"><img alt="Related - Under the
+hood" src="https://img.shields.io/static/v1?label=Related&amp;message=Under%20the%20hood&amp;color=orange&amp;style=for-the-badge" /></a></p>
+<p>In this guide you will learn how to:
+- <a href="#import-networkx-graph-into-memgraph"><strong>Import NetworkX graph into Memgraph</strong></a>
+- <a href="#import-pyg-graph-into-memgraph"><strong>Import PyG graph into Memgraph</strong></a>
+- <a href="#import-dgl-graph-into-memgraph"><strong>Import DGL graph into Memgraph</strong></a></p>
+<h2 id="general-prerequisites">General prerequisites</h2>
+<p>You need a running <strong>Memgraph Platform instance</strong>, which includes both the MAGE library and Memgraph Lab, a visual interface. To run the image, open a command-line interpreter and run the following Docker command:</p>
+<div class="highlight"><pre><span></span><code>docker run -it -p 7687:7687 -p 7444:7444 -p 3000:3000 memgraph/memgraph-platform:latest
+</code></pre></div>
+<h2 id="import-networkx-graph-into-memgraph">Import NetworkX graph into Memgraph</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>Except for the <a href="#general-prerequisites"><strong>general prerequisites</strong></a>, you also need to install <a href="https://pypi.org/project/networkx/"><strong>NetworkX Python library</strong></a>.</p>
+<h3 id="create-and-run-a-python-script">Create and run a Python script</h3>
+<p>Create a new Python script <code>networkx-graph.py</code> in the code editor of your choice, with the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">Memgraph</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.transformations.translators.nx_translator</span> <span class="kn">import</span> <span class="n">NxTranslator</span>
+
+<span class="n">memgraph</span> <span class="o">=</span> <span class="n">Memgraph</span><span class="p">()</span>
+<span class="n">memgraph</span><span class="o">.</span><span class="n">drop_database</span><span class="p">()</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="s2">&quot;First&quot;</span><span class="p">}),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Kata&quot;</span><span class="p">}),</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;EDGE_TYPE&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="s2">&quot;today&quot;</span><span class="p">}),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)])</span>
+
+<span class="n">translator</span> <span class="o">=</span> <span class="n">NxTranslator</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">translator</span><span class="o">.</span><span class="n">to_cypher_queries</span><span class="p">(</span><span class="n">graph</span><span class="p">)):</span>
+    <span class="n">memgraph</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</code></pre></div>
+<p>First, connect to a running Memgraph instance. Next, drop the database to be sure that it's empty. After that, create a simple NetworkX graph and add nodes and edges to it. In the end, call <code>to_cypher_queries</code> procedure on <code>NxTranslator</code> instance to transform the NetworkX graph to Cypher queries which will be executed in Memgraph.</p>
+<p>To run it, open a command-line interpreter and run the following command:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python3</span> <span class="n">networkx</span><span class="o">-</span><span class="n">graph</span><span class="o">.</span><span class="n">py</span>
+</code></pre></div>
+<h3 id="explore-the-graph">Explore the graph</h3>
+<p><a href="htps://memgraph.com/docs/data-visualization/install-and-connect">Connect to Memgraph</a> via Memgraph Lab which is running at <code>localhost:3000</code>. Open the <strong>Query Execution</strong> section and write the following query:</p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-[</span><span class="n">r</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="k">RETURN</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+</code></pre></div>
+<p>Click <strong>Run Query</strong> button to see the results.</p>
+<p><img src={require('../data/networkx-example-2.png').default} alt="networkx-example-1" className={"imgBorder"}/></p>
+<p>The NetworkX node identification number maps to the <code>id</code> node property in Memgraph. The <code>labels</code> key is reserved for the node label in Memgraph, while the edge <code>type</code> key is reserved for the relationship type in Memgraph. If no <code>type</code> is defined, then the relationship will be of type <code>TO</code> in Memgraph. You can notice that the node with the property <code>name</code> Kata and property <code>id</code> 2 doesn't have a label. This happened because the node property key <code>labels</code> was not defined. </p>
+<h2 id="import-pyg-graph-into-memgraph">Import PyG graph into Memgraph</h2>
+<h3 id="prerequisites_1">Prerequisites</h3>
+<p>Except for the <a href="#general-prerequisites"><strong>general prerequisites</strong></a>, you also need to install <a href="https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html"><strong>Pytorch Geometric Python library</strong></a>.</p>
+<h3 id="create-and-run-a-python-script_1">Create and run a Python script</h3>
+<p>Create a new Python script <code>pyg-graph.py</code> in the code editor of your choice, with the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">Memgraph</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.transformations.translators.pyg_translator</span> <span class="kn">import</span> <span class="n">PyGTranslator</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">HeteroData</span>
+
+
+<span class="n">memgraph</span> <span class="o">=</span> <span class="n">Memgraph</span><span class="p">()</span>
+<span class="n">memgraph</span><span class="o">.</span><span class="n">drop_database</span><span class="p">()</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">HeteroData</span><span class="p">()</span>
+
+<span class="n">graph</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+    <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+<span class="p">)</span>
+<span class="n">graph</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;MINUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+    <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+<span class="p">)</span>
+<span class="c1"># Set node features</span>
+<span class="n">graph</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prop1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prop2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prop1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prop2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prop3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="c1"># Set edge features</span>
+<span class="n">graph</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_prop1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_prop2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;MINUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_prop1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="n">translator</span> <span class="o">=</span> <span class="n">PyGTranslator</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">translator</span><span class="o">.</span><span class="n">to_cypher_queries</span><span class="p">(</span><span class="n">graph</span><span class="p">)):</span>
+    <span class="n">memgraph</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</code></pre></div>
+<p>First, connect to a running Memgraph instance. Next, drop the database to be sure that it's empty. After that, create a simple PyG heterogeneous graph and add nodes and edges along with their features to it. The graph consist of three <code>user</code> nodes and two <code>movie</code> nodes, as well as two types of edges - <code>PLUS</code> and <code>MINUS</code>. The <code>edge_index</code> of a graph determines which nodes are connected by which edges. Provide a tensor, that is a multi-dimensional matrix, as a value of <code>edge_index</code>, to define edges. Each tensor element maps to one graph node - first row of matrix maps to <code>user</code>, while the second one to the <code>movie</code> nodes. Hence, <code>user</code> node 0 is connected to the <code>movie</code> node 0, <code>user</code> node 0 is connected to the <code>movie</code> node 1, and <code>user</code> node 1 is connected to the <code>movie</code> node 0, with edge of type <code>PLUS</code>. These integers are mapping to the values of the <code>pyg_id</code> nodes' property in Memgraph. Similarly, the edge of type <code>MINUS</code> is created between <code>user</code> node 2 and <code>movie</code> node 1. In the end, call <code>to_cypher_queries</code> procedure on <code>PyGTranslator</code> instance to transform the PysG graph to Cypher queries which will be executed in Memgraph.</p>
+<p>To run it, open a command-line interpreter and run the following command:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python3</span> <span class="n">pyg</span><span class="o">-</span><span class="n">graph</span><span class="o">.</span><span class="n">py</span>
+</code></pre></div>
+<h3 id="explore-the-graph_1">Explore the graph</h3>
+<p><a href="htps://memgraph.com/docs/data-visualization/install-and-connect">Connect to Memgraph</a> via Memgraph Lab which is running at <code>localhost:3000</code>. Open the <strong>Query Execution</strong> section and write the following query:</p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-[</span><span class="n">r</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="k">RETURN</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+</code></pre></div>
+<p>Click <strong>Run Query</strong> button to see the results.</p>
+<p><img src={require('../data/pyg-example.png').default} alt="pyg-example" className={"imgBorder"}/></p>
+<p>You can notice that we have nodes labeled with <code>user</code> and <code>movie</code> and relationships of type <code>PLUS</code> and <code>MINUS</code>. Besides that, nodes and relationships have randomized array properties as well as <code>pyg_id</code> property.</p>
+<h2 id="import-dgl-graph-into-memgraph">Import DGL graph into Memgraph</h2>
+<h3 id="prerequisites_2">Prerequisites</h3>
+<p>Except for the <a href="#general-prerequisites"><strong>general prerequisites</strong></a>, you also need to install <a href="https://www.dgl.ai/pages/start.html"><strong>Deep Graph Library</strong></a>.</p>
+<h3 id="create-and-run-a-python-script_2">Create and run a Python script</h3>
+<p>Create a new Python script <code>dgl-graph.py</code> in the code editor of your choice, with the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">dgl</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">Memgraph</span>
+<span class="kn">from</span> <span class="nn">gqlalchemy.transformations.translators.dgl_translator</span> <span class="kn">import</span> <span class="n">DGLTranslator</span>
+
+<span class="n">memgraph</span> <span class="o">=</span> <span class="n">Memgraph</span><span class="p">()</span>
+<span class="n">memgraph</span><span class="o">.</span><span class="n">drop_database</span><span class="p">()</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">dgl</span><span class="o">.</span><span class="n">heterograph</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">):</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])),</span>
+        <span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;MINUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">):</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">])),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="c1"># Set node features</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;prop1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;prop2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;prop1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;prop2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;movie&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;prop3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="c1"># Set edge features</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edge_prop1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edge_prop2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">[(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;MINUS&quot;</span><span class="p">,</span> <span class="s2">&quot;movie&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edge_prop1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="n">translator</span> <span class="o">=</span> <span class="n">DGLTranslator</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">translator</span><span class="o">.</span><span class="n">to_cypher_queries</span><span class="p">(</span><span class="n">graph</span><span class="p">)):</span>
+    <span class="n">memgraph</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</code></pre></div>
+<p>First, connect to a running Memgraph instance. Next, drop the database to be sure that it's is empty. After that, create a simple DGL heterogeneous graph and add nodes and edges along with their features to it. The graph consist of three <code>user</code> nodes and two <code>movie</code> nodes, as well as two types of edges - <code>PLUS</code> and <code>MINUS</code>. To define nodes and edge between them we are providing appropriate NumPy arrays. Hence, <code>user</code> node 0 is connected to the <code>movie</code> node 0, <code>user</code> node 0 is connected to the <code>movie</code> node 1, and <code>user</code> node 1 is connected to the <code>movie</code> node 0, with edge of type <code>PLUS</code>. These integers are mapping to the values of the <code>dgl_id</code> properties in Memgraph. Similarly, the edge of type <code>MINUS</code> is created between <code>user</code> node 2 and <code>movie</code> node 1. In the end, call <code>to_cypher_queries</code> procedure on <code>DGLTranslator</code> instance to transform the DGL graph to Cypher queries which will be executed in Memgraph.</p>
+<p>To run it, open a command-line interpreter and run the following command:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python3</span> <span class="n">dgl</span><span class="o">-</span><span class="n">graph</span><span class="o">.</span><span class="n">py</span>
+</code></pre></div>
+<h3 id="3-explore-the-graph">3. Explore the graph</h3>
+<p><a href="htps://memgraph.com/docs/data-visualization/install-and-connect">Connect to Memgraph</a> via Memgraph Lab which is running at <code>localhost:3000</code>. Open the <strong>Query Execution</strong> section and write the following query:</p>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-[</span><span class="n">r</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="k">RETURN</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+</code></pre></div>
+<p>Click <strong>Run Query</strong> button to see the results.</p>
+<p><img src={require('../data/dgl-example.png').default} alt="pyg-example" className={"imgBorder"}/></p>
+<p>You can notice that we have nodes labeled with <code>user</code> and <code>movie</code> and relationships of type <code>PLUS</code> and <code>MINUS</code>. Besides that, nodes and relationships have randomized array properties ad well as <code>dgl_id</code> property.</p>
+<h2 id="learn-more">Learn more</h2>
+<p>Head over to the <a href="../../../under-the-hood/python-graph-translators/"><strong>Under the hood</strong></a> section to read about implementation details. If you want to learn more about using NetworkX with Memgraph with interesting resources and courses, head over to the <a href="https://memgraph.com/memgraph-for-networkx?utm_source=docs&amp;utm_medium=referral&amp;utm_campaign=networkx_ppp&amp;utm_term=docsgqla%2Bhowto&amp;utm_content=textlink"><strong>Memgraph for NetworkX developers</strong></a> website. If you have any questions or want to connect with the Memgraph community, <a href="https://www.discord.gg/memgraph"><strong>join our Discord server</strong></a>.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+    
+  </body>
+</html>
