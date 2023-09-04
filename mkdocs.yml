@@ -17,7 +17,7 @@ theme:
     primary: 'custom'
     accent: 'custom'
 nav:
-  - Getting Started: 'getting-started.md'
+  - Getting Started: 'index.md'
   - Installation: 'installation.md'
   - Import Data: 'import-data.md'
   - How-To Guides:
@@ -28,8 +28,8 @@ nav:
       - Kafka Streams: 'how-to-guides/streams/kafka-streams.md'
       - Pulsar Streams: 'how-to-guides/streams/pulsar-streams.md'
     - Import data from different sources:
-      - Table to Graph Importer: 'how-to-guides/loaders/table-to-graph-importer.md'
-      - Custom File System Importer: 'how-to-guides/loaders/custom-file-system-importer.md'
+      - Table to Graph Importer: 'how-to-guides/loaders/import-table-data-to-graph-database.md'
+      - Custom File System Importer: 'how-to-guides/loaders/make-a-custom-file-system-importer.md'
     - Manage instances:
       - Memgraph Docker Instance: 'how-to-guides/instance-runner/memgraph-docker-instance.md'
       - Memgraph Binary Instance: 'how-to-guides/instance-runner/memgraph-binary-instance.md'
