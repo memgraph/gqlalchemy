@@ -8,7 +8,6 @@ markdown_extensions:
 theme:
   name: 'material'
   logo: 'assets/memgraph-logo.svg'
-  site_favicon: 'aassets/favicon.png'
   font:
     text: 'Roboto'
     code: 'Roboto Mono' 
@@ -18,11 +17,9 @@ theme:
     primary: 'custom'
     accent: 'custom'
 nav:
-  - Home: 'index.md'
-  - Getting Started: 'getting-started.md'
+  - Getting Started: 'index.md'
   - Installation: 'installation.md'
   - Import Data: 'import-data.md'
-  - Changelog: 'changelog.md'
   - How-To Guides:
     - Overview: 'how-to-guides/overview.md'
     - OGM: 'how-to-guides/ogm.md'
@@ -39,9 +36,6 @@ nav:
       - Export Python Graphs: 'how-to-guides/translators/export-python-graphs.md'
       - Import Python Graphs: 'how-to-guides/translators/import-python-graphs.md'
       - Triggers: 'how-to-guides/triggers/triggers.md'
-  - Under the Hood:
-    - Overview: 'under-the-hood/overview.md'
-    - Python Graph Translators: 'under-the-hood/python-graph-translators.md'
   - Reference:
     - Overview: 'reference/gqlalchemy/overview.md'
     - Connection: 'reference/gqlalchemy/connection.md'
@@ -75,6 +69,10 @@ nav:
       - Database Client: 'reference/gqlalchemy/vendors/database_client.md'
       - Memgraph: 'reference/gqlalchemy/vendors/memgraph.md'
       - Neo4j: 'reference/gqlalchemy/vendors/neo4j.md'
+  - Under the Hood:
+    - Overview: 'under-the-hood/overview.md'
+    - Python Graph Translators: 'under-the-hood/python-graph-translators.md'
+  - Changelog: 'changelog.md'      
 repo_name: 'memgraph/gqlalchemy'
 repo_url: 'https://github.com/memgraph/gqlalchemy'
 extra_css:
