@@ -97,6 +97,8 @@ pydoc-markdown
 Other parts of the documentation are written and located at docs directory. To test the documentation locally execute:
 ```
 pip3 install mkdocs
+pip3 install mkdocs-material
+pip3 install pymdown-extensions
 mkdocs serve
 ```
 
