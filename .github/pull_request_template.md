@@ -36,6 +36,6 @@ Closes (link to issue)
 - [ ] Core feature implementation
 - [ ] Tests
 - [ ] Code documentation
-- [ ] Documentation on [gqlalchemy/docs]([https://github.com/memgraph/docs](https://github.com/memgraph/gqlalchemy/tree/main/docs)https://github.com/memgraph/gqlalchemy/tree/main/docs)
+- [ ] Documentation on [gqlalchemy/docs](https://github.com/memgraph/gqlalchemy/tree/main/docs)
 
 ######################################
