@@ -86,7 +86,7 @@ poetry run pytest . -k "not slow and not extras"
 
 ## Documentation
 
-The GQLAlchemy documentation is available on [GitHub](https://github.com/memgraph/gqlalchemy).
+The GQLAlchemy documentation is available on [GitHub](https://memgraph.github.io/gqlalchemy/).
 
 The reference guide can be generated from the code by executing:
 ```
