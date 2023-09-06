@@ -1,6 +1,7 @@
 # Import data
 
 You can import data in the following formats:
+
 - [**CSV**](#csv)
 - [**JSON**](#json)
 - [**Parquet, ORC or IPC/Feather/Arrow**](#parquet-orc-or-ipcfeatherarrow)

@@ -4,6 +4,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 Through this guide, you will learn how to use GQLAlchemy query builder to:
+
 - [**Create nodes and relationships**](#create-nodes-and-relationships)
     - [**Create a node**](#create-a-node)
     - [**Create a relationship**](#create-a-relationship)

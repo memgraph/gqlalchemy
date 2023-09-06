@@ -8,6 +8,7 @@ GQLAlchemy holds translators that can import Python graphs ([NetworkX](https://n
 hood](https://img.shields.io/static/v1?label=Related&message=Under%20the%20hood&color=orange&style=for-the-badge)](../../under-the-hood/python-graph-translators.md)
 
 In this guide you will learn how to:
+
 - [**Import NetworkX graph into Memgraph**](#import-networkx-graph-into-memgraph)
 - [**Import PyG graph into Memgraph**](#import-pyg-graph-into-memgraph)
 - [**Import DGL graph into Memgraph**](#import-dgl-graph-into-memgraph)

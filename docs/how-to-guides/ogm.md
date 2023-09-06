@@ -8,6 +8,7 @@
     ```
 
 Through this guide, you will learn how to use GQLAlchemy object graph mapper to:
+
 - [**Map nodes and relationships**](#map-nodes-and-relationships)
 - [**Save nodes and relationships**](#save-nodes-and-relationships)
 - [**Load nodes and relationships**](#load-nodes-and-relationships)
