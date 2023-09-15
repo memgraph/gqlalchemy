@@ -16,6 +16,7 @@ triggers.
 
 To set up the trigger, first, create a `MemgraphTrigger` object with all the
 required arguments:
+
 - `name: str` ➡ The name of the trigger.
 - `event_type: TriggerEventType` ➡ The type of event that will trigger the
   execution. The options are: `TriggerEventType.CREATE`,

@@ -8,6 +8,7 @@ GQLAlchemy holds translators that can export Memgraph graphs into Python graphs 
 hood](https://img.shields.io/static/v1?label=Related&message=Under%20the%20hood&color=orange&style=for-the-badge)](../../under-the-hood/python-graph-translators.md)
 
 In this guide you will learn how to:
+
 - [**Export data from Memgraph into NetworkX graph**](#export-data-from-memgraph-into-networkx-graph)
 - [**Export data from Memgraph into PyG graph**](#import-pyg-graph-into-memgraph)
 - [**Export data from Memgraph into DGL graph**](#import-dgl-graph-into-memgraph)
