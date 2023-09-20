@@ -158,7 +158,7 @@ class Memgraph(DatabaseClient):
         query = trigger.to_cypher()
         self.execute(query)
 
-    def get_triggers(self) -> List[str]:
+    def get_triggers(self) -> List[MemgraphTrigger]:
         """Returns a list of all database triggers."""
         triggers_list = list(self.execute_and_fetch("SHOW TRIGGERS;"))
         memgraph_triggers_list = []
