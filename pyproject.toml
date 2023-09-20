@@ -40,7 +40,7 @@ pydantic = "^1.8.2"
 psutil = "^5.9.0"
 dacite = "^1.6.0"
 adlfs = "^2022.2.0"
-neo4j = "^4.4.3"
+neo4j = ">=4.4.3"
 numpy = "^1.24.1"
 docker = "^5.0.3"
 
