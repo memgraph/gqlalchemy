@@ -354,7 +354,7 @@ class Memgraph(DatabaseClient):
         return result
 
     def _save_relationship_properties_on_disk(self, relationship: Relationship, result: Relationship) -> Relationship:
-        """Saves on_disk relationship propeties on the OnDiskPropertyDatabase
+        """Saves on_disk relationship properties on the OnDiskPropertyDatabase
         added with Memgraph().init_disk_storage(db). If OnDiskPropertyDatabase
         is not defined raises GQLAlchemyOnDiskPropertyDatabaseNotDefinedError.
         """

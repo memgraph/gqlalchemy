@@ -11,7 +11,7 @@ class Translator(ABC)
 def to_cypher_queries(graph)
 ```
 
-Abstract method which doesn&#x27;t know how to produce cypher queries for a specific graph type and thus needs to be overriden.
+Abstract method which doesn&#x27;t know how to produce cypher queries for a specific graph type and thus needs to be overridden.
 
 **Arguments**:
 
@@ -29,7 +29,7 @@ Abstract method which doesn&#x27;t know how to produce cypher queries for a spec
 def get_instance()
 ```
 
-Abstract method which doesn&#x27;t know how to create the concrete instance so it needs to be overriden.
+Abstract method which doesn&#x27;t know how to create the concrete instance so it needs to be overridden.
 
 **Raises**:
 

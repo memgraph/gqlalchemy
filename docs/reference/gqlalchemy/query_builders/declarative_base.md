@@ -728,7 +728,7 @@ used as starting points or criteria in the next.
 
 **Example**:
 
-  Pipe the result from first part of the query for the futher use:
+  Pipe the result from first part of the query for the further use:
   
 - `Python` - `match().node(variable=&#x27;n&#x27;).with(&#x27;n&#x27;).execute()`
 - `Cypher` - `MATCH (n) WITH n;
@@ -754,7 +754,7 @@ Combine the result of multiple queries.
 
 **Examples**:
 
-  Combine querties and retain duplicates:
+  Combine queries and retain duplicates:
   
 - `Python` - `match().node(variable=&quot;c&quot;, labels=&quot;Country&quot;).return_(results=(&quot;c.name&quot;, &quot;columnName&quot;)).union().match().node(variable=&quot;p&quot;, labels=&quot;Person&quot;).return_(results=(&quot;p.name&quot;, &quot;columnName&quot;)).execute()`
 - `Cypher` - `MATCH (c:Country) RETURN c.name AS columnName UNION ALL MATCH (p:Person) RETURN p.name AS columnName;`

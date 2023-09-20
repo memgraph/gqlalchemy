@@ -257,7 +257,7 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         Kwargs:
             account_name: Account name from Azure Blob.
             account_key: Account key for Azure Blob (Optional - if using sas_token).
-            sas_token: Shared access signature token for authentification (Optional).
+            sas_token: Shared access signature token for authentication (Optional).
 
         Raises:
             KeyError: kwargs doesn't contain necessary fields.

@@ -198,7 +198,7 @@ def _check_all_edges_exist_memgraph_pyg(
 
 
 def test_pyg_export_multigraph(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -236,7 +236,7 @@ def test_pyg_export_multigraph(memgraph):
 
 
 def test_pyg_multiple_nodes_same_features(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -926,7 +926,7 @@ def test_pyg_import_homogeneous(memgraph):
         32,
     ]
     graph = Data(edge_index=torch.tensor([src, dst], dtype=torch.int32))
-    # Initialize translator and insert into the MemgrapA
+    # Initialize translator and insert into the Memgraph
     # Let's test
     # Check all that are in Memgraph are in pyg too
     _check_all_edges_exist_memgraph_pyg(

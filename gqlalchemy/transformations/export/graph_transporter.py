@@ -65,7 +65,7 @@ class GraphTransporter(Transporter):
         elif self.graph_type == GraphType.NX.name:
             self.translator = NxTranslator(host, port, username, password, encrypted, client_name, lazy)
         else:
-            raise ValueError("Unknown export option. Currently supported are DGL, PyG and Networkx.")
+            raise ValueError("Unknown export option. Currently supported are DGL, PyG and NetworkX.")
 
     def export(self):
         """Creates graph instance for the wanted export option."""

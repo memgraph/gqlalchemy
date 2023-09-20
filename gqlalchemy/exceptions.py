@@ -71,7 +71,7 @@ The argument provided is of wrong type. Please provide str, tuple[str, str], lis
 """
 
 INSTANTIATION_ERROR = """
-{class_name} class shouldn't be instantiatied!
+{class_name} class shouldn't be instantiated!
 """
 
 TOO_LARGE_TUPLE_IN_RESULT_QUERY = """

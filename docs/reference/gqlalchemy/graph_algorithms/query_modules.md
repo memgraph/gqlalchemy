@@ -65,7 +65,7 @@ type of argument and &quot;default&quot; where default argument value is given
 ```python
 def parse_field(
         vars_field: str,
-        name_type_delimiter: str = NAME_TYPE_DELIMITIER,
+        name_type_delimiter: str = NAME_TYPE_DELIMITER,
         default_value_delimiter: str = EQUALS_DELIMITER
 ) -> List[Dict[str, str]]
 ```
