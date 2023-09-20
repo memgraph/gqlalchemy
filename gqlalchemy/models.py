@@ -302,7 +302,7 @@ class MemgraphTrigger:
 
 
 class GraphObject(BaseModel):
-    subtypes: Dict = dict()
+    _subtypes_: Dict = dict()
 
     class Config:
         extra = Extra.allow
@@ -312,11 +312,11 @@ class GraphObject(BaseModel):
         when instantiating a subclass.
         """
         if type is not None:  # Relationship
-            cls.subtypes[type] = cls
+            cls._subtypes_[type] = cls
         elif label is not None:  # Node
-            cls.subtypes[label] = cls
+            cls._subtypes_[label] = cls
         else:
-            cls.subtypes[cls.__name__] = cls
+            cls._subtypes_[cls.__name__] = cls
 
     @classmethod
     def __get_validators__(cls):
@@ -330,12 +330,12 @@ class GraphObject(BaseModel):
         """
         sub = None
         if "_type" in data:  # Relationship
-            sub = cls.subtypes.get(data.get("_type"))
+            sub = cls._subtypes_.get(data.get("_type"))
 
         if "_labels" in data:  # Node
             # Find class that has the most super classes
             labels = data["_labels"]
-            classes = [cls.subtypes[label] for label in labels if label in cls.subtypes]
+            classes = [cls._subtypes_[label] for label in labels if label in cls._subtypes_]
             counter = defaultdict(int)
             for class1 in classes:
                 counter[class1] += sum(issubclass(class1, class2) for class2 in classes)
