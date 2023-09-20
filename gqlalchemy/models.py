@@ -302,7 +302,7 @@ class MemgraphTrigger:
 
 
 class GraphObject(BaseModel):
-    subtypes: Optional[Any] = dict()
+    subtypes: Dict = dict()
 
     class Config:
         extra = Extra.allow
