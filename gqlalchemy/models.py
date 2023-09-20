@@ -620,6 +620,22 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         self._id = node._id
         return self
 
+    def get_or_create(self, db: "Database") -> Tuple["Node", bool]:  # noqa F821
+        """Return the node and a flag for whether it was created in the database.
+
+        Args:
+            db: The database instance to operate on.
+
+        Returns:
+            A tuple with the first component being the created graph node,
+            and the second being a boolean that is True if the node
+            was created in the database, and False if it was loaded instead.
+        """
+        try:
+            return self.load(db=db), False
+        except GQLAlchemyError:
+            return self.save(db=db), True
+
 
 class RelationshipMetaclass(BaseModel.__class__):
     def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
@@ -692,6 +708,22 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id
         return self
+
+    def get_or_create(self, db: "Database") -> Tuple["Relationship", bool]:  # noqa F821
+        """Return the relationship and a flag for whether it was created in the database.
+
+        Args:
+            db: The database instance to operate on.
+
+        Returns:
+            A tuple with the first component being the created graph relationship,
+            and the second being a boolean that is True if the relationship
+            was created in the database, and False if it was loaded instead.
+        """
+        try:
+            return self.load(db=db), False
+        except GQLAlchemyError:
+            return self.save(db=db), True
 
 
 class Path(GraphObject):
