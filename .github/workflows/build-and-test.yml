@@ -17,7 +17,7 @@ jobs:
     if: github.event.pull_request.draft == false
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10"]
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
@@ -52,6 +52,52 @@ jobs:
           poetry install --all-extras
           poe install-pyg-cpu
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+      - name: Use the Upload Artifact GitHub Action
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: assets-for-download
+          path: /var/log/memgraph
+
+  build_and_test_ubuntu_python3_11:
+    if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set up pip and install packages
+        run: |
+          python -m pip install -U pip
+          sudo -H pip install networkx numpy scipy
+          sudo -H pip install poethepoet==0.18.1
+      - name: Setup poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Install Memgraph
+        run: |
+          mkdir /home/runner/memgraph
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
+          sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
+          sudo systemctl stop memgraph
+          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.python-version }}.log' &
+          sleep 1 # Wait for Memgraph a bit.
+      - name: Install Neo4j
+        run: |
+          docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.7
+      - name: Test project
+        run: |
+          poetry install --extras "arrow docker"
+          poe install-pyg-cpu
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker and not dgl"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v3
         if: always()
