@@ -80,7 +80,7 @@ Creates a trigger.
 #### get\_triggers
 
 ```python
-def get_triggers() -> List[str]
+def get_triggers() -> List[MemgraphTrigger]
 ```
 
 Returns a list of all database triggers.

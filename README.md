@@ -31,8 +31,11 @@ With the above command, you get the basic GQLAlchemy capabilities. To add additi
 
 - `pip install gqlalchemy[arrow]` # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
 - `pip install gqlalchemy[dgl]` # DGL support (includes PyTorch)
+- `pip install gqlalchemy[docker]` # Docker support
 
 - `pip install gqlalchemy[all]` # All of the above
+
+Users of the zsh terminal should surround `gqlalchemy[$extras)]` with quotes: `pip install 'gqlalchemy[arrow]'`
 
 If you intend to use GQLAlchemy with PyTorch Geometric support, that library must be installed manually:
 
@@ -60,6 +63,7 @@ poetry install # No extras
 
 poetry install -E arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
 poetry install -E dgl # DGL support (also includes torch)
+poetry install -E docker # Docker support
 ```
 
 To run the tests, make sure you have an [active Memgraph instance](https://memgraph.com/docs/getting-started), and execute one of the following commands:
@@ -75,6 +79,7 @@ If you’ve installed only certain extras, it’s also possible to run their ass
 ```bash
 poetry run pytest . -k "arrow"
 poetry run pytest . -k "dgl"
+poetry run pytest . -k "docker"
 ```
 ## Development (how to build)
 

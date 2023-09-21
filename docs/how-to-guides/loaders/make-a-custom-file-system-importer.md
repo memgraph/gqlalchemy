@@ -17,7 +17,7 @@ respectively.
     ```
 
 !!! info
-    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../../installation.md) with the relevant optional dependencies.
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../../installation.md) with the relevant extras.
 
 ## Implementing a new `FileSystemHandler`
 

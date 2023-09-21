@@ -23,7 +23,7 @@ data is located, here are two guides on how to import it to Memgraph:
     ```
 
 !!! info
-    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../../installation.md) with the relevant optional dependencies.
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../../installation.md) with the relevant extras.
 
 ## Loading a CSV file from the local file system
 

@@ -30,8 +30,7 @@ the following guides:
 ## Import data from different sources
 
 !!! info
-    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../installation.md) with the relevant optional dependencies.
-
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../installation.md) with the relevant extras.
 
 You can translate table data from a file to graph data and import it to
 Memgraph. Currently, we support reading of CSV, Parquet, ORC and
