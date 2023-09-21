@@ -9,7 +9,7 @@ authors = [
   "Josip Mrden <josip.mrden@memgraph.com>",
   "Katarina Supe <katarina.supe@memgraph.com>",
   "Andi Skrgat <andi.skrgat@memgraph.com>",
-  "Ante Pusic <ante.pusic@memgraph.io>",
+  "Ante Pusic <ante.pusic@memgraph.com>",
 ]
 license = "Apache-2.0"
 readme = "README.md"
@@ -42,17 +42,18 @@ dacite = "^1.6.0"
 adlfs = "^2022.2.0"
 neo4j = ">=4.4.3"
 numpy = "^1.24.1"
-docker = "^5.0.3"
 
 pyarrow = { version = "^9.0.0", optional = true }
 torch = { version = "^1.13.1", optional = true }
 dgl = { version = "^0.9.1", optional = true }
+docker = { version = "^5.0.3", optional = true }
 
 [tool.poetry.extras]
 arrow = ["pyarrow"]
 dgl = ["torch", "dgl"]
-all = ["pyarrow", "torch", "dgl"]
+all = ["pyarrow", "torch", "dgl", "docker"]
 torch_pyg = ["torch"]
+docker = ["docker"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.3.0"

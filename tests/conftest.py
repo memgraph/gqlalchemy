@@ -136,6 +136,8 @@ def configuration():
     return {"--log-level": "TRACE"}
 
 
+@pytest.mark.extras
+@pytest.mark.docker
 @pytest.fixture
 def memgraph_instance_docker():
     def _memgraph_instance_docker(config):
@@ -144,6 +146,8 @@ def memgraph_instance_docker():
     return _memgraph_instance_docker
 
 
+@pytest.mark.extras
+@pytest.mark.docker
 @pytest.fixture
 def memgraph_instance_docker_with_config(memgraph_instance_docker, configuration):
     instance = memgraph_instance_docker(config=configuration)
@@ -152,6 +156,8 @@ def memgraph_instance_docker_with_config(memgraph_instance_docker, configuration
     instance.stop()
 
 
+@pytest.mark.extras
+@pytest.mark.docker
 @pytest.fixture
 def memgraph_instance_docker_without_config(memgraph_instance_docker):
     instance = memgraph_instance_docker(config={})
