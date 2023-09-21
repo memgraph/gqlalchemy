@@ -196,6 +196,25 @@ Otherwise it tries to find any node in Memgraph that has all properties
 set to exactly the same values.
 If no node is found or no properties are set it raises a GQLAlchemyError.
 
+#### get\_or\_create
+
+```python
+def get_or_create(db: "Database") -> Tuple["Node", bool]
+```
+
+Return the node and a flag for whether it was created in the database.
+
+**Arguments**:
+
+- `db` - The database instance to operate on.
+  
+
+**Returns**:
+
+  A tuple with the first component being the created graph node,
+  and the second being a boolean that is True if the node
+  was created in the database, and False if it was loaded instead.
+
 ## RelationshipMetaclass Objects
 
 ```python
@@ -245,4 +264,23 @@ and relationship._end_node_id and all relationship properties that
 are not None match the relationship in Memgraph.
 If there is no relationship like that in Memgraph, or if there are
 multiple relationships like that in Memgraph, throws GQLAlchemyError.
+
+#### get\_or\_create
+
+```python
+def get_or_create(db: "Database") -> Tuple["Relationship", bool]
+```
+
+Return the relationship and a flag for whether it was created in the database.
+
+**Arguments**:
+
+- `db` - The database instance to operate on.
+  
+
+**Returns**:
+
+  A tuple with the first component being the created graph relationship,
+  and the second being a boolean that is True if the relationship
+  was created in the database, and False if it was loaded instead.
 

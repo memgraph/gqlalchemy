@@ -74,5 +74,5 @@ Parse a field of arguments or returns from Query Module signature.
 
 **Arguments**:
 
-- `vars_field` - signature field inside parentheses
+- `vars_field` - signature field inside parenthesis
 
