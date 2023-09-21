@@ -78,6 +78,6 @@ memgraph_instance.is_running()
 
 ## Where to next?
 
-Hopefully, this guide has taught you how to manage Memgraph Docker instances. If
+Hopefully, this guide has taught you how to manage Memgraph binary instances. If
 you have any more questions, join our community and ping us on
 [Discord](https://discord.gg/memgraph).
