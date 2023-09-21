@@ -19,7 +19,7 @@ from datetime import datetime, date, time, timedelta
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Extra, Field, PrivateAttr  # noqa F401
+from pydantic.v1 import BaseModel, Extra, Field, PrivateAttr  # noqa F401
 
 from gqlalchemy.exceptions import (
     GQLAlchemyError,
