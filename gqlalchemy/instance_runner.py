@@ -89,9 +89,7 @@ def wait_for_port(
         delay *= backoff
 
 
-def wait_for_docker_container(
-    container, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2
-) -> None:
+def wait_for_docker_container(container, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2) -> None:
     """Wait for a Docker container to enter the status `running`.
 
     Args:
