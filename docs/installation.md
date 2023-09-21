@@ -29,13 +29,15 @@ additional import/export capabilities, use one of the following install options:
 ```bash
 pip install gqlalchemy[arrow] # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
 pip install gqlalchemy[dgl] # DGL support (also includes torch)
+pip install gqlalchemy[docker] # Docker support
 
 pip install gqlalchemy[all] # All of the above
 ```
 
 !!! note 
-    If you are using zsh terminal, you need to pass literal square brackets as an argument to a command:
-    ```
+    If you are using the zsh terminal, surround `gqlalchemy[$extras)]` with quotes:
+
+    ```bash
     pip install 'gqlalchemy[arrow]'
     ```
 
@@ -56,6 +58,7 @@ poetry install # No extras
 
 poetry install -E arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
 poetry install -E dgl # DGL support (also includes torch)
+poetry install -E docker # Docker support
 
 ```
 
@@ -72,4 +75,5 @@ If you’ve installed only certain extras, it’s also possible to run their ass
 ```bash
 poetry run pytest . -k "arrow"
 poetry run pytest . -k "dgl"
+poetry run pytest . -k "docker"
 ```
