@@ -625,31 +625,21 @@ dev = ["black", "coveralls", "mypy", "pre-commit", "pylint", "pytest (>=5)", "py
 
 [[package]]
 name = "dgl"
-version = "0.9.1"
+version = "1.1.2.post1"
 description = "Deep Graph Library"
 optional = true
 python-versions = "*"
 files = [
-    {file = "dgl-0.9.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7b9848c2c643d7b4d4c1969d05e511aff776b101c69573defd3382107b25a5c9"},
-    {file = "dgl-0.9.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:973d30b8d7aba76ad0fdc49c12f5c9359f0913be73708f9e1b6a71e40b181252"},
-    {file = "dgl-0.9.1-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:1c4c0d3f3003cdda5b3ceffafb6246a821ee7ccbd4941dfef7826e99119218bb"},
-    {file = "dgl-0.9.1-cp310-cp310-win_amd64.whl", hash = "sha256:e51b9050eb4237b2c72e3e6f78511e65e4532dfc35fb70825ad42df1aee1ad8f"},
-    {file = "dgl-0.9.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:76635838f09bef50684763d5ed81075f92e547d4c984c1cf840be16a86b5a409"},
-    {file = "dgl-0.9.1-cp36-cp36m-macosx_11_0_arm64.whl", hash = "sha256:af42754a5ac2437e5b36a9aa04403f622b846f48a4ae4e4763f09c6b00fd00fb"},
-    {file = "dgl-0.9.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:2b63fb0eb224c65113ef26cc68ef206565106b9aee6e221c7e6bfcc1cdacc5c9"},
-    {file = "dgl-0.9.1-cp36-cp36m-win_amd64.whl", hash = "sha256:b245d988954db65c002a77da3ad80f97b13cc3c1a9027799c7d239d8e7e4dbd8"},
-    {file = "dgl-0.9.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:e3ddfdbd0eca8401be2fc2ea18bef4d1c5bf9c844a67afacf54720d3a5d574da"},
-    {file = "dgl-0.9.1-cp37-cp37m-macosx_11_0_arm64.whl", hash = "sha256:14acd668646cb214f6409da09874b4237d62deef3d48a0b1a02eeefd4f84cd17"},
-    {file = "dgl-0.9.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:9d7b740db8f0b84a7d98c3557e60fb05965fe1c4ec7f91c606aa99e21f835b03"},
-    {file = "dgl-0.9.1-cp37-cp37m-win_amd64.whl", hash = "sha256:b09bd5e301b5483f9f4684fb19cfacc6d10333d54c28f345ffca3ce86afa66e1"},
-    {file = "dgl-0.9.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:71282ec77d99d2de439fcdbf3529a636b6ca80134b7ccd6926e7b5ec433d7cfe"},
-    {file = "dgl-0.9.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:10b940df11175001f0df016e004333c746b15bb22842cf1de863d20ec5b8740c"},
-    {file = "dgl-0.9.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:4be35f9942b700603d730a770ab5b24a8ed11ad6c992051dc917ccf02fae70c1"},
-    {file = "dgl-0.9.1-cp38-cp38-win_amd64.whl", hash = "sha256:9fb788b4ba2df07b19a4982700e75a143c611847a52c3c5fd670a46d33f26061"},
-    {file = "dgl-0.9.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:8c1efe436309ff7932aea1ecc2439baf8d82f478443a6a6d6e7372ab44315613"},
-    {file = "dgl-0.9.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:fecbd81a2fe1a15f3d2eb0952343ea33a406c9d3b24741e9d86cb0a5ce6946c0"},
-    {file = "dgl-0.9.1-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:242a7cf52335fa91de35b80f5c1671b0f5aede10490cf9812bb4375aa1937620"},
-    {file = "dgl-0.9.1-cp39-cp39-win_amd64.whl", hash = "sha256:e4481112f528e8d2b74e20dee2b26d0ac67de3c1872814f595a865b5ad92a241"},
+    {file = "dgl-1.1.2.post1-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:6f6d9825ca6ed22cb63abea7a1cf1cb9a3ef5242eb2875e54a96d7d2dfea32ba"},
+    {file = "dgl-1.1.2.post1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:b4d7a6b757e26346ba1ec5841a43d1122a8052c71279f0e0f322ba059513d703"},
+    {file = "dgl-1.1.2.post1-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:cd4acfb11ede14b4be45cb5a6b32398cea962ebf4d336afe99373f6c735be61a"},
+    {file = "dgl-1.1.2.post1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e590742ead12019d25d8a87a0c8ea25058acdec6f7eb6b2d9e2c01a522f8a856"},
+    {file = "dgl-1.1.2.post1-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:efe2b17b234d9b9fd9355a51486922fdde9910310ba315521c6d186a9344a73d"},
+    {file = "dgl-1.1.2.post1-cp37-cp37m-macosx_11_0_arm64.whl", hash = "sha256:fe8435ff10411220dc1e2be164cf617c2ee2a2035db39aa54dc6ba465497aa92"},
+    {file = "dgl-1.1.2.post1-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:fbd0495bf4a8ab33c3f8a11b7e0b190a021f8b3e9f26756cfce33d8745782d16"},
+    {file = "dgl-1.1.2.post1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:1ddaa7e8be8b107d5e36709d71bb4548ed4b04ac0ed3d4f359aeab3dc5ea3799"},
+    {file = "dgl-1.1.2.post1-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:19c972cef4372dad36bd8e476229eacef843e1ce9db295845ab38871d68823c3"},
+    {file = "dgl-1.1.2.post1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:6dd1c87905a91db858b1ff300b7579e0cf37f628c059fd58b155a562512b1c61"},
 ]
 
 [package.dependencies]
@@ -2111,4 +2101,4 @@ torch-pyg = ["torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "26096f744dad005f7ed256b83e58d17b3a0f90aa784555436a0c1799dc49a916"
+content-hash = "fd6fe4328447a66d6dc840f00a0ce140a7e10e76ef9fcf6b766c80f24d945f30"
