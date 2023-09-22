@@ -13,8 +13,8 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow for writing
 Either install GQLAlchemy through [pip](installation.md#pip) or [build it from
 source](installation.md#source). If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through [pip](installation.md#pip).
 
-!!! danger 
-    GQLAlchemy can't be installed with Python 3.11 [(#203)](https://github.com/memgraph/gqlalchemy/issues/203) and on Windows with Python > 3.9 [(#179)](https://github.com/memgraph/gqlalchemy/issues/179). If this is currently a blocker for you, please let us know by commenting on opened issues.
+!!! danger
+    Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy **without** the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
 
 ### 2. Connect to Memgraph
 
