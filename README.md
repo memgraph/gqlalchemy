@@ -1,6 +1,5 @@
 # GQLAlchemy
 
-
 <p>
     <a href="https://github.com/memgraph/gqlalchemy/actions"><img src="https://github.com/memgraph/gqlalchemy/workflows/Build%20and%20Test/badge.svg" /></a>
     <a href="https://github.com/memgraph/gqlalchemy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/memgraph/gqlalchemy" /></a>
@@ -16,26 +15,38 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow that allows
 
 ## Installation
 
-GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
-([PyPI](https://pypi.org/project/pymgclient/) /
-[Documentation](https://memgraph.github.io/pymgclient/) /
-[GitHub](https://github.com/memgraph/pymgclient)). 
+To install GQLAlchemy, you will need the following:
 
-To install GQLAlchemy, you first need to install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites).
+- **Python 3.8 - 3.11**
+- `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites): GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
 
-After you have installed the prerequisites, run the following command:
+> [!WARNING]  
+> Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy **without** the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
 
-`pip install gqlalchemy`
+After you’ve installed the prerequisites, run the following command to install
+GQLAlchemy:
 
-With the above command, you get the basic GQLAlchemy capabilities. To add additional import/export capabilities, install GQLAlchemy with one of the following commands:
+```bash
+pip install gqlalchemy
+```
 
-- `pip install gqlalchemy[arrow]` # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
-- `pip install gqlalchemy[dgl]` # DGL support (includes PyTorch)
-- `pip install gqlalchemy[docker]` # Docker support
+With the above command, you get the default GQLAlchemy installation which
+doesn’t include import/export support for certain formats (see below). To get
+additional import/export capabilities, use one of the following install options:
 
-- `pip install gqlalchemy[all]` # All of the above
+```bash
+pip install gqlalchemy[arrow] # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
+pip install gqlalchemy[dgl] # DGL support (also includes torch)
+pip install gqlalchemy[docker] # Docker support
 
-Users of the zsh terminal should surround `gqlalchemy[$extras)]` with quotes: `pip install 'gqlalchemy[arrow]'`
+pip install gqlalchemy[all] # All of the above
+```
+
+If you are using the zsh terminal, surround `gqlalchemy[$extras]` with quotes:
+
+    ```bash
+    pip install 'gqlalchemy[arrow]'
+    ```
 
 If you intend to use GQLAlchemy with PyTorch Geometric support, that library must be installed manually:
 
@@ -54,8 +65,8 @@ The project uses [Poetry](https://python-poetry.org/) to build the library. Clon
 poetry install --all-extras
 ```
 
-The ``poetry install --all-extras`` command installs GQLAlchemy with all extras
-(optional dependencies). Alternatively, you can use the ``-E`` option to define
+The `poetry install --all-extras` command installs GQLAlchemy with all extras
+(optional dependencies). Alternatively, you can use the `-E` option to define
 what extras to install:
 
 ```bash
@@ -81,6 +92,7 @@ poetry run pytest . -k "arrow"
 poetry run pytest . -k "dgl"
 poetry run pytest . -k "docker"
 ```
+
 ## Development (how to build)
 
 ```bash
@@ -94,12 +106,14 @@ poetry run pytest . -k "not slow and not extras"
 The GQLAlchemy documentation is available on [GitHub](https://memgraph.github.io/gqlalchemy/).
 
 The reference guide can be generated from the code by executing:
+
 ```
 pip3 install pydoc-markdown
 pydoc-markdown
 ```
 
 Other parts of the documentation are written and located at docs directory. To test the documentation locally execute:
+
 ```
 pip3 install mkdocs
 pip3 install mkdocs-material

@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.5.0 - September 22, 2023
+
+### Features and improvements
+
+- Added `get_or_create()` metod for `Node` and `Relationship` to simplify merging nodes and relationships (https://github.com/memgraph/gqlalchemy/pull/244)
+- Added spelling fixes (https://github.com/memgraph/gqlalchemy/pull/251)
+- Turned `docker` into an optional dependency (https://github.com/memgraph/gqlalchemy/pull/279)
+
+### Bug fixes
+
+- Fixed typing for `get_triggers` method (https://github.com/memgraph/gqlalchemy/pull/260)
+
+### Updates
+
+- Added support for Python 3.11 on Linux (https://github.com/memgraph/gqlalchemy/pull/281)
+- Added support for Python 3.10 on Windows (https://github.com/memgraph/gqlalchemy/pull/281)
+- Relaxed `neo4j` dependency (https://github.com/memgraph/gqlalchemy/pull/263/files)
+- Bumped `pydantic` to v2 (https://github.com/memgraph/gqlalchemy/pull/278)
+
+**Special thanks to all our outside contributors for their efforts!** 👏
+
+!!! note
+We are hoping to have full support for Python 3.11 soon. Please [open an issue](https://github.com/memgraph/gqlalchemy/issues) if you have any blockers with the current update.
+
 ## v1.4.1 - April 19, 2023
 
 ### Features and improvements
@@ -40,8 +64,8 @@
 - Updated all dependencies [#194](https://github.com/memgraph/gqlalchemy/pull/194)
 
 ## v1.3 - Jun 14, 2022
-!!! warning
-    ### Breaking Changes
+
+!!! warning ### Breaking Changes
 
     - Renamed keyword argument `edge_label` to `relationship_type` in `to()` and `from()` methods in the query builder. [#145](https://github.com/memgraph/gqlalchemy/pull/145)
 
@@ -54,7 +78,7 @@
 - Added `foreach()` method to the query builder. [#135](https://github.com/memgraph/gqlalchemy/pull/135)
 - Added `load_csv()` and `return()` methods from the query builder to base classes list. [#139](https://github.com/memgraph/gqlalchemy/pull/139)
 - Added new argument types in `return_()`, `yield_()` and `with_()` methods in the query builder. [#146](https://github.com/memgraph/gqlalchemy/pull/146)
-- Added `IntegratedAlgorithm` class instance as argument in `to()` and `from()` methods in the query builder. [#141](https://github.com/memgraph/gqlalchemy/pull/141) 
+- Added `IntegratedAlgorithm` class instance as argument in `to()` and `from()` methods in the query builder. [#141](https://github.com/memgraph/gqlalchemy/pull/141)
 - Extended `IntegratedAlgorithm` class with the Breadth-first search algorithm. [#142](https://github.com/memgraph/gqlalchemy/pull/142)
 - Extended `IntegratedAlgorithm` class with the Weighted shortest path algorithm. [#143](https://github.com/memgraph/gqlalchemy/pull/143)
 - Extended `IntegratedAlgorithm` class with the Depth-first search algorithm. [#144](https://github.com/memgraph/gqlalchemy/pull/144)
@@ -71,17 +95,14 @@
 - Added `Operator` enum which can be used as `operator` value in `set_()` and `where()` methods in the query builder. [#165](https://github.com/memgraph/gqlalchemy/pull/165)
 - Added an extension to the `QueryBuilder` class to support and autocomplete integrated and MAGE query modules. [#168](https://github.com/memgraph/gqlalchemy/pull/168)
 
-
 ### Bug fixes
 
 - Fixed the unbound variable error in the return statement of the Cypher query in `memgraph.save_relationship_with_id()`. [#166](https://github.com/memgraph/gqlalchemy/pull/166)
 - Fixed checking if `None` for `Optional` properties. [#167](https://github.com/memgraph/gqlalchemy/pull/167)
 
-
 ## v1.2 - Apr 12, 2022
 
-!!! warning
-    ### Breaking Changes
+!!! warning ### Breaking Changes
 
     - Ordering query results as in GQLAlchemy older than 1.2 will not be possible.
     - `where()`, `and_where()` and `or_where()` methods can't be used as in
