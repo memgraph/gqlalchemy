@@ -1,5 +1,5 @@
 !!! info
-    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../installation.md) with the `docker` extra.
+    The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to [install GQLAlchemy](../../installation.md) with the `docker` extra.
 
 # How to manage Memgraph Docker instances in Python
 
