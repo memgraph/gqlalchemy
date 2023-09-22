@@ -1879,9 +1879,9 @@
 <h2 id="nxtranslator-objects">NxTranslator Objects</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">NxTranslator</span><span class="p">(</span><span class="n">Translator</span><span class="p">)</span>
 </code></pre></div>
-<p>Uses original ids from Memgraph. Labels are encoded as properties. Since Networkx allows
+<p>Uses original ids from Memgraph. Labels are encoded as properties. Since NetworkX allows
 that nodes have properties of different dimensionality, this modules makes use of it and stores properties
-as dictionary entries. All properties are saved to Networkx data structure.</p>
+as dictionary entries. All properties are saved to NetworkX data structure.</p>
 <h4 id="to_cypher_queries">to_cypher_queries</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">to_cypher_queries</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
                       <span class="n">config</span><span class="p">:</span> <span class="n">NetworkXCypherConfig</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -1895,7 +1895,7 @@ as dictionary entries. All properties are saved to Networkx data structure.</p>
 <h4 id="get_instance">get_instance</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_instance</span><span class="p">()</span>
 </code></pre></div>
-<p>Creates Networx instance of the graph from the data residing inside Memgraph. Since Networkx doesn&#x27;t support labels in a way Memgraph does, labels
+<p>Creates NetworkX instance of the graph from the data residing inside Memgraph. Since NetworkX doesn&#x27;t support labels in a way Memgraph does, labels
 are encoded as a node and edge properties.</p>
 
 

@@ -1723,6 +1723,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#get_or_create" class="md-nav__link">
+    get_or_create
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1766,6 +1773,13 @@
           <li class="md-nav__item">
   <a href="#load_1" class="md-nav__link">
     load
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_or_create_1" class="md-nav__link">
+    get_or_create
   </a>
   
 </li>
@@ -2099,6 +2113,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#get_or_create" class="md-nav__link">
+    get_or_create
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2142,6 +2163,13 @@
           <li class="md-nav__item">
   <a href="#load_1" class="md-nav__link">
     load
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_or_create_1" class="md-nav__link">
+    get_or_create
   </a>
   
 </li>
@@ -2295,6 +2323,18 @@ those unique fields set.
 Otherwise it tries to find any node in Memgraph that has all properties
 set to exactly the same values.
 If no node is found or no properties are set it raises a GQLAlchemyError.</p>
+<h4 id="get_or_create">get_or_create</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_or_create</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="s2">&quot;Database&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;Node&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>
+</code></pre></div>
+<p>Return the node and a flag for whether it was created in the database.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>db</code> - The database instance to operate on.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A tuple with the first component being the created graph node,
+  and the second being a boolean that is True if the node
+  was created in the database, and False if it was loaded instead.</p>
 <h2 id="relationshipmetaclass-objects">RelationshipMetaclass Objects</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">RelationshipMetaclass</span><span class="p">(</span><span class="n">BaseModel</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
 </code></pre></div>
@@ -2327,6 +2367,18 @@ and relationship._end_node_id and all relationship properties that
 are not None match the relationship in Memgraph.
 If there is no relationship like that in Memgraph, or if there are
 multiple relationships like that in Memgraph, throws GQLAlchemyError.</p>
+<h4 id="get_or_create_1">get_or_create</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_or_create</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="s2">&quot;Database&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;Relationship&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>
+</code></pre></div>
+<p>Return the relationship and a flag for whether it was created in the database.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>db</code> - The database instance to operate on.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>A tuple with the first component being the created graph relationship,
+  and the second being a boolean that is True if the relationship
+  was created in the database, and False if it was loaded instead.</p>
 
 
 

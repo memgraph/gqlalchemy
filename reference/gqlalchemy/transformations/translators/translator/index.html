@@ -1846,7 +1846,7 @@
 <div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span> <span class="nf">to_cypher_queries</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
 </code></pre></div>
-<p>Abstract method which doesn&#x27;t know how to produce cypher queries for a specific graph type and thus needs to be overriden.</p>
+<p>Abstract method which doesn&#x27;t know how to produce cypher queries for a specific graph type and thus needs to be overridden.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
 <li><code>graph</code> - Can be of any type supported by the derived Translator object.</li>
@@ -1859,7 +1859,7 @@
 <div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span> <span class="nf">get_instance</span><span class="p">()</span>
 </code></pre></div>
-<p>Abstract method which doesn&#x27;t know how to create the concrete instance so it needs to be overriden.</p>
+<p>Abstract method which doesn&#x27;t know how to create the concrete instance so it needs to be overridden.</p>
 <p><strong>Raises</strong>:</p>
 <ul>
 <li><code>NotImplementedError</code> - The method must be override by a specific translator.</li>

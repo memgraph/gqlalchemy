@@ -3208,7 +3208,7 @@ used as starting points or criteria in the next.</p>
 <p><strong>Returns</strong>:</p>
 <p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
 <p><strong>Example</strong>:</p>
-<p>Pipe the result from first part of the query for the futher use:</p>
+<p>Pipe the result from first part of the query for the further use:</p>
 <ul>
 <li><code>Python</code> - <code>match().node(variable=&amp;#x27;n&amp;#x27;).with(&amp;#x27;n&amp;#x27;).execute()</code></li>
 <li><code>Cypher</code> - `MATCH (n) WITH n;</li>
@@ -3225,7 +3225,7 @@ used as starting points or criteria in the next.</p>
 <p><strong>Returns</strong>:</p>
 <p>A <code>DeclarativeBase</code> instance for constructing queries.</p>
 <p><strong>Examples</strong>:</p>
-<p>Combine querties and retain duplicates:</p>
+<p>Combine queries and retain duplicates:</p>
 <ul>
 <li><code>Python</code> - <code>match().node(variable=&amp;quot;c&amp;quot;, labels=&amp;quot;Country&amp;quot;).return_(results=(&amp;quot;c.name&amp;quot;, &amp;quot;columnName&amp;quot;)).union().match().node(variable=&amp;quot;p&amp;quot;, labels=&amp;quot;Person&amp;quot;).return_(results=(&amp;quot;p.name&amp;quot;, &amp;quot;columnName&amp;quot;)).execute()</code></li>
 <li><code>Cypher</code> - <code>MATCH (c:Country) RETURN c.name AS columnName UNION ALL MATCH (p:Person) RETURN p.name AS columnName;</code></li>

@@ -2103,7 +2103,7 @@ lambda.</p>
 <h2 id="weightedshortestpath-objects">WeightedShortestPath Objects</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">WeightedShortestPath</span><span class="p">(</span><span class="n">IntegratedAlgorithm</span><span class="p">)</span>
 </code></pre></div>
-<p>Build a Djikstra shortest path call for a Cypher query.</p>
+<p>Build a Dijkstra shortest path call for a Cypher query.</p>
 <p>The weighted shortest path algorithm can be called in Memgraph with Cypher
 queries such as:
 &quot; MATCH (a {id: 723})-[r <em>WSHORTEST 10 (r, n | r.weight) weight_sum
@@ -2129,7 +2129,7 @@ is a filter lambda, used to filter which relationships and nodes to use.</p>
 <h2 id="allshortestpath-objects">AllShortestPath Objects</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">AllShortestPath</span><span class="p">(</span><span class="n">IntegratedAlgorithm</span><span class="p">)</span>
 </code></pre></div>
-<p>Build a Djikstra shortest path call for a Cypher query.</p>
+<p>Build a Dijkstra shortest path call for a Cypher query.</p>
 <p>The weighted shortest path algorithm can be called in Memgraph with Cypher
 queries such as:
 &quot; MATCH (a {id: 723})-[r <em>ALLSHORTEST 10 (r, n | r.weight) total_weight

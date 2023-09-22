@@ -1797,17 +1797,20 @@ triggers. </p>
 </div>
 <h2 id="1-create-the-trigger">1. Create the trigger</h2>
 <p>To set up the trigger, first, create a <code>MemgraphTrigger</code> object with all the
-required arguments:
-- <code>name: str</code> ➡ The name of the trigger.
-- <code>event_type: TriggerEventType</code> ➡ The type of event that will trigger the
+required arguments:</p>
+<ul>
+<li><code>name: str</code> ➡ The name of the trigger.</li>
+<li><code>event_type: TriggerEventType</code> ➡ The type of event that will trigger the
   execution. The options are: <code>TriggerEventType.CREATE</code>,
-  <code>TriggerEventType.UPDATE</code> and <code>TriggerEventType.DELETE</code>.
-- <code>event_object: TriggerEventObject</code> ➡ The objects that are affected with the
-  <code>event_type</code>. The options are: <code>`TriggerEventObject.ALL,</code>TriggerEventObject.NODE<code>and</code>TriggerEventObject.RELATIONSHIP<code>.
--</code>execution_phase: TriggerExecutionPhase<code>➡ The phase when the trigger should
-  be executed in regard to the transaction commit. The options are:</code>BEFORE<code>and</code>AFTER<code>.
--</code>statement: str` ➡ The Cypher query that should be executed when the trigger
-  fires.</p>
+  <code>TriggerEventType.UPDATE</code> and <code>TriggerEventType.DELETE</code>.</li>
+<li><code>event_object: TriggerEventObject</code> ➡ The objects that are affected with the
+  <code>event_type</code>. The options are: <code>`TriggerEventObject.ALL,</code>TriggerEventObject.NODE<code>and</code>TriggerEventObject.RELATIONSHIP`.</li>
+<li><code>execution_phase: TriggerExecutionPhase</code> ➡ The phase when the trigger should
+  be executed in regard to the transaction commit. The options are: <code>BEFORE</code> and
+  <code>AFTER</code>.</li>
+<li><code>statement: str</code> ➡ The Cypher query that should be executed when the trigger
+  fires.</li>
+</ul>
 <p>Now, let's create a trigger in GQLAlchemy:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">Memgraph</span><span class="p">,</span> <span class="n">MemgraphTrigger</span>
 <span class="kn">from</span> <span class="nn">gqlalchemy.models</span> <span class="kn">import</span> <span class="p">(</span>

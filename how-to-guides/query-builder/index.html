@@ -2236,36 +2236,52 @@
 <h1 id="how-to-use-query-builder">How to use query builder</h1>
 <p>import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';</p>
-<p>Through this guide, you will learn how to use GQLAlchemy query builder to:
-- <a href="#create-nodes-and-relationships"><strong>Create nodes and relationships</strong></a>
-    - <a href="#create-a-node"><strong>Create a node</strong></a>
-    - <a href="#create-a-relationship"><strong>Create a relationship</strong></a>
-- <a href="#merge-nodes-and-relationships"><strong>Merge nodes and relationships</strong></a>
-    - <a href="#merge-a-node"><strong>Merge a node</strong></a>
-    - <a href="#merge-a-relationship"><strong>Merge a relationship</strong></a>
-- <a href="#set-or-update-properties-and-labels"><strong>Set or update properties and labels</strong></a>
-    - <a href="#set-a-property"><strong>Set a property</strong></a>
-    - <a href="#set-a-label"><strong>Set a label</strong></a>
-    - <a href="#replace-all-properties"><strong>Replace all properties</strong></a>
-    - <a href="#update-all-properties"><strong>Update all properties</strong></a>
-- <a href="#filter-data"><strong>Filter data</strong></a>
-    - <a href="#filter-data-by-property-comparison"><strong>Filter data by property comparison</strong></a>
-    - <a href="#filter-data-by-property-value"><strong>Filter data by property value</strong></a>
-    - <a href="#filter-data-by-label"><strong>Filter data by label</strong></a>
-- <a href="#return-results"><strong>Return results</strong></a>
-    - <a href="#return-all-variables-from-a-query"><strong>Return all variables from a query</strong></a>
-    - <a href="#return-specific-variables-from-a-query"><strong>Return specific variables from a query</strong></a>
-    - <a href="#limit-the-number-of-returned-results"><strong>Limit the number of returned results</strong></a>
-    - <a href="#order-the-returned-results"><strong>Order the returned results</strong></a>
-    - <a href="#order-by-a-list-of-values"><strong>Order by a list of values</strong></a>
-- <a href="#delete-and-remove-objects"><strong>Delete and remove objects</strong></a>
-    - <a href="#delete-a-node"><strong>Delete a node</strong></a>
-    - <a href="#delete-a-relationship"><strong>Delete a relationship</strong></a>
-    - <a href="#remove-properties"><strong>Remove properties</strong></a>
-- <a href="#call-procedures"><strong>Call procedures</strong></a>
-    - <a href="#call-procedure-with-no-arguments"><strong>Call procedure with no arguments</strong></a>
-    - <a href="#call-procedure-with-arguments"><strong>Call procedure with arguments</strong></a>
-- <a href="#load-csv-file"><strong>Load CSV file</strong></a></p>
+<p>Through this guide, you will learn how to use the GQLAlchemy query builder to:</p>
+<ul>
+<li><a href="#create-nodes-and-relationships"><strong>Create nodes and relationships</strong></a><ul>
+<li><a href="#create-a-node"><strong>Create a node</strong></a></li>
+<li><a href="#create-a-relationship"><strong>Create a relationship</strong></a></li>
+</ul>
+</li>
+<li><a href="#merge-nodes-and-relationships"><strong>Merge nodes and relationships</strong></a><ul>
+<li><a href="#merge-a-node"><strong>Merge a node</strong></a></li>
+<li><a href="#merge-a-relationship"><strong>Merge a relationship</strong></a></li>
+</ul>
+</li>
+<li><a href="#set-or-update-properties-and-labels"><strong>Set or update properties and labels</strong></a><ul>
+<li><a href="#set-a-property"><strong>Set a property</strong></a></li>
+<li><a href="#set-a-label"><strong>Set a label</strong></a></li>
+<li><a href="#replace-all-properties"><strong>Replace all properties</strong></a></li>
+<li><a href="#update-all-properties"><strong>Update all properties</strong></a></li>
+</ul>
+</li>
+<li><a href="#filter-data"><strong>Filter data</strong></a><ul>
+<li><a href="#filter-data-by-property-comparison"><strong>Filter data by property comparison</strong></a></li>
+<li><a href="#filter-data-by-property-value"><strong>Filter data by property value</strong></a></li>
+<li><a href="#filter-data-by-label"><strong>Filter data by label</strong></a></li>
+</ul>
+</li>
+<li><a href="#return-results"><strong>Return results</strong></a><ul>
+<li><a href="#return-all-variables-from-a-query"><strong>Return all variables from a query</strong></a></li>
+<li><a href="#return-specific-variables-from-a-query"><strong>Return specific variables from a query</strong></a></li>
+<li><a href="#limit-the-number-of-returned-results"><strong>Limit the number of returned results</strong></a></li>
+<li><a href="#order-the-returned-results"><strong>Order the returned results</strong></a></li>
+<li><a href="#order-by-a-list-of-values"><strong>Order by a list of values</strong></a></li>
+</ul>
+</li>
+<li><a href="#delete-and-remove-objects"><strong>Delete and remove objects</strong></a><ul>
+<li><a href="#delete-a-node"><strong>Delete a node</strong></a></li>
+<li><a href="#delete-a-relationship"><strong>Delete a relationship</strong></a></li>
+<li><a href="#remove-properties"><strong>Remove properties</strong></a></li>
+</ul>
+</li>
+<li><a href="#call-procedures"><strong>Call procedures</strong></a><ul>
+<li><a href="#call-procedure-with-no-arguments"><strong>Call procedure with no arguments</strong></a></li>
+<li><a href="#call-procedure-with-arguments"><strong>Call procedure with arguments</strong></a></li>
+</ul>
+</li>
+<li><a href="#load-csv-file"><strong>Load CSV file</strong></a></li>
+</ul>
 <blockquote>
 <p>Hopefully, this guide will teach you how to properly use GQLAlchemy query builder. If you
 have any more questions, join our community and ping us on <a href="https://discord.gg/memgraph">Discord</a>.</p>

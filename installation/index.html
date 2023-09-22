@@ -294,8 +294,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-with-pip-pip" class="md-nav__link">
-    Install with pip {#pip}
+  <a href="#install-with-pip" class="md-nav__link">
+    Install with pip
   </a>
   
 </li>
@@ -1752,8 +1752,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-with-pip-pip" class="md-nav__link">
-    Install with pip {#pip}
+  <a href="#install-with-pip" class="md-nav__link">
+    Install with pip
   </a>
   
 </li>
@@ -1789,14 +1789,14 @@ as pip and Poetry, and by building it from source.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>To install GQLAlchemy, you will need the following:</p>
 <ul>
-<li><strong>Python 3.8 - 3.10</strong></li>
-<li>GQLAlchemy is built on top of Memgraph's low-level Python client <code>pymgclient</code>, so you need to install <code>pymgclient</code> <a href="https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites">build prerequisites</a>.</li>
+<li><strong>Python 3.8 - 3.11</strong></li>
+<li><code>pymgclient</code> <a href="https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites">build prerequisites</a>: GQLAlchemy is built on top of Memgraph's low-level Python client <code>pymgclient</code></li>
 </ul>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
-<p>GQLAlchemy can't be installed with Python 3.11 <a href="https://github.com/memgraph/gqlalchemy/issues/203">(#203)</a> and on Windows with Python &gt;= 3.10 <a href="https://github.com/memgraph/gqlalchemy/issues/179">(#179)</a>. If this is currently a blocker for you, please let us know by commenting on opened issues.</p>
 </div>
-<h2 id="install-with-pip-pip">Install with pip {#pip}</h2>
+<p>Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy <strong>without</strong> the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by <a href="https://github.com/memgraph/gqlalchemy/issues">opening an issue</a>.</p>
+<h2 id="install-with-pip">Install with pip</h2>
 <p>After you’ve installed the prerequisites, run the following command to install
 GQLAlchemy:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy
@@ -1806,15 +1806,22 @@ doesn’t include import/export support for certain formats (see below). To get
 additional import/export capabilities, use one of the following install options:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class="o">[</span>arrow<span class="o">]</span><span class="w"> </span><span class="c1"># Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats</span>
 pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class="o">[</span>dgl<span class="o">]</span><span class="w"> </span><span class="c1"># DGL support (also includes torch)</span>
+pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class="o">[</span>docker<span class="o">]</span><span class="w"> </span><span class="c1"># Docker support</span>
 
 pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class="o">[</span>all<span class="o">]</span><span class="w"> </span><span class="c1"># All of the above</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If you are using zsh terminal, you need to pass literal square brackets as an argument to a command:
-<div class="highlight"><pre><span></span><code>pip install &#39;gqlalchemy[arrow]&#39;
-</code></pre></div></p>
 </div>
+<p>If you are using the zsh terminal, surround <code>gqlalchemy[$extras)]</code> with quotes:</p>
+<pre><code>```bash
+pip install 'gqlalchemy[arrow]'
+```
+</code></pre>
+<p>If you intend to use GQLAlchemy with PyTorch Geometric support, that library must be installed manually:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class="o">[</span>torch_pyg<span class="o">]</span><span class="w"> </span><span class="c1"># prerequisite</span>
+pip<span class="w"> </span>install<span class="w"> </span>torch-scatter<span class="w"> </span>torch-sparse<span class="w"> </span>torch-cluster<span class="w"> </span>torch-spline-conv<span class="w"> </span>torch-geometric<span class="w"> </span>-f<span class="w"> </span>https://data.pyg.org/whl/torch-1.13.0+cpu.html<span class="s2">&quot;</span>
+</code></pre></div>
 <h2 id="build-from-source">Build from source</h2>
 <p>Clone or download the <a href="https://github.com/memgraph/gqlalchemy">GQLAlchemy source code</a> locally and run the following command to build it from source with Poetry:</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install<span class="w"> </span>--all-extras
@@ -1826,6 +1833,7 @@ what extras to install:</p>
 
 poetry<span class="w"> </span>install<span class="w"> </span>-E<span class="w"> </span>arrow<span class="w"> </span><span class="c1"># Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats</span>
 poetry<span class="w"> </span>install<span class="w"> </span>-E<span class="w"> </span>dgl<span class="w"> </span><span class="c1"># DGL support (also includes torch)</span>
+poetry<span class="w"> </span>install<span class="w"> </span>-E<span class="w"> </span>docker<span class="w"> </span><span class="c1"># Docker support</span>
 </code></pre></div>
 <p>To run the tests, make sure you have an <a href="https://memgraph.com/docs/getting-started/install-memgraph">active Memgraph instance</a>, and execute one of the following commands:</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>.<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;not slow&quot;</span><span class="w"> </span><span class="c1"># If all extras installed</span>
@@ -1835,6 +1843,7 @@ poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> 
 <p>If you’ve installed only certain extras, it’s also possible to run their associated tests:</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>.<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;arrow&quot;</span>
 poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>.<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;dgl&quot;</span>
+poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>.<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;docker&quot;</span>
 </code></pre></div>
 
 
