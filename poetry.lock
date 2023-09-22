@@ -1623,17 +1623,17 @@ pytest = ">=3.5"
 
 [[package]]
 name = "pytest-timeout"
-version = "1.4.2"
-description = "py.test plugin to abort hanging tests"
+version = "2.1.0"
+description = "pytest plugin to abort hanging tests"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "pytest-timeout-1.4.2.tar.gz", hash = "sha256:20b3113cf6e4e80ce2d403b6fb56e9e1b871b510259206d40ff8d609f48bda76"},
-    {file = "pytest_timeout-1.4.2-py2.py3-none-any.whl", hash = "sha256:541d7aa19b9a6b4e475c759fd6073ef43d7cdc9a92d95644c260076eb257a063"},
+    {file = "pytest-timeout-2.1.0.tar.gz", hash = "sha256:c07ca07404c612f8abbe22294b23c368e2e5104b521c1790195561f37e1ac3d9"},
+    {file = "pytest_timeout-2.1.0-py3-none-any.whl", hash = "sha256:f6f50101443ce70ad325ceb4473c4255e9d74e3c7cd0ef827309dfa4c0d975c6"},
 ]
 
 [package.dependencies]
-pytest = ">=3.6.0"
+pytest = ">=5.0.0"
 
 [[package]]
 name = "python-dateutil"
@@ -2077,4 +2077,4 @@ torch-pyg = ["torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "54948b9d8d86cea2eeef5de844cd1c231bdc93b3cfb7c903e4256ba853f71223"
+content-hash = "5c4b67c7eed2c0e32a30d287778d4d6c5e1c88b087f70dd7e4684b088b8e3015"
