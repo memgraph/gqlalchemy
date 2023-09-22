@@ -1831,7 +1831,7 @@
 source</a>. If you are using <a href="https://docs.conda.io/en/latest/">Conda</a> for Python environment management, you can install GQLAlchemy through <a href="installation/#pip">pip</a>.</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
-<p>GQLAlchemy can't be installed with Python 3.11 <a href="https://github.com/memgraph/gqlalchemy/issues/203">(#203)</a> and on Windows with Python &gt; 3.9 <a href="https://github.com/memgraph/gqlalchemy/issues/179">(#179)</a>. If this is currently a blocker for you, please let us know by commenting on opened issues.</p>
+<p>Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy <strong>without</strong> the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by <a href="https://github.com/memgraph/gqlalchemy/issues">opening an issue</a>.</p>
 </div>
 <h3 id="2-connect-to-memgraph">2. Connect to Memgraph</h3>
 <p>Check the <a href="https://memgraph.com/docs">Python quick start guide</a> to learn how to connect to Memgraph using GQLAlchemy.</p>
