@@ -6,6 +6,9 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.superfences
 
+plugins:
+  - social
+
 theme:
   name: 'material'
   logo: 'assets/memgraph-logo.svg'
