@@ -44,9 +44,9 @@ pip install gqlalchemy[all] # All of the above
 
 If you are using the zsh terminal, surround `gqlalchemy[$extras]` with quotes:
 
-    ```bash
-    pip install 'gqlalchemy[arrow]'
-    ```
+```bash
+pip install 'gqlalchemy[arrow]'
+```
 
 If you intend to use GQLAlchemy with PyTorch Geometric support, that library must be installed manually:
 
