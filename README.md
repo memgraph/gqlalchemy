@@ -18,7 +18,14 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow that allows
 To install GQLAlchemy, you will need the following:
 
 - **Python 3.8 - 3.11**
-- `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites): GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
+- `pymgclient` [build
+  prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites):
+  GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`.
+  To install `pymgclient` run the following command:
+
+  ```bash
+pip install --user pymgclient
+```
 
 > [!WARNING]  
 > Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy **without** the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
@@ -123,7 +130,7 @@ mkdocs serve
 
 ## License
 
-Copyright (c) 2016-2022 [Memgraph Ltd.](https://memgraph.com)
+Copyright (c) 2016-2023 [Memgraph Ltd.](https://memgraph.com)
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 this file except in compliance with the License. You may obtain a copy of the
