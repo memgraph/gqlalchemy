@@ -22,7 +22,7 @@
 **Special thanks to all our outside contributors for their efforts!** 👏
 
 !!! note
-We are hoping to have full support for Python 3.11 soon. Please [open an issue](https://github.com/memgraph/gqlalchemy/issues) if you have any blockers with the current update.
+    We are hoping to have full support for Python 3.11 soon. Please [open an issue](https://github.com/memgraph/gqlalchemy/issues) if you have any blockers with the current update.
 
 ## v1.4.1 - April 19, 2023
 

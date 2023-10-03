@@ -8,7 +8,14 @@ as pip and Poetry, and by building it from source.
 To install GQLAlchemy, you will need the following:
 
 - **Python 3.8 - 3.11**
-- `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites): GQLAlchemy is built on top of Memgraph's low-level Python client `pymgclient`
+- [`pymgclient`](https://github.com/memgraph/pymgclient):
+
+    * Install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites)
+    * Install `pymgclient` via pip:
+
+    ```bash
+    pip install --user pymgclient
+    ```
 
 !!! danger
     Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy **without** the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
@@ -34,13 +41,6 @@ pip install gqlalchemy[docker] # Docker support
 pip install gqlalchemy[all] # All of the above
 ```
 
-!!! note
-If you are using the zsh terminal, surround `gqlalchemy[$extras)]` with quotes:
-
-    ```bash
-    pip install 'gqlalchemy[arrow]'
-    ```
-
 If you intend to use GQLAlchemy with PyTorch Geometric support, that library must be installed manually:
 
 ```bash
@@ -48,6 +48,11 @@ pip install gqlalchemy[torch_pyg] # prerequisite
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html"
 ```
 
+!!! note
+    If you are using the zsh terminal, surround `gqlalchemy[$extras]` with quotes:
+    ```bash
+    pip install 'gqlalchemy[arrow]'
+    ```
 ## Build from source
 
 Clone or download the [GQLAlchemy source code](https://github.com/memgraph/gqlalchemy) locally and run the following command to build it from source with Poetry:
