@@ -1790,7 +1790,15 @@ as pip and Poetry, and by building it from source.</p>
 <p>To install GQLAlchemy, you will need the following:</p>
 <ul>
 <li><strong>Python 3.8 - 3.11</strong></li>
-<li><code>pymgclient</code> <a href="https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites">build prerequisites</a>: GQLAlchemy is built on top of Memgraph's low-level Python client <code>pymgclient</code></li>
+<li>
+<p><a href="https://github.com/memgraph/pymgclient"><code>pymgclient</code></a>:</p>
+<ul>
+<li>Install <code>pymgclient</code> <a href="https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites">build prerequisites</a></li>
+<li>Install <code>pymgclient</code> via pip:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>pymgclient
+</code></pre></div>
+</li>
 </ul>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -1810,18 +1818,16 @@ pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class=
 
 pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class="o">[</span>all<span class="o">]</span><span class="w"> </span><span class="c1"># All of the above</span>
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-</div>
-<p>If you are using the zsh terminal, surround <code>gqlalchemy[$extras)]</code> with quotes:</p>
-<pre><code>```bash
-pip install 'gqlalchemy[arrow]'
-```
-</code></pre>
 <p>If you intend to use GQLAlchemy with PyTorch Geometric support, that library must be installed manually:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>gqlalchemy<span class="o">[</span>torch_pyg<span class="o">]</span><span class="w"> </span><span class="c1"># prerequisite</span>
 pip<span class="w"> </span>install<span class="w"> </span>torch-scatter<span class="w"> </span>torch-sparse<span class="w"> </span>torch-cluster<span class="w"> </span>torch-spline-conv<span class="w"> </span>torch-geometric<span class="w"> </span>-f<span class="w"> </span>https://data.pyg.org/whl/torch-1.13.0+cpu.html<span class="s2">&quot;</span>
 </code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are using the zsh terminal, surround <code>gqlalchemy[$extras]</code> with quotes:
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;gqlalchemy[arrow]&#39;</span>
+</code></pre></div></p>
+</div>
 <h2 id="build-from-source">Build from source</h2>
 <p>Clone or download the <a href="https://github.com/memgraph/gqlalchemy">GQLAlchemy source code</a> locally and run the following command to build it from source with Poetry:</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install<span class="w"> </span>--all-extras
