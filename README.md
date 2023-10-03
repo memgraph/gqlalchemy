@@ -32,7 +32,7 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow that allows
 
 ### Install GQLAlchemy
 
-After you’ve installed the prerequisites, run the following command to install
+After you’ve installed the [prerequisites](#prerequisites), run the following command to install
 GQLAlchemy:
 
 ```bash
