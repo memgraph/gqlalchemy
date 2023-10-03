@@ -51,17 +51,17 @@ pip install gqlalchemy[docker] # Docker support
 pip install gqlalchemy[all] # All of the above
 ```
 
-If you are using the zsh terminal, surround `gqlalchemy[$extras]` with quotes:
-
-```bash
-pip install 'gqlalchemy[arrow]'
-```
-
 If you intend to use GQLAlchemy with PyTorch Geometric support, that library must be installed manually:
 
 ```bash
 pip install gqlalchemy[torch_pyg] # prerequisite
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html"
+```
+
+If you are using the zsh terminal, surround `gqlalchemy[$extras]` with quotes:
+
+```bash
+pip install 'gqlalchemy[arrow]'
 ```
 
 If you are using [Conda](https://docs.conda.io/en/latest/) for Python environment management, you can install GQLAlchemy through pip.
