@@ -24,8 +24,6 @@ To follow this guide, you will need:
 
 - A **running Memgraph instance**. If you need to set up Memgraph, take a look
   at the [Installation guide](https://memgraph.com/docs/getting-started/install-memgraph).
-- The [**GQLAlchemy client**](https://github.com/memgraph/gqlalchemy). A
-  Memgraph OGM (Object Graph Mapper) for the Python programming language.
 
 **Basic setup**
 
