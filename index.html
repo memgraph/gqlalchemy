@@ -1834,7 +1834,54 @@ source</a>. If you are using <a href="https://docs.conda.io/en/latest/">Conda</a
 <p>Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy <strong>without</strong> the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by <a href="https://github.com/memgraph/gqlalchemy/issues">opening an issue</a>.</p>
 </div>
 <h3 id="2-connect-to-memgraph">2. Connect to Memgraph</h3>
-<p>Check the <a href="https://memgraph.com/docs">Python quick start guide</a> to learn how to connect to Memgraph using GQLAlchemy.</p>
+<p><strong>Prerequisites</strong></p>
+<p>To follow this guide, you will need:</p>
+<ul>
+<li>A <strong>running Memgraph instance</strong>. If you need to set up Memgraph, take a look
+  at the <a href="https://memgraph.com/docs/getting-started/install-memgraph">Installation guide</a>.</li>
+</ul>
+<p><strong>Basic setup</strong></p>
+<p>We'll be using a <strong>Python program</strong> to demonstrate how to connect to a running
+Memgraph database instance.<br /></p>
+<p>Let's jump in and connect a simple program to Memgraph.</p>
+<p><strong>1.</strong> Create a new directory for your program, for example, <code>/memgraph_python</code>
+and position yourself in it.<br /> </p>
+<p><strong>2.</strong> Create a new Python script and name it <code>program.py</code> . Add the following
+code to it:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">gqlalchemy</span> <span class="kn">import</span> <span class="n">Memgraph</span>
+
+<span class="c1"># Make a connection to the database</span>
+<span class="n">memgraph</span> <span class="o">=</span> <span class="n">Memgraph</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">7687</span><span class="p">)</span>
+
+<span class="c1"># Delete all nodes and relationships</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;MATCH (n) DETACH DELETE n&quot;</span>
+
+<span class="c1"># Execute the query</span>
+<span class="n">memgraph</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+<span class="c1"># Create a node with the label FirstNode and message property with the value &quot;Hello, World!&quot;</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE (n:FirstNode)</span>
+<span class="s2">           SET n.message = &#39;</span><span class="si">{message}</span><span class="s2">&#39;</span>
+<span class="s2">           RETURN &#39;Node &#39;  + id(n) + &#39;: &#39; + n.message AS result&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;Hello, World!&quot;</span><span class="p">)</span>
+
+<span class="c1"># Execute the query</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">memgraph</span><span class="o">.</span><span class="n">execute_and_fetch</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+<span class="c1"># Print the first member</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">])</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the program fails to connect to a Memgraph instance that was started with Docker, you may need to use a different IP address (not the default <code>localhost</code> / <code>127.0.0.1</code> ) to connect to the instance. You can find the <strong><code>CONTAINER_ID</code></strong> with <code>docker ps</code> and use it in the following command to retrieve the address:
+<div class="highlight"><pre><span></span><code>docker inspect -f &#39;{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}&#39; CONTAINER_ID
+</code></pre></div></p>
+</div>
+<p><strong>3.</strong> Now, you can run the application with the following command:</p>
+<div class="highlight"><pre><span></span><code>python ./program.py
+</code></pre></div>
+<p>You should see an output similar to the following:</p>
+<div class="highlight"><pre><span></span><code>Node 1: Hello, World!
+</code></pre></div>
 <h3 id="3-learn-how-to-use-gqlalchemy">3. Learn how to use GQLAlchemy</h3>
 <p>With the help of the <a href="how-to-guides/overview/">How-to guides</a> you can learn how to use GQLAlchemy's features, such as object graph mapper and query builder. </p>
 <h3 id="3-check-the-reference-guide">3. Check the reference guide</h3>
