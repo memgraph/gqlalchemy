@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.5.1 - January 8, 2024
+
+### Updates
+
+- Support `pydantic` versions >= 2.3.0, < 3.0.0 (https://github.com/memgraph/gqlalchemy/pull/298)
+- Support `pymgclient` versions >= 1.3.1, < 2.0.0 , `neo4j` versions >= 4.4.3, < 5.0.0, `pytest-flake8` versons >= 1.0.7, < 2.0.0 (https://github.com/memgraph/gqlalchemy/pull/299)
+ 
 ## v1.5.0 - September 22, 2023
 
 ### Features and improvements
