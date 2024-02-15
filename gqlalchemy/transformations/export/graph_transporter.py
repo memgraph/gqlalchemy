@@ -12,12 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gqlalchemy.transformations.export.transporter import Transporter
-from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
-from gqlalchemy.transformations.translators.nx_translator import NxTranslator
-from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
-from gqlalchemy.transformations.graph_type import GraphType
+from gqlalchemy.exceptions import raise_if_not_imported
 import gqlalchemy.memgraph_constants as mg_consts
+from gqlalchemy.transformations.export.transporter import Transporter
+from gqlalchemy.transformations.graph_type import GraphType
+
+try:
+    from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
+except ModuleNotFoundError:
+    DGLTranslator = None
+
+from gqlalchemy.transformations.translators.nx_translator import NxTranslator
+
+try:
+    from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
+except ModuleNotFoundError:
+    PyGTranslator = None
 
 
 class GraphTransporter(Transporter):
@@ -47,13 +57,15 @@ class GraphTransporter(Transporter):
         super().__init__()
         self.graph_type = graph_type.upper()
         if self.graph_type == GraphType.DGL.name:
+            raise_if_not_imported(dependency=DGLTranslator, dependency_name="dgl")
             self.translator = DGLTranslator(host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.PYG.name:
+            raise_if_not_imported(dependency=PyGTranslator, dependency_name="torch_geometric")
             self.translator = PyGTranslator(host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.NX.name:
             self.translator = NxTranslator(host, port, username, password, encrypted, client_name, lazy)
         else:
-            raise ValueError("Unknown export option. Currently supported are DGL, PyG and Networkx.")
+            raise ValueError("Unknown export option. Currently supported are DGL, PyG and NetworkX.")
 
     def export(self):
         """Creates graph instance for the wanted export option."""

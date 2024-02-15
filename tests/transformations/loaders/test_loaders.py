@@ -75,8 +75,13 @@ def test_custom_data_loader(dummy_loader):
     assert dummy_loader.num == 42
 
 
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_parquet(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
@@ -86,8 +91,13 @@ def test_local_table_to_graph_importer_parquet(memgraph):
     importer.translate(drop_database_on_start=True)
 
 
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_csv(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
@@ -97,8 +107,13 @@ def test_local_table_to_graph_importer_csv(memgraph):
     importer.translate(drop_database_on_start=True)
 
 
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_orc(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     if platform.system() == "Windows":
         with pytest.raises(ValueError):
             ORCLocalFileSystemImporter(path="", data_configuration=None)
@@ -112,8 +127,13 @@ def test_local_table_to_graph_importer_orc(memgraph):
         importer.translate(drop_database_on_start=True)
 
 
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_feather(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
