@@ -166,11 +166,11 @@ def test_ensure_constraints(memgraph):
         MemgraphConstraintUnique(
             "NodeThree",
             (
-                "attribtue1",
-                "attribtue2",
+                "attribute1",
+                "attribute2",
             ),
         ),
-        MemgraphConstraintUnique("NodeThree", ("attribtue3",)),
+        MemgraphConstraintUnique("NodeThree", ("attribute3",)),
     ]
     memgraph.ensure_constraints(new_constraints)
     actual_constraints_ensured = memgraph.get_constraints()

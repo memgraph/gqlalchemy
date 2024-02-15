@@ -112,7 +112,7 @@ def test_nan_value_remove_handler_yields_null():
     config = NetworkXCypherConfig(nan_handler=NanValuesHandle.REMOVE_PROPERTY)
 
     properties = {"prop1": math.nan}
-    expected_properies = "{prop1: null}"
+    expected_properties = "{prop1: null}"
 
     actual_properties = to_cypher_properties(properties, config)
-    assert actual_properties == expected_properies
+    assert actual_properties == expected_properties
