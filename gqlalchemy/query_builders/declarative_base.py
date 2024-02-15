@@ -167,14 +167,18 @@ class WhereConditionPartialQuery(PartialQuery):
     _EXPRESSION = "expression"
 
     def __init__(self, item: str, operator: Operator, keyword: Where = Where.WHERE, is_negated: bool = False, **kwargs):
-        super().__init__(type=keyword.name if not is_negated else f"{keyword.name} {Where.NOT.name}")
-        self.query = self._build_where_query(item=item, operator=operator, **kwargs)
+        super().__init__(
+            type=keyword.name
+            if not is_negated or kwargs.get(WhereConditionPartialQuery._LITERAL) is None
+            else f"{keyword.name} {Where.NOT.name}"
+        )
+        self.query = self._build_where_query(item=item, operator=operator, is_negated=is_negated, **kwargs)
 
     def construct_query(self) -> str:
         """Constructs a where partial query."""
         return f" {self.type} {self.query} "
 
-    def _build_where_query(self, item: str, operator: Operator, **kwargs) -> "DeclarativeBase":
+    def _build_where_query(self, item: str, operator: Operator, is_negated: bool, **kwargs) -> "DeclarativeBase":
         """Builds parts of a WHERE Cypher query divided by the boolean operators."""
         literal = kwargs.get(WhereConditionPartialQuery._LITERAL)
         value = kwargs.get(WhereConditionPartialQuery._EXPRESSION)
@@ -186,7 +190,7 @@ class WhereConditionPartialQuery(PartialQuery):
 
         if value is None:
             if literal is None:
-                raise GQLAlchemyLiteralAndExpressionMissing(clause=self.type)
+                operator_str = "IS NOT" if is_negated else "IS"
 
             value = to_cypher_value(literal)
         elif literal is not None:

@@ -88,6 +88,8 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid Cypher type."""
     if config is None:
         config = NetworkXCypherConfig()
+    if value is None:
+        return "NULL"
 
     value_type = type(value)
 
