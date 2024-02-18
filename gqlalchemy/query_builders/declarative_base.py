@@ -35,7 +35,7 @@ from gqlalchemy.utilities import (
     to_cypher_properties,
     to_cypher_value,
     to_cypher_qm_arguments,
-    to_none_operator,
+    to_null_operator,
 )
 from gqlalchemy.vendors.database_client import DatabaseClient
 
