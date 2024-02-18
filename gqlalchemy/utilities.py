@@ -13,13 +13,20 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-import math
-import numpy as np
-import torch
-
 from datetime import datetime, date, time, timedelta
 from enum import Enum
+import inspect
+import math
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+
+try:
+    import torch
+except ModuleNotFoundError:
+    torch = None
+
+from gqlalchemy.exceptions import raise_if_not_imported
 
 
 class DatetimeKeywords(Enum):
@@ -67,13 +74,36 @@ def _format_timedelta(duration: timedelta) -> str:
     return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
 
 
+def _is_torch_tensor(value):
+    for cls in inspect.getmro(type(value)):
+        try:
+            if cls.__module__ == "torch" and cls.__name__ == "Tensor":
+                return True
+        except Exception:
+            pass
+    return False
+
+
+def to_null_operator(value: str) -> str:
+    if value == "=":
+        return "IS"
+    if value == "!=" or value == "<>":
+        return "IS NOT"
+    raise InvalidOperatorException(f"Operator {value} can not be used with None")
+
+
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid Cypher type."""
     if config is None:
         config = NetworkXCypherConfig()
+    if value is None:
+        return "NULL"
 
     value_type = type(value)
-    if isinstance(value, torch.Tensor):
+
+    if _is_torch_tensor(value):
+        raise_if_not_imported(dependency=torch, dependency_name="torch")
+
         if value.squeeze().size() == 1:
             return value.squeeze().item()
         else:
@@ -243,4 +273,8 @@ class CypherVariable:
 
 
 class NanException(Exception):
+    pass
+
+
+class InvalidOperatorException(Exception):
     pass

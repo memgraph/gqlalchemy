@@ -358,6 +358,26 @@ class TestMemgraphNeo4jQueryBuilder:
 
         mock.assert_called_with(expected_query)
 
+    @pytest.mark.parametrize("operator", ["<>", "!=", "="])
+    def test_where_property_null_operators(self, vendor, operator):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .where(item="n.name", operator=operator, literal=None)
+            .return_()
+        )
+        expected_query = (
+            f" MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name IS {'NOT ' if operator != '=' else ''}NULL RETURN * "
+        )
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
     def test_where_not_property(self, vendor):
         query_builder = (
             vendor[1]

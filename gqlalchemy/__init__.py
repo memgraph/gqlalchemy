@@ -14,7 +14,7 @@
 
 import warnings
 
-from pydantic import validator  # noqa F401
+from pydantic.v1 import validator  # noqa F401
 
 from gqlalchemy.models import (  # noqa F401
     MemgraphConstraintExists,
