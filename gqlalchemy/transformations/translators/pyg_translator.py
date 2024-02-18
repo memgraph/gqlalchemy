@@ -153,8 +153,8 @@ class PyGTranslator(Translator):
 
     def get_instance(self):
         """Create instance of PyG graph from all edges that are inside Memgraph. Currently, isolated nodes are ignored because they don't contribute in message passing neural networks. Only numerical features
-        that are set on all nodes or all edges are transferred to the PyG instance since this is PyG's requirement. That means thay any string values properties won't be transferred, as well as numerical properties
-        that aren't set on all nodes. However, features thata re of type list are transferred to the PyG instance and can be used as any other feature in the PyG graph. Regardless of data residing inside Memgraph database, the created
+        that are set on all nodes or all edges are transferred to the PyG instance since this is PyG's requirement. That means that any string values properties won't be transferred, as well as numerical properties
+        that aren't set on all nodes. However, features that are of type list are transferred to the PyG instance and can be used as any other feature in the PyG graph. Regardless of data residing inside Memgraph database, the created
         PyG graph is a heterograph instance.
         Returns:
             PyG heterograph instance.
@@ -171,7 +171,7 @@ class PyGTranslator(Translator):
                 [src_nodes[type_triplet], dest_nodes[type_triplet]], dtype=torch.int32
             )
 
-        # Set number of nodes, otherwise PyG inferes automatically and warnings can occur
+        # Set number of nodes, otherwise PyG infers automatically and warnings can occur
         for node_label, num_nodes_label in mem_indexes.items():
             graph[node_label].num_nodes = num_nodes_label
 

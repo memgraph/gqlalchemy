@@ -1,0 +1,83 @@
+
+site_name: GQLAlchemy Documentation
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+theme:
+  name: 'material'
+  logo: 'assets/memgraph-logo.svg'
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono' 
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    primary: 'custom'
+    accent: 'custom'
+
+nav:
+  - Getting Started: 'index.md'
+  - Installation: 'installation.md'
+  - Import data: 'import-data.md'
+  - How-to guides:
+    - Overview: 'how-to-guides/overview.md'
+    - Use object graph mapper: 'how-to-guides/ogm.md'
+    - Use query builder: 'how-to-guides/query-builder.md'
+    - Manage streams:
+      - Kafka streams: 'how-to-guides/streams/kafka-streams.md'
+      - Pulsar streams: 'how-to-guides/streams/pulsar-streams.md'
+    - Import data from different sources:
+      - Import table data as a graph: 'how-to-guides/loaders/import-table-data-to-graph-database.md'
+      - Make a custom file system importer: 'how-to-guides/loaders/make-a-custom-file-system-importer.md'
+    - Manage instances:
+      - Manage Memgraph Docker instances: 'how-to-guides/instance-runner/memgraph-docker-instance.md'
+      - Manage Memgraph binary instances: 'how-to-guides/instance-runner/memgraph-binary-instance.md'
+    - Manage database triggers: 'how-to-guides/triggers/triggers.md'
+    - Use on-disk storage: 'how-to-guides/on-disk-storage/on-disk-storage.md'
+    - Create a graph projection: 'how-to-guides/query-builder/graph-projection.md'
+    - Translate Python graphs:
+      - Import Python graphs into Memgraph: 'how-to-guides/translators/import-python-graphs.md'
+      - Export data from Memgraph into Python graphs: 'how-to-guides/translators/export-python-graphs.md'
+  - Reference:
+    - Overview: 'reference/gqlalchemy/overview.md'
+    - graph_algorithms:
+      - integrated_algorithms: 'reference/gqlalchemy/graph_algorithms/integrated_algorithms.md'
+      - query_builder: 'reference/gqlalchemy/graph_algorithms/query_builder.md'
+      - query_modules: 'reference/gqlalchemy/graph_algorithms/query_modules.md'
+    - query_builders:
+      - declarative_base: 'reference/gqlalchemy/query_builders/declarative_base.md'
+      - memgraph_query_builder: 'reference/gqlalchemy/query_builders/memgraph_query_builder.md'
+    - transformations:
+      - transformations.export:
+        - graph_transporter: 'reference/gqlalchemy/transformations/export/graph_transporter.md'
+        - transporter: 'reference/gqlalchemy/transformations/export/transporter.md'
+      - transformations.importing:
+        - graph_importer: 'reference/gqlalchemy/transformations/importing/graph_importer.md'
+        - loaders: 'reference/gqlalchemy/transformations/importing/loaders.md'
+      - transformations.translators:
+        - dgl_translator: 'reference/gqlalchemy/transformations/translators/dgl_translator.md'
+        - nx_translator: 'reference/gqlalchemy/transformations/translators/nx_translator.md'
+        - pyg_translator: 'reference/gqlalchemy/transformations/translators/pyg_translator.md'
+        - translator: 'reference/gqlalchemy/transformations/translators/translator.md'
+    - vendors:
+      - database_client: 'reference/gqlalchemy/vendors/database_client.md'
+      - memgraph: 'reference/gqlalchemy/vendors/memgraph.md'
+      - neo4j: 'reference/gqlalchemy/vendors/neo4j.md'
+    - connection: 'reference/gqlalchemy/connection.md'
+    - disk_storage: 'reference/gqlalchemy/disk_storage.md'
+    - exceptions: 'reference/gqlalchemy/exceptions.md'
+    - instance_runner: 'reference/gqlalchemy/instance_runner.md'
+    - models: 'reference/gqlalchemy/models.md'
+    - utilities: 'reference/gqlalchemy/utilities.md'
+  - Under the Hood:
+    - Overview: 'under-the-hood/overview.md'
+    - Python graph translators: 'under-the-hood/python-graph-translators.md'
+  - Changelog: 'changelog.md'
+
+repo_name: 'memgraph/gqlalchemy'
+repo_url: 'https://github.com/memgraph/gqlalchemy'
+extra_css:
+  - stylesheets/extra.css

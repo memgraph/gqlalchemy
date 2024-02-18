@@ -217,7 +217,7 @@ def test_node_various_inheritance(database):
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
-def test_node_multiple_inheritence(database):
+def test_node_multiple_inheritance(database):
     class User(Node, labels={"UserX"}):
         id: int = Field(index=True, db=database)
         name: str = Field(index=True, db=database)
