@@ -2,11 +2,11 @@ loaders:
   - type: python
     search_path: [.]
     modules:
+      - gqlalchemy.connection 
       - gqlalchemy.disk_storage
+      - gqlalchemy.exceptions 
       - gqlalchemy.instance_runner
-      - gqlalchemy.loaders
       - gqlalchemy.models
-      - gqlalchemy.transformations
       - gqlalchemy.utilities
       - gqlalchemy.graph_algorithms.integrated_algorithms
       - gqlalchemy.graph_algorithms.query_builder
@@ -16,6 +16,15 @@ loaders:
       - gqlalchemy.query_builders.neo4j_query_builder
       - gqlalchemy.query_modules.push_streams.kafka
       - gqlalchemy.query_modules.push_streams.power_bi
+      - gqlalchemy.transformations.export.graph_transporter
+      - gqlalchemy.transformations.export.transporter
+      - gqlalchemy.transformations.importing.graph_importer
+      - gqlalchemy.transformations.importing.importer
+      - gqlalchemy.transformations.importing.loaders
+      - gqlalchemy.transformations.translators.dgl_translator
+      - gqlalchemy.transformations.translators.nx_translator
+      - gqlalchemy.transformations.translators.pyg_translator
+      - gqlalchemy.transformations.translators.translator
       - gqlalchemy.vendors.database_client
       - gqlalchemy.vendors.memgraph
       - gqlalchemy.vendors.neo4j

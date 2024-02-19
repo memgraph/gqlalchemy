@@ -20,8 +20,15 @@ from string import Template
 from typing import List, Dict, Any, Optional, Union
 
 import adlfs
-import pyarrow.dataset as ds
-from pyarrow import fs
+
+try:
+    import pyarrow.dataset as ds
+except ModuleNotFoundError:
+    ds = None
+try:
+    from pyarrow import fs
+except ModuleNotFoundError:
+    fs = None
 from dacite import from_dict
 
 from gqlalchemy import Memgraph
@@ -223,6 +230,9 @@ class S3FileSystemHandler(FileSystemHandler):
         if S3_SECRET_KEY not in kwargs:
             raise KeyError(f"{S3_SECRET_KEY} is needed to connect to S3 storage")
 
+        if fs is None:
+            raise ModuleNotFoundError("No module named 'pyarrow'")
+
         super().__init__(fs=fs.S3FileSystem(**kwargs))
         self._bucket_name = bucket_name
 
@@ -247,7 +257,7 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         Kwargs:
             account_name: Account name from Azure Blob.
             account_key: Account key for Azure Blob (Optional - if using sas_token).
-            sas_token: Shared access signature token for authentification (Optional).
+            sas_token: Shared access signature token for authentication (Optional).
 
         Raises:
             KeyError: kwargs doesn't contain necessary fields.
@@ -278,6 +288,9 @@ class LocalFileSystemHandler(FileSystemHandler):
         Args:
             path: path to the local storage location.
         """
+        if fs is None:
+            raise ModuleNotFoundError("No module named 'pyarrow'")
+
         super().__init__(fs=fs.LocalFileSystem())
         self._path = path
 
@@ -360,6 +373,9 @@ class PyArrowDataLoader(DataLoader):
         """
         source = self._file_system_handler.get_path(f"{collection_name}.{self._file_extension}")
         print("Loading data from " + ("cross " if is_cross_table else "") + f"table {source}...")
+
+        if ds is None:
+            raise ModuleNotFoundError("No module named 'pyarrow'")
 
         dataset = ds.dataset(source=source, format=self._file_extension, filesystem=self._file_system_handler.fs)
 
