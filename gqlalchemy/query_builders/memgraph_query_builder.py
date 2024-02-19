@@ -58,7 +58,7 @@ class QueryBuilder(DeclarativeBase):
         """Load data from a CSV file by executing a Cypher query for each row.
 
         Args:
-            path: A string representing the path to the CSV file.
+            path: A string representing the path to the CSV file. If using `http://`, `https://`, or `ftp://` the CSV file will be fetched over the network.
             header: A bool indicating if the CSV file starts with a header row.
             row: A string representing the name of the variable for iterating
               over each row.
