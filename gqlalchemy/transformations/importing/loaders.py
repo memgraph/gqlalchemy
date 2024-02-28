@@ -41,6 +41,7 @@ from gqlalchemy.models import (
 )
 from gqlalchemy.query_builders.memgraph_query_builder import Operator, QueryBuilder, Unwind
 from gqlalchemy.transformations.importing.importer import Importer
+from gqlalchemy.utilities import to_cypher_properties
 
 NAME_MAPPINGS_KEY = "name_mappings"
 ONE_TO_MANY_RELATIONS_KEY = "one_to_many_relations"
@@ -103,7 +104,7 @@ class OneToManyMapping:
     foreign_key: ForeignKeyMapping
     label: str
     from_entity: bool = False
-    parameters: Optional[Dict[str, str]] = None
+    parameters: Optional[Dict[str, Any]] = None
 
 
 @dataclass(frozen=True)
@@ -115,13 +116,13 @@ class ManyToManyMapping:
         foreign_key_from: Describes the source of the relationship.
         foreign_key_to: Describes the destination of the relationship.
         label: Label to be applied to the newly created relationship.
-        parameters: Parameters that will be added to the relationship created from this object (Optional).
+        column_names_mapping: Dictionary containing key-value pairs in form ("column name", "property name") (Optional).
     """
 
     foreign_key_from: ForeignKeyMapping
     foreign_key_to: ForeignKeyMapping
     label: str
-    parameters: Optional[Dict[str, str]] = None
+    column_names_mapping: Dict[str, str] = field(default_factory=dict)
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -412,7 +413,13 @@ class TableToGraphImporter(Importer):
 
     @staticmethod
     def _create_trigger_cypher_query(
-        label1: str, label2: str, property1: str, property2: str, relationship_type: str, from_entity: bool
+        label1: str,
+        label2: str,
+        property1: str,
+        property2: str,
+        relationship_type: str,
+        relationship_parameters: Dict[str, Any],
+        from_entity: bool,
     ) -> str:
         """Creates a Cypher query for the translation trigger.
 
@@ -425,6 +432,11 @@ class TableToGraphImporter(Importer):
             from_entity: Indicate whether the relationship goes from or to the first entity.
         """
         from_node, to_node = TableToGraphImporter._DIRECTION[from_entity]
+
+        # Add properties to the edge definition
+        # Using -[:$label]- to get -[:LABEL{property key-value pairs}]
+        if relationship_parameters is not None:
+            relationship_type += to_cypher_properties(relationship_parameters)
 
         return TableToGraphImporter._TriggerQueryTemplate.substitute(
             node_a=NODE_A,
@@ -494,6 +506,7 @@ class TableToGraphImporter(Importer):
                     property_from=mapping_from.reference_key,
                     property_to=mapping_to.reference_key,
                     relation_label=many_to_many_mapping.mapping.label,
+                    relation_mappings=many_to_many_mapping.mapping.column_names_mapping,
                     row=row,
                 )
 
@@ -518,6 +531,7 @@ class TableToGraphImporter(Importer):
                 )
                 relationship_type = mapping.label
                 from_entity = mapping.from_entity
+                relationship_parameters = mapping.parameters
 
                 self._create_trigger(
                     label1=label1,
@@ -525,6 +539,7 @@ class TableToGraphImporter(Importer):
                     property1=property1,
                     property2=property2,
                     relationship_type=relationship_type,
+                    relationship_parameters=relationship_parameters,
                     from_entity=from_entity,
                 )
                 self._create_trigger(
@@ -533,11 +548,19 @@ class TableToGraphImporter(Importer):
                     property1=property2,
                     property2=property1,
                     relationship_type=relationship_type,
+                    relationship_parameters=relationship_parameters,
                     from_entity=not from_entity,
                 )
 
     def _create_trigger(
-        self, label1: str, label2: str, property1: str, property2: str, relationship_type: str, from_entity: bool
+        self,
+        label1: str,
+        label2: str,
+        property1: str,
+        property2: str,
+        relationship_type: str,
+        relationship_parameters: Dict[str, Any],
+        from_entity: bool,
     ) -> None:
         """Creates a translation trigger in Memgraph.
 
@@ -557,7 +580,7 @@ class TableToGraphImporter(Importer):
             event_object=TriggerEventObject.NODE,
             execution_phase=TriggerExecutionPhase.BEFORE,
             statement=TableToGraphImporter._create_trigger_cypher_query(
-                label1, label2, property1, property2, relationship_type, from_entity
+                label1, label2, property1, property2, relationship_type, relationship_parameters, from_entity
             ),
         )
 
@@ -606,6 +629,7 @@ class TableToGraphImporter(Importer):
         property_from: str,
         property_to: str,
         relation_label: str,
+        relation_mappings: Dict[str, str],
         row: Dict[str, Any],
     ) -> None:
         """Translates a row to a relationship and writes it to Memgraph.
@@ -642,7 +666,10 @@ class TableToGraphImporter(Importer):
             )
             .create()
             .node(variable=NODE_A)
-            .to(relation_label)
+            .to(
+                relationship_type=relation_label,
+                **{relation_mappings.get(k, k): v for k, v in row.items() if k != property_to and k != property_from},
+            )
             .node(variable=NODE_B)
             .execute()
         )
