@@ -47,6 +47,7 @@ class GraphImporter(Importer):
         graph_type: str,
         host: str = mg_consts.MG_HOST,
         port: int = mg_consts.MG_PORT,
+        scheme: str = mg_consts.MG_SCHEME,
         username: str = mg_consts.MG_USERNAME,
         password: str = mg_consts.MG_PASSWORD,
         encrypted: bool = mg_consts.MG_ENCRYPTED,
@@ -57,12 +58,12 @@ class GraphImporter(Importer):
         self.graph_type = graph_type.upper()
         if self.graph_type == GraphType.DGL.name:
             raise_if_not_imported(dependency=DGLTranslator, dependency_name="dgl")
-            self.translator = DGLTranslator(host, port, username, password, encrypted, client_name, lazy)
+            self.translator = DGLTranslator(host, port, scheme, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.PYG.name:
             raise_if_not_imported(dependency=PyGTranslator, dependency_name="torch_geometric")
-            self.translator = PyGTranslator(host, port, username, password, encrypted, client_name, lazy)
+            self.translator = PyGTranslator(host, port, scheme, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.NX.name:
-            self.translator = NxTranslator(host, port, username, password, encrypted, client_name, lazy)
+            self.translator = NxTranslator(host, port, scheme, username, password, encrypted, client_name, lazy)
         else:
             raise ValueError("Unknown import option. Currently supported options are: DGL, PyG and NetworkX.")
 

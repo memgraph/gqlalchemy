@@ -27,6 +27,7 @@ from gqlalchemy.transformations.constants import LABELS_CONCAT, DEFAULT_NODE_LAB
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
     MG_PORT,
+    MG_SCHEME,
     MG_USERNAME,
     MG_PASSWORD,
     MG_ENCRYPTED,
@@ -40,10 +41,8 @@ from gqlalchemy import Memgraph, Match
 
 class Translator(ABC):
     # Lambda function to concat list of labels
-    merge_labels: Callable[[Set[str]], str] = (
-        lambda labels, default_node_label: LABELS_CONCAT.join([label for label in sorted(labels)])
-        if len(labels)
-        else default_node_label
+    merge_labels: Callable[[Set[str]], str] = lambda labels, default_node_label: (
+        LABELS_CONCAT.join([label for label in sorted(labels)]) if len(labels) else default_node_label
     )
 
     @abstractmethod
@@ -51,6 +50,7 @@ class Translator(ABC):
         self,
         host: str = MG_HOST,
         port: int = MG_PORT,
+        scheme: str = MG_SCHEME,
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
@@ -58,7 +58,7 @@ class Translator(ABC):
         lazy: bool = MG_LAZY,
     ) -> None:
         super().__init__()
-        self.connection = Memgraph(host, port, username, password, encrypted, client_name, lazy)
+        self.connection = Memgraph(host, port, scheme, username, password, encrypted, client_name, lazy)
 
     @abstractmethod
     def to_cypher_queries(graph):

@@ -54,6 +54,7 @@ class Memgraph(DatabaseClient):
         self,
         host: str = mg_consts.MG_HOST,
         port: int = mg_consts.MG_PORT,
+        scheme: str = mg_consts.MG_SCHEME,
         username: str = mg_consts.MG_USERNAME,
         password: str = mg_consts.MG_PASSWORD,
         encrypted: bool = mg_consts.MG_ENCRYPTED,
@@ -61,7 +62,13 @@ class Memgraph(DatabaseClient):
         lazy: bool = mg_consts.MG_LAZY,
     ):
         super().__init__(
-            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+            host=host,
+            port=port,
+            scheme=scheme,
+            username=username,
+            password=password,
+            encrypted=encrypted,
+            client_name=client_name,
         )
         self._lazy = lazy
         self._on_disk_db = None
@@ -124,6 +131,7 @@ class Memgraph(DatabaseClient):
         args = dict(
             host=self._host,
             port=self._port,
+            scheme=self._scheme,
             username=self._username,
             password=self._password,
             encrypted=self._encrypted,
@@ -197,6 +205,7 @@ class Memgraph(DatabaseClient):
         args = dict(
             host=self._host,
             port=self._port,
+            scheme=self._scheme,
             username=self._username,
             password=self._password,
             encrypted=self._encrypted,

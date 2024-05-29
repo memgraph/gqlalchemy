@@ -20,6 +20,7 @@ from gqlalchemy.transformations.constants import EDGE_INDEX, PYG_ID, NUM_NODES, 
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
     MG_PORT,
+    MG_SCHEME,
     MG_USERNAME,
     MG_PASSWORD,
     MG_ENCRYPTED,
@@ -33,13 +34,14 @@ class PyGTranslator(Translator):
         self,
         host: str = MG_HOST,
         port: int = MG_PORT,
+        scheme: str = MG_SCHEME,
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
         lazy: bool = MG_LAZY,
     ) -> None:
-        super().__init__(host, port, username, password, encrypted, client_name, lazy)
+        super().__init__(host, port, scheme, username, password, encrypted, client_name, lazy)
 
     @classmethod
     def get_node_properties(cls, graph, node_label: str, node_id: int):

@@ -30,6 +30,7 @@ class DatabaseClient(ABC):
         self,
         host: str,
         port: int,
+        scheme: str,
         username: str,
         password: str,
         encrypted: bool,
@@ -37,6 +38,7 @@ class DatabaseClient(ABC):
     ):
         self._host = host
         self._port = port
+        self._scheme = scheme
         self._username = username
         self._password = password
         self._encrypted = encrypted
