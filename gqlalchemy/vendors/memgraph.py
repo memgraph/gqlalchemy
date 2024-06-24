@@ -40,6 +40,24 @@ import gqlalchemy.memgraph_constants as mg_consts
 __all__ = ("Memgraph",)
 
 
+class MemgraphTransaction:
+    def __init__(self, username: str, transaction_id: str, query: list, metadata: dict):
+        self.username = (username,)
+        self.transaction_id = transaction_id
+        self.query = query
+        self.metadata = metadata
+
+    def __repr__(self):
+        return f"MemgraphTransaction(username={self.username}, transaction_id={self.transaction_id}, query={self.query}, metadata={self.metadata})"
+
+
+class MemgraphTerminatedTransaction:
+    def __init__(self, transaction_id: str, killed: bool):
+        self.transaction_id = transaction_id
+        self.killed = killed
+    def __repr__(self):
+        return f"MemgraphTerminatedTransaction(transaction_id={self.transaction_id}, killed={self.killed})"
+
 class MemgraphConstants:
     CONSTRAINT_TYPE = "constraint type"
     EXISTS = "exists"
@@ -432,3 +450,43 @@ class Memgraph(DatabaseClient):
         module_name = "power_bi_stream.py"
 
         return self.add_query_module(file_path=file_path, module_name=module_name)
+
+    def get_transactions(self) -> List[MemgraphTransaction]:
+        """Get all transactions in the database.
+        Returns:
+            List[MemgraphTransaction]: A list of MemgraphTransaction objects.
+        """
+
+        transactions_data = self.execute_and_fetch("SHOW TRANSACTIONS;")
+        transactions = []
+
+        for transaction_data in transactions_data:
+            transaction = MemgraphTransaction(
+                username=transaction_data["username"],
+                transaction_id=transaction_data["transaction_id"],
+                query=transaction_data["query"],
+                metadata=transaction_data["metadata"],
+            )
+            transactions.append(transaction)
+
+        return transactions
+
+    def terminate_transactions(self, transaction_ids: List[str]) -> List[MemgraphTerminatedTransaction]:
+        """Terminate transactions in the database.
+        Args:
+            transaction_ids (List[str]): A list of transaction ids to terminate.
+        Returns:
+            List[MemgraphTerminatedTransaction]: A list of MemgraphTerminatedTransaction objects with info on their status.
+        """
+
+        query = (
+            "TERMINATE TRANSACTIONS " + ", ".join([f"'{transaction_id}'" for transaction_id in transaction_ids]) + ";"
+        )
+        print(query)
+        terminated_transactions = []
+        results = self.execute_and_fetch(query)
+
+        for result in results:
+            terminated_transactions.append(MemgraphTerminatedTransaction(result["transaction_id"], result["killed"]))
+        print(terminated_transactions)
+        return terminated_transactions
