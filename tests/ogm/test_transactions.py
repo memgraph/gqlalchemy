@@ -5,4 +5,3 @@ def test_get_transactions(memgraph):
     assert result[0].transaction_id != ""
     assert result[0].query == ["SHOW TRANSACTIONS;"]
     assert result[0].metadata == {}
-

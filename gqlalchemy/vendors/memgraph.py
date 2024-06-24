@@ -55,8 +55,10 @@ class MemgraphTerminatedTransaction:
     def __init__(self, transaction_id: str, killed: bool):
         self.transaction_id = transaction_id
         self.killed = killed
+
     def __repr__(self):
         return f"MemgraphTerminatedTransaction(transaction_id={self.transaction_id}, killed={self.killed})"
+
 
 class MemgraphConstants:
     CONSTRAINT_TYPE = "constraint type"
