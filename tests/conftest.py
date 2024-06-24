@@ -40,11 +40,13 @@ def memgraph() -> Memgraph:
     memgraph.ensure_indexes([])
     memgraph.ensure_constraints([])
     memgraph.drop_database()
+    memgraph.set_storage_mode("IN_MEMORY_TRANSACTIONAL")
 
     yield memgraph
 
     memgraph.ensure_indexes([])
     memgraph.ensure_constraints([])
+    memgraph.set_storage_mode("IN_MEMORY_TRANSACTIONAL")
 
 
 @pytest.fixture

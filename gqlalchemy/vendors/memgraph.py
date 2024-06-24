@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
 import os
 import sqlite3
 from typing import List, Optional, Union
@@ -47,6 +48,15 @@ class MemgraphConstants:
     PROPERTY = "property"
     PROPERTIES = "properties"
     UNIQUE = "unique"
+
+
+class MemgraphStorageMode(Enum):
+    IN_MEMORY_TRANSACTIONAL = "IN_MEMORY_TRANSACTIONAL"
+    IN_MEMORY_ANALYTICAL = "IN_MEMORY_ANALYTICAL"
+    ON_DISK_TRANSACTIONAL = "ON_DISK_TRANSACTIONAL"
+
+    def __str__(self):
+        return self.value
 
 
 class Memgraph(DatabaseClient):
@@ -432,3 +442,13 @@ class Memgraph(DatabaseClient):
         module_name = "power_bi_stream.py"
 
         return self.add_query_module(file_path=file_path, module_name=module_name)
+
+    def get_storage_mode(self) -> str:
+        """Returns the storage mode of the Memgraph instance."""
+        result = self.execute_and_fetch("SHOW STORAGE INFO;")
+        storage_mode_value = next((item["value"] for item in result if item["storage info"] == "storage_mode"), None)
+        return MemgraphStorageMode(storage_mode_value).value
+
+    def set_storage_mode(self, storage_mode: MemgraphStorageMode) -> None:
+        """Sets the storage mode of the Memgraph instance."""
+        self.execute(f"STORAGE MODE {storage_mode};")
