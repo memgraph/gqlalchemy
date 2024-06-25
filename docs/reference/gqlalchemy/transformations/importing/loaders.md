@@ -27,7 +27,6 @@ Class that holds the full description of a single one to many mapping in a table
 - `foreign_key` - Foreign key used for mapping.
 - `label` - Label which will be applied to the relationship created from this object.
 - `from_entity` - Direction of the relationship created from the mapping object.
-- `parameters` - Parameters that will be added to the relationship created from this object (Optional).
 
 ## ManyToManyMapping Objects
 
@@ -44,7 +43,7 @@ Many to many mapping is intended to be used in case of associative tables.
 - `foreign_key_from` - Describes the source of the relationship.
 - `foreign_key_to` - Describes the destination of the relationship.
 - `label` - Label to be applied to the newly created relationship.
-- `parameters` - Parameters that will be added to the relationship created from this object (Optional).
+- `parameters` - List of parameters that will be added to the relationship created from this object (Optional).
 
 ## TableMapping Objects
 
