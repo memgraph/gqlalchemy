@@ -109,8 +109,8 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python-version: ["3.10"]
-        os: [mg-win-1, mg-win-2, mg-win-3, mg-win-4, mg-win-5]
+        python-version: ["3.8", "3.9", "3.10"]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repository
@@ -135,6 +135,7 @@ jobs:
           pip3 install networkx numpy scipy
           mkdir /memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-20.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /memgraph/memgraph-community.deb
+          systemctl mask memgraph
           dpkg -i /memgraph/memgraph-community.deb
           mkdir /mnt/c/memgraph
           runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
