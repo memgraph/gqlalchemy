@@ -126,7 +126,7 @@ jobs:
           python -m pip install poethepoet==0.18.1
       - uses: Vampire/setup-wsl@v1
         with:
-          distribution: Ubuntu-20.04
+          distribution: Ubuntu-22.04
       - name: Download, install and run Memgraph under WSL
         shell: wsl-bash {0} # root shell
         run: |
