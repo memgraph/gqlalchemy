@@ -108,8 +108,8 @@ jobs:
     if: github.event.pull_request.draft == false
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
-        os: [windows-gh-mg]
+        python-version: ["3.10"]
+        os: [mg-win-1, mg-win-2, mg-win-3, mg-win-4, mg-win-5]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repository
