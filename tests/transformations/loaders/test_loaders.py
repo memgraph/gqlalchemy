@@ -115,7 +115,6 @@ def test_local_table_to_graph_importer_csv(memgraph):
                 {
                     "foreign_key": {"column_name": "add_id", "reference_table": "address", "reference_key": "add_id"},
                     "label": "LIVES_IN",
-                    "parameters": {"p": "this is fixed for all edges"},
                 }
             ],
         },
@@ -125,7 +124,13 @@ def test_local_table_to_graph_importer_csv(memgraph):
 
     conf_with_many_to_many = {
         "indices": {"address": ["add_id"], "individual": ["ind_id"]},
-        "name_mappings": {"individual": {"label": "INDIVIDUAL"}, "address": {"label": "ADDRESS"}},
+        "name_mappings": {
+            "individual": {"label": "INDIVIDUAL"}, 
+            "address": {"label": "ADDRESS"},
+            "i2a": {
+                "column_names_mapping": {"duration": "years"},
+            }
+        },
         "one_to_many_relations": {"address": [], "individual": []},
         "many_to_many_relations": {
             "i2a": {
@@ -136,7 +141,7 @@ def test_local_table_to_graph_importer_csv(memgraph):
                 },
                 "foreign_key_to": {"column_name": "add_id", "reference_table": "address", "reference_key": "add_id"},
                 "label": "LIVES_IN",
-                "column_names_mapping": {"duration": "years"},
+                "parameters": ["duration"]
             }
         },
     }
