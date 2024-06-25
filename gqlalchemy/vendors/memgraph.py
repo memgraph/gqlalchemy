@@ -69,6 +69,34 @@ class MemgraphConstants:
     UNIQUE = "unique"
 
 
+def create_transaction(transaction_data) -> MemgraphTransaction:
+    """Create a MemgraphTransaction object from transaction data.
+    Args:
+        transaction_data (dict): A dictionary containing transaction data.
+    Returns:
+        MemgraphTransaction: A MemgraphTransaction object.
+    """
+    return MemgraphTransaction(
+        username=transaction_data["username"],
+        transaction_id=transaction_data["transaction_id"],
+        query=transaction_data["query"],
+        metadata=transaction_data["metadata"],
+    )
+
+
+def create_terminated_transaction(transaction_data) -> MemgraphTerminatedTransaction:
+    """Create a MemgraphTerminatedTransaction object from transaction data.
+    Args:
+        transaction_data (dict): A dictionary containing transaction data.
+    Returns:
+        MemgraphTerminatedTransaction: A MemgraphTerminatedTransaction object.
+    """
+    return MemgraphTerminatedTransaction(
+        transaction_id=transaction_data["transaction_id"],
+        killed=transaction_data["killed"],
+    )
+
+
 class Memgraph(DatabaseClient):
     def __init__(
         self,
@@ -460,16 +488,7 @@ class Memgraph(DatabaseClient):
         """
 
         transactions_data = self.execute_and_fetch("SHOW TRANSACTIONS;")
-        transactions = []
-
-        for transaction_data in transactions_data:
-            transaction = MemgraphTransaction(
-                username=transaction_data["username"],
-                transaction_id=transaction_data["transaction_id"],
-                query=transaction_data["query"],
-                metadata=transaction_data["metadata"],
-            )
-            transactions.append(transaction)
+        transactions = list(map(create_transaction, transactions_data))
 
         return transactions
 
@@ -484,11 +503,10 @@ class Memgraph(DatabaseClient):
         query = (
             "TERMINATE TRANSACTIONS " + ", ".join([f"'{transaction_id}'" for transaction_id in transaction_ids]) + ";"
         )
-        print(query)
-        terminated_transactions = []
-        results = self.execute_and_fetch(query)
 
-        for result in results:
-            terminated_transactions.append(MemgraphTerminatedTransaction(result["transaction_id"], result["killed"]))
-        print(terminated_transactions)
+        terminated_transactions = []
+        transactions_data = self.execute_and_fetch(query)
+
+        terminated_transactions = list(map(create_terminated_transaction, transactions_data))
+
         return terminated_transactions
