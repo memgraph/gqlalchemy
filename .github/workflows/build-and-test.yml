@@ -125,7 +125,7 @@ jobs:
           python -m pip install networkx numpy scipy
           python -m pip install poethepoet==0.18.1
       - run: wsl --set-default-version 2
-      - uses: Vampire/setup-wsl@v1
+      - uses: Vampire/setup-wsl@v3
         with:
           distribution: Ubuntu-22.04
       - name: Download, install and run Memgraph under WSL
