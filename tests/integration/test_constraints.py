@@ -162,7 +162,7 @@ def test_ensure_constraints(memgraph):
 
     new_constraints = [
         MemgraphConstraintExists("NodeOne", "code"),
-        MemgraphConstraintExists("NodeTwo", "text"),
+        MemgraphConstraintExists("NodeTwo", "text_"),
         MemgraphConstraintUnique(
             "NodeThree",
             (
