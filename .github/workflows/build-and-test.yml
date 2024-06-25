@@ -3,7 +3,6 @@ name: Build and Test
 env:
   MG_VERSION: "2.17.0"
   POETRY_VERSION: "1.2.2"
-  VM_MAX_MAP_COUNT: "262144"
 
 on:
   push:
@@ -110,7 +109,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
-        os: [windows-latest]
+        os: [windows-2019]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repository
@@ -127,10 +126,6 @@ jobs:
       - uses: Vampire/setup-wsl@v1
         with:
           distribution: Ubuntu-20.04
-      - name: Update vm.max_map_count
-        shell: wsl-bash {0} #root shell
-        run: |
-          sudo sysctl -w vm.max_map_count=${{ env.VM_MAX_MAP_COUNT }}
       - name: Download, install and run Memgraph under WSL
         shell: wsl-bash {0} # root shell
         run: |
