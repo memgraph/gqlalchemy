@@ -30,7 +30,13 @@ from gqlalchemy.exceptions import (
 from gqlalchemy.graph_algorithms.integrated_algorithms import IntegratedAlgorithm
 from gqlalchemy.vendors.memgraph import Memgraph
 from gqlalchemy.models import Node, Relationship
-from gqlalchemy.utilities import to_cypher_labels, to_cypher_properties, to_cypher_value, to_cypher_qm_arguments
+from gqlalchemy.utilities import (
+    to_cypher_labels,
+    to_cypher_properties,
+    to_cypher_value,
+    to_cypher_qm_arguments,
+    to_null_operator,
+)
 from gqlalchemy.vendors.database_client import DatabaseClient
 
 
@@ -186,7 +192,7 @@ class WhereConditionPartialQuery(PartialQuery):
 
         if value is None:
             if literal is None:
-                raise GQLAlchemyLiteralAndExpressionMissing(clause=self.type)
+                operator_str = to_null_operator(operator_str)
 
             value = to_cypher_value(literal)
         elif literal is not None:

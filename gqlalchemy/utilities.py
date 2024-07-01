@@ -84,10 +84,20 @@ def _is_torch_tensor(value):
     return False
 
 
+def to_null_operator(value: str) -> str:
+    if value == "=":
+        return "IS"
+    if value == "!=" or value == "<>":
+        return "IS NOT"
+    raise InvalidOperatorException(f"Operator {value} can not be used with None")
+
+
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid Cypher type."""
     if config is None:
         config = NetworkXCypherConfig()
+    if value is None:
+        return "null"
 
     value_type = type(value)
 
@@ -263,4 +273,8 @@ class CypherVariable:
 
 
 class NanException(Exception):
+    pass
+
+
+class InvalidOperatorException(Exception):
     pass
