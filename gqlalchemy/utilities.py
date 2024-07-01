@@ -17,6 +17,7 @@ from datetime import datetime, date, time, timedelta
 from enum import Enum
 import inspect
 import math
+import pytz
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -34,6 +35,7 @@ class DatetimeKeywords(Enum):
     LOCALTIME = "localTime"
     LOCALDATETIME = "localDateTime"
     DATE = "date"
+    ZONEDDATETIME = "datetime"
 
 
 datetimeKwMapping = {
@@ -41,6 +43,7 @@ datetimeKwMapping = {
     time: DatetimeKeywords.LOCALTIME.value,
     datetime: DatetimeKeywords.LOCALDATETIME.value,
     date: DatetimeKeywords.DATE.value,
+    datetime: DatetimeKeywords.ZONEDDATETIME.value 
 }
 
 
@@ -106,7 +109,20 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
         return str(value)
 
     if isinstance(value, (timedelta, time, datetime, date)):
-        return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
+        if isinstance(value, datetime):
+            if value.tzinfo == pytz.UTC:
+                formatted_date = value.strftime(f"%Y-%m-%dT%H:%M:%SZ")
+                return f"{DatetimeKeywords.ZONEDDATETIME.value}('{formatted_date}')"
+            elif value.tzinfo is not None:
+                tz = value.strftime('%z')
+                tz = f"{tz[:3]}:{tz[3:]}" 
+                tz_name = value.tzinfo.zone
+                formatted_date = value.strftime(f"%Y-%m-%dT%H:%M:%S{tz}")
+                return f"{DatetimeKeywords.ZONEDDATETIME.value}('{formatted_date}[{tz_name}]')"
+            else:
+                return f"{DatetimeKeywords.LOCALDATETIME.value}('{value.isoformat()}')"
+        else:
+            return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
 
     if value_type == str and value.lower() in ["true", "false", "null"]:
         return value
