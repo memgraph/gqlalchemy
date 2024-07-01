@@ -175,7 +175,6 @@ class WhereConditionPartialQuery(PartialQuery):
     def __init__(self, item: str, operator: Operator, keyword: Where = Where.WHERE, is_negated: bool = False, **kwargs):
         super().__init__(type=keyword.name if not is_negated else f"{keyword.name} {Where.NOT.name}")
         self.query = self._build_where_query(item=item, operator=operator, **kwargs)
-        print(self.construct_query())
 
     def construct_query(self) -> str:
         """Constructs a where partial query."""
