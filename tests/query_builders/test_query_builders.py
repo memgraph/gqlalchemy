@@ -306,7 +306,7 @@ class TestMemgraphNeo4jQueryBuilder:
 
         mock.assert_called_with(expected_query)
 
-    @pytest.mark.parametrize("operator", ["=", "<>", "<", "!=", ">", "<=", ">="])
+    @pytest.mark.parametrize("operator", ["=", "<>", "<", "!=", ">", "<=", ">=", "=~"])
     def test_where_without_operator_enum(self, vendor, operator):
         query_builder = (
             vendor[1]
@@ -318,7 +318,6 @@ class TestMemgraphNeo4jQueryBuilder:
             .return_()
         )
         expected_query = f" MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name {operator} 'best_name' RETURN * "
-
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 

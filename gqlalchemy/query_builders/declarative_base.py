@@ -92,6 +92,7 @@ class Operator(Enum):
     LEQ_THAN = "<="
     NOT_EQUAL = "!="
     INCREMENT = "+="
+    SIMILAR = "=~"
 
 
 class Order(Enum):
