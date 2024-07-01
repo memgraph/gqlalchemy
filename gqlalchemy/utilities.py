@@ -97,7 +97,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if config is None:
         config = NetworkXCypherConfig()
     if value is None:
-        return "NULL"
+        return "null"
 
     value_type = type(value)
 
