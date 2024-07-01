@@ -37,6 +37,7 @@ class DatetimeKeywords(Enum):
     LOCALTIME = "localTime"
     LOCALDATETIME = "localDateTime"
     DATE = "date"
+    ZONEDDATETIME = "datetime"
 
 
 datetimeKwMapping = {
@@ -44,6 +45,7 @@ datetimeKwMapping = {
     time: DatetimeKeywords.LOCALTIME.value,
     datetime: DatetimeKeywords.LOCALDATETIME.value,
     date: DatetimeKeywords.DATE.value,
+    datetime: DatetimeKeywords.ZONEDDATETIME.value  
 }
 
 
@@ -378,7 +380,18 @@ class GraphObject(BaseModel):
         elif value_type == dict:
             return "{" + ", ".join(f"{key}: {self.escape_value(val)}" for key, val in value.items()) + "}"
         if isinstance(value, (timedelta, time, datetime, date)):
-            return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
+            if isinstance(value, timedelta):
+                formatted_value = _format_timedelta(value)
+            else:
+                formatted_value = value.isoformat()
+            
+            if isinstance(value, datetime) and value.tzinfo is not None:
+                tz_offset = value.strftime('%z')
+                tz_name = value.tzinfo.zone
+                return f"datetime('{value.strftime('%Y-%m-%dT%H:%M:%S')}{tz_offset}[{tz_name}]')"
+            else:
+                keyword = datetimeKwMapping[value_type]
+                return f"{keyword}('{formatted_value}')"
         else:
             raise GQLAlchemyError(
                 f"Unsupported value data type: {type(value)}."
