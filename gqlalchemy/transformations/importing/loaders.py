@@ -97,13 +97,11 @@ class OneToManyMapping:
         foreign_key: Foreign key used for mapping.
         label: Label which will be applied to the relationship created from this object.
         from_entity: Direction of the relationship created from the mapping object.
-        parameters: Parameters that will be added to the relationship created from this object (Optional).
     """
 
     foreign_key: ForeignKeyMapping
     label: str
     from_entity: bool = False
-    parameters: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -115,13 +113,13 @@ class ManyToManyMapping:
         foreign_key_from: Describes the source of the relationship.
         foreign_key_to: Describes the destination of the relationship.
         label: Label to be applied to the newly created relationship.
-        parameters: Parameters that will be added to the relationship created from this object (Optional).
+        properties: Properties that will be added to the relationship created from this object (Optional).
     """
 
     foreign_key_from: ForeignKeyMapping
     foreign_key_to: ForeignKeyMapping
     label: str
-    parameters: Optional[Dict[str, str]] = None
+    properties: Optional[List[str]] = None
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -494,6 +492,8 @@ class TableToGraphImporter(Importer):
                     property_from=mapping_from.reference_key,
                     property_to=mapping_to.reference_key,
                     relation_label=many_to_many_mapping.mapping.label,
+                    table_name=many_to_many_mapping.table_name,
+                    properties=many_to_many_mapping.mapping.properties,
                     row=row,
                 )
 
@@ -606,6 +606,8 @@ class TableToGraphImporter(Importer):
         property_from: str,
         property_to: str,
         relation_label: str,
+        table_name: str,
+        properties: List[str],
         row: Dict[str, Any],
     ) -> None:
         """Translates a row to a relationship and writes it to Memgraph.
@@ -616,6 +618,8 @@ class TableToGraphImporter(Importer):
             property_from: Property of the source node.
             property_to: Property of the destination node.
             relation_label: Label for the relationship.
+            table_name: Name of the table used to read properties
+            properties: Relationship properties to be added
             row: The row to be translated.
         """
         (
@@ -642,7 +646,13 @@ class TableToGraphImporter(Importer):
             )
             .create()
             .node(variable=NODE_A)
-            .to(relation_label)
+            .to(
+                relationship_type=relation_label,
+                **{
+                    self._name_mapper.get_property_name(collection_name=table_name, column_name=prop): row[prop]
+                    for prop in properties
+                },
+            )
             .node(variable=NODE_B)
             .execute()
         )

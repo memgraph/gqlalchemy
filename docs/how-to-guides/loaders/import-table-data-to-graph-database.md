@@ -27,14 +27,21 @@ data is located, here are two guides on how to import it to Memgraph:
 
 ## Loading a CSV file from the local file system
 
-Let's say you have a simple table data in a CSV file stored at
-`/home/user/table_data`:
+Let's say you have a simple dataset stored in CSV files:
 
+`/home/user/table_data/individual.csv`:
 ```csv
-name,surname,grade
-Ivan,Horvat,4
-Marko,Andric,5
-Luka,Lukic,3
+ind_id, name, surname, add_id
+1, Ivan,  Horvat, 2
+2, Marko, Andric, 2
+3, Luka,  Lukic,  1
+```
+
+`/home/user/table_data/address.csv`:
+```csv
+add_id, street, num, city
+1, Ilica,    2,  Zagreb
+2, Broadway, 12, New York
 ```
 
 To create a translation from table to graph data, you need to define a **data
@@ -78,24 +85,37 @@ many_to_many_relations:       # intended to be used in case of associative table
       column_name:
       reference_table:
       reference_key:
-    label:
+    label:                   # relationship's label
+    properties:              # list of properties to add to the relationship
 
 ```
+
+### One to many
 
 For this example, you don't need all of those fields. You only need to define
 `indices` and `one_to_many_relations`. Hence, you have the following YAML file:
 
 ```yaml
 indices:
-  example:
-    - name
+  address:
+    - add_id
+  individual:
+    - ind_id
 
 name_mappings:
-  example:
-    label: PERSON
+  individual:
+    label: INDIVIDUAL
+  address:
+    label: ADDRESS
 
 one_to_many_relations:
-  example: []
+  address: []
+  individual:
+    - foreign_key:
+        column_name: add_id
+        reference_table: address
+        reference_key: add_id
+      label: LIVES_IN
 ```
 
 In order to read the data configuration from the YAML file, run:
@@ -114,11 +134,64 @@ make an instance of an `Importer` and call `translate()`.
 ```python
 importer = CSVLocalFileSystemImporter(
     data_configuration=parsed_yaml,
-    path="/home/user/table_data",
+    path="/home/user/table_data/",
 )
 
 importer.translate(drop_database_on_start=True)
 ```
+
+### Many to many
+
+Relationships can also be defined using a third, associative table.
+
+`/home/user/table_data/tenant.csv`:
+```csv
+ind_id, add_id, duration
+1, 2, 21
+2, 2, 3
+3, 1, 5
+```
+
+We need to extend our data configuration YAML file to include the `many_to_many_relations`, like so:
+
+```
+indices:
+  address:
+    - add_id
+  individual:
+    - ind_id
+
+name_mappings:
+  individual:
+    label: INDIVIDUAL
+  address:
+    label: ADDRESS
+  tenant:
+    column_names_mapping:
+      duration: years
+
+one_to_many_relations:
+  address: []
+  individual: []
+
+many_to_many_relations:
+  tenant:
+    foreign_key_from:
+      column_name: ind_id
+      reference_table: individual
+      reference_key: ind_id
+    foreign_key_to:
+      column_name: add_id
+      reference_table: address
+      reference_key: add_id
+    label: LIVES_IN
+    properties:
+      - duration
+```
+
+From here the procedure is the same as before.
+In addition to having imported nodes and connected individuals and their addresses, we have also added an edge property.
+This property is read from the associative table and is named in accordance with the `name_mappings`.
 
 ## Using a cloud storage solution
 
