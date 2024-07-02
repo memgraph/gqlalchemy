@@ -141,7 +141,7 @@ def test_local_table_to_graph_importer_csv(memgraph):
                 },
                 "foreign_key_to": {"column_name": "add_id", "reference_table": "address", "reference_key": "add_id"},
                 "label": "LIVES_IN",
-                "parameters": ["duration"]
+                "properties": ["duration"]
             }
         },
     }
