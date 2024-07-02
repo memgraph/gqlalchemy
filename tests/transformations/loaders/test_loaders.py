@@ -125,11 +125,11 @@ def test_local_table_to_graph_importer_csv(memgraph):
     conf_with_many_to_many = {
         "indices": {"address": ["add_id"], "individual": ["ind_id"]},
         "name_mappings": {
-            "individual": {"label": "INDIVIDUAL"}, 
+            "individual": {"label": "INDIVIDUAL"},
             "address": {"label": "ADDRESS"},
             "i2a": {
                 "column_names_mapping": {"duration": "years"},
-            }
+            },
         },
         "one_to_many_relations": {"address": [], "individual": []},
         "many_to_many_relations": {
@@ -141,7 +141,7 @@ def test_local_table_to_graph_importer_csv(memgraph):
                 },
                 "foreign_key_to": {"column_name": "add_id", "reference_table": "address", "reference_key": "add_id"},
                 "label": "LIVES_IN",
-                "parameters": ["duration"]
+                "properties": ["duration"],
             }
         },
     }

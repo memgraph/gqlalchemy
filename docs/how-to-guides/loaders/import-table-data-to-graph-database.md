@@ -86,7 +86,7 @@ many_to_many_relations:       # intended to be used in case of associative table
       reference_table:
       reference_key:
     label:                   # relationship's label
-    parameters:              # list of parameters to add to the relationship
+    properties:              # list of properties to add to the relationship
 
 ```
 
@@ -185,7 +185,7 @@ many_to_many_relations:
       reference_table: address
       reference_key: add_id
     label: LIVES_IN
-    parameters:
+    properties:
       - duration
 ```
 
