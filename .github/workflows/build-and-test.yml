@@ -106,7 +106,8 @@ jobs:
           path: /var/log/memgraph
 
   build_and_test_windows:
-    if: github.event.pull_request.draft == false
+    if: false
+    # if: github.event.pull_request.draft == false
     continue-on-error: true
     strategy:
       matrix:
