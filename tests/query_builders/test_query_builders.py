@@ -370,7 +370,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .return_()
         )
         expected_query = (
-            f" MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name IS {'NOT ' if operator != '=' else ''}NULL RETURN * "
+            f" MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name IS {'NOT ' if operator != '=' else ''}null RETURN * "
         )
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
