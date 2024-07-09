@@ -107,10 +107,10 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
 
     if value_type == CypherVariable:
         return str(value)
-
+        
     if isinstance(value, datetime):
         if value.tzinfo == pytz.UTC:
-            formatted_date = value.strftime(f"%Y-%m-%dT%H:%M:%SZ")
+            formatted_date = value.strftime("%Y-%m-%dT%H:%M:%SZ")
             return f"{DatetimeKeywords.ZONEDDATETIME.value}('{formatted_date}')"
         elif value.tzinfo is not None:
             tz = value.strftime('%z')
@@ -121,17 +121,14 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
         else:
             return f"{DatetimeKeywords.LOCALDATETIME.value}('{value.isoformat()}')"
 
-    elif isinstance(value, timedelta):
-        return f"{datetimeKwMapping[timedelta]}('{_format_timedelta(value)}')"
+    if isinstance(value, timedelta):
+        return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value)}')"
 
-    elif isinstance(value, time):
-        return f"{datetimeKwMapping[time]}('{value.isoformat()}')"
+    if isinstance(value, date):
+        return f"{datetimeKwMapping[value_type]}('{value.isoformat()}')"
 
-    elif isinstance(value, date):
-        return f"{datetimeKwMapping[date]}('{value.isoformat()}')"
-
-    else:
-        raise TypeError(f"Unsupported type: {type(value)}")
+    if isinstance(value, time):
+        return f"{datetimeKwMapping[value_type]}('{value.isoformat()}')"
 
     if value_type == str and value.lower() in ["true", "false", "null"]:
         return value

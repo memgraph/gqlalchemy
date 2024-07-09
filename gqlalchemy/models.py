@@ -403,26 +403,6 @@ class GraphObject(BaseModel):
                 + " None, bool, int, float, str, list, dict, datetime."
             )
 
-        
-        if isinstance(value, (timedelta, time, datetime, date)):
-            if isinstance(value, timedelta):
-                formatted_value = _format_timedelta(value)
-            else:
-                formatted_value = value.isoformat()
-            
-            if isinstance(value, datetime) and value.tzinfo is not None:
-                tz_offset = value.strftime('%z')
-                tz_name = value.tzinfo.zone
-                return f"datetime('{value.strftime('%Y-%m-%dT%H:%M:%S')}{tz_offset}[{tz_name}]')"
-            else:
-                keyword = datetimeKwMapping[value_type]
-                return f"{keyword}('{formatted_value}')"
-        else:
-            raise GQLAlchemyError(
-                f"Unsupported value data type: {type(value)}."
-                + " Memgraph supports the following data types:"
-                + " None, bool, int, float, str, list, dict, datetime."
-            )
 
     def _get_cypher_field_assignment_block(self, variable_name: str, operator: str) -> str:
         """Creates a cypher field assignment block joined using the `operator`
