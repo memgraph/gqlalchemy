@@ -504,7 +504,6 @@ class Memgraph(DatabaseClient):
             "TERMINATE TRANSACTIONS " + ", ".join([f"'{transaction_id}'" for transaction_id in transaction_ids]) + ";"
         )
 
-        terminated_transactions = []
         transactions_data = self.execute_and_fetch(query)
 
         terminated_transactions = list(map(create_terminated_transaction, transactions_data))
