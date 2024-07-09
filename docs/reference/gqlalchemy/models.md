@@ -1,3 +1,8 @@
+---
+sidebar_label: models
+title: gqlalchemy.models
+---
+
 ## TriggerEventType Objects
 
 ```python

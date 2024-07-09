@@ -1,3 +1,8 @@
+---
+sidebar_label: nx_translator
+title: gqlalchemy.transformations.translators.nx_translator
+---
+
 ## NetworkXCypherBuilder Objects
 
 ```python

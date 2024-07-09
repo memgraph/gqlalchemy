@@ -1,3 +1,8 @@
+---
+sidebar_label: loaders
+title: gqlalchemy.transformations.importing.loaders
+---
+
 ## ForeignKeyMapping Objects
 
 ```python
@@ -43,7 +48,7 @@ Many to many mapping is intended to be used in case of associative tables.
 - `foreign_key_from` - Describes the source of the relationship.
 - `foreign_key_to` - Describes the destination of the relationship.
 - `label` - Label to be applied to the newly created relationship.
-- `properties` - List of properties that will be added to the relationship created from this object (Optional).
+- `properties` - Properties that will be added to the relationship created from this object (Optional).
 
 ## TableMapping Objects
 

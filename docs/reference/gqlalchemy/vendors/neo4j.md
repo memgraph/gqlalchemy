@@ -1,3 +1,8 @@
+---
+sidebar_label: neo4j
+title: gqlalchemy.vendors.neo4j
+---
+
 ## Neo4j Objects
 
 ```python

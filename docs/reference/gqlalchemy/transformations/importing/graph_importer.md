@@ -1,3 +1,8 @@
+---
+sidebar_label: graph_importer
+title: gqlalchemy.transformations.importing.graph_importer
+---
+
 ## GraphImporter Objects
 
 ```python
