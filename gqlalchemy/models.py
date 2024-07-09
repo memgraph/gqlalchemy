@@ -379,6 +379,31 @@ class GraphObject(BaseModel):
             return "[" + ", ".join(self.escape_value(val) for val in value) + "]"
         elif value_type == dict:
             return "{" + ", ".join(f"{key}: {self.escape_value(val)}" for key, val in value.items()) + "}"
+        
+        if isinstance(value, datetime):
+            formatted_value = value.isoformat()
+            if value.tzinfo is not None:
+                tz_offset = value.strftime('%z')
+                tz_name = value.tzinfo.zone
+                return f"datetime('{value.strftime('%Y-%m-%dT%H:%M:%S')}{tz_offset}[{tz_name}]')"
+            keyword = datetimeKwMapping[datetime]
+            return f"{keyword}('{formatted_value}')"
+        elif isinstance(value, timedelta):
+            formatted_value = _format_timedelta(value)
+            keyword = datetimeKwMapping[timedelta]
+            return f"{keyword}('{formatted_value}')"
+        elif isinstance(value, (time, date)):
+            formatted_value = value.isoformat()
+            keyword = datetimeKwMapping[type(value)]
+            return f"{keyword}('{formatted_value}')"
+        else:
+            raise GQLAlchemyError(
+                f"Unsupported value data type: {type(value)}."
+                + " Memgraph supports the following data types:"
+                + " None, bool, int, float, str, list, dict, datetime."
+            )
+
+        
         if isinstance(value, (timedelta, time, datetime, date)):
             if isinstance(value, timedelta):
                 formatted_value = _format_timedelta(value)
