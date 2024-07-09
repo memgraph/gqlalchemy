@@ -69,7 +69,7 @@ class MemgraphConstants:
     PROPERTIES = "properties"
     UNIQUE = "unique"
 
-    
+
 class MemgraphStorageMode(Enum):
     IN_MEMORY_TRANSACTIONAL = "IN_MEMORY_TRANSACTIONAL"
     IN_MEMORY_ANALYTICAL = "IN_MEMORY_ANALYTICAL"
@@ -78,7 +78,7 @@ class MemgraphStorageMode(Enum):
     def __str__(self):
         return self.value
 
-      
+
 def create_transaction(transaction_data) -> MemgraphTransaction:
     """Create a MemgraphTransaction object from transaction data.
     Args:
