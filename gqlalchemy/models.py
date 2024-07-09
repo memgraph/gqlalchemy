@@ -37,7 +37,6 @@ class DatetimeKeywords(Enum):
     LOCALTIME = "localTime"
     LOCALDATETIME = "localDateTime"
     DATE = "date"
-    ZONEDDATETIME = "datetime"
 
 
 datetimeKwMapping = {
@@ -45,7 +44,6 @@ datetimeKwMapping = {
     time: DatetimeKeywords.LOCALTIME.value,
     datetime: DatetimeKeywords.LOCALDATETIME.value,
     date: DatetimeKeywords.DATE.value,
-    datetime: DatetimeKeywords.ZONEDDATETIME.value  
 }
 
 
@@ -379,14 +377,14 @@ class GraphObject(BaseModel):
             return "[" + ", ".join(self.escape_value(val) for val in value) + "]"
         elif value_type == dict:
             return "{" + ", ".join(f"{key}: {self.escape_value(val)}" for key, val in value.items()) + "}"
-        
+
         if isinstance(value, datetime):
-            formatted_value = value.isoformat()
             if value.tzinfo is not None:
-                tz_offset = value.strftime('%z')
+                tz_offset = value.strftime("%z")
                 tz_name = value.tzinfo.zone
                 return f"datetime('{value.strftime('%Y-%m-%dT%H:%M:%S')}{tz_offset}[{tz_name}]')"
             keyword = datetimeKwMapping[datetime]
+            formatted_value = value.isoformat()
             return f"{keyword}('{formatted_value}')"
         elif isinstance(value, timedelta):
             formatted_value = _format_timedelta(value)
@@ -402,7 +400,6 @@ class GraphObject(BaseModel):
                 + " Memgraph supports the following data types:"
                 + " None, bool, int, float, str, list, dict, datetime."
             )
-
 
     def _get_cypher_field_assignment_block(self, variable_name: str, operator: str) -> str:
         """Creates a cypher field assignment block joined using the `operator`
