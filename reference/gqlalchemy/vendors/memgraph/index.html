@@ -20,7 +20,7 @@
     
     
       
-        <title>memgraph - GQLAlchemy Documentation</title>
+        <title>gqlalchemy.vendors.memgraph - GQLAlchemy Documentation</title>
       
     
     
@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#memgraph-objects" class="md-skip">
+        <a href="#create_transaction" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              memgraph
+              gqlalchemy.vendors.memgraph
             
           </span>
         </div>
@@ -1434,6 +1434,20 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#create_transaction" class="md-nav__link">
+    create_transaction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create_terminated_transaction" class="md-nav__link">
+    create_terminated_transaction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#memgraph-objects" class="md-nav__link">
     Memgraph Objects
   </a>
@@ -1591,6 +1605,34 @@
           <li class="md-nav__item">
   <a href="#with_power_bi" class="md-nav__link">
     with_power_bi
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_storage_mode" class="md-nav__link">
+    get_storage_mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_storage_mode" class="md-nav__link">
+    set_storage_mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_transactions" class="md-nav__link">
+    get_transactions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terminate_transactions" class="md-nav__link">
+    terminate_transactions
   </a>
   
 </li>
@@ -1889,6 +1931,20 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#create_transaction" class="md-nav__link">
+    create_transaction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create_terminated_transaction" class="md-nav__link">
+    create_terminated_transaction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#memgraph-objects" class="md-nav__link">
     Memgraph Objects
   </a>
@@ -2050,6 +2106,34 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#get_storage_mode" class="md-nav__link">
+    get_storage_mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_storage_mode" class="md-nav__link">
+    set_storage_mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_transactions" class="md-nav__link">
+    get_transactions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terminate_transactions" class="md-nav__link">
+    terminate_transactions
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2075,6 +2159,31 @@
 
   <h1>memgraph</h1>
 
+<h4 id="create_transaction">create_transaction</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_transaction</span><span class="p">(</span><span class="n">transaction_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemgraphTransaction</span>
+</code></pre></div>
+<p>Create a MemgraphTransaction object from transaction data.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>transaction_data</code> <em>dict</em> - A dictionary containing transaction data.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>MemgraphTransaction</code> - A MemgraphTransaction object.</li>
+</ul>
+<h4 id="create_terminated_transaction">create_terminated_transaction</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_terminated_transaction</span><span class="p">(</span>
+        <span class="n">transaction_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemgraphTerminatedTransaction</span>
+</code></pre></div>
+<p>Create a MemgraphTerminatedTransaction object from transaction data.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>transaction_data</code> <em>dict</em> - A dictionary containing transaction data.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>MemgraphTerminatedTransaction</code> - A MemgraphTerminatedTransaction object.</li>
+</ul>
 <h2 id="memgraph-objects">Memgraph Objects</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Memgraph</span><span class="p">(</span><span class="n">DatabaseClient</span><span class="p">)</span>
 </code></pre></div>
@@ -2223,6 +2332,35 @@ capabilities.</p>
 <p><strong>Returns</strong>:</p>
 <ul>
 <li><code>Memgraph</code> - Memgraph instance</li>
+</ul>
+<h4 id="get_storage_mode">get_storage_mode</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_storage_mode</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Returns the storage mode of the Memgraph instance.</p>
+<h4 id="set_storage_mode">set_storage_mode</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">set_storage_mode</span><span class="p">(</span><span class="n">storage_mode</span><span class="p">:</span> <span class="n">MemgraphStorageMode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Sets the storage mode of the Memgraph instance.</p>
+<h4 id="get_transactions">get_transactions</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_transactions</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MemgraphTransaction</span><span class="p">]</span>
+</code></pre></div>
+<p>Get all transactions in the database.</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>List[MemgraphTransaction]</code> - A list of MemgraphTransaction objects.</li>
+</ul>
+<h4 id="terminate_transactions">terminate_transactions</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">terminate_transactions</span><span class="p">(</span>
+        <span class="n">transaction_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MemgraphTerminatedTransaction</span><span class="p">]</span>
+</code></pre></div>
+<p>Terminate transactions in the database.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>transaction_ids</code> <em>List[str]</em> - A list of transaction ids to terminate.</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>List[MemgraphTerminatedTransaction]</code> - A list of MemgraphTerminatedTransaction objects with info on their status.</li>
 </ul>
 
 

@@ -20,7 +20,7 @@
     
     
       
-        <title>loaders - GQLAlchemy Documentation</title>
+        <title>gqlalchemy.transformations.importing.loaders - GQLAlchemy Documentation</title>
       
     
     
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              loaders
+              gqlalchemy.transformations.importing.loaders
             
           </span>
         </div>
@@ -2906,7 +2906,6 @@
 <li><code>foreign_key</code> - Foreign key used for mapping.</li>
 <li><code>label</code> - Label which will be applied to the relationship created from this object.</li>
 <li><code>from_entity</code> - Direction of the relationship created from the mapping object.</li>
-<li><code>parameters</code> - Parameters that will be added to the relationship created from this object (Optional).</li>
 </ul>
 <h2 id="manytomanymapping-objects">ManyToManyMapping Objects</h2>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -2919,7 +2918,7 @@ Many to many mapping is intended to be used in case of associative tables.</p>
 <li><code>foreign_key_from</code> - Describes the source of the relationship.</li>
 <li><code>foreign_key_to</code> - Describes the destination of the relationship.</li>
 <li><code>label</code> - Label to be applied to the newly created relationship.</li>
-<li><code>parameters</code> - Parameters that will be added to the relationship created from this object (Optional).</li>
+<li><code>properties</code> - Properties that will be added to the relationship created from this object (Optional).</li>
 </ul>
 <h2 id="tablemapping-objects">TableMapping Objects</h2>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>

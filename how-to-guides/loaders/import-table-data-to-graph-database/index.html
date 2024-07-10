@@ -543,6 +543,26 @@
     Loading a CSV file from the local file system
   </a>
   
+    <nav class="md-nav" aria-label="Loading a CSV file from the local file system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-to-many" class="md-nav__link">
+    One to many
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#many-to-many" class="md-nav__link">
+    Many to many
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1746,6 +1766,26 @@
     Loading a CSV file from the local file system
   </a>
   
+    <nav class="md-nav" aria-label="Loading a CSV file from the local file system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-to-many" class="md-nav__link">
+    One to many
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#many-to-many" class="md-nav__link">
+    Many to many
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1800,13 +1840,18 @@ data is located, here are two guides on how to import it to Memgraph:</p>
 <p>The features below aren’t included in the default GQLAlchemy installation. To use them, make sure to <a href="../../../installation/">install GQLAlchemy</a> with the relevant extras.</p>
 </div>
 <h2 id="loading-a-csv-file-from-the-local-file-system">Loading a CSV file from the local file system</h2>
-<p>Let's say you have a simple table data in a CSV file stored at
-<code>/home/user/table_data</code>:</p>
-<div class="highlight"><pre><span></span><code>name,surname,grade
-Ivan,Horvat,4
-Marko,Andric,5
-Luka,Lukic,3
-</code></pre></div>
+<p>Let's say you have a simple dataset stored in CSV files:</p>
+<p><code>/home/user/table_data/individual.csv</code>:
+<div class="highlight"><pre><span></span><code>ind_id, name, surname, add_id
+1, Ivan,  Horvat, 2
+2, Marko, Andric, 2
+3, Luka,  Lukic,  1
+</code></pre></div></p>
+<p><code>/home/user/table_data/address.csv</code>:
+<div class="highlight"><pre><span></span><code>add_id, street, num, city
+1, Ilica,    2,  Zagreb
+2, Broadway, 12, New York
+</code></pre></div></p>
 <p>To create a translation from table to graph data, you need to define a <strong>data
 configuration object</strong>. This can be done inside your code by defining a
 dictionary, but it is recommended to use a YAML file structured like this:</p>
@@ -1846,20 +1891,32 @@ dictionary, but it is recommended to use a YAML file structured like this:</p>
 <span class="w">      </span><span class="nt">column_name</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">reference_table</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">reference_key</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">label</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">label</span><span class="p">:</span><span class="w">                   </span><span class="c1"># relationship&#39;s label</span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span><span class="w">              </span><span class="c1"># list of properties to add to the relationship</span>
 </code></pre></div>
+<h3 id="one-to-many">One to many</h3>
 <p>For this example, you don't need all of those fields. You only need to define
 <code>indices</code> and <code>one_to_many_relations</code>. Hence, you have the following YAML file:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">indices</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">example</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name</span>
+<span class="w">  </span><span class="nt">address</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add_id</span>
+<span class="w">  </span><span class="nt">individual</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ind_id</span>
 
 <span class="nt">name_mappings</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">example</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PERSON</span>
+<span class="w">  </span><span class="nt">individual</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INDIVIDUAL</span>
+<span class="w">  </span><span class="nt">address</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ADDRESS</span>
 
 <span class="nt">one_to_many_relations</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">example</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">  </span><span class="nt">individual</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">foreign_key</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">column_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add_id</span>
+<span class="w">        </span><span class="nt">reference_table</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">address</span>
+<span class="w">        </span><span class="nt">reference_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add_id</span>
+<span class="w">      </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LIVES_IN</span>
 </code></pre></div>
 <p>In order to read the data configuration from the YAML file, run:</p>
 <div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;./example.yaml&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
@@ -1872,11 +1929,56 @@ dictionary, but it is recommended to use a YAML file structured like this:</p>
 make an instance of an <code>Importer</code> and call <code>translate()</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">importer</span> <span class="o">=</span> <span class="n">CSVLocalFileSystemImporter</span><span class="p">(</span>
     <span class="n">data_configuration</span><span class="o">=</span><span class="n">parsed_yaml</span><span class="p">,</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/home/user/table_data&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/home/user/table_data/&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">importer</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">drop_database_on_start</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
+<h3 id="many-to-many">Many to many</h3>
+<p>Relationships can also be defined using a third, associative table.</p>
+<p><code>/home/user/table_data/tenant.csv</code>:
+<div class="highlight"><pre><span></span><code>ind_id, add_id, duration
+1, 2, 21
+2, 2, 3
+3, 1, 5
+</code></pre></div></p>
+<p>We need to extend our data configuration YAML file to include the <code>many_to_many_relations</code>, like so:</p>
+<div class="highlight"><pre><span></span><code>indices:
+  address:
+    - add_id
+  individual:
+    - ind_id
+
+name_mappings:
+  individual:
+    label: INDIVIDUAL
+  address:
+    label: ADDRESS
+  tenant:
+    column_names_mapping:
+      duration: years
+
+one_to_many_relations:
+  address: []
+  individual: []
+
+many_to_many_relations:
+  tenant:
+    foreign_key_from:
+      column_name: ind_id
+      reference_table: individual
+      reference_key: ind_id
+    foreign_key_to:
+      column_name: add_id
+      reference_table: address
+      reference_key: add_id
+    label: LIVES_IN
+    properties:
+      - duration
+</code></pre></div>
+<p>From here the procedure is the same as before.
+In addition to having imported nodes and connected individuals and their addresses, we have also added an edge property.
+This property is read from the associative table and is named in accordance with the <code>name_mappings</code>.</p>
 <h2 id="using-a-cloud-storage-solution">Using a cloud storage solution</h2>
 <p>To connect to Azure Blob, simply change the Importer object you are using. Like
 above, first, define a data configuration object and then simply call:</p>

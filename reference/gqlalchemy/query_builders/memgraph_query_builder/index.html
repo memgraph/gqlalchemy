@@ -20,7 +20,7 @@
     
     
       
-        <title>memgraph_query_builder - GQLAlchemy Documentation</title>
+        <title>gqlalchemy.query_builders.memgraph_query_builder - GQLAlchemy Documentation</title>
       
     
     
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              memgraph_query_builder
+              gqlalchemy.query_builders.memgraph_query_builder
             
           </span>
         </div>
@@ -1844,7 +1844,7 @@
 <p>Load data from a CSV file by executing a Cypher query for each row.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
-<li><code>path</code> - A string representing the path to the CSV file.</li>
+<li><code>path</code> - A string representing the path to the CSV file. If beginning with <code>http://</code>, <code>https://</code>, or <code>ftp://</code>, the CSV file will be fetched over the network.</li>
 <li><code>header</code> - A bool indicating if the CSV file starts with a header row.</li>
 <li><code>row</code> - A string representing the name of the variable for iterating
   over each row.</li>
