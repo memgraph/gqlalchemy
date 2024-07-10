@@ -279,6 +279,22 @@ Load power_bi stream query module.
 
 - `Memgraph` - Memgraph instance
 
+#### get\_storage\_mode
+
+```python
+def get_storage_mode() -> str
+```
+
+Returns the storage mode of the Memgraph instance.
+
+#### set\_storage\_mode
+
+```python
+def set_storage_mode(storage_mode: MemgraphStorageMode) -> None
+```
+
+Sets the storage mode of the Memgraph instance.
+
 #### get\_transactions
 
 ```python
