@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.6.0 - July 10, 2024
+
+### Features and improvements
+- Added `SIMILAR` operator to query builder (https://github.com/memgraph/gqlalchemy/pull/304)
+- Better documented how to load CSV from a remote location: to load CSV from a remote location, provide a URL as a path (https://github.com/memgraph/gqlalchemy/pull/305)
+- You can now add relationship properties in many-to-many mapping when importing a CSV file (https://github.com/memgraph/gqlalchemy/pull/306)
+- Added getter and setter for Memgraph storage modes (https://github.com/memgraph/gqlalchemy/pull/309)
+- Added `get_transactions()` and `terminate_transactions()` methods for easier transaction management (https://github.com/memgraph/gqlalchemy/pull/310)
+- Added support for `ZonedDateTime` data type (https://github.com/memgraph/gqlalchemy/pull/312)
+
 ## v1.5.1 - January 8, 2024
 
 ### Updates
