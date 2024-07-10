@@ -1,3 +1,8 @@
+---
+sidebar_label: dgl_translator
+title: gqlalchemy.transformations.translators.dgl_translator
+---
+
 ## DGLTranslator Objects
 
 ```python

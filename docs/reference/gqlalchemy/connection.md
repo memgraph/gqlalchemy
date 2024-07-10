@@ -1,3 +1,8 @@
+---
+sidebar_label: connection
+title: gqlalchemy.connection
+---
+
 ## Connection Objects
 
 ```python

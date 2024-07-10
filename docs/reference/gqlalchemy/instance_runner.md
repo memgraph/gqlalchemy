@@ -1,3 +1,8 @@
+---
+sidebar_label: instance_runner
+title: gqlalchemy.instance_runner
+---
+
 #### wait\_for\_port
 
 ```python
@@ -27,7 +32,7 @@ Wait for a TCP port to become available.
 #### wait\_for\_docker\_container
 
 ```python
-def wait_for_docker_container(container: "docker.Container",
+def wait_for_docker_container(container,
                               delay: float = 0.01,
                               timeout: float = 5.0,
                               backoff: int = 2) -> None

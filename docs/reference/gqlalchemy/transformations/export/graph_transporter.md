@@ -1,3 +1,8 @@
+---
+sidebar_label: graph_transporter
+title: gqlalchemy.transformations.export.graph_transporter
+---
+
 ## GraphTransporter Objects
 
 ```python

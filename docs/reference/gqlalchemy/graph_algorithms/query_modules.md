@@ -1,3 +1,8 @@
+---
+sidebar_label: query_modules
+title: gqlalchemy.graph_algorithms.query_modules
+---
+
 ## QueryModule Objects
 
 ```python

@@ -1,3 +1,41 @@
+---
+sidebar_label: memgraph
+title: gqlalchemy.vendors.memgraph
+---
+
+#### create\_transaction
+
+```python
+def create_transaction(transaction_data) -> MemgraphTransaction
+```
+
+Create a MemgraphTransaction object from transaction data.
+
+**Arguments**:
+
+- `transaction_data` _dict_ - A dictionary containing transaction data.
+
+**Returns**:
+
+- `MemgraphTransaction` - A MemgraphTransaction object.
+
+#### create\_terminated\_transaction
+
+```python
+def create_terminated_transaction(
+        transaction_data) -> MemgraphTerminatedTransaction
+```
+
+Create a MemgraphTerminatedTransaction object from transaction data.
+
+**Arguments**:
+
+- `transaction_data` _dict_ - A dictionary containing transaction data.
+
+**Returns**:
+
+- `MemgraphTerminatedTransaction` - A MemgraphTerminatedTransaction object.
+
 ## Memgraph Objects
 
 ```python
@@ -240,4 +278,49 @@ Load power_bi stream query module.
 **Returns**:
 
 - `Memgraph` - Memgraph instance
+
+#### get\_storage\_mode
+
+```python
+def get_storage_mode() -> str
+```
+
+Returns the storage mode of the Memgraph instance.
+
+#### set\_storage\_mode
+
+```python
+def set_storage_mode(storage_mode: MemgraphStorageMode) -> None
+```
+
+Sets the storage mode of the Memgraph instance.
+
+#### get\_transactions
+
+```python
+def get_transactions() -> List[MemgraphTransaction]
+```
+
+Get all transactions in the database.
+
+**Returns**:
+
+- `List[MemgraphTransaction]` - A list of MemgraphTransaction objects.
+
+#### terminate\_transactions
+
+```python
+def terminate_transactions(
+        transaction_ids: List[str]) -> List[MemgraphTerminatedTransaction]
+```
+
+Terminate transactions in the database.
+
+**Arguments**:
+
+- `transaction_ids` _List[str]_ - A list of transaction ids to terminate.
+
+**Returns**:
+
+- `List[MemgraphTerminatedTransaction]` - A list of MemgraphTerminatedTransaction objects with info on their status.
 

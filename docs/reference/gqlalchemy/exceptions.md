@@ -1,3 +1,8 @@
+---
+sidebar_label: exceptions
+title: gqlalchemy.exceptions
+---
+
 #### connection\_handler
 
 ```python
