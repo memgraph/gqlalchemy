@@ -2373,4 +2373,4 @@ torch-pyg = ["torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "bcefdecd3700712ed63d971e08636da6a8a627bb8d873d19e6045fe7094234dd"
+content-hash = "79c3d34494f755ba7c1afe98e787566af3f94f91d9d48f34431658bbd66daee2"
