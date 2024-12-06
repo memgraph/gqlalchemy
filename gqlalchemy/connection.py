@@ -56,7 +56,7 @@ class Connection(ABC):
 
     @abstractmethod
     def is_active(self) -> bool:
-        """Returns True if connection is active and can be used.."""
+        """Returns True if connection is active and can be used."""
         pass
 
 
