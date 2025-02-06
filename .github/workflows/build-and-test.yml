@@ -54,11 +54,12 @@ jobs:
           poe install-pyg-cpu
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Use the Upload Artifact GitHub Action
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: assets-for-download
           path: /var/log/memgraph
+          overwrite: true
 
   build_and_test_ubuntu_python3_11:
     if: github.event.pull_request.draft == false
@@ -99,11 +100,12 @@ jobs:
           poetry install --extras "arrow docker"
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker and not dgl"
       - name: Use the Upload Artifact GitHub Action
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: assets-for-download
           path: /var/log/memgraph
+          overwrite: true
 
   build_and_test_windows:
     if: false
@@ -172,14 +174,16 @@ jobs:
           poe install-pyg-cpu
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Save Memgraph Logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: memgraph-log
           path: C:\memgraph
+          overwrite: true
       - name: Save Neo4j Logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: neo4j-log
           path: C:\neo4j
+          overwrite: true
