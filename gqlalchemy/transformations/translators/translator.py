@@ -40,10 +40,8 @@ from gqlalchemy import Memgraph, Match
 
 class Translator(ABC):
     # Lambda function to concat list of labels
-    merge_labels: Callable[[Set[str]], str] = (
-        lambda labels, default_node_label: LABELS_CONCAT.join([label for label in sorted(labels)])
-        if len(labels)
-        else default_node_label
+    merge_labels: Callable[[Set[str]], str] = lambda labels, default_node_label: (
+        LABELS_CONCAT.join([label for label in sorted(labels)]) if len(labels) else default_node_label
     )
 
     @abstractmethod
