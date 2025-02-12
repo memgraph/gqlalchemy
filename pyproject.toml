@@ -55,7 +55,7 @@ torch_pyg = ["torch"]
 docker = ["docker"]
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.3.0"
+black = ">=22.3,<25.0"
 pytest = "^7.1.1"
 pytest-black = "^0.3.12"
 pytest-cov = "^2.12.0"
