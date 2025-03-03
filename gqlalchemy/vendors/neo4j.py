@@ -73,12 +73,16 @@ class Neo4j(DatabaseClient):
         for result in self.execute_and_fetch("SHOW INDEX;"):
             indexes.append(
                 Neo4jIndex(
-                    result[Neo4jConstants.LABEL][0]
-                    if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP
-                    else result[Neo4jConstants.LABEL],
-                    result[Neo4jConstants.PROPERTIES][0]
-                    if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP
-                    else result[Neo4jConstants.PROPERTIES],
+                    (
+                        result[Neo4jConstants.LABEL][0]
+                        if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP
+                        else result[Neo4jConstants.LABEL]
+                    ),
+                    (
+                        result[Neo4jConstants.PROPERTIES][0]
+                        if result[Neo4jConstants.TYPE] != Neo4jConstants.LOOKUP
+                        else result[Neo4jConstants.PROPERTIES]
+                    ),
                     result[Neo4jConstants.TYPE],
                     result[Neo4jConstants.UNIQUENESS],
                 )
