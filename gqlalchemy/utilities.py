@@ -157,7 +157,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value is None:
         return "null"
 
-    return f"'{value}'"
+    return f'"{value}"'
 
 
 def is_numeric(value):

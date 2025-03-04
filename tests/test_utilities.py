@@ -31,17 +31,18 @@ from gqlalchemy.utilities import (
 @pytest.mark.parametrize(
     "value, cypher_value",
     [
-        ("abc", "'abc'"),
+        ("abc", '"abc"'),
         ("null", "null"),
+        ("possessive's", '"possessive\'s"'),
         (123, "123"),
         (3.14, "3.14"),
         ([1, 2, 3], "[1, 2, 3]"),
-        ({"k1": 123, "k2": {"subkey1": "abc"}}, "{k1: 123, k2: {subkey1: 'abc'}}"),
+        ({"k1": 123, "k2": {"subkey1": "abc"}}, '{k1: 123, k2: {subkey1: "abc"}}'),
         (None, "null"),
         (True, "True"),
         (np.array([1, 2, 3]), "[1, 2, 3]"),
         (np.array([1.23, 2.34, 3.45]), "[1.23, 2.34, 3.45]"),
-        (np.array(["1", "2", "3"]), "['1', '2', '3']"),
+        (np.array(["1", "2", "3"]), '["1", "2", "3"]'),
         (np.array([[1, 2], [3, 4], [4, 5]]), "[[1, 2], [3, 4], [4, 5]]"),
     ],
 )
@@ -57,7 +58,7 @@ def test_to_cypher_properties():
         "prop2": 123.321,
         "prop3": {"k1": [1, 2, 3], "k2": {"subkey1": 1, "subkey2": [3, 2, 1]}},
     }
-    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}}"
+    expected_properties = '{prop1: "abc", prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}}'
 
     actual_properties = to_cypher_properties(properties)
 
