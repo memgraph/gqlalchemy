@@ -364,7 +364,7 @@ class GraphObject(BaseModel):
         value_type = type(value)
 
         if value is None:
-            "Null"
+            return "Null"
         elif value_type == bool:
             return repr(value)
         elif value_type == int:
