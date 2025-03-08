@@ -44,7 +44,7 @@ def test_invalid_match_chain_throws_exception():
 
 def test_load_csv_with_header(memgraph):
     query_builder = QueryBuilder().load_csv(path="path/to/my/file.csv", header=True, row="row").return_()
-    expected_query = " LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN * "
+    expected_query = ' LOAD CSV FROM "path/to/my/file.csv" WITH HEADER AS row RETURN * '
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -52,7 +52,7 @@ def test_load_csv_with_header(memgraph):
 
 def test_load_csv_no_header(memgraph):
     query_builder = QueryBuilder().load_csv(path="path/to/my/file.csv", header=False, row="row").return_()
-    expected_query = " LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN * "
+    expected_query = ' LOAD CSV FROM "path/to/my/file.csv" NO HEADER AS row RETURN * '
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -62,7 +62,7 @@ def test_call_subgraph_with_labels_and_types(memgraph):
     label = "LABEL"
     types = [["TYPE1", "TYPE2"]]
     query_builder = QueryBuilder().call("export_util.json", "/home/user", node_labels=label, relationship_types=types)
-    expected_query = " MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    expected_query = ' MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") '
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -71,7 +71,7 @@ def test_call_subgraph_with_labels_and_types(memgraph):
 def test_call_subgraph_with_labels(memgraph):
     label = "LABEL"
     query_builder = QueryBuilder().call("export_util.json", "/home/user", node_labels=label)
-    expected_query = " MATCH p=(a)-->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    expected_query = ' MATCH p=(a)-->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") '
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -82,7 +82,7 @@ def test_call_subgraph_with_multiple_labels(memgraph):
     query_builder = QueryBuilder().call(
         "export_util.json", "/home/user", node_labels=labels, relationship_directions=RelationshipDirection.LEFT
     )
-    expected_query = " MATCH p=(a)<--(b) WHERE (a:LABEL1) AND (b:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    expected_query = ' MATCH p=(a)<--(b) WHERE (a:LABEL1) AND (b:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") '
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -91,7 +91,7 @@ def test_call_subgraph_with_multiple_labels(memgraph):
 def test_call_subgraph_with_type(memgraph):
     relationship_type = "TYPE1"
     query_builder = QueryBuilder().call("export_util.json", "/home/user", relationship_types=relationship_type)
-    expected_query = " MATCH p=(a)-[:TYPE1]->(b) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    expected_query = ' MATCH p=(a)-[:TYPE1]->(b) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") '
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -108,7 +108,7 @@ def test_call_subgraph_with_many(memgraph):
         node_labels=node_labels,
         relationship_directions=relationship_directions,
     )
-    expected_query = " MATCH p=(a)<-[:OWNER | :RENTEE]-(b)-[:USES | :MAKES]->(c) WHERE (a:COMP or a:DEVICE) AND (b:USER) AND (c:SERVICE or c:GATEWAY) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') "
+    expected_query = ' MATCH p=(a)<-[:OWNER | :RENTEE]-(b)-[:USES | :MAKES]->(c) WHERE (a:COMP or a:DEVICE) AND (b:USER) AND (c:SERVICE or c:GATEWAY) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") '
     with patch.object(Memgraph, "execute", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -118,12 +118,12 @@ def test_call_subgraph_with_many(memgraph):
     "subgraph_path, expected_query",
     [
         (
-            "(n:LABEL1)-[:TYPE1]->(m:LABEL2)",
-            " MATCH p=(n:LABEL1)-[:TYPE1]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') ",
+            '(n:LABEL1)-[:TYPE1]->(m:LABEL2)',
+            ' MATCH p=(n:LABEL1)-[:TYPE1]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") ',
         ),
         (
-            "(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2)",
-            " MATCH p=(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, '/home/user') ",
+            '(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2)',
+            ' MATCH p=(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") ',
         ),
     ],
 )
@@ -215,7 +215,7 @@ def test_bfs():
         .node(labels="City", name="Paris")
         .return_()
     )
-    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road *BFS]->(:City {name: 'Paris'}) RETURN * "
+    expected_query = ' MATCH (:City {name: "Zagreb"})-[:Road *BFS]->(:City {name: "Paris"}) RETURN * '
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -224,7 +224,7 @@ def test_bfs():
 
 
 def test_bfs_filter_label():
-    bfs_alg = BreadthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
+    bfs_alg = BreadthFirstSearch(condition='r.length <= 200 AND n.name != "Metz"')
 
     query_builder = (
         QueryBuilder()
@@ -235,7 +235,7 @@ def test_bfs_filter_label():
         .return_()
     )
 
-    expected_query = " MATCH (:City {name: 'Paris'})-[:Road *BFS (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+    expected_query = ' MATCH (:City {name: "Paris"})-[:Road *BFS (r, n | r.length <= 200 AND n.name != "Metz")]->(:City {name: "Berlin"}) RETURN * '
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -276,7 +276,7 @@ def test_dfs():
         .node(labels="City", name="Paris")
         .return_()
     )
-    expected_query = " MATCH (:City {name: 'Zagreb'})-[:Road *]->(:City {name: 'Paris'}) RETURN * "
+    expected_query = ' MATCH (:City {name: "Zagreb"})-[:Road *]->(:City {name: "Paris"}) RETURN * '
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -285,7 +285,7 @@ def test_dfs():
 
 
 def test_dfs_filter_label():
-    dfs_alg = DepthFirstSearch(condition="r.length <= 200 AND n.name != 'Metz'")
+    dfs_alg = DepthFirstSearch(condition='r.length <= 200 AND n.name != "Metz"')
 
     query_builder = (
         QueryBuilder()
@@ -296,7 +296,7 @@ def test_dfs_filter_label():
         .return_()
     )
 
-    expected_query = " MATCH (:City {name: 'Paris'})-[:Road * (r, n | r.length <= 200 AND n.name != 'Metz')]->(:City {name: 'Berlin'}) RETURN * "
+    expected_query = ' MATCH (:City {name: "Paris"})-[:Road * (r, n | r.length <= 200 AND n.name != "Metz")]->(:City {name: "Berlin"}) RETURN * '
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
@@ -462,7 +462,7 @@ class TestMemgraphBaseClasses:
 
     def test_base_class_create(self):
         query_builder = Create().node(variable="n", labels="TEST", prop="test").return_(results=("n", "n"))
-        expected_query = " CREATE (n:TEST {prop: 'test'}) RETURN n "
+        expected_query = ' CREATE (n:TEST {prop: "test"}) RETURN n '
 
         with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
