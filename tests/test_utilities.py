@@ -34,6 +34,8 @@ from gqlalchemy.utilities import (
         ("abc", '"abc"'),
         ("null", "null"),
         ("possessive's", '"possessive\'s"'),
+        ("Newline\ncharacter", '"Newline\\ncharacter"'),
+        ("Single quote's\nwith a newline", '"Single quote\'s\\nwith a newline"'),
         (123, "123"),
         (3.14, "3.14"),
         ([1, 2, 3], "[1, 2, 3]"),
