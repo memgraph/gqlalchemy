@@ -17,6 +17,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
 from enum import Enum
+import json
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from pydantic.v1 import BaseModel, Extra, Field, PrivateAttr  # noqa F401
@@ -364,7 +365,7 @@ class GraphObject(BaseModel):
         value_type = type(value)
 
         if value is None:
-            "Null"
+            return "Null"
         elif value_type == bool:
             return repr(value)
         elif value_type == int:
@@ -372,7 +373,7 @@ class GraphObject(BaseModel):
         elif value_type == float:
             return repr(value)
         elif isinstance(value, str):
-            return repr(value) if value.isprintable() else rf"'{value}'"
+            return json.dumps(value)
         elif isinstance(value, list):
             return "[" + ", ".join(self.escape_value(val) for val in value) + "]"
         elif value_type == dict:
