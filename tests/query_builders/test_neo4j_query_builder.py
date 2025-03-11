@@ -42,7 +42,7 @@ class TestNeo4jBaseClasses:
         query_builder = (
             Create(connection=neo4j).node(variable="n", labels="TEST", prop="test").return_(results=("n", "n"))
         )
-        expected_query = " CREATE (n:TEST {prop: 'test'}) RETURN n "
+        expected_query = ' CREATE (n:TEST {prop: "test"}) RETURN n '
 
         with patch.object(Neo4j, "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
