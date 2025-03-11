@@ -44,7 +44,7 @@ def test_invalid_match_chain_throws_exception():
 
 def test_load_csv_with_header(memgraph):
     query_builder = QueryBuilder().load_csv(path="path/to/my/file.csv", header=True, row="row").return_()
-    expected_query = ' LOAD CSV FROM "path/to/my/file.csv" WITH HEADER AS row RETURN * '
+    expected_query = " LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN * "
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -52,7 +52,7 @@ def test_load_csv_with_header(memgraph):
 
 def test_load_csv_no_header(memgraph):
     query_builder = QueryBuilder().load_csv(path="path/to/my/file.csv", header=False, row="row").return_()
-    expected_query = ' LOAD CSV FROM "path/to/my/file.csv" NO HEADER AS row RETURN * '
+    expected_query = " LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN * "
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -118,11 +118,11 @@ def test_call_subgraph_with_many(memgraph):
     "subgraph_path, expected_query",
     [
         (
-            '(n:LABEL1)-[:TYPE1]->(m:LABEL2)',
+            "(n:LABEL1)-[:TYPE1]->(m:LABEL2)",
             ' MATCH p=(n:LABEL1)-[:TYPE1]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") ',
         ),
         (
-            '(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2)',
+            "(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2)",
             ' MATCH p=(n:LABEL1)-[:TYPE1 | :TYPE2]->(m:LABEL2) WITH project(p) AS graph CALL export_util.json(graph, "/home/user") ',
         ),
     ],
