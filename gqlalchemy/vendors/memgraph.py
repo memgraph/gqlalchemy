@@ -16,6 +16,7 @@ from enum import Enum
 import os
 import sqlite3
 from typing import List, Optional, Union
+import warnings
 
 from gqlalchemy.connection import Connection, MemgraphConnection
 from gqlalchemy.disk_storage import OnDiskPropertyDatabase
@@ -24,6 +25,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyFileNotFoundError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
     GQLAlchemyUniquenessConstraintError,
+    GQLAlchemyWarning,
 )
 from gqlalchemy.models import (
     MemgraphConstraintExists,
@@ -31,6 +33,7 @@ from gqlalchemy.models import (
     MemgraphIndex,
     MemgraphStream,
     MemgraphTrigger,
+    MemgraphEnum,
     Node,
     Relationship,
 )
@@ -166,6 +169,32 @@ class Memgraph(DatabaseClient):
                     )
                 )
         return constraints
+        
+    def create_enum(self, graph_enum: MemgraphEnum) -> None:
+        query = f"CREATE ENUM {graph_enum.name} VALUES {graph_enum._to_cypher()};"
+        self.execute(query)
+
+    def get_enums(self) -> List[MemgraphEnum]:
+        """Returns a list of all enums defined in the database."""
+        enums: List[MemgraphEnum] = []
+        for result in self.execute_and_fetch("SHOW ENUMS;"):
+            enums.append(MemgraphEnum(Enum(result['Enum Name'], result['Enum Values'])))
+        return enums
+    
+    def ensure_enums(self, graph_enums: List[MemgraphEnum]) -> None:
+        """Ensures that database enums match input enums."""
+        current_enums = set(self.get_enums())
+        new_enums = set(graph_enums)
+        for obsolete_enum in current_enums.difference(new_enums):
+            warnings.warn(GQLAlchemyWarning(f"DROP ENUM not yet implemented. Enum {obsolete_enum.__name__} is persisted in the database."))
+        for missing_enum in new_enums.difference(current_enums):
+            self.create_enum(missing_enum)
+
+    def drop_enum(self, graph_enum: Enum):
+        raise GQLAlchemyError(f"DROP ENUM not yet implemented. Enum {graph_enum.__name__} is persisted in the database.")
+    
+    def drop_enums(self, graph_enums: List[Enum]):
+        raise GQLAlchemyError(f"DROP ENUM not yet implemented. Enums {', '.join(graph_enums)} are persisted in the database.")
 
     def get_exists_constraints(
         self,
