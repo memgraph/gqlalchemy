@@ -20,7 +20,6 @@ from gqlalchemy.models import (  # noqa F401
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
-    MemgraphEnum,
     MemgraphKafkaStream,
     MemgraphPulsarStream,
     MemgraphTrigger,

@@ -16,9 +16,9 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
+from enum import Enum
 import json
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
-from enum import Enum, EnumMeta
 
 from pydantic.v1 import BaseModel, Extra, Field, PrivateAttr  # noqa F401
 
@@ -58,30 +58,7 @@ def _format_timedelta(duration: timedelta) -> str:
 
     return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
 
-class GraphEnum(ABC):
-    def __init__(self, enum):
 
-        if not isinstance(enum, (Enum, EnumMeta)):
-            raise TypeError()
-        
-        self.enum = enum if isinstance(enum, Enum) else None
-        self.cls = enum.__class__ if isinstance(enum, Enum) else enum
-    
-    @property
-    def name(self):
-        return self.cls.__name__
-    
-    @abstractmethod
-    def _to_cypher(self):
-        pass
-
-class MemgraphEnum(GraphEnum):
-    def _to_cypher(self):
-        return f"{{ {', '.join(self.cls._member_names_)} }}"
-        
-    def __repr__(self):
-        return f"<enum '{self.name}'>" if self.enum is None else f'{self.name}::{self.enum.name}'
-    
 class TriggerEventType:
     """An enum representing types of trigger events."""
 
@@ -331,17 +308,6 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
-    def __init__(self, **data):
-        for field in self.__class__.__fields__:
-            attrs = self.__class__.__fields__[field]
-            cls = self.__fields__[field].type_
-            if issubclass(cls, Enum) and not attrs.get("enum", False):
-                value = data.get(field)
-                if isinstance(value, dict):
-                    member  = value.get("__value").split('::')[1]
-                    data[field] = cls[member].value
-        super().__init__(**data)
-
     def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
@@ -406,8 +372,6 @@ class GraphObject(BaseModel):
             return repr(value)
         elif value_type == float:
             return repr(value)
-        elif isinstance(value, Enum):
-            return repr(MemgraphEnum(value))
         elif isinstance(value, str):
             return json.dumps(value)
         elif isinstance(value, list):
@@ -482,11 +446,7 @@ class GraphObject(BaseModel):
         cypher_set_properties = []
         for field in self.__fields__:
             attributes = self.__fields__[field].field_info.extra
-            cls = self.__fields__[field].type_
-            if issubclass(cls, Enum) and not attributes.get("enum", False):
-                value = getattr(self, field).value
-            else:
-                value = getattr(self, field)
+            value = getattr(self, field)
             if value is not None and not attributes.get("on_disk", False):
                 cypher_set_properties.append(f" SET {variable_name}.{field} = {self.escape_value(value)}")
 
@@ -562,16 +522,11 @@ class NodeMetaclass(BaseModel.__class__):
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
-            field_cls = cls.__fields__[field].type_
             label = attrs.get("label", cls.label)
             skip_constraints = False
 
             if db is None:
                 db = attrs.get("db")
-
-            # TODO: Implement enum creation and value add
-            if issubclass(field_cls, Enum) and attrs.get("enum", False):
-                pass
 
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
