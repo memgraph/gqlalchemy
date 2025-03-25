@@ -18,6 +18,7 @@ from enum import Enum
 import inspect
 import math
 import pytz
+import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -157,7 +158,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value is None:
         return "null"
 
-    return f"'{value}'"
+    return json.dumps(value)
 
 
 def is_numeric(value):
