@@ -17,7 +17,7 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow that allows
 
 ### Prerequisites
 
-- **Python 3.8 - 3.11**
+- **Python 3.9 - 3.11**
 - [`pymgclient`](https://github.com/memgraph/pymgclient):
 
   - Install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites)
