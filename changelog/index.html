@@ -1688,6 +1688,26 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v170-march-25-2025" class="md-nav__link">
+    v1.7.0 - March 25, 2025
+  </a>
+  
+    <nav class="md-nav" aria-label="v1.7.0 - March 25, 2025">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvements" class="md-nav__link">
+    Improvements
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v160-july-10-2024" class="md-nav__link">
     v1.6.0 - July 10, 2024
   </a>
@@ -1964,6 +1984,26 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v170-march-25-2025" class="md-nav__link">
+    v1.7.0 - March 25, 2025
+  </a>
+  
+    <nav class="md-nav" aria-label="v1.7.0 - March 25, 2025">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvements" class="md-nav__link">
+    Improvements
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v160-july-10-2024" class="md-nav__link">
     v1.6.0 - July 10, 2024
   </a>
@@ -2224,6 +2264,13 @@
 
 
 <h1 id="changelog">Changelog</h1>
+<h2 id="v170-march-25-2025">v1.7.0 - March 25, 2025</h2>
+<h3 id="improvements">Improvements</h3>
+<ul>
+<li>Updated <code>to_cypher_value()</code> and <code>escape_value()</code> to use <code>json.dumps()</code> instead of <code>fstring</code>. This solves an issue when there is a combination of characters in a string that need to be both escaped (e.g., an apostrophe ') and not escaped (e.g. newlines, \n) and allows flexibility in how the developer instantiates their strings and whether they chose to escape their strings ahead of sending them through to Cypher or not. (https://github.com/memgraph/gqlalchemy/pull/341)</li>
+<li>Bumped up dependencies to allow users to use higher, more recent versions of their favorite libraries, without making breaking changes for those who have lower versions in their environments (https://github.com/memgraph/gqlalchemy/pull/334)</li>
+<li>Updated query modules signatures to keep them up to date (https://github.com/memgraph/gqlalchemy/pull/335)</li>
+</ul>
 <h2 id="v160-july-10-2024">v1.6.0 - July 10, 2024</h2>
 <h3 id="features-and-improvements">Features and improvements</h3>
 <ul>
