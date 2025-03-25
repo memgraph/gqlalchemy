@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.7.0 - March 25, 2025
+
+### Improvements
+- Updated `to_cypher_value()` and `escape_value()` to use `json.dumps()` instead of `fstring`. This solves an issue when there is a combination of characters in a string that need to be both escaped (e.g., an apostrophe ') and not escaped (e.g. newlines, \n) and allows flexibility in how the developer instantiates their strings and whether they chose to escape their strings ahead of sending them through to Cypher or not. (https://github.com/memgraph/gqlalchemy/pull/341)
+- Bumped up dependencies to allow users to use higher, more recent versions of their favorite libraries, without making breaking changes for those who have lower versions in their environments (https://github.com/memgraph/gqlalchemy/pull/334)
+- Updated query modules signatures to keep them up to date (https://github.com/memgraph/gqlalchemy/pull/335)
+
 ## v1.6.0 - July 10, 2024
 
 ### Features and improvements
