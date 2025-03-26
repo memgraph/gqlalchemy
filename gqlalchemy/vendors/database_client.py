@@ -138,8 +138,8 @@ class DatabaseClient(ABC):
         pass
     
     @abstractmethod
-    def ensure_enums(self, indexes: List[GraphEnum]) -> None:
-        """Ensures that database enums match input enums."""
+    def sync_enum(self, existing: GraphEnum, new: GraphEnum) -> None:
+        """Ensures that database enum matches input enum."""
         pass
 
     @abstractmethod
