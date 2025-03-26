@@ -400,7 +400,7 @@ class GraphObject(BaseModel):
         value_type = type(value)
 
         if value is None:
-            "Null"
+            return "Null"
         elif value_type == bool:
             return repr(value)
         elif value_type == int:
@@ -410,7 +410,7 @@ class GraphObject(BaseModel):
         elif isinstance(value, Enum):
             return repr(MemgraphEnum(value))
         elif isinstance(value, str):
-            return repr(value) if value.isprintable() else rf"'{value}'"
+            return json.dumps(value)
         elif isinstance(value, list):
             return "[" + ", ".join(self.escape_value(val) for val in value) + "]"
         elif value_type == dict:
