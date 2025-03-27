@@ -72,6 +72,10 @@ class GraphEnum(ABC):
     def name(self):
         return self.cls.__name__
     
+    @property
+    def members(self):
+        return self.cls.__members__
+    
     @abstractmethod
     def _to_cypher(self):
         pass
@@ -334,7 +338,7 @@ class GraphObject(BaseModel):
 
     def __init__(self, **data):
         for field in self.__class__.__fields__:
-            attrs = self.__class__.__fields__[field]
+            attrs = self.__class__.__fields__[field].field_info.extra
             cls = self.__fields__[field].type_
             if issubclass(cls, Enum) and not attrs.get("enum", False):
                 value = data.get(field)
@@ -553,6 +557,9 @@ class NodeMetaclass(BaseModel.__class__):
             cls.labels = get_base_labels().union({cls.label}, kwargs.get("labels", set()))
 
         db = kwargs.get("db")
+
+        cls.enums = None
+
         if cls.index is True:
             if db is None:
                 raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
@@ -570,9 +577,17 @@ class NodeMetaclass(BaseModel.__class__):
             if db is None:
                 db = attrs.get("db")
 
-            # TODO: Implement enum creation and value add
             if issubclass(field_cls, Enum) and attrs.get("enum", False):
-                pass
+                if db is None:
+                    raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+                if cls.enums is None:
+                    cls.enums = db.get_enums()
+                enum_names = [x.name for x in cls.enums]
+                if(field_cls.__name__ in enum_names):
+                    existing = cls.enums[enum_names.index(field_cls.__name__)]
+                    db.sync_enum(existing, MemgraphEnum(field_cls))
+                else:
+                    db.create_enum(MemgraphEnum(field_cls))
 
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
@@ -708,6 +723,30 @@ class RelationshipMetaclass(BaseModel.__class__):
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         if name != "Relationship":
             cls.type = kwargs.get("type", name)
+
+        db = kwargs.get("db")
+
+        cls.enums = None
+
+        for field in cls.__fields__:
+            attrs = cls.__fields__[field].field_info.extra
+            field_type = cls.__fields__[field].type_.__name__
+            field_cls = cls.__fields__[field].type_
+
+            if db is None:
+                db = attrs.get("db")
+
+            if issubclass(field_cls, Enum) and attrs.get("enum", False):
+                if db is None:
+                    raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+                if cls.enums is None:
+                    cls.enums = db.get_enums()
+                enum_names = [x.name for x in cls.enums]
+                if(field_type in enum_names):
+                    existing = cls.enums[enum_names.index(field_type)]
+                    db.sync_enum(existing, MemgraphEnum(field_cls))
+                else:
+                    db.create_enum(MemgraphEnum(field_cls))
 
         return cls
 
