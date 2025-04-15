@@ -17,6 +17,7 @@ jobs:
   build_and_test_ubuntu:
     if: github.event.pull_request.draft == false
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-24.04]
