@@ -462,6 +462,7 @@ class GraphObject(BaseModel):
 class UniqueGraphObject(GraphObject):
     _id: Optional[Any] = PrivateAttr()
     _properties: Optional[Dict[str, Any]] = PrivateAttr()  # noqa: F811
+    # TODO: Fix this name collision
 
     def __init__(self, **data):
         super().__init__(**data)
