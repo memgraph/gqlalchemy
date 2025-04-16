@@ -206,7 +206,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         self.user = user
 
     def _start_instance(self) -> None:
-        args_mg = f"{self.binary_path } " + (" ").join([f"{k}={v}" for k, v in self.config.items()])
+        args_mg = f"{self.binary_path} " + (" ").join([f"{k}={v}" for k, v in self.config.items()])
         if self.user != "":
             args_mg = f"runuser -l {self.user} -c '{args_mg}'"
 
