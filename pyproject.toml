@@ -58,12 +58,13 @@ pytest-black = ">=0.3.12,<0.7.0"
 pytest = ">=7.1.1,<9.0.0"
 pytest-cov = ">=2.12.0,<4.0.0"
 pytest-flake8 = "^1.0.7"
+flake8 = "^6.1.0"
 pytest-timeout = ">=1.4.2,<3.0.0"
 pre-commit = ">=2.15.0,<4.0.0"
 
 [tool.poe.tasks]
 install-dgl = "pip install  dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation"
-install-pyg-cpu = "pip install torch>=2.4.0 torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html"
+install-pyg-cpu = "pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html  --no-build-isolation"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
