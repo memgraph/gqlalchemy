@@ -48,7 +48,7 @@ docker = { version = "^6.1.3", optional = true }
 [tool.poetry.extras]
 arrow = ["pyarrow"]
 dgl = ["torch", "dgl"]
-all = ["pyarrow", "torch", "docker"]
+all = ["pyarrow", "docker"]
 torch_pyg = ["torch"]
 docker = ["docker"]
 

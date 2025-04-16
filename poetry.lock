@@ -2540,7 +2540,7 @@ multidict = ">=4.0"
 propcache = ">=0.2.0"
 
 [extras]
-all = ["docker", "pyarrow", "torch"]
+all = ["docker", "pyarrow"]
 arrow = ["pyarrow"]
 dgl = ["torch"]
 docker = ["docker"]
@@ -2549,4 +2549,4 @@ torch-pyg = ["torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "66bcfe0e96830d041532e705eb4561e0c14ae00f4fc7899c1611b8c59e194bc7"
+content-hash = "4e8d3818719ef21c3d4e2d37c85f7c2873809eb4cbd762371cc981577905991d"
