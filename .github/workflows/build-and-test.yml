@@ -2,7 +2,7 @@ name: Build and Test
 
 env:
   MG_VERSION: "3.1.1"
-  POETRY_VERSION: "1.2.2"
+  POETRY_VERSION: "1.8.2"
   VM_MAX_MAP_COUNT: "262144"
 
 on:
@@ -49,14 +49,13 @@ jobs:
       - name: Install Neo4j
         run: |
           docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.7
-      - name: Test project
+      - name: Install More Packages
         run: |
-          if [[ "${{ matrix.python-version }}" == "3.10" ]]; then
-            poetry install --all-extras
-            poetry install-pyg-cpu
-          else
-            poetry install --extras "arrow docker"
-          fi
+          poetry install --all-extras
+          poe install-pyg-cpu
+          poe install-dgl
+      - name: Run Tests
+        run: |
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v4
