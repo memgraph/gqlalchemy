@@ -63,15 +63,17 @@ lambda.
 #### \_\_init\_\_
 
 ```python
-def __init__(lower_bound: int = None, upper_bound: int = None, condition: str = None) -> None
+def __init__(lower_bound: int = None,
+             upper_bound: int = None,
+             condition: str = None) -> None
 ```
 
 **Arguments**:
 
-- `lower_bound` - Lower bound for path depth. Defaults to `None`.
-- `upper_bound` - Upper bound for path depth. Defaults to `None`.
+- `lower_bound` - Lower bound for path depth.
+- `upper_bound` - Upper bound for path depth.
 - `condition` - Filter through nodes and relationships that pass this
-  condition. Defaults to `None`.
+  condition.
 
 #### \_\_str\_\_
 
@@ -107,15 +109,17 @@ lambda.
 #### \_\_init\_\_
 
 ```python
-def __init__(lower_bound: int = None, upper_bound: int = None, condition: str = None) -> None
+def __init__(lower_bound: int = None,
+             upper_bound: int = None,
+             condition: str = None) -> None
 ```
 
 **Arguments**:
 
-- `lower_bound` - Lower bound for path depth. Defaults to None.
-- `upper_bound` - Upper bound for path depth. Defaults to None.
+- `lower_bound` - Lower bound for path depth.
+- `upper_bound` - Upper bound for path depth.
 - `condition` - Filter through nodes and relationships that pass this
-  condition. Defaults to None.
+  condition.
 
 #### \_\_str\_\_
 
@@ -139,7 +143,8 @@ If bounds are specified, returns them in grammar-defined form.
 class WeightedShortestPath(IntegratedAlgorithm)
 ```
 
-Build a Djikstra shortest path call for a Cypher query
+Build a Dijkstra shortest path call for a Cypher query.
+
 The weighted shortest path algorithm can be called in Memgraph with Cypher
 queries such as:
 &quot; MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum
@@ -151,16 +156,52 @@ is a filter lambda, used to filter which relationships and nodes to use.
 #### \_\_init\_\_
 
 ```python
-def __init__(upper_bound: int = None, condition: str = None, total_weight_var: str = DEFAULT_TOTAL_WEIGHT, weight_property: str = DEFAULT_WEIGHT_PROPERTY) -> None
+def __init__(upper_bound: int = None,
+             condition: str = None,
+             total_weight_var: str = DEFAULT_TOTAL_WEIGHT,
+             weight_property: str = DEFAULT_WEIGHT_PROPERTY) -> None
 ```
 
 **Arguments**:
 
-- `upper_bound` - Upper bound for path depth. Defaults to None.
+- `upper_bound` - Upper bound for path depth.
 - `condition` - Filter through nodes and relationships that pass this
-  condition. Defaults to None.
+  condition.
 - `total_weight_var` - Variable defined as the sum of all weights on
-  path being returned. Defaults to &quot;total_weight&quot;.
-- `weight_property` - property being used as weight. Defaults to
-  &quot;r.weight&quot;.
+  path being returned.
+- `weight_property` - property being used as weight.
+
+## AllShortestPath Objects
+
+```python
+class AllShortestPath(IntegratedAlgorithm)
+```
+
+Build a Dijkstra shortest path call for a Cypher query.
+
+The weighted shortest path algorithm can be called in Memgraph with Cypher
+queries such as:
+&quot; MATCH (a {id: 723})-[r *ALLSHORTEST 10 (r, n | r.weight) total_weight
+        (r, n | r.x &gt; 12 AND r.y &lt; 3)]-(b {id: 882}) RETURN * &quot;
+It is called inside the relationship clause, &quot;*ALLSHORTEST&quot; naming the
+algorithm, &quot;10&quot; specifying search depth bounds, and &quot;(r, n | &lt;expression&gt;)&quot;
+is a filter lambda, used to filter which relationships and nodes to use.
+
+#### \_\_init\_\_
+
+```python
+def __init__(upper_bound: int = None,
+             condition: str = None,
+             total_weight_var: str = DEFAULT_TOTAL_WEIGHT,
+             weight_property: str = DEFAULT_WEIGHT_PROPERTY) -> None
+```
+
+**Arguments**:
+
+- `upper_bound` - Upper bound for path depth.
+- `condition` - Filter through nodes and relationships that pass this
+  condition.
+- `total_weight_var` - Variable defined as the sum of all weights on
+  path being returned.
+- `weight_property` - Property being used as weight.
 

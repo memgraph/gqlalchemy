@@ -43,7 +43,8 @@ method.
 #### parse\_query\_module\_signature
 
 ```python
-def parse_query_module_signature(signature: str) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]
+def parse_query_module_signature(
+        signature: str) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]
 ```
 
 Query Modules signatures received from Memgraph are parsed into a
@@ -67,12 +68,16 @@ type of argument and &quot;default&quot; where default argument value is given
 #### parse\_field
 
 ```python
-def parse_field(vars_field: str, name_type_delimiter: str = NAME_TYPE_DELIMITIER, default_value_delimiter: str = EQUALS_DELIMITER) -> List[Dict[str, str]]
+def parse_field(
+        vars_field: str,
+        name_type_delimiter: str = NAME_TYPE_DELIMITER,
+        default_value_delimiter: str = EQUALS_DELIMITER
+) -> List[Dict[str, str]]
 ```
 
 Parse a field of arguments or returns from Query Module signature.
 
 **Arguments**:
 
-- `vars_field` - signature field inside parentheses
+- `vars_field` - signature field inside parenthesis
 

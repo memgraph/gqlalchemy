@@ -75,8 +75,13 @@ def test_custom_data_loader(dummy_loader):
     assert dummy_loader.num == 42
 
 
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_parquet(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
@@ -86,8 +91,13 @@ def test_local_table_to_graph_importer_parquet(memgraph):
     importer.translate(drop_database_on_start=True)
 
 
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_csv(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},
@@ -96,9 +106,56 @@ def test_local_table_to_graph_importer_csv(memgraph):
     importer = CSVLocalFileSystemImporter(path=path, data_configuration=my_configuration, memgraph=memgraph)
     importer.translate(drop_database_on_start=True)
 
+    conf_with_edge_params = {
+        "indices": {"address": ["add_id"], "individual": ["ind_id"]},
+        "name_mappings": {"individual": {"label": "INDIVIDUAL"}, "address": {"label": "ADDRESS"}},
+        "one_to_many_relations": {
+            "address": [],
+            "individual": [
+                {
+                    "foreign_key": {"column_name": "add_id", "reference_table": "address", "reference_key": "add_id"},
+                    "label": "LIVES_IN",
+                }
+            ],
+        },
+    }
+    importer = CSVLocalFileSystemImporter(path=path, data_configuration=conf_with_edge_params, memgraph=memgraph)
+    importer.translate(drop_database_on_start=True)
 
+    conf_with_many_to_many = {
+        "indices": {"address": ["add_id"], "individual": ["ind_id"]},
+        "name_mappings": {
+            "individual": {"label": "INDIVIDUAL"},
+            "address": {"label": "ADDRESS"},
+            "i2a": {
+                "column_names_mapping": {"duration": "years"},
+            },
+        },
+        "one_to_many_relations": {"address": [], "individual": []},
+        "many_to_many_relations": {
+            "i2a": {
+                "foreign_key_from": {
+                    "column_name": "ind_id",
+                    "reference_table": "individual",
+                    "reference_key": "ind_id",
+                },
+                "foreign_key_to": {"column_name": "add_id", "reference_table": "address", "reference_key": "add_id"},
+                "label": "LIVES_IN",
+                "properties": ["duration"],
+            }
+        },
+    }
+    importer = CSVLocalFileSystemImporter(path=path, data_configuration=conf_with_many_to_many, memgraph=memgraph)
+    importer.translate(drop_database_on_start=True)
+
+
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_orc(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     if platform.system() == "Windows":
         with pytest.raises(ValueError):
             ORCLocalFileSystemImporter(path="", data_configuration=None)
@@ -112,8 +169,13 @@ def test_local_table_to_graph_importer_orc(memgraph):
         importer.translate(drop_database_on_start=True)
 
 
+@pytest.mark.extras
+@pytest.mark.arrow
 def test_local_table_to_graph_importer_feather(memgraph):
     """e2e test, using Local File System to import into memgraph, tests available file extensions"""
+
+    _ = pytest.importorskip("pyarrow")
+
     my_configuration = {
         "indices": {"example": ["name"]},
         "name_mappings": {"example": {"label": "PERSON"}},

@@ -12,20 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Any, Set
 from numbers import Number
-
-from torch_geometric.data import Data, HeteroData
-from torch_geometric.datasets import FakeDataset, FakeHeteroDataset
-import torch
+import pytest
+from typing import Dict, Any, Set
 
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
-from gqlalchemy.transformations.translators.pyg_translator import PyGTranslator
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import PYG_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
+
+PyGTranslator = pytest.importorskip("gqlalchemy.transformations.translators.pyg_translator.PyGTranslator")
+Data = pytest.importorskip("torch_geometric.data.Data")
+HeteroData = pytest.importorskip("torch_geometric.data.HeteroData")
+FakeDataset = pytest.importorskip("torch_geometric.datasets.FakeDataset")
+FakeHeteroDataset = pytest.importorskip("torch_geometric.datasets.FakeHeteroDataset")
+torch = pytest.importorskip("torch")
+
+pytestmark = [pytest.mark.extras, pytest.mark.pyg]
 
 # TODO: test number of properties that were converted
 
@@ -193,7 +198,7 @@ def _check_all_edges_exist_memgraph_pyg(
 
 
 def test_pyg_export_multigraph(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -231,7 +236,7 @@ def test_pyg_export_multigraph(memgraph):
 
 
 def test_pyg_multiple_nodes_same_features(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -921,7 +926,7 @@ def test_pyg_import_homogeneous(memgraph):
         32,
     ]
     graph = Data(edge_index=torch.tensor([src, dst], dtype=torch.int32))
-    # Initialize translator and insert into the MemgrapA
+    # Initialize translator and insert into the Memgraph
     # Let's test
     # Check all that are in Memgraph are in pyg too
     _check_all_edges_exist_memgraph_pyg(

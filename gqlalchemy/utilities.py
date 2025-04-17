@@ -13,13 +13,22 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-import math
-import numpy as np
-import torch
-
 from datetime import datetime, date, time, timedelta
 from enum import Enum
+import inspect
+import math
+import pytz
+import json
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+
+try:
+    import torch
+except ModuleNotFoundError:
+    torch = None
+
+from gqlalchemy.exceptions import raise_if_not_imported
 
 
 class DatetimeKeywords(Enum):
@@ -67,13 +76,40 @@ def _format_timedelta(duration: timedelta) -> str:
     return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
 
 
+def _is_torch_tensor(value):
+    for cls in inspect.getmro(type(value)):
+        try:
+            if cls.__module__ == "torch" and cls.__name__ == "Tensor":
+                return True
+        except Exception:
+            pass
+    return False
+
+
+def handle_datetime(value, config):
+    if value.tzinfo == pytz.UTC:
+        formatted_date = value.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return f"datetime('{formatted_date}')"
+    elif value.tzinfo is not None:
+        tz = value.strftime("%z")
+        tz = f"{tz[:3]}:{tz[3:]}"
+        tz_name = value.tzinfo.zone
+        formatted_date = value.strftime(f"%Y-%m-%dT%H:%M:%S{tz}")
+        return f"datetime('{formatted_date}[{tz_name}]')"
+    else:
+        return f"{DatetimeKeywords.LOCALDATETIME.value}('{value.isoformat()}')"
+
+
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     """Converts value to a valid Cypher type."""
     if config is None:
         config = NetworkXCypherConfig()
 
     value_type = type(value)
-    if isinstance(value, torch.Tensor):
+
+    if _is_torch_tensor(value):
+        raise_if_not_imported(dependency=torch, dependency_name="torch")
+
         if value.squeeze().size() == 1:
             return value.squeeze().item()
         else:
@@ -85,8 +121,17 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value_type == CypherVariable:
         return str(value)
 
-    if isinstance(value, (timedelta, time, datetime, date)):
-        return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
+    if isinstance(value, datetime):
+        return handle_datetime(value, config)
+
+    if isinstance(value, timedelta):
+        return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value)}')"
+
+    if isinstance(value, date):
+        return f"{datetimeKwMapping[value_type]}('{value.isoformat()}')"
+
+    if isinstance(value, time):
+        return f"{datetimeKwMapping[value_type]}('{value.isoformat()}')"
 
     if value_type == str and value.lower() in ["true", "false", "null"]:
         return value
@@ -113,7 +158,7 @@ def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:
     if value is None:
         return "null"
 
-    return f"'{value}'"
+    return json.dumps(value)
 
 
 def is_numeric(value):

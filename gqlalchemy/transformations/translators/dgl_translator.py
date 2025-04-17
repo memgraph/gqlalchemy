@@ -35,7 +35,7 @@ class DGLTranslator(Translator):
     """Performs conversion from cypher queries to the DGL graph representation. DGL assigns to each edge a unique integer, called the edge ID,
     based on the order in which it was added to the graph. In DGL, all the edges are directed, and an edge (u,v) indicates that the direction goes
     from node u to node v. Only features of numerical types (e.g., float, double, and int) are allowed. They can be scalars, vectors or multi-dimensional
-    tensors (DQL requirement). Each node feature has a unique name and each edge feature has a unique name. The features of nodes and edges can have
+    tensors (DGL requirement). Each node feature has a unique name and each edge feature has a unique name. The features of nodes and edges can have
     the same name. A feature is created via tensor assignment, which assigns a feature to each node/edge in the graph. The leading dimension of that
     tensor must be equal to the number of nodes/edges in the graph. You cannot assign a feature to a subset of the nodes/edges in the graph. Features of the
     same name must have the same dimensionality and data type.
@@ -118,7 +118,7 @@ class DGLTranslator(Translator):
 
     def get_instance(self) -> dgl.DGLHeteroGraph:
         """Create instance of DGL graph from all edges that are inside Memgraph. Currently, isolated nodes are ignored because they don't contribute in message passing neural networks. Only numerical features
-        that are set on all nodes or all edges are transferred to the DGL instance since this is DGL's requirement. That means thay any string values properties won't be transferred, as well as numerical properties
+        that are set on all nodes or all edges are transferred to the DGL instance since this is DGL's requirement. That means that any string values properties won't be transferred, as well as numerical properties
         that aren't set on all nodes. However, features of type list are transferred to the DGL and can be used as any other feature in the DGL graph. Regardless of data residing inside Memgraph database, the created
         DGL graph is a heterograph instance.
         Returns:

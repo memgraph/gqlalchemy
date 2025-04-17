@@ -276,7 +276,10 @@ Create nodes and relationships in a graph.
 #### call
 
 ```python
-def call(procedure: str, arguments: Optional[Union[str, Tuple[Union[str, int, float]]]] = None) -> "DeclarativeBase"
+def call(
+    procedure: str,
+    arguments: Optional[Union[str, Tuple[Union[str, int, float]]]] = None
+) -> "DeclarativeBase"
 ```
 
 Call a query module procedure.
@@ -303,13 +306,16 @@ Call a query module procedure.
   
   Call procedure with arguments:
   
-- `Python` - `call(&#x27;json_util.load_from_url&#x27;, &#x27;https://some-url.com&#x27;).yield_(&#x27;objects&#x27;).return_(results=&#x27;objects&#x27;).execute()
+- `Python` - `call(&#x27;json_util.load_from_url&#x27;, &quot;&#x27;https://some-url.com&#x27;&quot;).yield_(&#x27;objects&#x27;).return_(results=&#x27;objects&#x27;).execute()
 - `Cypher` - `CALL json_util.load_from_url(https://some-url.com) YIELD objects RETURN objects;`
 
 #### node
 
 ```python
-def node(labels: Union[str, List[str], None] = "", variable: Optional[str] = None, node: Optional["Node"] = None, **kwargs, ,) -> "DeclarativeBase"
+def node(labels: Union[str, List[str], None] = "",
+         variable: Optional[str] = None,
+         node: Optional["Node"] = None,
+         **kwargs) -> "DeclarativeBase"
 ```
 
 Add a node pattern to the query.
@@ -339,7 +345,12 @@ Add a node pattern to the query.
 #### to
 
 ```python
-def to(relationship_type: Optional[str] = "", directed: Optional[bool] = True, variable: Optional[str] = None, relationship: Optional["Relationship"] = None, algorithm: Optional[IntegratedAlgorithm] = None, **kwargs, ,) -> "DeclarativeBase"
+def to(relationship_type: Optional[str] = "",
+       directed: Optional[bool] = True,
+       variable: Optional[str] = None,
+       relationship: Optional["Relationship"] = None,
+       algorithm: Optional[IntegratedAlgorithm] = None,
+       **kwargs) -> "DeclarativeBase"
 ```
 
 Add a relationship pattern to the query.
@@ -370,7 +381,12 @@ Add a relationship pattern to the query.
 #### from\_
 
 ```python
-def from_(relationship_type: Optional[str] = "", directed: Optional[bool] = True, variable: Optional[str] = None, relationship: Optional["Relationship"] = None, algorithm: Optional[IntegratedAlgorithm] = None, **kwargs, ,) -> "Match"
+def from_(relationship_type: Optional[str] = "",
+          directed: Optional[bool] = True,
+          variable: Optional[str] = None,
+          relationship: Optional["Relationship"] = None,
+          algorithm: Optional[IntegratedAlgorithm] = None,
+          **kwargs) -> "Match"
 ```
 
 Add a relationship pattern to the query.
@@ -512,7 +528,8 @@ Creates an AND statement as a part of WHERE Cypher partial query.
 #### and\_not\_where
 
 ```python
-def and_not_where(item: str, operator: Operator, **kwargs) -> "DeclarativeBase"
+def and_not_where(item: str, operator: Operator,
+                  **kwargs) -> "DeclarativeBase"
 ```
 
 Creates an AND NOT statement as a part of WHERE Cypher partial query.
@@ -632,7 +649,8 @@ Creates an XOR statement as a part of WHERE Cypher partial query.
 #### xor\_not\_where
 
 ```python
-def xor_not_where(item: str, operator: Operator, **kwargs) -> "DeclarativeBase"
+def xor_not_where(item: str, operator: Operator,
+                  **kwargs) -> "DeclarativeBase"
 ```
 
 Creates an XOR NOT statement as a part of WHERE Cypher partial query.
@@ -686,15 +704,11 @@ Unwind a list of values as individual rows.
 #### with\_
 
 ```python
-def with_(results: Optional[
-            Union[
-                str,
-                Tuple[str, str],
-                Dict[str, str],
-                List[Union[str, Tuple[str, str]]],
-                Set[Union[str, Tuple[str, str]]],
-            ]
-        ] = None) -> "DeclarativeBase"
+def with_(
+    results: Optional[Union[str, Tuple[str, str], Dict[str, str],
+                            List[Union[str, Tuple[str, str]]],
+                            Set[Union[str, Tuple[str, str]]], ]] = None
+) -> "DeclarativeBase"
 ```
 
 Chain together parts of a query, piping the results from one to be
@@ -719,7 +733,7 @@ used as starting points or criteria in the next.
 
 **Example**:
 
-  Pipe the result from first part of the query for the futher use:
+  Pipe the result from first part of the query for the further use:
   
 - `Python` - `match().node(variable=&#x27;n&#x27;).with(&#x27;n&#x27;).execute()`
 - `Cypher` - `MATCH (n) WITH n;
@@ -745,7 +759,7 @@ Combine the result of multiple queries.
 
 **Examples**:
 
-  Combine querties and retain duplicates:
+  Combine queries and retain duplicates:
   
 - `Python` - `match().node(variable=&quot;c&quot;, labels=&quot;Country&quot;).return_(results=(&quot;c.name&quot;, &quot;columnName&quot;)).union().match().node(variable=&quot;p&quot;, labels=&quot;Person&quot;).return_(results=(&quot;p.name&quot;, &quot;columnName&quot;)).execute()`
 - `Cypher` - `MATCH (c:Country) RETURN c.name AS columnName UNION ALL MATCH (p:Person) RETURN p.name AS columnName;`
@@ -758,7 +772,8 @@ Combine the result of multiple queries.
 #### delete
 
 ```python
-def delete(variable_expressions: Union[str, List[str]], detach: Optional[bool] = False) -> "DeclarativeBase"
+def delete(variable_expressions: Union[str, List[str]],
+           detach: Optional[bool] = False) -> "DeclarativeBase"
 ```
 
 Delete nodes and relationships from the database.
@@ -812,15 +827,11 @@ Remove labels and properties from nodes and relationships.
 #### yield\_
 
 ```python
-def yield_(results: Optional[
-            Union[
-                str,
-                Tuple[str, str],
-                Dict[str, str],
-                List[Union[str, Tuple[str, str]]],
-                Set[Union[str, Tuple[str, str]]],
-            ]
-        ] = None) -> "DeclarativeBase"
+def yield_(
+    results: Optional[Union[str, Tuple[str, str], Dict[str, str],
+                            List[Union[str, Tuple[str, str]]],
+                            Set[Union[str, Tuple[str, str]]], ]] = None
+) -> "DeclarativeBase"
 ```
 
 Yield data from the query.
@@ -856,15 +867,11 @@ Yield data from the query.
 #### return\_
 
 ```python
-def return_(results: Optional[
-            Union[
-                str,
-                Tuple[str, str],
-                Dict[str, str],
-                List[Union[str, Tuple[str, str]]],
-                Set[Union[str, Tuple[str, str]]],
-            ]
-        ] = None) -> "DeclarativeBase"
+def return_(
+    results: Optional[Union[str, Tuple[str, str], Dict[str, str],
+                            List[Union[str, Tuple[str, str]]],
+                            Set[Union[str, Tuple[str, str]]], ]] = None
+) -> "DeclarativeBase"
 ```
 
 Return data from the query.
@@ -900,7 +907,10 @@ Return data from the query.
 #### order\_by
 
 ```python
-def order_by(properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str, Order]]]]) -> "DeclarativeBase"
+def order_by(
+    properties: Union[str, Tuple[str, Order], List[Union[str, Tuple[str,
+                                                                    Order]]]]
+) -> "DeclarativeBase"
 ```
 
 Creates an ORDER BY statement Cypher partial query.
@@ -1019,7 +1029,9 @@ Returns a single result with a `retrieve` variable name.
 #### foreach
 
 ```python
-def foreach(variable: str, expression: str, update_clause: Union[str, List[str], Set[str]]) -> "DeclarativeBase"
+def foreach(
+        variable: str, expression: str,
+        update_clause: Union[str, List[str], Set[str]]) -> "DeclarativeBase"
 ```
 
 Iterate over a list of elements and for every iteration run every update clause.

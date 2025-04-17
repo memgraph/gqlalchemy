@@ -58,7 +58,7 @@ class QueryBuilder(DeclarativeBase):
         """Load data from a CSV file by executing a Cypher query for each row.
 
         Args:
-            path: A string representing the path to the CSV file.
+            path: A string representing the path to the CSV file. If beginning with `http://`, `https://`, or `ftp://`, the CSV file will be fetched over the network.
             header: A bool indicating if the CSV file starts with a header row.
             row: A string representing the name of the variable for iterating
               over each row.
@@ -215,7 +215,7 @@ class ProjectPartialQuery(PartialQuery):
         return self._node_labels
 
     def construct_query(self) -> str:
-        """Constructs a Project partial querty.
+        """Constructs a Project partial query.
 
         Given path part of a query (e.g. (:LABEL)-[:TYPE]->(:LABEL2)),
         adds MATCH, a path identifier and appends the WITH clause."""

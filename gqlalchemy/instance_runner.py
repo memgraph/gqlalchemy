@@ -20,13 +20,17 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Union
 
-import docker
+try:
+    import docker
+except ModuleNotFoundError:
+    docker = None
 import psutil
 
 from gqlalchemy.exceptions import (
     GQLAlchemyWaitForConnectionError,
     GQLAlchemyWaitForDockerError,
     GQLAlchemyWaitForPortError,
+    raise_if_not_imported,
 )
 from gqlalchemy.vendors.memgraph import Memgraph
 
@@ -85,9 +89,7 @@ def wait_for_port(
         delay *= backoff
 
 
-def wait_for_docker_container(
-    container: "docker.Container", delay: float = 0.01, timeout: float = 5.0, backoff: int = 2
-) -> None:
+def wait_for_docker_container(container, delay: float = 0.01, timeout: float = 5.0, backoff: int = 2) -> None:
     """Wait for a Docker container to enter the status `running`.
 
     Args:
@@ -204,7 +206,7 @@ class MemgraphInstanceBinary(MemgraphInstance):
         self.user = user
 
     def _start_instance(self) -> None:
-        args_mg = f"{self.binary_path } " + (" ").join([f"{k}={v}" for k, v in self.config.items()])
+        args_mg = f"{self.binary_path} " + (" ").join([f"{k}={v}" for k, v in self.config.items()])
         if self.user != "":
             args_mg = f"runuser -l {self.user} -c '{args_mg}'"
 
@@ -239,6 +241,8 @@ class MemgraphInstanceDocker(MemgraphInstance):
     def __init__(
         self, docker_image: DockerImage = DockerImage.MEMGRAPH, docker_image_tag: str = DOCKER_IMAGE_TAG_LATEST, **data
     ) -> None:
+        raise_if_not_imported(dependency=docker, dependency_name="docker")
+
         super().__init__(**data)
         self.docker_image = docker_image
         self.docker_image_tag = docker_image_tag

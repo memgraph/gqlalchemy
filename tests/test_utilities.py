@@ -16,6 +16,7 @@ import datetime
 import math
 import numpy as np
 import pytest
+import pytz
 
 from gqlalchemy.utilities import (
     NanException,
@@ -30,17 +31,20 @@ from gqlalchemy.utilities import (
 @pytest.mark.parametrize(
     "value, cypher_value",
     [
-        ("abc", "'abc'"),
+        ("abc", '"abc"'),
         ("null", "null"),
+        ("possessive's", '"possessive\'s"'),
+        ("Newline\ncharacter", '"Newline\\ncharacter"'),
+        ("Single quote's\nwith a newline", '"Single quote\'s\\nwith a newline"'),
         (123, "123"),
         (3.14, "3.14"),
         ([1, 2, 3], "[1, 2, 3]"),
-        ({"k1": 123, "k2": {"subkey1": "abc"}}, "{k1: 123, k2: {subkey1: 'abc'}}"),
+        ({"k1": 123, "k2": {"subkey1": "abc"}}, '{k1: 123, k2: {subkey1: "abc"}}'),
         (None, "null"),
         (True, "True"),
         (np.array([1, 2, 3]), "[1, 2, 3]"),
         (np.array([1.23, 2.34, 3.45]), "[1.23, 2.34, 3.45]"),
-        (np.array(["1", "2", "3"]), "['1', '2', '3']"),
+        (np.array(["1", "2", "3"]), '["1", "2", "3"]'),
         (np.array([[1, 2], [3, 4], [4, 5]]), "[[1, 2], [3, 4], [4, 5]]"),
     ],
 )
@@ -56,7 +60,7 @@ def test_to_cypher_properties():
         "prop2": 123.321,
         "prop3": {"k1": [1, 2, 3], "k2": {"subkey1": 1, "subkey2": [3, 2, 1]}},
     }
-    expected_properties = "{prop1: 'abc', prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}}"
+    expected_properties = '{prop1: "abc", prop2: 123.321, prop3: {k1: [1, 2, 3], k2: {subkey1: 1, subkey2: [3, 2, 1]}}}'
 
     actual_properties = to_cypher_properties(properties)
 
@@ -68,11 +72,16 @@ def test_to_cypher_datetime():
     localtime = datetime.time(12, 12, 12)
     localdatetime = datetime.datetime(1999, 12, 12, 12, 12, 12)
     duration = datetime.timedelta(days=1, hours=5, minutes=16, seconds=12)
+    zoned_dt_naive = datetime.datetime(2024, 4, 21, 14, 15, 0)
+    zoned_dt = pytz.timezone("America/Los_Angeles").localize(zoned_dt_naive)
+    zoned_dt_utc = datetime.datetime(2021, 4, 21, 14, 15, tzinfo=pytz.UTC)
 
     assert to_cypher_value(date) == "date('1970-01-19')"
     assert to_cypher_value(localtime) == "localTime('12:12:12')"
     assert to_cypher_value(localdatetime) == "localDateTime('1999-12-12T12:12:12')"
     assert to_cypher_value(duration) == "duration('P1DT5H16M12.0S')"
+    assert to_cypher_value(zoned_dt) == "datetime('2024-04-21T14:15:00-07:00[America/Los_Angeles]')"
+    assert to_cypher_value(zoned_dt_utc) == "datetime('2021-04-21T14:15:00Z')"
 
 
 def test_to_cypher_labels_single_label():
@@ -112,7 +121,7 @@ def test_nan_value_remove_handler_yields_null():
     config = NetworkXCypherConfig(nan_handler=NanValuesHandle.REMOVE_PROPERTY)
 
     properties = {"prop1": math.nan}
-    expected_properies = "{prop1: null}"
+    expected_properties = "{prop1: null}"
 
     actual_properties = to_cypher_properties(properties, config)
-    assert actual_properties == expected_properies
+    assert actual_properties == expected_properties

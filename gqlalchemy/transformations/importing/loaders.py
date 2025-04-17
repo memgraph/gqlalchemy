@@ -20,8 +20,15 @@ from string import Template
 from typing import List, Dict, Any, Optional, Union
 
 import adlfs
-import pyarrow.dataset as ds
-from pyarrow import fs
+
+try:
+    import pyarrow.dataset as ds
+except ModuleNotFoundError:
+    ds = None
+try:
+    from pyarrow import fs
+except ModuleNotFoundError:
+    fs = None
 from dacite import from_dict
 
 from gqlalchemy import Memgraph
@@ -90,13 +97,11 @@ class OneToManyMapping:
         foreign_key: Foreign key used for mapping.
         label: Label which will be applied to the relationship created from this object.
         from_entity: Direction of the relationship created from the mapping object.
-        parameters: Parameters that will be added to the relationship created from this object (Optional).
     """
 
     foreign_key: ForeignKeyMapping
     label: str
     from_entity: bool = False
-    parameters: Optional[Dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -108,13 +113,13 @@ class ManyToManyMapping:
         foreign_key_from: Describes the source of the relationship.
         foreign_key_to: Describes the destination of the relationship.
         label: Label to be applied to the newly created relationship.
-        parameters: Parameters that will be added to the relationship created from this object (Optional).
+        properties: Properties that will be added to the relationship created from this object (Optional).
     """
 
     foreign_key_from: ForeignKeyMapping
     foreign_key_to: ForeignKeyMapping
     label: str
-    parameters: Optional[Dict[str, str]] = None
+    properties: Optional[List[str]] = None
 
 
 Mapping = Union[List[OneToManyMapping], ManyToManyMapping]
@@ -223,6 +228,9 @@ class S3FileSystemHandler(FileSystemHandler):
         if S3_SECRET_KEY not in kwargs:
             raise KeyError(f"{S3_SECRET_KEY} is needed to connect to S3 storage")
 
+        if fs is None:
+            raise ModuleNotFoundError("No module named 'pyarrow'")
+
         super().__init__(fs=fs.S3FileSystem(**kwargs))
         self._bucket_name = bucket_name
 
@@ -247,7 +255,7 @@ class AzureBlobFileSystemHandler(FileSystemHandler):
         Kwargs:
             account_name: Account name from Azure Blob.
             account_key: Account key for Azure Blob (Optional - if using sas_token).
-            sas_token: Shared access signature token for authentification (Optional).
+            sas_token: Shared access signature token for authentication (Optional).
 
         Raises:
             KeyError: kwargs doesn't contain necessary fields.
@@ -278,6 +286,9 @@ class LocalFileSystemHandler(FileSystemHandler):
         Args:
             path: path to the local storage location.
         """
+        if fs is None:
+            raise ModuleNotFoundError("No module named 'pyarrow'")
+
         super().__init__(fs=fs.LocalFileSystem())
         self._path = path
 
@@ -360,6 +371,9 @@ class PyArrowDataLoader(DataLoader):
         """
         source = self._file_system_handler.get_path(f"{collection_name}.{self._file_extension}")
         print("Loading data from " + ("cross " if is_cross_table else "") + f"table {source}...")
+
+        if ds is None:
+            raise ModuleNotFoundError("No module named 'pyarrow'")
 
         dataset = ds.dataset(source=source, format=self._file_extension, filesystem=self._file_system_handler.fs)
 
@@ -478,6 +492,8 @@ class TableToGraphImporter(Importer):
                     property_from=mapping_from.reference_key,
                     property_to=mapping_to.reference_key,
                     relation_label=many_to_many_mapping.mapping.label,
+                    table_name=many_to_many_mapping.table_name,
+                    properties=many_to_many_mapping.mapping.properties,
                     row=row,
                 )
 
@@ -590,6 +606,8 @@ class TableToGraphImporter(Importer):
         property_from: str,
         property_to: str,
         relation_label: str,
+        table_name: str,
+        properties: List[str],
         row: Dict[str, Any],
     ) -> None:
         """Translates a row to a relationship and writes it to Memgraph.
@@ -600,6 +618,8 @@ class TableToGraphImporter(Importer):
             property_from: Property of the source node.
             property_to: Property of the destination node.
             relation_label: Label for the relationship.
+            table_name: Name of the table used to read properties
+            properties: Relationship properties to be added
             row: The row to be translated.
         """
         (
@@ -626,7 +646,13 @@ class TableToGraphImporter(Importer):
             )
             .create()
             .node(variable=NODE_A)
-            .to(relation_label)
+            .to(
+                relationship_type=relation_label,
+                **{
+                    self._name_mapper.get_property_name(collection_name=table_name, column_name=prop): row[prop]
+                    for prop in properties
+                },
+            )
             .node(variable=NODE_B)
             .execute()
         )

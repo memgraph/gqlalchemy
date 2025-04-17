@@ -157,7 +157,7 @@ class DepthFirstSearch(IntegratedAlgorithm):
 
 
 class WeightedShortestPath(IntegratedAlgorithm):
-    """Build a Djikstra shortest path call for a Cypher query.
+    """Build a Dijkstra shortest path call for a Cypher query.
 
     The weighted shortest path algorithm can be called in Memgraph with Cypher
     queries such as:
@@ -205,7 +205,7 @@ class WeightedShortestPath(IntegratedAlgorithm):
 
 
 class AllShortestPath(IntegratedAlgorithm):
-    """Build a Djikstra shortest path call for a Cypher query.
+    """Build a Dijkstra shortest path call for a Cypher query.
 
     The weighted shortest path algorithm can be called in Memgraph with Cypher
     queries such as:

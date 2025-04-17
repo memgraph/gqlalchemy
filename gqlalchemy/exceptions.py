@@ -43,6 +43,10 @@ db = Memgraph()
 SQLitePropertyDatabase("path-to-sqlite-db", db)
 """
 
+MISSING_OPTIONAL_DEPENDENCY = """
+No module named '{dependency_name}'
+"""
+
 MISSING_ORDER = """
 The second argument of the tuple must be order: ASC, ASCENDING, DESC or DESCENDING.
 """
@@ -67,7 +71,7 @@ The argument provided is of wrong type. Please provide str, tuple[str, str], lis
 """
 
 INSTANTIATION_ERROR = """
-{class_name} class shouldn't be instantiatied!
+{class_name} class shouldn't be instantiated!
 """
 
 TOO_LARGE_TUPLE_IN_RESULT_QUERY = """
@@ -197,6 +201,11 @@ class GQLAlchemyFileNotFoundError(GQLAlchemyError):
     def __init__(self, path):
         super().__init__()
         self.message = FILE_NOT_FOUND.format(path=path)
+
+
+def raise_if_not_imported(dependency, dependency_name):
+    if not dependency:
+        raise ModuleNotFoundError(MISSING_OPTIONAL_DEPENDENCY.format(dependency_name=dependency_name))
 
 
 def database_error_handler(func):

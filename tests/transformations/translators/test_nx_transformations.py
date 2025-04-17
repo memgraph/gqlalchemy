@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import networkx as nx
 import pytest
+
+import networkx as nx
 
 from gqlalchemy.transformations.translators.nx_translator import (
     NxTranslator,
@@ -350,8 +351,8 @@ def test_nx_create_nodes_with_string():
         ]
     )
     expected_cypher_queries = [
-        "CREATE ( {id: 'id1'});",
-        "CREATE ( {id: 'id2'});",
+        'CREATE ( {id: "id1"});',
+        'CREATE ( {id: "id2"});',
     ]
 
     translator = NxTranslator()
@@ -371,7 +372,7 @@ def test_nx_create_nodes_with_properties():
         ]
     )
     expected_cypher_queries = [
-        "CREATE (:L1 {color: 'blue', id: 1});",
+        'CREATE (:L1 {color: "blue", id: 1});',
         "CREATE ( {age: 32, id: 2});",
         "CREATE (:L1:L2:L3 {data: [1, 2, 3], id: 3});",
     ]
@@ -412,11 +413,11 @@ def test_nx_create_edges_with_string_ids():
     )
     graph.add_edges_from([(1, 2), (2, 3)])
     expected_cypher_queries = [
-        "CREATE ( {id: 'id1'});",
-        "CREATE ( {id: 'id2'});",
-        "CREATE ( {id: 'id3'});",
-        "MATCH (n {id: 'id1'}), (m {id: 'id2'}) CREATE (n)-[:TO ]->(m);",
-        "MATCH (n {id: 'id2'}), (m {id: 'id3'}) CREATE (n)-[:TO ]->(m);",
+        'CREATE ( {id: "id1"});',
+        'CREATE ( {id: "id2"});',
+        'CREATE ( {id: "id3"});',
+        'MATCH (n {id: "id1"}), (m {id: "id2"}) CREATE (n)-[:TO ]->(m);',
+        'MATCH (n {id: "id2"}), (m {id: "id3"}) CREATE (n)-[:TO ]->(m);',
     ]
 
     translator = NxTranslator()
@@ -434,7 +435,7 @@ def test_nx_create_edges_with_properties():
         "CREATE ( {id: 2});",
         "CREATE ( {id: 3});",
         "MATCH (n {id: 1}), (m {id: 2}) CREATE (n)-[:TYPE1 ]->(m);",
-        "MATCH (n {id: 2}), (m {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
+        'MATCH (n {id: 2}), (m {id: 3}) CREATE (n)-[:TYPE2 {data: "abc"}]->(m);',
     ]
 
     translator = NxTranslator()
@@ -451,10 +452,10 @@ def test_nx_create_edge_and_node_with_properties():
     graph.add_edges_from([(1, 2, {"type": "TYPE1"}), (2, 3, {"type": "TYPE2", "data": "abc"})])
     expected_cypher_queries = [
         "CREATE (:Label1 {id: 1});",
-        "CREATE (:Label1:Label2 {name: 'name1', id: 2});",
+        'CREATE (:Label1:Label2 {name: "name1", id: 2});',
         "CREATE (:Label1 {id: 3});",
         "MATCH (n:Label1 {id: 1}), (m:Label1:Label2 {id: 2}) CREATE (n)-[:TYPE1 ]->(m);",
-        "MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
+        'MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: "abc"}]->(m);',
     ]
 
     translator = NxTranslator()
@@ -472,12 +473,12 @@ def test_nx_create_edge_and_node_with_index():
     graph.add_edges_from([(1, 2, {"type": "TYPE1"}), (2, 3, {"type": "TYPE2", "data": "abc"})])
     expected_cypher_queries = [
         "CREATE (:Label1 {id: 1});",
-        "CREATE (:Label1:Label2 {name: 'name1', id: 2});",
+        'CREATE (:Label1:Label2 {name: "name1", id: 2});',
         "CREATE (:Label1 {id: 3});",
         "CREATE INDEX ON :Label2(id);",
         "CREATE INDEX ON :Label1(id);",
         "MATCH (n:Label1 {id: 1}), (m:Label1:Label2 {id: 2}) CREATE (n)-[:TYPE1 ]->(m);",
-        "MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: 'abc'}]->(m);",
+        'MATCH (n:Label1:Label2 {id: 2}), (m:Label1 {id: 3}) CREATE (n)-[:TYPE2 {data: "abc"}]->(m);',
     ]
 
     translator = NxTranslator()

@@ -1,14 +1,13 @@
 [tool.poetry]
 name = "GQLAlchemy"
-version = "1.4.0"
+version = "1.7.0"
 
-description = "GQLAlchemy is library developed with purpose of assisting writing and running queries on Memgraph."
+description = "GQLAlchemy is a library developed to assist with writing and running queries in Memgraph."
 repository = "https://github.com/memgraph/gqlalchemy"
 authors = [
-    "Bruno Sacaric <bruno.sacaric@memgraph.com>",
-    "Josip Mrden <josip.mrden@memgraph.com>",
-    "Katarina Supe <katarina.supe@memgraph.com>",
-    "Andi Skrgat <andi.skrgat@memgraph.com>",
+  "Katarina Supe <katarina.supe@memgraph.com>",
+  "Andi Skrgat <andi.skrgat@memgraph.com>",
+  "Josip Mrden <josip.mrden@memgraph.com>",
 ]
 license = "Apache-2.0"
 readme = "README.md"
@@ -32,31 +31,45 @@ exclude = '''
 '''
 
 [tool.poetry.dependencies]
-python = "^3.8"
-pymgclient = "1.3.1"
-networkx = "^2.5.1"
-pydantic = "^1.8.2"
-psutil = "^5.9.0"
-pyarrow = "^9.0.0"
+python = "^3.9"
+pymgclient = "^1.3.1"
+networkx = ">=2.5.1,<4.0.0"
+pydantic = "^2.3.0"
+psutil = ">=5.9,<7.0"
 dacite = "^1.6.0"
-adlfs = "^2022.2.0"
-neo4j = "^4.4.3"
-docker = "^5.0.3"
-torch = "^1.13.1"
-numpy = ">=1.24.1,<3.0"
-dgl = "^0.9.1"
+adlfs = ">=2023.9.0,<2025.0.0"
+neo4j = ">=4.4.3,<6.0.0"
+numpy = ">=1.26.4, <3.0"
+
+pyarrow = { version = "^18.0.0", optional = true }
+torch = { version = "^2.4", optional = true, source = "pytorch-cpu" }
+docker = { version = "^6.1.3", optional = true }
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url  = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[tool.poetry.extras]
+arrow = ["pyarrow"]
+dgl = ["torch", "dgl"]
+all = ["pyarrow", "torch", "dgl", "docker"]
+torch_pyg = ["torch"]
+docker = ["docker"]
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.3.0"
-pytest = "^7.1.1"
-pytest-black = "^0.3.12"
-pytest-cov = "^2.12.0"
-pytest-flake8 = "1.0.7"
-pytest-timeout = "^1.4.2"
-pre-commit = "^2.15.0"
+black = ">=22.3.0,<25.0.0"
+pytest-black = ">=0.3.12,<0.7.0"
+pytest = ">=7.1.1,<9.0.0"
+pytest-cov = ">=2.12.0,<4.0.0"
+pytest-flake8 = "^1.0.7"
+flake8 = "^6.1.0"
+pytest-timeout = ">=1.4.2,<3.0.0"
+pre-commit = ">=2.15.0,<4.0.0"
 
 [tool.poe.tasks]
-install-pyg-cpu = "pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html"
+install-dgl = "pip install  dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation"
+install-pyg-cpu = "pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html  --no-build-isolation"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

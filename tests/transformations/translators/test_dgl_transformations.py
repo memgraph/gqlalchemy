@@ -12,21 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Any, Set
 from numbers import Number
+import pytest
+from typing import Dict, Any, Set
 
 import numpy as np
-import dgl
-from dgl.data import TUDataset
-import torch
+
 
 from gqlalchemy import Match
 from gqlalchemy.models import Node, Relationship
-from gqlalchemy.transformations.translators.dgl_translator import DGLTranslator
+
 from gqlalchemy.transformations.translators.translator import Translator
 from gqlalchemy.transformations.constants import DGL_ID, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.utilities import to_cypher_value
 from tests.transformations.common import execute_queries
+
+dgl = pytest.importorskip("dgl")
+TUDataset = pytest.importorskip("dgl.data.TUDataset")
+torch = pytest.importorskip("torch")
+DGLTranslator = pytest.importorskip("gqlalchemy.transformations.translators.dgl_translator.DGLTranslator")
+
+pytestmark = [pytest.mark.extras, pytest.mark.dgl]
 
 ##########
 # UTILS
@@ -151,7 +157,7 @@ def _check_all_edges_exist_memgraph_dgl(
 
 
 def test_dgl_export_multigraph(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -187,7 +193,7 @@ def test_dgl_export_multigraph(memgraph):
 
 
 def test_dgl_multiple_nodes_same_features(memgraph):
-    """Test graph with no isolated nodes and only one numerical feature and bidirected edges."""
+    """Test graph with no isolated nodes and only one numerical feature and bidirectional edges."""
     # Prepare queries
     queries = []
     queries.append(f"CREATE (m:Node {{id: 1}})")
@@ -828,7 +834,7 @@ def test_dgl_import_homogeneous(memgraph):
         ]
     )
     graph = dgl.DGLGraph((src, dst))
-    # Initialize translator and insert into the MemgrapA
+    # Initialize translator and insert into the Memgraph
     # Let's test
     # Check all that are in Memgraph are in DGL too
     _check_all_edges_exist_memgraph_dgl(

@@ -143,9 +143,9 @@ class NoNetworkXConfigException(Exception):
 
 
 class NxTranslator(Translator):
-    """Uses original ids from Memgraph. Labels are encoded as properties. Since Networkx allows
+    """Uses original ids from Memgraph. Labels are encoded as properties. Since NetworkX allows
     that nodes have properties of different dimensionality, this modules makes use of it and stores properties
-    as dictionary entries. All properties are saved to Networkx data structure.
+    as dictionary entries. All properties are saved to NetworkX data structure.
     """
 
     def __init__(
@@ -254,7 +254,7 @@ class NxTranslator(Translator):
             )
 
     def get_instance(self):
-        """Creates Networx instance of the graph from the data residing inside Memgraph. Since Networkx doesn't support labels in a way Memgraph does, labels
+        """Creates NetworkX instance of the graph from the data residing inside Memgraph. Since NetworkX doesn't support labels in a way Memgraph does, labels
         are encoded as a node and edge properties.
         """
         # Get all nodes and edges from the database (connected nodes)

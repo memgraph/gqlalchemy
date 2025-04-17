@@ -17,8 +17,12 @@ from typing import Callable, List, Set, Dict, Tuple
 from collections import defaultdict
 from numbers import Number
 
-import torch
+try:
+    import torch
+except ModuleNotFoundError:
+    torch = None
 
+from gqlalchemy.exceptions import raise_if_not_imported
 from gqlalchemy.transformations.constants import LABELS_CONCAT, DEFAULT_NODE_LABEL, DEFAULT_EDGE_TYPE
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
@@ -35,12 +39,9 @@ from gqlalchemy import Memgraph, Match
 
 
 class Translator(ABC):
-
     # Lambda function to concat list of labels
-    merge_labels: Callable[[Set[str]], str] = (
-        lambda labels, default_node_label: LABELS_CONCAT.join([label for label in sorted(labels)])
-        if len(labels)
-        else default_node_label
+    merge_labels: Callable[[Set[str]], str] = lambda labels, default_node_label: (
+        LABELS_CONCAT.join([label for label in sorted(labels)]) if len(labels) else default_node_label
     )
 
     @abstractmethod
@@ -59,7 +60,7 @@ class Translator(ABC):
 
     @abstractmethod
     def to_cypher_queries(graph):
-        """Abstract method which doesn't know how to produce cypher queries for a specific graph type and thus needs to be overriden.
+        """Abstract method which doesn't know how to produce cypher queries for a specific graph type and thus needs to be overridden.
         Args:
             graph: Can be of any type supported by the derived Translator object.
 
@@ -72,7 +73,7 @@ class Translator(ABC):
 
     @abstractmethod
     def get_instance():
-        """Abstract method which doesn't know how to create the concrete instance so it needs to be overriden.
+        """Abstract method which doesn't know how to create the concrete instance so it needs to be overridden.
 
         Raises:
             NotImplementedError: The method must be override by a specific translator.
@@ -104,6 +105,8 @@ class Translator(ABC):
         Returns:
             None if features cannot be set or tensor of same features.
         """
+        raise_if_not_imported(dependency=torch, dependency_name="torch")
+
         if len(features) != expected_num:
             return None
         try:

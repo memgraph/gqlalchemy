@@ -3,6 +3,39 @@ sidebar_label: memgraph
 title: gqlalchemy.vendors.memgraph
 ---
 
+#### create\_transaction
+
+```python
+def create_transaction(transaction_data) -> MemgraphTransaction
+```
+
+Create a MemgraphTransaction object from transaction data.
+
+**Arguments**:
+
+- `transaction_data` _dict_ - A dictionary containing transaction data.
+
+**Returns**:
+
+- `MemgraphTransaction` - A MemgraphTransaction object.
+
+#### create\_terminated\_transaction
+
+```python
+def create_terminated_transaction(
+        transaction_data) -> MemgraphTerminatedTransaction
+```
+
+Create a MemgraphTerminatedTransaction object from transaction data.
+
+**Arguments**:
+
+- `transaction_data` _dict_ - A dictionary containing transaction data.
+
+**Returns**:
+
+- `MemgraphTerminatedTransaction` - A MemgraphTerminatedTransaction object.
+
 ## Memgraph Objects
 
 ```python
@@ -28,7 +61,8 @@ Ensures that database indexes match input indexes.
 #### get\_constraints
 
 ```python
-def get_constraints() -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]
+def get_constraints(
+) -> List[Union[MemgraphConstraintExists, MemgraphConstraintUnique]]
 ```
 
 Returns a list of all database constraints (label and label-property types).
@@ -84,7 +118,7 @@ Creates a trigger.
 #### get\_triggers
 
 ```python
-def get_triggers() -> List[str]
+def get_triggers() -> List[MemgraphTrigger]
 ```
 
 Returns a list of all database triggers.
@@ -183,7 +217,8 @@ relationship, use `load_relationship` first.
 #### get\_procedures
 
 ```python
-def get_procedures(starts_with: Optional[str] = None, update: bool = False) -> List["QueryModule"]
+def get_procedures(starts_with: Optional[str] = None,
+                   update: bool = False) -> List["QueryModule"]
 ```
 
 Return query procedures.
@@ -243,4 +278,49 @@ Load power_bi stream query module.
 **Returns**:
 
 - `Memgraph` - Memgraph instance
+
+#### get\_storage\_mode
+
+```python
+def get_storage_mode() -> str
+```
+
+Returns the storage mode of the Memgraph instance.
+
+#### set\_storage\_mode
+
+```python
+def set_storage_mode(storage_mode: MemgraphStorageMode) -> None
+```
+
+Sets the storage mode of the Memgraph instance.
+
+#### get\_transactions
+
+```python
+def get_transactions() -> List[MemgraphTransaction]
+```
+
+Get all transactions in the database.
+
+**Returns**:
+
+- `List[MemgraphTransaction]` - A list of MemgraphTransaction objects.
+
+#### terminate\_transactions
+
+```python
+def terminate_transactions(
+        transaction_ids: List[str]) -> List[MemgraphTerminatedTransaction]
+```
+
+Terminate transactions in the database.
+
+**Arguments**:
+
+- `transaction_ids` _List[str]_ - A list of transaction ids to terminate.
+
+**Returns**:
+
+- `List[MemgraphTerminatedTransaction]` - A list of MemgraphTerminatedTransaction objects with info on their status.
 

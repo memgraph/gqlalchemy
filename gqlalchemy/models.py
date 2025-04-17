@@ -17,9 +17,10 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
 from enum import Enum
+import json
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Extra, Field, PrivateAttr  # noqa F401
+from pydantic.v1 import BaseModel, Extra, Field, PrivateAttr  # noqa F401
 
 from gqlalchemy.exceptions import (
     GQLAlchemyError,
@@ -302,7 +303,7 @@ class MemgraphTrigger:
 
 
 class GraphObject(BaseModel):
-    _subtypes_ = dict()
+    _subtypes_: Dict = dict()
 
     class Config:
         extra = Extra.allow
@@ -364,7 +365,7 @@ class GraphObject(BaseModel):
         value_type = type(value)
 
         if value is None:
-            "Null"
+            return "Null"
         elif value_type == bool:
             return repr(value)
         elif value_type == int:
@@ -372,13 +373,28 @@ class GraphObject(BaseModel):
         elif value_type == float:
             return repr(value)
         elif isinstance(value, str):
-            return repr(value) if value.isprintable() else rf"'{value}'"
+            return json.dumps(value)
         elif isinstance(value, list):
-            return "[" + ", ".join(self.escape_value(val, True) for val in value) + "]"
+            return "[" + ", ".join(self.escape_value(val) for val in value) + "]"
         elif value_type == dict:
-            return "{" + ", ".join(f"{val}: {self.escape_value(val, True)}" for key, val in value.items()) + "}"
-        if isinstance(value, (timedelta, time, datetime, date)):
-            return f"{datetimeKwMapping[value_type]}('{_format_timedelta(value) if isinstance(value, timedelta) else value.isoformat()}')"
+            return "{" + ", ".join(f"{key}: {self.escape_value(val)}" for key, val in value.items()) + "}"
+
+        if isinstance(value, datetime):
+            if value.tzinfo is not None:
+                tz_offset = value.strftime("%z")
+                tz_name = value.tzinfo.zone
+                return f"datetime('{value.strftime('%Y-%m-%dT%H:%M:%S')}{tz_offset}[{tz_name}]')"
+            keyword = datetimeKwMapping[datetime]
+            formatted_value = value.isoformat()
+            return f"{keyword}('{formatted_value}')"
+        elif isinstance(value, timedelta):
+            formatted_value = _format_timedelta(value)
+            keyword = datetimeKwMapping[timedelta]
+            return f"{keyword}('{formatted_value}')"
+        elif isinstance(value, (time, date)):
+            formatted_value = value.isoformat()
+            keyword = datetimeKwMapping[type(value)]
+            return f"{keyword}('{formatted_value}')"
         else:
             raise GQLAlchemyError(
                 f"Unsupported value data type: {type(value)}."
@@ -445,7 +461,8 @@ class GraphObject(BaseModel):
 
 class UniqueGraphObject(GraphObject):
     _id: Optional[Any] = PrivateAttr()
-    _properties: Optional[Dict[str, Any]] = PrivateAttr()
+    _properties: Optional[Dict[str, Any]] = PrivateAttr()  # noqa: F811
+    # TODO: Fix this name collision
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -453,7 +470,7 @@ class UniqueGraphObject(GraphObject):
         self._type = data.get("_type")
 
     @property
-    def _properties(self) -> Dict[str, Any]:
+    def _properties(self) -> Dict[str, Any]:  # noqa: F811
         return {k: v for k, v in dict(self).items() if not k.startswith("_") and k != "labels"}
 
     def __str__(self) -> str:
@@ -620,6 +637,22 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         self._id = node._id
         return self
 
+    def get_or_create(self, db: "Database") -> Tuple["Node", bool]:  # noqa F821
+        """Return the node and a flag for whether it was created in the database.
+
+        Args:
+            db: The database instance to operate on.
+
+        Returns:
+            A tuple with the first component being the created graph node,
+            and the second being a boolean that is True if the node
+            was created in the database, and False if it was loaded instead.
+        """
+        try:
+            return self.load(db=db), False
+        except GQLAlchemyError:
+            return self.save(db=db), True
+
 
 class RelationshipMetaclass(BaseModel.__class__):
     def __new__(mcs, name, bases, namespace, **kwargs):  # noqa C901
@@ -692,6 +725,22 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id
         return self
+
+    def get_or_create(self, db: "Database") -> Tuple["Relationship", bool]:  # noqa F821
+        """Return the relationship and a flag for whether it was created in the database.
+
+        Args:
+            db: The database instance to operate on.
+
+        Returns:
+            A tuple with the first component being the created graph relationship,
+            and the second being a boolean that is True if the relationship
+            was created in the database, and False if it was loaded instead.
+        """
+        try:
+            return self.load(db=db), False
+        except GQLAlchemyError:
+            return self.save(db=db), True
 
 
 class Path(GraphObject):

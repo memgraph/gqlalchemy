@@ -306,7 +306,7 @@ class TestMemgraphNeo4jQueryBuilder:
 
         mock.assert_called_with(expected_query)
 
-    @pytest.mark.parametrize("operator", ["=", "<>", "<", "!=", ">", "<=", ">="])
+    @pytest.mark.parametrize("operator", ["=", "<>", "<", "!=", ">", "<=", ">=", "=~"])
     def test_where_without_operator_enum(self, vendor, operator):
         query_builder = (
             vendor[1]
@@ -317,8 +317,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .where(item="n.name", operator=operator, literal="best_name")
             .return_()
         )
-        expected_query = f" MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name {operator} 'best_name' RETURN * "
-
+        expected_query = f' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name {operator} "best_name" RETURN * '
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 
@@ -334,7 +333,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .where(item="n.name", operator=Operator.EQUAL, literal="best_name")
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = "best_name" RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -497,7 +496,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .or_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR m.id < 4 RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = "best_name" OR m.id < 4 RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -515,7 +514,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .or_not_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' OR NOT m.id < 4 RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = "best_name" OR NOT m.id < 4 RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -657,7 +656,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .and_where(item="m.id", operator=Operator.LEQ_THAN, literal=4)
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND m.id <= 4 RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = "best_name" AND m.id <= 4 RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -675,7 +674,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .and_not_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' AND NOT m.id < 4 RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = "best_name" AND NOT m.id < 4 RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -817,7 +816,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .xor_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' XOR m.id < 4 RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = "best_name" XOR m.id < 4 RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -835,7 +834,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .xor_not_where(item="m.id", operator=Operator.LESS_THAN, literal=4)
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = 'best_name' XOR NOT m.id < 4 RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name = "best_name" XOR NOT m.id < 4 RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -982,7 +981,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .and_not_where(item="m.name", operator=Operator.EQUAL, literal="John")
             .return_()
         )
-        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node AND n.age > 5 OR n:Node2 XOR n.name = m.name XOR NOT m:User OR NOT m:Node AND NOT m.name = 'John' RETURN * "
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n:Node AND n.age > 5 OR n:Node2 XOR n.name = m.name XOR NOT m:User OR NOT m:Node AND NOT m.name = "John" RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1429,7 +1428,7 @@ class TestMemgraphNeo4jQueryBuilder:
     @pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
     def test_set_assign_literal(self, vendor, operator):
         query_builder = vendor[1].set_(item="a", operator=operator, literal="value")
-        expected_query = f" SET a {operator.value} 'value'"
+        expected_query = f' SET a {operator.value} "value"'
 
         assert query_builder.construct_query() == expected_query
 
@@ -1462,7 +1461,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .set_(item="n.population", operator=Operator.ASSIGNMENT, literal=83000001)
             .return_()
         )
-        expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN * "
+        expected_query = ' MATCH (n) WHERE n.name = "Germany" SET n.population = 83000001 RETURN * '
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 
@@ -1479,7 +1478,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .return_()
         )
         expected_query = (
-            " MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN * "
+            ' MATCH (n) WHERE n.name = "Germany" SET n.population = 83000001 SET n.capital = "Berlin" RETURN * '
         )
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1495,7 +1494,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .set_(item="n", operator=Operator.LABEL_FILTER, expression="Land")
             .return_()
         )
-        expected_query = " MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN * "
+        expected_query = ' MATCH (n) WHERE n.name = "Germany" SET n:Land RETURN * '
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
 
@@ -1511,7 +1510,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .return_()
         )
         expected_query = (
-            " MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN * "
+            ' MATCH (c:Country) WHERE c.name = "Germany" SET c += {name: "Germany", population: "85000000"} RETURN * '
         )
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1524,7 +1523,7 @@ class TestMemgraphNeo4jQueryBuilder:
 
         user = User(name="Ron").save(vendor[0])
         query_builder = vendor[1].match().node(node=user, variable="u").return_()
-        expected_query = " MATCH (u:User {name: 'Ron'}) RETURN * "
+        expected_query = ' MATCH (u:User {name: "Ron"}) RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1537,7 +1536,7 @@ class TestMemgraphNeo4jQueryBuilder:
 
         user = User(name="Ron")
         query_builder = vendor[1].match().node(node=user, variable="u").return_()
-        expected_query = " MATCH (u:User {name: 'Ron'}) RETURN * "
+        expected_query = ' MATCH (u:User {name: "Ron"}) RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1562,7 +1561,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .node(node=user_2, variable="user_2")
             .return_()
         )
-        expected_query = " MATCH (user_1:User {name: 'Ron'})-[:FOLLOWS]->(user_2:User {name: 'Leslie'}) RETURN * "
+        expected_query = ' MATCH (user_1:User {name: "Ron"})-[:FOLLOWS]->(user_2:User {name: "Leslie"}) RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1587,7 +1586,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .node(node=user_2, variable="user_2")
             .return_()
         )
-        expected_query = " MATCH (user_1:User {name: 'Ron'})-[:FOLLOWS]->(user_2:User {name: 'Leslie'}) RETURN * "
+        expected_query = ' MATCH (user_1:User {name: "Ron"})-[:FOLLOWS]->(user_2:User {name: "Leslie"}) RETURN * '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1690,7 +1689,7 @@ class TestMemgraphNeo4jQueryBuilder:
             .where(item="city.name", operator="=", literal="London")
             .return_(results="city")
         )
-        expected_query = " MERGE (city) WHERE city.name = 'London' RETURN city "
+        expected_query = ' MERGE (city) WHERE city.name = "London" RETURN city '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
@@ -1708,7 +1707,7 @@ class TestMemgraphNeo4jQueryBuilder:
 
     def test_create_with_properties(self, vendor):
         query_builder = vendor[1].create().node(labels="Person", variable="p", first_name="Kate").return_(results="p")
-        expected_query = " CREATE (p:Person {first_name: 'Kate'}) RETURN p "
+        expected_query = ' CREATE (p:Person {first_name: "Kate"}) RETURN p '
 
         with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
             query_builder.execute()
