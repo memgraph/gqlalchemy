@@ -53,7 +53,7 @@ priority = "explicit"
 [tool.poetry.extras]
 arrow = ["pyarrow"]
 dgl = ["torch", "dgl"]
-all = ["pyarrow", "torch", "docker"]
+all = ["pyarrow", "torch", "dgl", "docker"]
 torch_pyg = ["torch"]
 docker = ["docker"]
 
