@@ -461,7 +461,8 @@ class GraphObject(BaseModel):
 
 class UniqueGraphObject(GraphObject):
     _id: Optional[Any] = PrivateAttr()
-    _properties: Optional[Dict[str, Any]] = PrivateAttr()
+    _properties: Optional[Dict[str, Any]] = PrivateAttr()  # noqa: F811
+    # TODO: Fix this name collision
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -469,7 +470,7 @@ class UniqueGraphObject(GraphObject):
         self._type = data.get("_type")
 
     @property
-    def _properties(self) -> Dict[str, Any]:
+    def _properties(self) -> Dict[str, Any]:  # noqa: F811
         return {k: v for k, v in dict(self).items() if not k.startswith("_") and k != "labels"}
 
     def __str__(self) -> str:

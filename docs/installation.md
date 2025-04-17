@@ -7,7 +7,7 @@ as pip and Poetry, and by building it from source.
 
 To install GQLAlchemy, you will need the following:
 
-- **Python 3.9 - 3.11**
+- **Python 3.9 - 3.12**
 - [`pymgclient`](https://github.com/memgraph/pymgclient):
 
     * Install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites)
@@ -18,7 +18,7 @@ To install GQLAlchemy, you will need the following:
     ```
 
 !!! danger
-    Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy **without** the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
+    Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
 
 ## Install with pip
 
