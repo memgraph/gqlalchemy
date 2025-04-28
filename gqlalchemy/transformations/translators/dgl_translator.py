@@ -23,6 +23,7 @@ from gqlalchemy.utilities import to_cypher_value
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
     MG_PORT,
+    MG_SCHEME,
     MG_USERNAME,
     MG_PASSWORD,
     MG_ENCRYPTED,
@@ -45,13 +46,14 @@ class DGLTranslator(Translator):
         self,
         host: str = MG_HOST,
         port: int = MG_PORT,
+        scheme: str = MG_SCHEME,
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
         client_name: str = MG_CLIENT_NAME,
         lazy: bool = MG_LAZY,
     ) -> None:
-        super().__init__(host, port, username, password, encrypted, client_name, lazy)
+        super().__init__(host, port, scheme, username, password, encrypted, client_name, lazy)
 
     def to_cypher_queries(self, graph: Union[dgl.DGLGraph, dgl.DGLHeteroGraph]):
         """Produce cypher queries for data saved as part of the DGL graph. The method handles both homogeneous and heterogeneous graph. If the graph is homogeneous, a default DGL's labels will be used.

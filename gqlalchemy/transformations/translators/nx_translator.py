@@ -28,6 +28,7 @@ from gqlalchemy.utilities import NetworkXCypherConfig, to_cypher_labels, to_cyph
 from gqlalchemy.memgraph_constants import (
     MG_HOST,
     MG_PORT,
+    MG_SCHEME,
     MG_USERNAME,
     MG_PASSWORD,
     MG_ENCRYPTED,
@@ -152,6 +153,7 @@ class NxTranslator(Translator):
         self,
         host: str = MG_HOST,
         port: int = MG_PORT,
+        scheme: str = MG_SCHEME,
         username: str = MG_USERNAME,
         password: str = MG_PASSWORD,
         encrypted: bool = MG_ENCRYPTED,
@@ -159,7 +161,7 @@ class NxTranslator(Translator):
         lazy: bool = MG_LAZY,
     ) -> None:
         self.__all__ = ("nx_to_cypher", "nx_graph_to_memgraph_parallel")
-        super().__init__(host, port, username, password, encrypted, client_name, lazy)
+        super().__init__(host, port, scheme, username, password, encrypted, client_name, lazy)
 
     def to_cypher_queries(self, graph: nx.Graph, config: NetworkXCypherConfig = None) -> Iterator[str]:
         """Generates a Cypher query for creating a graph."""
@@ -187,6 +189,7 @@ class NxTranslator(Translator):
             self._check_for_index_hint(
                 self.host,
                 self.port,
+                self.scheme,
                 self.username,
                 self.password,
                 self.encrypted,
@@ -194,7 +197,7 @@ class NxTranslator(Translator):
 
         for query_group in query_groups:
             self._start_parallel_execution(
-                query_group, self.host, self.port, self.username, self.password, self.encrypted
+                query_group, self.host, self.port, self.scheme, self.username, self.password, self.encrypted
             )
 
     def _start_parallel_execution(self, queries_gen: Iterator[str]) -> None:
@@ -212,6 +215,7 @@ class NxTranslator(Translator):
                         process_queries,
                         self.host,
                         self.port,
+                        self.scheme,
                         self.username,
                         self.password,
                         self.encrypted,
@@ -224,10 +228,10 @@ class NxTranslator(Translator):
             p.join()
 
     def _insert_queries(
-        self, queries: List[str], host: str, port: int, username: str, password: str, encrypted: bool
+        self, queries: List[str], host: str, port: int, scheme: str, username: str, password: str, encrypted: bool
     ) -> None:
         """Used by multiprocess insertion of nx into memgraph, works on a chunk of queries."""
-        memgraph = Memgraph(host, port, username, password, encrypted)
+        memgraph = Memgraph(host, port, scheme, username, password, encrypted)
         while len(queries) > 0:
             try:
                 query = queries.pop()
@@ -241,12 +245,13 @@ class NxTranslator(Translator):
         self,
         host: str = "127.0.0.1",
         port: int = 7687,
+        scheme: str = "",
         username: str = "",
         password: str = "",
         encrypted: bool = False,
     ):
         """Check if the there are indexes, if not show warnings."""
-        memgraph = Memgraph(host, port, username, password, encrypted)
+        memgraph = Memgraph(host, port, scheme, username, password, encrypted)
         indexes = memgraph.get_indexes()
         if len(indexes) == 0:
             logging.getLogger(__file__).warning(
