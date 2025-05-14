@@ -108,17 +108,63 @@ class FieldAttrsConstants:
         return [cls.INDEX, cls.EXISTS, cls.UNIQUE]
 
 
+class IndexType:
+    """An enum representing different types of indexes.
+
+    Enum:
+        LABEL
+        EDGE
+        EDGE_GLOBAL
+        POINT
+    """
+
+    LABEL = "LABEL"
+    EDGE = "EDGE"
+    EDGE_GLOBAL = "EDGE_GLOBAL"
+    POINT = "POINT"
+
+
 @dataclass(frozen=True, eq=True)
 class Index(ABC):
-    label: str
-    property: Optional[str] = None
+    label: Optional[str] = None
+    property: Optional[Union[str, Tuple[str, ...]]] = None
+    index_type: Optional[IndexType] = IndexType.LABEL
 
     def to_cypher(self) -> str:
-        return f":{self.label}{f'({self.property})' if self.property else ''}"
+        # Memgraph will throw Cypher syntaxt error if self.property and self.label are both None
+        # Memgraph will throw Cypher syntaxt error if self.property is None and self.index_type is POINT
+        # Memgraph will throw Cypher syntaxt error if label is None and self.index_type is not EDGE_GLOBAL
+        if self.property is None:
+            return f":{self.label}"
+
+        if self.label is None and self.index_type == IndexType.EDGE_GLOBAL:
+            return f":({self.property})"
+
+        if isinstance(self.property, (list, tuple)):
+            properties_str = ", ".join(self.property)
+        else:
+            properties_str = self.property
+        return f":{self.label}({properties_str})"
 
 
 @dataclass(frozen=True, eq=True)
 class MemgraphIndex(Index):
+    def __post_init__(self):
+        if self.index_type == IndexType.LABEL:
+            normalized_property = self._normalize_property(self.property)
+            object.__setattr__(self, "property", normalized_property)
+
+    @staticmethod
+    def _normalize_property(value: Optional[Union[str, list]]) -> Optional[Union[str, Tuple[str, ...]]]:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            return value[0] if len(value) == 1 else tuple(value)
+        return value
+
+
+@dataclass(frozen=True, eq=True)
+class MemgraphEdgeIndex(Index):
     pass
 
 

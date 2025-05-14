@@ -26,6 +26,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyUniquenessConstraintError,
 )
 from gqlalchemy.models import (
+    IndexType,
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
@@ -68,6 +69,7 @@ class MemgraphConstants:
     PROPERTY = "property"
     PROPERTIES = "properties"
     UNIQUE = "unique"
+    INDEX_TYPE = "index type"
 
 
 class MemgraphStorageMode(Enum):
@@ -124,6 +126,18 @@ class Memgraph(DatabaseClient):
         self._lazy = lazy
         self._on_disk_db = None
 
+    @staticmethod
+    def _convert_index_type(index_type: str) -> str:
+        if index_type == "point":
+            return IndexType.POINT
+        elif index_type in ("edge-type", "edge-type+property"):
+            return IndexType.EDGE
+        elif index_type == "edge-property":
+            return IndexType.EDGE_GLOBAL
+        else:
+            return IndexType.LABEL
+
+    # TODO: Check -> Return all index types: label, label-property, label-property composite indexes, edge-type, edge-type-property, global edge index, point index,
     def get_indexes(self) -> List[MemgraphIndex]:
         """Returns a list of all database indexes (label and label-property types)."""
         indexes = []
@@ -132,18 +146,28 @@ class Memgraph(DatabaseClient):
                 MemgraphIndex(
                     result[MemgraphConstants.LABEL],
                     result[MemgraphConstants.PROPERTY],
+                    self._convert_index_type(result[MemgraphConstants.INDEX_TYPE]),
                 )
             )
         return indexes
 
     def ensure_indexes(self, indexes: List[MemgraphIndex]) -> None:
         """Ensures that database indexes match input indexes."""
-        old_indexes = set(self.get_indexes())
-        new_indexes = set(indexes)
-        for obsolete_index in old_indexes.difference(new_indexes):
-            self.drop_index(obsolete_index)
-        for missing_index in new_indexes.difference(old_indexes):
-            self.create_index(missing_index)
+
+        old_indexes = self.get_indexes()
+
+        for old_index in old_indexes:
+            if not any(
+                old_index.label == new_index.label and old_index.property == new_index.property for new_index in indexes
+            ):
+                self.drop_index(old_index)
+
+        for new_index in indexes:
+            if not any(
+                new_index.label == old_index.label and new_index.property == old_index.property
+                for old_index in old_indexes
+            ):
+                self.create_index(new_index)
 
     def get_constraints(
         self,

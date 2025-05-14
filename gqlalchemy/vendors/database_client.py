@@ -20,6 +20,7 @@ from gqlalchemy.exceptions import GQLAlchemyError
 from gqlalchemy.models import (
     Constraint,
     Index,
+    IndexType,
     Node,
     Relationship,
 )
@@ -65,12 +66,26 @@ class DatabaseClient(ABC):
 
     def create_index(self, index: Index) -> None:
         """Creates an index (label or label-property type) in the database."""
-        query = f"CREATE INDEX ON {index.to_cypher()};"
+        if index.index_type == IndexType.POINT:
+            query = f"CREATE POINT INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_GLOBAL:
+            query = f"CREATE GLOBAL EDGE INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE:
+            query = f"CREATE EDGE INDEX ON {index.to_cypher()};"
+        else:
+            query = f"CREATE INDEX ON {index.to_cypher()};"
         self.execute(query)
 
     def drop_index(self, index: Index) -> None:
         """Drops an index (label or label-property type) in the database."""
-        query = f"DROP INDEX ON {index.to_cypher()};"
+        if index.index_type == IndexType.POINT:
+            query = f"DROP POINT INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_GLOBAL:
+            query = f"DROP GLOBAL EDGE INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE:
+            query = f"DROP EDGE INDEX ON {index.to_cypher()};"
+        else:
+            query = f"DROP INDEX ON {index.to_cypher()};"
         self.execute(query)
 
     @abstractmethod
