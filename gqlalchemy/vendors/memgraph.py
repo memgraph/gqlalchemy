@@ -26,6 +26,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyUniquenessConstraintError,
 )
 from gqlalchemy.models import (
+    Index,
     IndexType,
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
@@ -137,7 +138,30 @@ class Memgraph(DatabaseClient):
         else:
             return IndexType.LABEL
 
-    # TODO: Check -> Return all index types: label, label-property, label-property composite indexes, edge-type, edge-type-property, global edge index, point index,
+    def create_index(self, index: Index) -> None:
+        """Creates an index (label or label-property type) in the database."""
+        if index.index_type == IndexType.POINT:
+            query = f"CREATE POINT INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_GLOBAL:
+            query = f"CREATE GLOBAL EDGE INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE:
+            query = f"CREATE EDGE INDEX ON {index.to_cypher()};"
+        else:
+            query = f"CREATE INDEX ON {index.to_cypher()};"
+        self.execute(query)
+
+    def drop_index(self, index: Index) -> None:
+        """Drops an index (label or label-property type) in the database."""
+        if index.index_type == IndexType.POINT:
+            query = f"DROP POINT INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_GLOBAL:
+            query = f"DROP GLOBAL EDGE INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE:
+            query = f"DROP EDGE INDEX ON {index.to_cypher()};"
+        else:
+            query = f"DROP INDEX ON {index.to_cypher()};"
+        self.execute(query)
+
     def get_indexes(self) -> List[MemgraphIndex]:
         """Returns a list of all database indexes (label and label-property types)."""
         indexes = []

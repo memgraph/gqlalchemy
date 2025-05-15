@@ -128,7 +128,20 @@ class IndexType:
 class Index(ABC):
     label: Optional[str] = None
     property: Optional[Union[str, Tuple[str, ...]]] = None
+
+    @abstractmethod
+    def to_cypher(self) -> str:
+        pass
+
+
+@dataclass(frozen=True, eq=True)
+class MemgraphIndex(Index):
     index_type: Optional[IndexType] = IndexType.LABEL
+
+    def __post_init__(self):
+        if self.index_type == IndexType.LABEL:
+            normalized_property = self._normalize_property(self.property)
+            object.__setattr__(self, "property", normalized_property)
 
     def to_cypher(self) -> str:
         # Memgraph will throw Cypher syntaxt error if self.property and self.label are both None
@@ -145,14 +158,6 @@ class Index(ABC):
         else:
             properties_str = self.property
         return f":{self.label}({properties_str})"
-
-
-@dataclass(frozen=True, eq=True)
-class MemgraphIndex(Index):
-    def __post_init__(self):
-        if self.index_type == IndexType.LABEL:
-            normalized_property = self._normalize_property(self.property)
-            object.__setattr__(self, "property", normalized_property)
 
     @staticmethod
     def _normalize_property(value: Optional[Union[str, list]]) -> Optional[Union[str, Tuple[str, ...]]]:
@@ -172,6 +177,9 @@ class MemgraphEdgeIndex(Index):
 class Neo4jIndex(Index):
     type: Optional[str] = None
     uniqueness: Optional[str] = None
+
+    def to_cypher(self) -> str:
+        return f":{self.label}{f'({self.property})' if self.property else ''}"
 
 
 @dataclass(frozen=True, eq=True)
