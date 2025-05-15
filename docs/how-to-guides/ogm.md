@@ -353,6 +353,31 @@ db.create_index(index1)
 db.create_index(index2)
 ```
 
+Besides label and label-property indexes, Memgraph supports label-property composite, edge-type, edge-type property, global edge property and point indexes. 
+Here is an example of how to create each:
+
+```python
+label_index = MemgraphIndex("Person")
+label_prop_index = MemgraphIndex("Person", "name")
+label_composite_index = MemgraphIndex("Person", ("name", "age"))
+edge_type_index = MemgraphIndex("REL", None, index_type="EDGE")
+edge_type_property_index = MemgraphIndex("REL", "name", index_type="EDGE")
+global_edge_index = MemgraphIndex(None, "name", index_type="EDGE_GLOBAL")
+point_index = MemgraphIndex("Person", "year", index_type="POINT")
+
+memgraph.create_index(label_index)
+memgraph.create_index(label_prop_index)
+memgraph.create_index(label_composite_index)
+memgraph.create_index(edge_type_index)
+memgraph.create_index(edge_type_property_index)
+memgraph.create_index(global_edge_index)
+memgraph.create_index(point_index)
+```
+
+The `get_indexes()`, `drop_index()`, `ensure_indexes()` and `drop_indexes()` methods will work for all index types. 
+
+The exception here is the vector index, which is currently treated a bit differently in Memgraph.
+
 To learn more about indexes, head over to the [indexing reference guide](https://memgraph.com/docs/fundamentals/indexes).
 
 ## Create constraints 

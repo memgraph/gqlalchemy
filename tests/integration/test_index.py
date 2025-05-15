@@ -323,3 +323,22 @@ def test_ensure_index_all(memgraph):
         global_edge_index,
         point_index,
     }
+
+
+def test_different_composite_index(memgraph):
+    label_composite_index_1 = MemgraphIndex("Person", ("name", "age"))
+    label_composite_index_2 = MemgraphIndex("Person", ("age", "name"))
+
+    memgraph.create_index(label_composite_index_1)
+    memgraph.create_index(label_composite_index_2)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {label_composite_index_1, label_composite_index_2}
+    assert indexes[0] != indexes[1]
+
+    memgraph.drop_indexes()
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == set()
