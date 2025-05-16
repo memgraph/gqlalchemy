@@ -112,16 +112,16 @@ class IndexType:
     """An enum representing different types of indexes.
 
     Enum:
-        LABEL
-        EDGE
-        EDGE_GLOBAL
-        POINT
+        LABEL_INDEX_TYPE
+        EDGE_INDEX_TYPE
+        EDGE_GLOBAL_INDEX_TYPE
+        POINT_INDEX_TYPE
     """
 
-    LABEL = "LABEL"
-    EDGE = "EDGE"
-    EDGE_GLOBAL = "EDGE_GLOBAL"
-    POINT = "POINT"
+    LABEL_INDEX_TYPE = "LABEL_INDEX_TYPE"
+    EDGE_INDEX_TYPE = "EDGE_INDEX_TYPE"
+    EDGE_GLOBAL_INDEX_TYPE = "EDGE_GLOBAL_INDEX_TYPE"
+    POINT_INDEX_TYPE = "POINT_INDEX_TYPE"
 
 
 @dataclass(frozen=True, eq=True)
@@ -136,10 +136,10 @@ class Index(ABC):
 
 @dataclass(frozen=True, eq=True)
 class MemgraphIndex(Index):
-    index_type: Optional[IndexType] = IndexType.LABEL
+    index_type: Optional[IndexType] = IndexType.LABEL_INDEX_TYPE
 
     def __post_init__(self):
-        if self.index_type == IndexType.LABEL:
+        if self.index_type == IndexType.LABEL_INDEX_TYPE:
             normalized_property = self._normalize_property(self.property)
             object.__setattr__(self, "property", normalized_property)
 
@@ -150,7 +150,7 @@ class MemgraphIndex(Index):
         if self.property is None:
             return f":{self.label}"
 
-        if self.label is None and self.index_type == IndexType.EDGE_GLOBAL:
+        if self.label is None and self.index_type == IndexType.EDGE_GLOBAL_INDEX_TYPE:
             return f":({self.property})"
 
         if isinstance(self.property, (list, tuple)):
@@ -166,11 +166,6 @@ class MemgraphIndex(Index):
         if isinstance(value, list):
             return value[0] if len(value) == 1 else tuple(value)
         return value
-
-
-@dataclass(frozen=True, eq=True)
-class MemgraphEdgeIndex(Index):
-    pass
 
 
 @dataclass(frozen=True, eq=True)

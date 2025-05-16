@@ -130,21 +130,21 @@ class Memgraph(DatabaseClient):
     @staticmethod
     def _convert_index_type(index_type: str) -> str:
         if index_type == "point":
-            return IndexType.POINT
+            return IndexType.POINT_INDEX_TYPE
         elif index_type in ("edge-type", "edge-type+property"):
-            return IndexType.EDGE
+            return IndexType.EDGE_INDEX_TYPE
         elif index_type == "edge-property":
-            return IndexType.EDGE_GLOBAL
+            return IndexType.EDGE_GLOBAL_INDEX_TYPE
         else:
-            return IndexType.LABEL
+            return IndexType.LABEL_INDEX_TYPE
 
     def create_index(self, index: Index) -> None:
         """Creates an index (label or label-property type) in the database."""
-        if index.index_type == IndexType.POINT:
+        if index.index_type == IndexType.POINT_INDEX_TYPE:
             query = f"CREATE POINT INDEX ON {index.to_cypher()};"
-        elif index.index_type == IndexType.EDGE_GLOBAL:
+        elif index.index_type == IndexType.EDGE_GLOBAL_INDEX_TYPE:
             query = f"CREATE GLOBAL EDGE INDEX ON {index.to_cypher()};"
-        elif index.index_type == IndexType.EDGE:
+        elif index.index_type == IndexType.EDGE_INDEX_TYPE:
             query = f"CREATE EDGE INDEX ON {index.to_cypher()};"
         else:
             query = f"CREATE INDEX ON {index.to_cypher()};"
@@ -152,11 +152,11 @@ class Memgraph(DatabaseClient):
 
     def drop_index(self, index: Index) -> None:
         """Drops an index (label or label-property type) in the database."""
-        if index.index_type == IndexType.POINT:
+        if index.index_type == IndexType.POINT_INDEX_TYPE:
             query = f"DROP POINT INDEX ON {index.to_cypher()};"
-        elif index.index_type == IndexType.EDGE_GLOBAL:
+        elif index.index_type == IndexType.EDGE_GLOBAL_INDEX_TYPE:
             query = f"DROP GLOBAL EDGE INDEX ON {index.to_cypher()};"
-        elif index.index_type == IndexType.EDGE:
+        elif index.index_type == IndexType.EDGE_INDEX_TYPE:
             query = f"DROP EDGE INDEX ON {index.to_cypher()};"
         else:
             query = f"DROP INDEX ON {index.to_cypher()};"
