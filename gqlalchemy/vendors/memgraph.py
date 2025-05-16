@@ -177,21 +177,13 @@ class Memgraph(DatabaseClient):
 
     def ensure_indexes(self, indexes: List[MemgraphIndex]) -> None:
         """Ensures that database indexes match input indexes."""
+        old_indexes = set(self.get_indexes())
+        new_indexes = set(indexes)
 
-        old_indexes = self.get_indexes()
-
-        for old_index in old_indexes:
-            if not any(
-                old_index.label == new_index.label and old_index.property == new_index.property for new_index in indexes
-            ):
-                self.drop_index(old_index)
-
-        for new_index in indexes:
-            if not any(
-                new_index.label == old_index.label and new_index.property == old_index.property
-                for old_index in old_indexes
-            ):
-                self.create_index(new_index)
+        for obsolete_index in old_indexes.difference(new_indexes):
+            self.drop_index(obsolete_index)
+        for missing_index in new_indexes.difference(old_indexes):
+            self.create_index(missing_index)
 
     def get_constraints(
         self,
