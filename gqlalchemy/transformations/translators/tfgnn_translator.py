@@ -277,12 +277,12 @@ class TFGNNTranslator(Translator):
                 value = value.decode("utf-8")
             if isinstance(value, np.ndarray) and (np.issubdtype(value.dtype, np.bytes_) or value.dtype == np.object_):
                 value = value.astype(str)
-                if (isinstance(value, np.ndarray) or isinstance(value, list)) and len(value) == 0:
-                    # skip empty values
-                    continue
-                if isinstance(value, float) and np.isnan(value):
-                    continue
-                properties[key] = value
+            if (isinstance(value, np.ndarray) or isinstance(value, list)) and len(value) == 0:
+                # skip empty values
+                continue
+            if isinstance(value, float) and np.isnan(value):
+                continue
+            properties[key] = value
 
         return properties
 
