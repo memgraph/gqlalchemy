@@ -63,15 +63,15 @@ class DatabaseClient(ABC):
         connection = connection or self._get_cached_connection()
         connection.execute(query, parameters)
 
+    @abstractmethod
     def create_index(self, index: Index) -> None:
-        """Creates an index (label or label-property type) in the database."""
-        query = f"CREATE INDEX ON {index.to_cypher()};"
-        self.execute(query)
+        """Creates an index in the database."""
+        pass
 
+    @abstractmethod
     def drop_index(self, index: Index) -> None:
-        """Drops an index (label or label-property type) in the database."""
-        query = f"DROP INDEX ON {index.to_cypher()};"
-        self.execute(query)
+        """Drops an index in the database."""
+        pass
 
     @abstractmethod
     def get_indexes(self) -> List[Index]:

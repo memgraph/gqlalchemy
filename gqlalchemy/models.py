@@ -108,24 +108,73 @@ class FieldAttrsConstants:
         return [cls.INDEX, cls.EXISTS, cls.UNIQUE]
 
 
+class IndexType:
+    """An enum representing different types of indexes.
+
+    Enum:
+        LABEL_INDEX_TYPE
+        EDGE_INDEX_TYPE
+        EDGE_GLOBAL_INDEX_TYPE
+        POINT_INDEX_TYPE
+    """
+
+    LABEL_INDEX_TYPE = "LABEL_INDEX_TYPE"
+    EDGE_INDEX_TYPE = "EDGE_INDEX_TYPE"
+    EDGE_GLOBAL_INDEX_TYPE = "EDGE_GLOBAL_INDEX_TYPE"
+    POINT_INDEX_TYPE = "POINT_INDEX_TYPE"
+
+
 @dataclass(frozen=True, eq=True)
 class Index(ABC):
-    label: str
-    property: Optional[str] = None
+    label: Optional[str] = None
+    property: Optional[Union[str, Tuple[str, ...]]] = None
 
+    @abstractmethod
     def to_cypher(self) -> str:
-        return f":{self.label}{f'({self.property})' if self.property else ''}"
+        pass
 
 
 @dataclass(frozen=True, eq=True)
 class MemgraphIndex(Index):
-    pass
+    index_type: Optional[IndexType] = IndexType.LABEL_INDEX_TYPE
+
+    def __post_init__(self):
+        if self.index_type == IndexType.LABEL_INDEX_TYPE:
+            normalized_property = self._normalize_property(self.property)
+            object.__setattr__(self, "property", normalized_property)
+
+    def to_cypher(self) -> str:
+        # Memgraph will throw Cypher syntaxt error if self.property and self.label are both None
+        # Memgraph will throw Cypher syntaxt error if self.property is None and self.index_type is POINT
+        # Memgraph will throw Cypher syntaxt error if label is None and self.index_type is not EDGE_GLOBAL
+        if self.property is None:
+            return f":{self.label}"
+
+        if self.label is None and self.index_type == IndexType.EDGE_GLOBAL_INDEX_TYPE:
+            return f":({self.property})"
+
+        if isinstance(self.property, (list, tuple)):
+            properties_str = ", ".join(self.property)
+        else:
+            properties_str = self.property
+        return f":{self.label}({properties_str})"
+
+    @staticmethod
+    def _normalize_property(value: Optional[Union[str, list]]) -> Optional[Union[str, Tuple[str, ...]]]:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            return value[0] if len(value) == 1 else tuple(value)
+        return value
 
 
 @dataclass(frozen=True, eq=True)
 class Neo4jIndex(Index):
     type: Optional[str] = None
     uniqueness: Optional[str] = None
+
+    def to_cypher(self) -> str:
+        return f":{self.label}{f'({self.property})' if self.property else ''}"
 
 
 @dataclass(frozen=True, eq=True)

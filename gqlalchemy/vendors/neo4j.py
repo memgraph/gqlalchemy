@@ -21,6 +21,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyUniquenessConstraintError,
 )
 from gqlalchemy.models import (
+    Index,
     Neo4jConstraintExists,
     Neo4jConstraintUnique,
     Neo4jIndex,
@@ -66,6 +67,16 @@ class Neo4j(DatabaseClient):
             host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
         )
         self._cached_connection: Optional[Connection] = None
+
+    def create_index(self, index: Index) -> None:
+        """Creates an index (label or label-property type) in the database."""
+        query = f"CREATE INDEX ON {index.to_cypher()};"
+        self.execute(query)
+
+    def drop_index(self, index: Index) -> None:
+        """Drops an index (label or label-property type) in the database."""
+        query = f"DROP INDEX ON {index.to_cypher()};"
+        self.execute(query)
 
     def get_indexes(self) -> List[Neo4jIndex]:
         """Returns a list of all database indexes (label and label-property types)."""

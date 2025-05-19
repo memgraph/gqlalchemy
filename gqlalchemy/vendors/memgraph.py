@@ -26,6 +26,8 @@ from gqlalchemy.exceptions import (
     GQLAlchemyUniquenessConstraintError,
 )
 from gqlalchemy.models import (
+    Index,
+    IndexType,
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
@@ -68,6 +70,7 @@ class MemgraphConstants:
     PROPERTY = "property"
     PROPERTIES = "properties"
     UNIQUE = "unique"
+    INDEX_TYPE = "index type"
 
 
 class MemgraphStorageMode(Enum):
@@ -124,6 +127,41 @@ class Memgraph(DatabaseClient):
         self._lazy = lazy
         self._on_disk_db = None
 
+    @staticmethod
+    def _convert_index_type(index_type: str) -> str:
+        if index_type == "point":
+            return IndexType.POINT_INDEX_TYPE
+        elif index_type in ("edge-type", "edge-type+property"):
+            return IndexType.EDGE_INDEX_TYPE
+        elif index_type == "edge-property":
+            return IndexType.EDGE_GLOBAL_INDEX_TYPE
+        else:
+            return IndexType.LABEL_INDEX_TYPE
+
+    def create_index(self, index: Index) -> None:
+        """Creates an index (label or label-property type) in the database."""
+        if index.index_type == IndexType.POINT_INDEX_TYPE:
+            query = f"CREATE POINT INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_GLOBAL_INDEX_TYPE:
+            query = f"CREATE GLOBAL EDGE INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_INDEX_TYPE:
+            query = f"CREATE EDGE INDEX ON {index.to_cypher()};"
+        else:
+            query = f"CREATE INDEX ON {index.to_cypher()};"
+        self.execute(query)
+
+    def drop_index(self, index: Index) -> None:
+        """Drops an index (label or label-property type) in the database."""
+        if index.index_type == IndexType.POINT_INDEX_TYPE:
+            query = f"DROP POINT INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_GLOBAL_INDEX_TYPE:
+            query = f"DROP GLOBAL EDGE INDEX ON {index.to_cypher()};"
+        elif index.index_type == IndexType.EDGE_INDEX_TYPE:
+            query = f"DROP EDGE INDEX ON {index.to_cypher()};"
+        else:
+            query = f"DROP INDEX ON {index.to_cypher()};"
+        self.execute(query)
+
     def get_indexes(self) -> List[MemgraphIndex]:
         """Returns a list of all database indexes (label and label-property types)."""
         indexes = []
@@ -132,6 +170,7 @@ class Memgraph(DatabaseClient):
                 MemgraphIndex(
                     result[MemgraphConstants.LABEL],
                     result[MemgraphConstants.PROPERTY],
+                    self._convert_index_type(result[MemgraphConstants.INDEX_TYPE]),
                 )
             )
         return indexes
@@ -140,6 +179,7 @@ class Memgraph(DatabaseClient):
         """Ensures that database indexes match input indexes."""
         old_indexes = set(self.get_indexes())
         new_indexes = set(indexes)
+
         for obsolete_index in old_indexes.difference(new_indexes):
             self.drop_index(obsolete_index)
         for missing_index in new_indexes.difference(old_indexes):

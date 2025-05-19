@@ -171,3 +171,201 @@ def test_ensure_index(memgraph):
     memgraph.ensure_indexes(new_indexes)
 
     assert set(memgraph.get_indexes()) == set(new_indexes)
+
+
+def test_create_and_get_label_index(memgraph):
+    new_index = MemgraphIndex("Person")
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
+
+
+def test_create_and_get_label_index_with_type(memgraph):
+    new_index = MemgraphIndex("Person", None, index_type="LABEL_INDEX_TYPE")
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
+
+
+def test_create_and_get_label_property_index(memgraph):
+    new_index = MemgraphIndex("Person", "name")
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
+
+
+def test_create_and_get_label_property_index_with_type(memgraph):
+    new_index = MemgraphIndex("Person", "name", index_type="LABEL_INDEX_TYPE")
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
+
+
+def test_create_and_get_composite_index(memgraph):
+    new_index = MemgraphIndex("Person", ("name", "age"))
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
+
+
+def test_create_and_get_composite_index_with_type(memgraph):
+    new_index = MemgraphIndex("Person", ("name", "age"), index_type="LABEL_INDEX_TYPE")
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
+
+
+def test_create_and_get_multiple_label_indexes(memgraph):
+    label_index = MemgraphIndex("Person")
+    label_prop_index = MemgraphIndex("Person", "name")
+    label_composite_index = MemgraphIndex("Person", ("name", "age"))
+
+    memgraph.create_index(label_index)
+    memgraph.create_index(label_prop_index)
+    memgraph.create_index(label_composite_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {label_index, label_prop_index, label_composite_index}
+
+
+def test_create_list_prop_index(memgraph):
+    label_prop_index = MemgraphIndex("Person", ["name"])
+    memgraph.create_index(label_prop_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {label_prop_index}
+
+
+def test_create_list_prop_composite_index(memgraph):
+    label_prop_index = MemgraphIndex("Person", ["name", "age"])
+    memgraph.create_index(label_prop_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {label_prop_index}
+
+
+def test_create_edge_type_index(memgraph):
+    edge_type_index = MemgraphIndex("REL", None, index_type="EDGE_INDEX_TYPE")
+    memgraph.create_index(edge_type_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {edge_type_index}
+
+
+def test_create_edge_type_property_index(memgraph):
+    edge_type_property_index = MemgraphIndex("REL", "name", index_type="EDGE_INDEX_TYPE")
+    memgraph.create_index(edge_type_property_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {edge_type_property_index}
+
+
+def test_create_global_edge_index(memgraph):
+    global_edge_index = MemgraphIndex(None, "name", index_type="EDGE_GLOBAL_INDEX_TYPE")
+    memgraph.create_index(global_edge_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {global_edge_index}
+
+
+def test_create_point_index(memgraph):
+    point_index = MemgraphIndex("Person", "year", index_type="POINT_INDEX_TYPE")
+    memgraph.create_index(point_index)
+
+    indexes = memgraph.get_indexes()
+    assert set(indexes) == {point_index}
+
+
+def test_drop_index_all(memgraph):
+    label_index = MemgraphIndex("Person")
+    label_prop_index = MemgraphIndex("Person", "name")
+    label_composite_index = MemgraphIndex("Person", ("name", "age"))
+    edge_type_index = MemgraphIndex("REL", None, index_type="EDGE_INDEX_TYPE")
+    edge_type_property_index = MemgraphIndex("REL", "name", index_type="EDGE_INDEX_TYPE")
+    global_edge_index = MemgraphIndex(None, "name", index_type="EDGE_GLOBAL_INDEX_TYPE")
+    point_index = MemgraphIndex("Person", "year", index_type="POINT_INDEX_TYPE")
+
+    memgraph.create_index(label_index)
+    memgraph.create_index(label_prop_index)
+    memgraph.create_index(label_composite_index)
+    memgraph.create_index(edge_type_index)
+    memgraph.create_index(edge_type_property_index)
+    memgraph.create_index(global_edge_index)
+    memgraph.create_index(point_index)
+
+    memgraph.drop_indexes()
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == set()
+
+
+def test_ensure_index_all(memgraph):
+    label_index = MemgraphIndex("Person")
+    label_prop_index = MemgraphIndex("Person", "name")
+    label_composite_index = MemgraphIndex("Person", ("name", "age"))
+    edge_type_index = MemgraphIndex("REL", None, index_type="EDGE_INDEX_TYPE")
+    edge_type_property_index = MemgraphIndex("REL", "name", index_type="EDGE_INDEX_TYPE")
+    global_edge_index = MemgraphIndex(None, "name", index_type="EDGE_GLOBAL_INDEX_TYPE")
+    point_index = MemgraphIndex("Person", "year", index_type="POINT_INDEX_TYPE")
+
+    memgraph.ensure_indexes(
+        [
+            label_index,
+            label_prop_index,
+            label_composite_index,
+            edge_type_index,
+            edge_type_property_index,
+            global_edge_index,
+            point_index,
+        ]
+    )
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {
+        label_index,
+        label_prop_index,
+        label_composite_index,
+        edge_type_index,
+        edge_type_property_index,
+        global_edge_index,
+        point_index,
+    }
+
+
+def test_different_composite_index(memgraph):
+    label_composite_index_1 = MemgraphIndex("Person", ("name", "age"))
+    label_composite_index_2 = MemgraphIndex("Person", ("age", "name"))
+
+    memgraph.create_index(label_composite_index_1)
+    memgraph.create_index(label_composite_index_2)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {label_composite_index_1, label_composite_index_2}
+    assert indexes[0] != indexes[1]
+
+    memgraph.drop_indexes()
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == set()
