@@ -84,6 +84,7 @@ poetry install # No extras
 poetry install -E arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
 poetry install -E dgl # DGL support (also includes torch)
 poetry install -E docker # Docker support
+poetry install -E tfgnn # TFGNN support
 ```
 
 To run the tests, make sure you have an [active Memgraph instance](https://memgraph.com/docs/getting-started), and execute one of the following commands:
@@ -100,6 +101,7 @@ If you’ve installed only certain extras, it’s also possible to run their ass
 poetry run pytest . -k "arrow"
 poetry run pytest . -k "dgl"
 poetry run pytest . -k "docker"
+poetry run pytest . -k "tfgnn"
 ```
 
 ## Development (how to build)

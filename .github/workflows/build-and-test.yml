@@ -55,8 +55,10 @@ jobs:
           poetry install --all-extras
           poe install-pyg-cpu
           poe install-dgl
+          poe install-tfgnn
       - name: Run Tests
         run: |
+          export TF_USE_LEGACY_KERAS="1"
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v4
@@ -131,6 +133,8 @@ jobs:
         run: |
           poetry install --all-extras
           poe install-pyg-cpu
+          poe install-tfgnn
+          export TF_USE_LEGACY_KERAS="1"
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Save Memgraph Logs
         uses: actions/upload-artifact@v4
