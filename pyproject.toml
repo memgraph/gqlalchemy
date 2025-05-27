@@ -72,5 +72,5 @@ install-dgl = "pip install  dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/r
 install-pyg-cpu = "pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html  --no-build-isolation"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.0.0", "setuptools>=78.1.1"]
 build-backend = "poetry.core.masonry.api"
