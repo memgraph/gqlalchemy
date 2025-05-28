@@ -280,7 +280,7 @@ class TFGNNTranslator(Translator):
             if (isinstance(value, np.ndarray) or isinstance(value, list)) and len(value) == 0:
                 # skip empty values
                 continue
-            if isinstance(value, float) and np.isnan(value):
+            if isinstance(value, (np.floating, float)) and (np.isnan(value) or np.isinf(value)):
                 continue
             properties[key] = value
 
@@ -334,3 +334,12 @@ class TFGNNTranslator(Translator):
                     )
                 )
         return queries
+
+def to_cypher_index_queries(self, graph_tensor: tfgnn.GraphTensor) -> List[str]:
+    """
+    Creates cypher index queries for the graph.
+    """
+    queries = []
+    for node_name in graph_tensor.node_sets:
+        queries.append(f"CREATE INDEX ON :{node_name}({TFGNN_ID})")
+    return queries
