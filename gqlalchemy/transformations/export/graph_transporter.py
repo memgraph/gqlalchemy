@@ -29,6 +29,11 @@ try:
 except ModuleNotFoundError:
     PyGTranslator = None
 
+try:
+    from gqlalchemy.transformations.translators.tfgnn_translator import TFGNNTranslator
+except ModuleNotFoundError:
+    TFGNNTranslator = None
+
 
 class GraphTransporter(Transporter):
     """Here is a possible example for using this module:
@@ -52,7 +57,7 @@ class GraphTransporter(Transporter):
         >>> transporter = GraphTransporter("dgl")
         graph = transporter.export()
         Args:
-            graph_type: dgl, pyg or nx
+            graph_type: dgl, pyg, nx or tfgnn
         """
         super().__init__()
         self.graph_type = graph_type.upper()
@@ -64,8 +69,11 @@ class GraphTransporter(Transporter):
             self.translator = PyGTranslator(host, port, username, password, encrypted, client_name, lazy)
         elif self.graph_type == GraphType.NX.name:
             self.translator = NxTranslator(host, port, username, password, encrypted, client_name, lazy)
+        elif self.graph_type == GraphType.TFGNN.name:
+            raise_if_not_imported(dependency=TFGNNTranslator, dependency_name="tensorflow-gnn")
+            self.translator = TFGNNTranslator(host, port, username, password, encrypted, client_name, lazy)
         else:
-            raise ValueError("Unknown export option. Currently supported are DGL, PyG and NetworkX.")
+            raise ValueError("Unknown export option. Currently supported are DGL, PyG, NetworkX and TFGNN.")
 
     def export(self):
         """Creates graph instance for the wanted export option."""
