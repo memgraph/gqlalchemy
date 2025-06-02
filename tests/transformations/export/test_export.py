@@ -23,6 +23,16 @@ def test_export_pyg():
     transporter.export()  # even with empty graph we should check that something doesn't fail
 
 
+@pytest.mark.extras
+@pytest.mark.tfgnn
+def test_export_tfgnn():
+    TFGNNTranslator = pytest.importorskip("gqlalchemy.transformations.translators.tfgnn_translator.TFGNNTranslator")
+
+    transporter = GraphTransporter(graph_type="tfgnn")
+    assert isinstance(transporter.translator, TFGNNTranslator)
+    transporter.export()  # even with empty graph we should check that something doesn't fail
+
+
 def test_export_nx():
     from gqlalchemy.transformations.translators.nx_translator import NxTranslator
 

@@ -1,3 +1,3 @@
 from enum import Enum
 
-GraphType = Enum("GraphType", ["DGL", "PYG", "NX"])
+GraphType = Enum("GraphType", ["DGL", "PYG", "NX", "TFGNN"])

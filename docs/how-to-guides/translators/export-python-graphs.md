@@ -14,11 +14,19 @@ In this guide you will learn how to:
 - [**Export data from Memgraph into DGL graph**](#import-dgl-graph-into-memgraph)
 
 ## General prerequisites
-You need a running **Memgraph Platform instance**, which includes both the MAGE library and Memgraph Lab, a visual interface. To run the image, open a command-line interpreter and run the following Docker command:
+You need **Memgraph Platform** running, which includes both the MAGE library and Memgraph Lab, a visual interface. To run it on Linux/macOS, run the following in your terminal:
 
 ```
-docker run -it -p 7687:7687 -p 7444:7444 -p 3000:3000 memgraph/memgraph-platform:latest
+curl https://install.memgraph.com | sh
 ```
+
+To run it on Windows, execute the following command in the console:
+
+```
+iwr https://windows.memgraph.com | iex
+```
+
+The above command runs a script that downloads a Docker Compose file to your system, builds and starts `memgraph-mage` and `memgraph-lab` Docker services in two separate containers. 
 
 <details>
 <summary>To export data from Memgraph, you first have to <b>create a graph in Memgraph</b>. To do that, expand this section and run the given Python script.</summary>
