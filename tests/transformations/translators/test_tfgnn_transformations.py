@@ -248,7 +248,6 @@ def test_create_missing_properties(memgraph: Memgraph):
 
 
 def test_create_disjoined_nodes(memgraph: Memgraph):
-
     graph_tensor = tfgnn.GraphTensor.from_pieces(
         node_sets={"Person": tfgnn.NodeSet.from_fields(sizes=[2], features={"age": tf.ragged.constant([25, 45])})}
     )

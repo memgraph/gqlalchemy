@@ -302,7 +302,6 @@ class TFGNNTranslator(Translator):
         graph_tensor = graph_tensor.merge_batch_to_components()
 
         for edge_type, edge_set in graph_tensor.edge_sets.items():
-
             # in GraphTensor, the source and target nodes are explicitly defined in edge set schema
             source_node_label = edge_set.adjacency.source_name
             dest_node_label = edge_set.adjacency.target_name
@@ -334,6 +333,7 @@ class TFGNNTranslator(Translator):
                     )
                 )
         return queries
+
 
 def to_cypher_index_queries(self, graph_tensor: tfgnn.GraphTensor) -> List[str]:
     """
