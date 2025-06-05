@@ -2325,6 +2325,20 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "versioneer"
+version = "0.29"
+description = "Easy VCS-based management of project version strings"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "versioneer-0.29-py3-none-any.whl", hash = "sha256:0f1a137bb5d6811e96a79bb0486798aeae9b9c6efc24b389659cebb0ee396cb9"},
+    {file = "versioneer-0.29.tar.gz", hash = "sha256:5ab283b9857211d61b53318b7c792cf68e798e765ee17c27ade9f6c924235731"},
+]
+
+[package.extras]
+toml = ["tomli"]
+
+[[package]]
 name = "virtualenv"
 version = "20.31.2"
 description = "Virtual Python Environment builder"
@@ -2488,4 +2502,4 @@ torch-pyg = ["torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "97f004310fc01e46b618eacdff3a30193b9bcf57660fc86c210f5b4d8ede5324"
+content-hash = "7608c9d958101c4c4f22f55e72db3a1a8b6e0cc246ff01c92e716a6d9ac4f5de"
