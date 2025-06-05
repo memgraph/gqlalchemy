@@ -1071,46 +1071,6 @@ files = [
 ]
 
 [[package]]
-name = "meson"
-version = "1.8.1"
-description = "A high performance build system"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "meson-1.8.1-py3-none-any.whl", hash = "sha256:374bbf71247e629475fc10b0bd2ef66fc418c2d8f4890572f74de0f97d0d42da"},
-    {file = "meson-1.8.1.tar.gz", hash = "sha256:b4e3b80e8fa633555abf447a95a700aba1585419467b2710d5e5bf88df0a7011"},
-]
-
-[package.extras]
-ninja = ["ninja (>=1.8.2)"]
-progress = ["tqdm"]
-typing = ["mypy", "typing_extensions"]
-
-[[package]]
-name = "meson-python"
-version = "0.18.0"
-description = "Meson Python build backend (PEP 517)"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "meson_python-0.18.0-py3-none-any.whl", hash = "sha256:3b0fe051551cc238f5febb873247c0949cd60ded556efa130aa57021804868e2"},
-    {file = "meson_python-0.18.0.tar.gz", hash = "sha256:c56a99ec9df669a40662fe46960321af6e4b14106c14db228709c1628e23848d"},
-]
-
-[package.dependencies]
-meson = [
-    {version = ">=0.64.0", markers = "python_version < \"3.12\""},
-    {version = ">=1.2.3", markers = "python_version >= \"3.12\""},
-]
-packaging = ">=23.2"
-pyproject-metadata = ">=0.9.0"
-tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
-
-[package.extras]
-docs = ["furo (>=2024.08.06)", "sphinx (>=8.1.0,<8.2.0)", "sphinx-copybutton (>=0.5.0)", "sphinx-design (>=0.1.0)", "sphinxext-opengraph (>=0.7.0)"]
-test = ["build", "cython (>=3.0.3)", "pytest (>=6.0)", "pytest-cov[toml]", "pytest-mock", "typing-extensions (>=3.7.4)", "wheel"]
-
-[[package]]
 name = "mpmath"
 version = "1.3.0"
 description = "Python library for arbitrary-precision floating-point arithmetic"
@@ -1993,24 +1953,6 @@ docs = ["sphinx (!=5.2.0,!=5.2.0.post0,!=7.2.5)", "sphinx_rtd_theme"]
 test = ["pretend", "pytest (>=3.0.1)", "pytest-rerunfailures"]
 
 [[package]]
-name = "pyproject-metadata"
-version = "0.9.1"
-description = "PEP 621 metadata parsing"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "pyproject_metadata-0.9.1-py3-none-any.whl", hash = "sha256:ee5efde548c3ed9b75a354fc319d5afd25e9585fa918a34f62f904cc731973ad"},
-    {file = "pyproject_metadata-0.9.1.tar.gz", hash = "sha256:b8b2253dd1b7062b78cf949a115f02ba7fa4114aabe63fa10528e9e1a954a816"},
-]
-
-[package.dependencies]
-packaging = ">=19.0"
-
-[package.extras]
-docs = ["furo (>=2023.9.10)", "myst-parser", "sphinx (>=7.0)", "sphinx-autodoc-typehints", "sphinx-autodoc-typehints (>=1.10.0)"]
-test = ["exceptiongroup", "pytest (>=6.2.4)", "pytest-cov[toml] (>=2)", "tomli (>=1.0.0)"]
-
-[[package]]
 name = "pytest"
 version = "8.4.0"
 description = "pytest: simple powerful testing with Python"
@@ -2436,20 +2378,6 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
-name = "versioneer"
-version = "0.29"
-description = "Easy VCS-based management of project version strings"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "versioneer-0.29-py3-none-any.whl", hash = "sha256:0f1a137bb5d6811e96a79bb0486798aeae9b9c6efc24b389659cebb0ee396cb9"},
-    {file = "versioneer-0.29.tar.gz", hash = "sha256:5ab283b9857211d61b53318b7c792cf68e798e765ee17c27ade9f6c924235731"},
-]
-
-[package.extras]
-toml = ["tomli"]
-
-[[package]]
 name = "virtualenv"
 version = "20.31.2"
 description = "Virtual Python Environment builder"
@@ -2613,4 +2541,4 @@ torch-pyg = ["torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "058df7c75d9428d2ed7f917e04ee7171b821c87e2be68fe5530b25c24bd5a291"
+content-hash = "9b56aa26a07d3cb49599bda5ccf3bc746470c40839528c5779033edab2fa94a0"
