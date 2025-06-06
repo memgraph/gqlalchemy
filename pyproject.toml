@@ -40,6 +40,7 @@ dacite = "^1.6.0"
 adlfs = ">=2023.9.0,<2025.0.0"
 neo4j = ">=4.4.3,<6.0.0"
 numpy = ">=1.26.4, <3.0"
+pandas = "<=2.2.3"
 
 pyarrow = { version = "^18.0.0", optional = true }
 torch = { version = "^2.4", optional = true, source = "pytorch-cpu" }
