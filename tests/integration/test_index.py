@@ -369,3 +369,21 @@ def test_different_composite_index(memgraph):
     indexes = memgraph.get_indexes()
 
     assert set(indexes) == set()
+
+
+def test_create_and_get_nested_label_property_index(memgraph):
+    new_index = MemgraphIndex("Person", "specifications.dimensions.width")
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
+
+
+def test_create_and_get_nested_label_property_index_with_type(memgraph):
+    new_index = MemgraphIndex("Person", "specifications.dimensions.width", index_type="LABEL_INDEX_TYPE")
+    memgraph.create_index(new_index)
+
+    indexes = memgraph.get_indexes()
+
+    assert set(indexes) == {new_index}
