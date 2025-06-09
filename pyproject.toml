@@ -40,6 +40,7 @@ dacite = "^1.6.0"
 adlfs = ">=2023.9.0,<2025.0.0"
 neo4j = ">=4.4.3,<6.0.0"
 numpy = ">=1.26.4, <3.0"
+pandas = "<=2.2.3"
 
 pyarrow = { version = "^18.0.0", optional = true }
 torch = { version = "^2.4", optional = true, source = "pytorch-cpu" }
@@ -72,5 +73,5 @@ install-dgl = "pip install  dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/r
 install-pyg-cpu = "pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html  --no-build-isolation"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.0.0", "setuptools>=78.1.1"]
 build-backend = "poetry.core.masonry.api"
