@@ -136,6 +136,7 @@ jobs:
     
       - name: Publish Packages (Test PyPI)
         if: ${{ inputs.test == true }}
+        continue-on-error: true
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
           poetry publish --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }} --repository testpypi
