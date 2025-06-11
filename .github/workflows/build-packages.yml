@@ -107,7 +107,7 @@ jobs:
 
       - name: Install wheel and dependencies
         run: |
-          python -m pip install dist/*.whl[all]
+          python -m pip install dist/*.whl
           poetry install --all-extras
           poe install-pyg-cpu
           poe install-dgl
