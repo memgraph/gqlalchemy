@@ -126,9 +126,8 @@ jobs:
           python-version: 3.12
 
       - name: Install Poetry
-        uses: python-poetry/install-poetry@v2
-        with:
-          version: 1.8.2
+        run: |
+          pip install poetry --break-system-packages
 
       - name: Publish packages
         if: ${{ inputs.test == false }}
