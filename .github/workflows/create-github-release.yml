@@ -1,0 +1,54 @@
+name: Create Github Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release"
+        required: false
+        type: string
+
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to release"
+        required: false
+        type: string
+
+jobs:
+  create-github-release:
+    runs-on: ["ubuntu-latest"]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: "v${{ inputs.version }}"
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Get previous version
+        id: get_previous_version
+        run: |
+          previous_version=$(git tag --sort=-version:refname | sed -n '2p')
+          echo "previous_version=${previous_version}" >> $GITHUB_OUTPUT
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          changelog=$(./scripts/get_changelog.sh "${{ steps.get_previous_version.outputs.previous_version }}" "v${{ inputs.version }}")
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$changelog" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            tag_name: ${{ inputs.version }}
+            release_name: "Release ${{ inputs.version }}"
+            body: ${{ steps.changelog.outputs.CHANGELOG }}
+            draft: true
+            prerelease: false
+
+  
