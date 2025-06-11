@@ -5,18 +5,18 @@ on:
     inputs:
       version:
         description: "Version to release"
-        required: false
+        required: true
         type: string
       build_docs:
         description: "Build docs"
         required: false
         type: boolean
-        default: false
+        default: true
       publish_packages:
         description: "Publish packages"
         required: false
         type: boolean
-        default: false
+        default: true
       test:
         description: "Test"
         required: false
