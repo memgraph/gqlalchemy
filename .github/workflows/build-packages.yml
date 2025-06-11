@@ -80,6 +80,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Setup poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: "1.8.2"
+
       - name: Download wheel package
         uses: actions/download-artifact@v4
         with:
