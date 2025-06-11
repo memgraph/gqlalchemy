@@ -124,7 +124,7 @@ jobs:
           cp -r tests ~/wheel_test/
           cd ~/wheel_test
           # Run tests from this directory to ensure we use the installed package
-          pytest -vvv -m "not slow and not ubuntu and not docker"
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
 
       - name: Upload Memgraph logs
         uses: actions/upload-artifact@v4
