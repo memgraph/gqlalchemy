@@ -88,6 +88,8 @@ jobs:
           git push origin v${{ inputs.version }}
 
       - name: Create Release Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh pr create --base main --head "$RELEASE_BRANCH" --title "Release v${{ inputs.version }}" --body "Release v${{ inputs.version }}"
 
