@@ -55,9 +55,9 @@ class BreadthFirstSearch(IntegratedAlgorithm)
 Build a BFS call for a Cypher query.
 
 The Breadth-first search can be called in Memgraph with Cypher queries such
-as: `MATCH (a {id: 723})-[*BFS ..10 (r, n | r.x &gt; 12 AND n.y &lt; 3)]-() RETURN *;`
+as: `MATCH (a {id: 723})-[*BFS ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;`
 It is called inside the relationship clause, `*BFS` naming the algorithm,
-`..10` specifying depth bounds, and `(r, n | &lt;expression&gt;)` is a filter
+`..10` specifying depth bounds, and `(r, n | <expression>)` is a filter
 lambda.
 
 #### \_\_init\_\_
