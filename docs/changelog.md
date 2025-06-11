@@ -1,5 +1,12 @@
 # Changelog
 
+## v - June 11, 2025
+
+### Features and improvements
+
+## What's Changed
+
+
 ## v1.7.0 - March 25, 2025
 
 ### Improvements

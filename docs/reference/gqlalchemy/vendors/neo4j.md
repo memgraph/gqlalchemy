@@ -9,6 +9,22 @@ title: gqlalchemy.vendors.neo4j
 class Neo4j(DatabaseClient)
 ```
 
+#### create\_index
+
+```python
+def create_index(index: Index) -> None
+```
+
+Creates an index (label or label-property type) in the database.
+
+#### drop\_index
+
+```python
+def drop_index(index: Index) -> None
+```
+
+Drops an index (label or label-property type) in the database.
+
 #### get\_indexes
 
 ```python
