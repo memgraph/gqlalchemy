@@ -1,0 +1,43 @@
+name: Build Docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish docs"
+        required: false
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      publish:
+        description: "Publish docs"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-docs:
+    runs-on: ["ubuntu-latest"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install pydoc-markdown mkdocs
+
+      - name: Build docs
+        run: |
+          pydoc-markdown
+          mkdocs build
+          
+      - name: Publish docs
+        if: ${{ inputs.publish }}
+        run: |
+          mkdocs gh-deploy
