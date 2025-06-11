@@ -7,7 +7,7 @@ changelog=$(./scripts/get_changelog.sh "$1" "$2")
 today=$(date "+%B %d, %Y")
 
 # Create the new section with version and date
-new_section="## v$3 - ${today}\n\n### Features and improvements\n\n${changelog}\n"
+new_section="## $2 - ${today}\n\n### Features and improvements\n\n${changelog}\n"
 
 # Create a temporary file
 temp_file=$(mktemp)
