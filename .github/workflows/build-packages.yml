@@ -120,9 +120,9 @@ jobs:
       - name: Run Tests
         run: |
           # Create a new directory and copy tests there
-          mkdir ~/wheel_test
-          cp -r tests ~/wheel_test/
-          cd ~/wheel_test
+          mkdir wheel_test
+          cp -r tests wheel_test/
+          cd wheel_test
           # Run tests from this directory to ensure we use the installed package
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
 
