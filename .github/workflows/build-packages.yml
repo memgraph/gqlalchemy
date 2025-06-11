@@ -63,7 +63,7 @@ jobs:
   test-wheel:
     needs: build-packages
     name: Test Wheel Package
-    runs-on: ["self-hosted", "Ubuntu24.04", "X64"]
+    runs-on: ["ubuntu-latest"]
     env:
       MG_VERSION: "3.3.0"
       VM_MAX_MAP_COUNT: "262144"
@@ -108,8 +108,9 @@ jobs:
       - name: Install wheel and dependencies
         run: |
           python -m pip install dist/*.whl[all]
-          python -m pip install torch-geometric
-          python -m pip install dgl
+          poetry install --all-extras
+          poe install-pyg-cpu
+          poe install-dgl
 
       - name: Run Tests
         run: |
