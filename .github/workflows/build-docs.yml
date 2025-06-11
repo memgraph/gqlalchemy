@@ -8,6 +8,10 @@ on:
         required: false
         type: boolean
         default: false
+      branch:
+        description: "Branch to build"
+        required: false
+        type: string
   workflow_call:
     inputs:
       publish:
@@ -15,13 +19,18 @@ on:
         required: false
         type: boolean
         default: false
-
+      branch:
+        description: "Branch to build from"
+        required: false
+        type: string
 jobs:
   build-docs:
     runs-on: ["ubuntu-latest"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
