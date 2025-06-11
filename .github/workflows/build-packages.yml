@@ -1,0 +1,60 @@
+name: Build Packages
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build"
+        required: false
+        type: string
+      branch:
+        description: "Branch to build"
+        required: false
+        type: string
+
+
+jobs:
+  build-packages:
+    name: Build Packages
+    runs-on: ["self-hosted", "Ubuntu24.04", "X64"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Override version
+        if: ${{ inputs.version != '' }}
+        run: |
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" pyproject.toml
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      
+      - name: Create virtual environment
+        run: |
+          python -m venv env
+          source env/bin/activate
+      
+      - name: Install poetry
+        run: |
+          source env/bin/activate
+          pip install poetry
+      
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Build wheel
+        run: |
+          poetry build
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: dist
+          retention-days: 1
