@@ -46,10 +46,12 @@ jobs:
       
       - name: Install dependencies
         run: |
+          source env/bin/activate
           poetry install
 
       - name: Build wheel
         run: |
+          source env/bin/activate
           poetry build
 
       - name: Upload packages
