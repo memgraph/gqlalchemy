@@ -5,6 +5,21 @@
 ### Features and improvements
 
 ## What's Changed
+* Release workflow (#360)
+* Test nested indices (#357)
+* Update pyproject to require newer setuptools (#355)
+* Update CODEOWNERS (#359)
+* Fix Python 3.9 build (#358)
+* Add all index types (#351)
+* Update numpy version to allow numpy major 2 (#347)
+* Update workflows to use newer python and ubuntu (#349)
+
+
+## v - June 11, 2025
+
+### Features and improvements
+
+## What's Changed
 
 
 ## v - June 11, 2025
