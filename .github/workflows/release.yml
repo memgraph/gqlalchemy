@@ -121,13 +121,13 @@ jobs:
       - name: Publish packages
         if: ${{ inputs.test == false }}
         run: |
-          poetry publish --username ${{ secrets.PYPI_USERNAME }} --password ${{ secrets.PYPI_PASSWORD }}
+          poetry publish --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
     
       - name: Publish Packages (Test PyPI)
         if: ${{ inputs.test == true }}
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry publish --username ${{ secrets.TESTPYPI_USERNAME }} --password ${{ secrets.TESTPYPI_PASSWORD }} --repository testpypi
+          poetry publish --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }} --repository testpypi
 
   build-docs:
     needs: [create-release-branch, build-packages, publish-packages]
