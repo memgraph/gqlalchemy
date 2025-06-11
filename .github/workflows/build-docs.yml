@@ -44,6 +44,8 @@ jobs:
 
       - name: Get previous version
         id: get_previous_version
+        output:
+          previous_version: ${{ steps.get_previous_version.outputs.previous_version }}
         run: |
           previous_version=$(git tag --sort=-version:refname | sed -n '2p')
           echo "previous_version=${previous_version}" >> $GITHUB_OUTPUT
