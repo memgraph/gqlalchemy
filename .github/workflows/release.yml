@@ -145,5 +145,4 @@ jobs:
     uses: ./.github/workflows/create-github-release.yml
     with:
       version: ${{ inputs.version }}
-      branch: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }} 
     secrets: inherit
