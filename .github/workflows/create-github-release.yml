@@ -7,6 +7,7 @@ on:
         description: "Version to release"
         required: false
         type: string
+
   workflow_call:
     inputs:
       version:
@@ -21,6 +22,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
+          ref: "v${{ inputs.version }}"
           fetch-depth: 0  # Fetch all history for changelog generation
 
       - name: Get previous version
@@ -34,7 +36,7 @@ jobs:
         run: |
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
           echo "## What's Changed" >> $GITHUB_OUTPUT
-          git log --pretty=format:"* %s" ${{ steps.get_previous_version.outputs.previous_version }}..${{ inputs.version }} | \
+          git log --pretty=format:"* %s" "v${{ steps.get_previous_version.outputs.previous_version }}..v${{ inputs.version }}" | \
           grep -E ".*\(#[0-9]+\).*$" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
