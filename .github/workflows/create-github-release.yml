@@ -24,6 +24,7 @@ jobs:
         with:
           ref: "v${{ inputs.version }}"
           fetch-depth: 0  # Fetch all history for changelog generation
+          fetch-tags: true
 
       - name: Get previous version
         id: get_previous_version
