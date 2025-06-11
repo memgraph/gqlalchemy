@@ -1,7 +1,6 @@
 name: Build Packages
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       version:
@@ -12,6 +11,7 @@ on:
         description: "Branch to build"
         required: false
         type: string
+  workflow_call:
 
 jobs:
   build-packages:
