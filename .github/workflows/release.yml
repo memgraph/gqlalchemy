@@ -40,6 +40,15 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
+      - name: Setup GitHub CLI
+        run: |
+          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y
+
       - name: Create Release Branch
         id: create_release_branch
         run: |
@@ -126,8 +135,8 @@ jobs:
     uses: ./.github/workflows/build-docs.yml
     if: ${{ inputs.build_docs == true }}
     with:
-      publish: ${{ inputs.test == false }}
       branch: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }} 
+      version: ${{ inputs.version }}
     secrets: inherit
 
   create-github-release:

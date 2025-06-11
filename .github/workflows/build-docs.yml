@@ -3,25 +3,23 @@ name: Build Docs
 on:
   workflow_dispatch:
     inputs:
-      publish:
-        description: "Publish docs"
-        required: false
-        type: boolean
-        default: false
-      branch:
-        description: "Branch to build"
-        required: false
-        type: string
-  workflow_call:
-    inputs:
-      publish:
-        description: "Publish docs"
-        required: false
-        type: boolean
-        default: false
       branch:
         description: "Branch to build from"
         required: false
+        type: string
+      version:
+        description: "Version to build from"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      branch:
+        description: "Branch to build from"
+        required: false
+        type: string
+      version:
+        description: "Version to build from"
+        required: true
         type: string
 
 jobs:
@@ -33,10 +31,25 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Get previous version
+        id: get_previous_version
+        run: |
+          previous_version=$(git tag --sort=-version:refname | sed -n '2p')
+          echo "previous_version=${previous_version}" >> $GITHUB_OUTPUT
+
+      - name: Update changelog
+        run: |
+          ./scripts/update_changelog.sh "${{ steps.get_previous_version.outputs.previous_version }}" "v${{ inputs.version }}"
 
       - name: Install dependencies
         run: |
@@ -46,8 +59,9 @@ jobs:
         run: |
           pydoc-markdown
           mkdocs build
-          
-      - name: Publish docs
-        if: ${{ inputs.publish }}
+
+      - name: Push changes to release branch
         run: |
-          mkdocs gh-deploy
+          git add docs/
+          git commit -m "Update docs for v${{ inputs.version }}"
+          git push origin ${{ inputs.branch }}
