@@ -120,6 +120,16 @@ jobs:
           name: packages
           path: dist
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install Poetry
+        uses: python-poetry/install-poetry@v2
+        with:
+          version: 1.8.2
+
       - name: Publish packages
         if: ${{ inputs.test == false }}
         run: |
