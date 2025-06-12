@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "GQLAlchemy"
-version = "1.7.0"
+version = "1.8.0"
 
 description = "GQLAlchemy is a library developed to assist with writing and running queries in Memgraph."
 repository = "https://github.com/memgraph/gqlalchemy"
