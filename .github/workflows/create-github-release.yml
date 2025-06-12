@@ -24,6 +24,7 @@ jobs:
         with:
           ref: "v${{ inputs.version }}"
           fetch-depth: 0  # Fetch all history for changelog generation
+          fetch-tags: true
 
       - name: Get previous version
         id: get_previous_version
@@ -35,8 +36,11 @@ jobs:
         id: changelog
         run: |
           changelog=$(./scripts/get_changelog.sh "${{ steps.get_previous_version.outputs.previous_version }}" "v${{ inputs.version }}")
+          changelog="## What's Changed\n${changelog}"
+          changelog="${changelog}\n**Full Changelog**: https://github.com/memgraph/gqlalchemy/compare/${{ steps.get_previous_version.outputs.previous_version }}...v${{ inputs.version }}"
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
           echo -e "$changelog" >> $GITHUB_OUTPUT
+          
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
@@ -46,7 +50,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
             tag_name: ${{ inputs.version }}
-            release_name: "Release ${{ inputs.version }}"
+            release_name: "v${{ inputs.version }}"
             body: ${{ steps.changelog.outputs.CHANGELOG }}
             draft: true
             prerelease: false

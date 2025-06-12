@@ -12,7 +12,16 @@ on:
         required: false
         type: string
   workflow_call:
-
+    inputs:
+      version:
+        description: "Version to build"
+        required: false
+        type: string
+      branch:
+        description: "Branch to build"
+        required: false
+        type: string
+        
 jobs:
   build-packages:
     name: Build Packages

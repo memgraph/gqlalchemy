@@ -5,18 +5,18 @@ on:
     inputs:
       version:
         description: "Version to release"
-        required: false
+        required: true
         type: string
       build_docs:
         description: "Build docs"
         required: false
         type: boolean
-        default: false
+        default: true
       publish_packages:
         description: "Publish packages"
         required: false
         type: boolean
-        default: false
+        default: true
       test:
         description: "Test"
         required: false
@@ -88,6 +88,8 @@ jobs:
           git push origin v${{ inputs.version }}
 
       - name: Create Release Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh pr create --base main --head "$RELEASE_BRANCH" --title "Release v${{ inputs.version }}" --body "Release v${{ inputs.version }}"
 
@@ -118,16 +120,26 @@ jobs:
           name: packages
           path: dist
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install Poetry
+        run: |
+          pip install poetry --break-system-packages
+
       - name: Publish packages
         if: ${{ inputs.test == false }}
         run: |
-          poetry publish --username ${{ secrets.PYPI_USERNAME }} --password ${{ secrets.PYPI_PASSWORD }}
+          poetry publish --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
     
       - name: Publish Packages (Test PyPI)
         if: ${{ inputs.test == true }}
+        continue-on-error: true
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry publish --username ${{ secrets.TESTPYPI_USERNAME }} --password ${{ secrets.TESTPYPI_PASSWORD }} --repository testpypi
+          poetry publish --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }} --repository testpypi
 
   build-docs:
     needs: [create-release-branch, build-packages, publish-packages]
@@ -145,5 +157,4 @@ jobs:
     uses: ./.github/workflows/create-github-release.yml
     with:
       version: ${{ inputs.version }}
-      branch: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }} 
     secrets: inherit

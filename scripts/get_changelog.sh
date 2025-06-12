@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Initialize changelog with header
-CHANGELOG="## What's Changed"
+CHANGELOG=""
 
 # Get commits with PR numbers and append them to changelog
 while IFS= read -r line; do
