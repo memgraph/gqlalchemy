@@ -35,12 +35,12 @@ Load data from a CSV file by executing a Cypher query for each row.
   Load CSV with header:
   
 - `Python` - `load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()`
-- `Cypher` - `http://`0
+- `Cypher` - `LOAD CSV FROM "path/to/my/file.csv" WITH HEADER AS row RETURN *;`
   
   Load CSV without header:
   
-- `Python` - `http://`2
-- `Cypher` - `http://`4
+- `Python` - `load_csv(path="path/to/my/file.csv", header=False, row="row").return_().execute()`
+- `Cypher` - `LOAD CSV FROM "path/to/my/file.csv" NO HEADER AS row RETURN *;`
 
 #### call
 
@@ -55,7 +55,7 @@ def call(procedure: str,
          subgraph_path: str = None) -> "DeclarativeBase"
 ```
 
-Override of base class method to support Memgraph&#x27;s subgraph functionality.
+Override of base class method to support Memgraph subgraph functionality.
 
 Method can be called with node labels and relationship types, both being optional, which are used to construct
 a subgraph, or if neither is provided, a subgraph query is used, which can be passed as a string representing a
@@ -82,15 +82,13 @@ Cypher query defining the MATCH clause which selects the nodes and relationships
 
 **Examples**:
 
-- `Python` - `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
-- `Cypher`query_module.procedure`0MATCH p=(a)-[:TYPE1 | :TYPE2]-&gt;(b) WHERE (a:LABEL) AND (b:LABEL)
-  WITH project(p) AS graph CALL export_util.json(graph, &#x27;/home/user&#x27;)`
+- `Python` - `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()`
+- `Cypher` - `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, "/home/user")`
   
   or
   
-- `Python` - `call(&#x27;export_util.json&#x27;, &#x27;/home/user&#x27;, subgraph_path=&quot;(:LABEL)-[:TYPE]-&gt;(:LABEL)&quot;).execute()
-- `Cypher`query_module.procedure`0MATCH p=(:LABEL)-[:TYPE1]-&gt;(:LABEL) WITH project(p) AS graph
-  CALL export_util.json(graph, &#x27;/home/user&#x27;)`
+- `Python` - `call("export_util.json", "/home/user", subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()`
+- `Cypher` - `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, "/home/user")`
 
 ## ProjectPartialQuery Objects
 
@@ -106,6 +104,6 @@ def construct_query() -> str
 
 Constructs a Project partial query.
 
-Given path part of a query (e.g. (:LABEL)-[:TYPE]-&gt;(:LABEL2)),
+Given path part of a query (e.g. (:LABEL)-[:TYPE]->(:LABEL2)),
 adds MATCH, a path identifier and appends the WITH clause.
 
