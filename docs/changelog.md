@@ -4,17 +4,9 @@
 
 ### Features and improvements
 
-
-* Fix release workflow (#366)
-* Release workflow (#360)
-* Test nested indices (#357)
-* Update pyproject to require newer setuptools (#355)
-* Update CODEOWNERS (#359)
-* Fix Python 3.9 build (#358)
-* Add all index types (#351)
-* Update numpy version to allow numpy major 2 (#347)
-* Update workflows to use newer python and ubuntu (#349)
-
+* Added support for label-property composite, edge-type, edge-type property, global edge property and point indices in the object graph mapper. [#351](https://github.com/memgraph/gqlalchemy/pull/351)
+* From Memgraph 3.3.0, nested indices are supported. Tests for nested indices were added to show how they work the same as label-property indices. [#357](https://github.com/memgraph/gqlalchemy/pull/357)
+* Updated dependencies to support Python 3.9 - 3.12. [#355](https://github.com/memgraph/gqlalchemy/pull/355),[#358](https://github.com/memgraph/gqlalchemy/pull/358),[#347](https://github.com/memgraph/gqlalchemy/pull/347),[#349](https://github.com/memgraph/gqlalchemy/pull/349)
 
 ## v1.7.0 - March 25, 2025
 
