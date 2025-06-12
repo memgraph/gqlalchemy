@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pydoc-markdown mkdocs
+          pip install pydoc-markdown mkdocs mkdocs-material
 
       - name: Publish docs
         run: |
