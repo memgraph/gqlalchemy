@@ -223,13 +223,13 @@ Obtain data from the database by matching it to a given pattern.
 
   Get all nodes with a certain label:
   
-- `Python` - `match().node(labels=&#x27;Country&#x27;, variable=&#x27;c&#x27;).return_(results=&#x27;c&#x27;).execute()`
+- `Python` - `match().node(labels='Country', variable='c').return_(results='c').execute()`
 - `Cypher` - `MATCH (c:Country) RETURN c;`
   
   Get a relationship of a certain type that connects two nodes with certain label:
   
-- `Python` - `match().node(labels=&#x27;Town&#x27;, variable=&#x27;t&#x27;).to(relationship_type=&#x27;BELONGS_TO&#x27;, variable=&#x27;b&#x27;).node(labels=&#x27;Country&#x27;, variable=&#x27;c&#x27;).return_(results=&#x27;b&#x27;).execute()`
-- `Cypher` - `MATCH (t:Town)-[b:BELONGS_TO]-&gt;(c:Country) RETURN b;`
+- `Python` - `match().node(labels='Town', variable='t').to(relationship_type='BELONGS_TO', variable='b').node(labels='Country', variable='c').return_(results='b').execute()`
+- `Cypher` - `MATCH (t:Town)-[b:BELONGS_TO]->(c:Country) RETURN b;`
 
 #### merge
 
@@ -250,8 +250,8 @@ way, this clause is like a combination of MATCH and CREATE.
 
   Merge node with properties:
   
-- `Python` - `merge().node(variable=&#x27;city&#x27;).where(item=&#x27;city.name&#x27;, operator=Operator.EQUAL, literal=&#x27;London&#x27;).return_(results=&#x27;city&#x27;).execute()`
-- `Cypher` - `MERGE (city) WHERE city.name = &#x27;London&#x27; RETURN city;`
+- `Python` - `merge().node(variable='city').where(item='city.name', operator=Operator.EQUAL, literal='London').return_(results='city').execute()`
+- `Cypher` - `MERGE (city) WHERE city.name = 'London' RETURN city;`
 
 #### create
 
@@ -270,7 +270,7 @@ Create nodes and relationships in a graph.
 
   Create a single node:
   
-- `Python` - `create().node(labels=&#x27;Person&#x27;, variable=&#x27;p&#x27;).return_(results=&#x27;p&#x27;).execute()`
+- `Python` - `create().node(labels='Person', variable='p').return_(results='p').execute()`
 - `Cypher` - `CREATE (p:Person) RETURN p;`
 
 #### call
@@ -301,7 +301,7 @@ Call a query module procedure.
 
   Call procedure with no arguments:
   
-- `Python` - `call(&#x27;pagerank.get&#x27;).yield_().return_().execute()`
+- `Python` - `call('pagerank.get').yield_().return_().execute()`
 - `Cypher` - `CALL pagerank.get() YIELD * RETURN *;`
   
   Call procedure with arguments:
@@ -339,8 +339,8 @@ Add a node pattern to the query.
 
   Create a node and return it:
   
-- `Python` - `create().node(labels=&#x27;Person&#x27;, variable=&#x27;n&#x27;, first_name=&#x27;Kate&#x27;).return_(results=&#x27;n&#x27;).execute()`
-- `Cypher` - `CREATE (n:Person {first_name: &#x27;Kate&#x27;}) RETURN n;`
+- `Python` - `create().node(labels='Person', variable='n', first_name='Kate').return_(results='n').execute()`
+- `Cypher` - `CREATE (n:Person {first_name: 'Kate'}) RETURN n;`
 
 #### to
 
@@ -375,8 +375,8 @@ Add a relationship pattern to the query.
 
   Match and return a relationship:
   
-- `Python` - `match().node(labels=&#x27;Town&#x27;, variable=&#x27;t&#x27;).to(relationship_type=&#x27;BELONGS_TO&#x27;, variable=&#x27;b&#x27;).node(labels=&#x27;Country&#x27;, variable=&#x27;c&#x27;).return_(results=&#x27;b&#x27;).execute()`
-- `Cypher` - `MATCH (t:Town)-[b:BELONGS_TO]-&gt;(c:Country) RETURN b;`
+- `Python` - `match().node(labels='Town', variable='t').to(relationship_type='BELONGS_TO', variable='b').node(labels='Country', variable='c').return_(results='b').execute()`
+- `directed`0 - `directed`1
 
 #### from\_
 
@@ -410,8 +410,8 @@ Add a relationship pattern to the query.
 
   Match and return a relationship:
   
-- `Python` - `match().node(labels=&#x27;Country&#x27;, variable=&#x27;c&#x27;).from_(relationship_type=&#x27;BELONGS_TO&#x27;, variable=&#x27;b&#x27;).node(labels=&#x27;Town&#x27;, variable=&#x27;t&#x27;).return_(results=&#x27;b&#x27;).execute()`
-- `Cypher` - `MATCH (c:Country)&lt;-[b:BELONGS_TO]-(t:Town) RETURN b;`
+- `Python` - `match().node(labels='Country', variable='c').from_(relationship_type='BELONGS_TO', variable='b').node(labels='Town', variable='t').return_(results='b').execute()`
+- `Cypher` - `directed`0
 
 #### where
 
@@ -446,18 +446,18 @@ Creates a WHERE statement Cypher partial query.
 
   Filtering query results by the equality of `name` properties of two connected nodes.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).to().node(variable=&#x27;m&#x27;).where(item=&#x27;n.name&#x27;, operator=Operator.EQUAL, expression=&#x27;m.name&#x27;).return_()`
-- `Cypher` - `MATCH (n)-[]-&gt;(m) WHERE n.name = m.name RETURN *;`
+- `Python` - `match().node(variable='n').to().node(variable='m').where(item='n.name', operator=Operator.EQUAL, expression='m.name').return_()`
+- `operator`0 - `operator`1
   
   Filtering query results by the node label.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;User&#x27;).return_()`
-- `Cypher` - `MATCH (n) WHERE n:User RETURN *;`
+- `Python` - `operator`3
+- `operator`0 - `operator`5
   
   Filtering query results by the comparison of node property and literal.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n.age&#x27;, operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n.age &gt; 18 RETURN *;`
+- `Python` - `operator`7
+- `operator`0 - `operator`9
 
 #### where\_not
 
@@ -492,8 +492,8 @@ Creates a WHERE NOT statement Cypher partial query.
 
   Filtering query results by the equality of `name` properties of two connected nodes.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).to().node(variable=&#x27;m&#x27;).where_not(item=&#x27;n.name&#x27;, operator=&#x27;=&#x27;, expression=&#x27;m.name&#x27;).return_()`
-- `Cypher` - `MATCH (n)-[]-&gt;(m) WHERE NOT n.name = m.name RETURN *;`
+- `Python` - `match().node(variable='n').to().node(variable='m').where_not(item='n.name', operator='=', expression='m.name').return_()`
+- `operator`0 - `operator`1
 
 #### and\_where
 
@@ -522,8 +522,8 @@ Creates an AND statement as a part of WHERE Cypher partial query.
 
   Filtering query results by node label or the comparison of node property and literal.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;User&#x27;).and_where(item=&#x27;n.age&#x27;, operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n:User AND n.age &gt; 18 RETURN *;`
+- `Python` - `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').and_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
+- `Cypher` - `MATCH (n) WHERE n:User AND n.age > 18 RETURN *;`
 
 #### and\_not\_where
 
@@ -553,8 +553,8 @@ Creates an AND NOT statement as a part of WHERE Cypher partial query.
 
   Filtering query results by node label or the comparison of node property and literal.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;User&#x27;).and_not_where(item=&#x27;n.age&#x27;, operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n:User AND NOT n.age &gt; 18 RETURN *;`
+- `Python` - `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').and_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
+- `Cypher` - `MATCH (n) WHERE n:User AND NOT n.age > 18 RETURN *;`
 
 #### or\_where
 
@@ -583,8 +583,8 @@ Creates an OR statement as a part of WHERE Cypher partial query.
 
   Filtering query results by node label or the comparison of node property and literal.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;User&#x27;).or_where(item=&#x27;n.age&#x27;, operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n:User OR n.age &gt; 18 RETURN *;`
+- `Python` - `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').or_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
+- `Cypher` - `MATCH (n) WHERE n:User OR n.age > 18 RETURN *;`
 
 #### or\_not\_where
 
@@ -613,8 +613,8 @@ Creates an OR NOT statement as a part of WHERE Cypher partial query.
 
   Filtering query results by node label or the comparison of node property and literal.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;User&#x27;).or_not_where(item=&#x27;n.age&#x27;, operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n:User OR NOT n.age &gt; 18 RETURN *;`
+- `Python` - `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').or_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
+- `Cypher` - `MATCH (n) WHERE n:User OR NOT n.age > 18 RETURN *;`
 
 #### xor\_where
 
@@ -643,8 +643,8 @@ Creates an XOR statement as a part of WHERE Cypher partial query.
 
   Filtering query results by node label or the comparison of node property and literal.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;User&#x27;).xor_where(item=&#x27;n.age&#x27;, operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n:User XOR n.age &gt; 18 RETURN *;`
+- `Python` - `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').xor_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
+- `Cypher` - `MATCH (n) WHERE n:User XOR n.age > 18 RETURN *;`
 
 #### xor\_not\_where
 
@@ -674,8 +674,8 @@ Creates an XOR NOT statement as a part of WHERE Cypher partial query.
 
   Filtering query results by node label or the comparison of node property and literal.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;User&#x27;).xor_not_where(item=&#x27;n.age&#x27;, operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n:User XOR NOT n.age &gt; 18 RETURN *;`
+- `Python` - `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').xor_not_where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
+- `Cypher` - `MATCH (n) WHERE n:User XOR NOT n.age > 18 RETURN *;`
 
 #### unwind
 
@@ -698,16 +698,20 @@ Unwind a list of values as individual rows.
 
 **Example**:
 
-- `Python` - `unwind(list_expression=&quot;[1, 2, 3, null]&quot;, variable=&quot;x&quot;).return_(results=[&quot;x&quot;, (&quot;&#x27;val&#x27;&quot;, &quot;y&quot;)]).execute()`
-- `Cypher` - `UNWIND [1, 2, 3, null] AS x RETURN x, &#x27;val&#x27; AS y;`
+- `Python` - `unwind(list_expression="[1, 2, 3, null]", variable="x").return_(results=["x", ("'val'", "y")]).execute()`
+- `Cypher` - `UNWIND [1, 2, 3, null] AS x RETURN x, 'val' AS y;`
 
 #### with\_
 
 ```python
 def with_(
-    results: Optional[Union[str, Tuple[str, str], Dict[str, str],
-                            List[Union[str, Tuple[str, str]]],
-                            Set[Union[str, Tuple[str, str]]], ]] = None
+    results: Optional[Union[
+        str,
+        Tuple[str, str],
+        Dict[str, str],
+        List[Union[str, Tuple[str, str]]],
+        Set[Union[str, Tuple[str, str]]],
+    ]] = None
 ) -> "DeclarativeBase"
 ```
 
@@ -735,7 +739,7 @@ used as starting points or criteria in the next.
 
   Pipe the result from first part of the query for the further use:
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).with(&#x27;n&#x27;).execute()`
+- `Python` - `match().node(variable='n').with('n').execute()`
 - `Cypher` - `MATCH (n) WITH n;
 
 #### union
@@ -761,12 +765,12 @@ Combine the result of multiple queries.
 
   Combine queries and retain duplicates:
   
-- `Python` - `match().node(variable=&quot;c&quot;, labels=&quot;Country&quot;).return_(results=(&quot;c.name&quot;, &quot;columnName&quot;)).union().match().node(variable=&quot;p&quot;, labels=&quot;Person&quot;).return_(results=(&quot;p.name&quot;, &quot;columnName&quot;)).execute()`
+- `Python` - `match().node(variable="c", labels="Country").return_(results=("c.name", "columnName")).union().match().node(variable="p", labels="Person").return_(results=("p.name", "columnName")).execute()`
 - `Cypher` - `MATCH (c:Country) RETURN c.name AS columnName UNION ALL MATCH (p:Person) RETURN p.name AS columnName;`
   
   Combine queries and remove duplicates:
   
-- `Python` - `match().node(variable=&quot;c&quot;, labels=&quot;Country&quot;).return_(results=(&quot;c.name&quot;, &quot;columnName&quot;)).union(include_duplicates=False).match().node(variable=&quot;p&quot;, labels=&quot;Person&quot;).return_(results=(&quot;p.name&quot;, &quot;columnName&quot;)).execute()`
+- `Python` - `match().node(variable="c", labels="Country").return_(results=("c.name", "columnName")).union(include_duplicates=False).match().node(variable="p", labels="Person").return_(results=("p.name", "columnName")).execute()`
 - `Cypher` - `MATCH (c:Country) RETURN c.name AS columnName UNION MATCH (p:Person) RETURN p.name AS columnName;`
 
 #### delete
@@ -795,7 +799,7 @@ Delete nodes and relationships from the database.
 
   Delete a node:
   
-- `Python` - `match().node(labels=&#x27;Node1&#x27;, variable=&#x27;n1&#x27;).delete(variable_expressions=&#x27;n1&#x27;).execute()`
+- `Python` - `match().node(labels='Node1', variable='n1').delete(variable_expressions='n1').execute()`
 - `Cypher` - `MATCH (n1:Node1) DELETE n1;`
 
 #### remove
@@ -821,16 +825,20 @@ Remove labels and properties from nodes and relationships.
 
   Remove a property from a node:
   
-- `Python` - `match().node(labels=&#x27;Country&#x27;, variable=&#x27;n&#x27;, name=&#x27;United Kingdom&#x27;).remove(items=&#x27;n.name&#x27;).return_(results=&#x27;n&#x27;).execute()`
-- `Cypher` - `MATCH (n:Country {name: &#x27;United Kingdom&#x27;}) REMOVE n.name RETURN n;`
+- `Python` - `match().node(labels='Country', variable='n', name='United Kingdom').remove(items='n.name').return_(results='n').execute()`
+- `Cypher` - `MATCH (n:Country {name: 'United Kingdom'}) REMOVE n.name RETURN n;`
 
 #### yield\_
 
 ```python
 def yield_(
-    results: Optional[Union[str, Tuple[str, str], Dict[str, str],
-                            List[Union[str, Tuple[str, str]]],
-                            Set[Union[str, Tuple[str, str]]], ]] = None
+    results: Optional[Union[
+        str,
+        Tuple[str, str],
+        Dict[str, str],
+        List[Union[str, Tuple[str, str]]],
+        Set[Union[str, Tuple[str, str]]],
+    ]] = None
 ) -> "DeclarativeBase"
 ```
 
@@ -856,21 +864,25 @@ Yield data from the query.
 
   Yield all data from a query:
   
-- `Python` - `call(procedure=&#x27;pagerank.get&#x27;).yield_().return_().execute()`
+- `Python` - `call(procedure='pagerank.get').yield_().return_().execute()`
 - `Cypher` - `CALL pagerank.get() YIELD * RETURN *;`
   
   Yield some data from a query:
   
-- `Python` - `.call(procedure=&#x27;pagerank.get&#x27;).yield_(results=[&#x27;node&#x27;, &#x27;rank&#x27;]).return_(results=[&#x27;node&#x27;,&#x27;rank&#x27;]).execute()`
-- `Cypher` - `CALL pagerank.get() YIELD node, rank RETURN node, rank;`
+- `Python` - `.call(procedure='pagerank.get').yield_(results=['node', 'rank']).return_(results=['node','rank']).execute()`
+- `Cypher` - `GQLAlchemyResultQueryTypeError`1
 
 #### return\_
 
 ```python
 def return_(
-    results: Optional[Union[str, Tuple[str, str], Dict[str, str],
-                            List[Union[str, Tuple[str, str]]],
-                            Set[Union[str, Tuple[str, str]]], ]] = None
+    results: Optional[Union[
+        str,
+        Tuple[str, str],
+        Dict[str, str],
+        List[Union[str, Tuple[str, str]]],
+        Set[Union[str, Tuple[str, str]]],
+    ]] = None
 ) -> "DeclarativeBase"
 ```
 
@@ -896,13 +908,13 @@ Return data from the query.
 
   Return all variables from a query:
   
-- `Python` - `match().node(labels=&#x27;Person&#x27;, variable=&#x27;p&#x27;).return_().execute()`
+- `Python` - `match().node(labels='Person', variable='p').return_().execute()`
 - `Cypher` - `MATCH (p:Person) RETURN *;`
   
   Return specific variables from a query:
   
-- `Python` - `match().node(labels=&#x27;Person&#x27;, variable=&#x27;p1&#x27;).to().node(labels=&#x27;Person&#x27;, variable=&#x27;p2&#x27;).return_(results=[(&#x27;p1&#x27;,&#x27;first&#x27;), &#x27;p2&#x27;]).execute()`
-- `Cypher` - `MATCH (p1:Person)-[]-&gt;(p2:Person) RETURN p1 AS first, p2;`
+- `Python` - `match().node(labels='Person', variable='p1').to().node(labels='Person', variable='p2').return_(results=[('p1','first'), 'p2']).execute()`
+- `Cypher` - `GQLAlchemyResultQueryTypeError`1
 
 #### order\_by
 
@@ -936,7 +948,7 @@ Creates an ORDER BY statement Cypher partial query.
   Ordering query results by the property `n.name` in ascending order
   and by the property `n.last_name` in descending order:
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).return_().order_by(properties=[&#x27;n.name&#x27;, (&#x27;n.last_name&#x27;, Order.DESC)]).execute()`
+- `Python` - `match().node(variable='n').return_().order_by(properties=['n.name', ('n.last_name', Order.DESC)]).execute()`
 - `Cypher` - `MATCH (n) RETURN * ORDER BY n.name, n.last_name DESC;`
 
 #### limit
@@ -962,7 +974,7 @@ Limit the number of records when returning results.
 
   Limit the number of returned results:
   
-- `Python` - `match().node(labels=&#x27;Person&#x27;, variable=&#x27;p&#x27;).return_().limit(integer_expression=&#x27;10&#x27;).execute()`
+- `Python` - `match().node(labels='Person', variable='p').return_().limit(integer_expression='10').execute()`
 - `Cypher` - `MATCH (p:Person) RETURN * LIMIT 10;`
 
 #### skip
@@ -988,7 +1000,7 @@ Skip a number of records when returning results.
 
   Skip the first result:
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).return_(results=&#x27;n&#x27;).skip(integer_expression=&#x27;1&#x27;).execute()`
+- `Python` - `match().node(variable='n').return_(results='n').skip(integer_expression='1').execute()`
 - `Cypher` - `MATCH (n) RETURN n SKIP 1;`
 
 #### add\_custom\_cypher
@@ -1053,8 +1065,8 @@ Iterate over a list of elements and for every iteration run every update clause.
 
   For each number in a list, create a node:
   
-- `Python` - `update_clause = QueryBuilder().create().node(variable=&quot;n&quot;, id=PropertyVariable(&quot;i&quot;))`
-  `query_builder = QueryBuilder().foreach(&quot;i&quot;, &quot;[1, 2, 3]&quot;, update_clause.construct_query())`
+- `Python` - `update_clause = QueryBuilder().create().node(variable="n", id=PropertyVariable("i"))`
+  `query_builder = QueryBuilder().foreach("i", "[1, 2, 3]", update_clause.construct_query())`
 - `Cypher` - `FOREACH ( i IN [1, 2, 3] | CREATE (n {id: i}) )`
 
 #### set\_
@@ -1090,28 +1102,28 @@ Creates a SET statement Cypher partial query.
 
   Set or update a property.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n.name&#x27;, operator=Operator.EQUAL, literal=&#x27;Germany&#x27;).set_(item=&#x27;n.population&#x27;, operator=Operator.ASSIGNMENT, literal=83000001).return_().execute()`
-- `Cypher` - `MATCH (n) WHERE n.name = &#x27;Germany&#x27; SET n.population = 83000001 RETURN *;`
+- `Python` - `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n.population', operator=Operator.ASSIGNMENT, literal=83000001).return_().execute()`
+- `Cypher` - `operator`0
   
   Set or update multiple properties.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n.name&#x27;, operator=Operator.EQUAL, literal=&#x27;Germany&#x27;).set_(item=&#x27;n.population&#x27;, operator=Operator.ASSIGNMENT, literal=83000001).set_(item=&#x27;n.capital&#x27;, operator=Operator.ASSIGNMENT, literal=&#x27;Berlin&#x27;).return_().execute()`
-- `Cypher` - `MATCH (n) WHERE n.name = &#x27;Germany&#x27; SET n.population = 83000001 SET n.capital = &#x27;Berlin&#x27; RETURN *;`
+- `Python` - `operator`2
+- `Cypher` - `operator`4
   
   Set node label.
   
-- `Python` - `match().node(variable=&#x27;n&#x27;).where(item=&#x27;n.name&#x27;, operator=Operator.EQUAL, literal=&#x27;Germany&#x27;).set_(item=&#x27;n&#x27;, operator=Operator.LABEL_FILTER, expression=&#x27;Land&#x27;).return_().execute()`
-- `Cypher` - `MATCH (n) WHERE n.name = &#x27;Germany&#x27; SET n:Land RETURN *;`
+- `Python` - `operator`6
+- `Cypher` - `operator`8
   
   Replace all properties using map.
   
-- `Python` - `match().node(variable=&#x27;c&#x27;, labels=&#x27;Country&#x27;).where(item=&#x27;c.name&#x27;, operator=Operator.EQUAL, literal=&#x27;Germany&#x27;).set_(item=&#x27;c&#x27;, operator=Operator.ASSIGNMENT, literal={&#x27;name&#x27;: &#x27;Germany&#x27;, &#x27;population&#x27;: &#x27;85000000&#x27;}).return_().execute()`
-- `Cypher` - `MATCH (c:Country) WHERE c.name = &#x27;Germany&#x27; SET c = {name: &#x27;Germany&#x27;, population: &#x27;85000000&#x27;} RETURN *;`
+- `Python` - `literal`0
+- `Cypher` - `literal`2
   
   Update all properties using map.
   
-- `Python` - `match().node(variable=&#x27;c&#x27;, labels=&#x27;Country&#x27;).where(item=&#x27;c.name&#x27;, operator=Operator.EQUAL, literal=&#x27;Germany&#x27;).set_(item=&#x27;c&#x27;, operator=Operator.INCREMENT, literal={&#x27;name&#x27;: &#x27;Germany&#x27;, &#x27;population&#x27;: &#x27;85000000&#x27;}).return_().execute()`
-- `Cypher` - `MATCH (c:Country) WHERE c.name = &#x27;Germany&#x27; SET c += {name: &#x27;Germany&#x27;, population: &#x27;85000000&#x27;} RETURN *;`
+- `Python` - `literal`4
+- `Cypher` - `literal`6
 
 #### execute
 

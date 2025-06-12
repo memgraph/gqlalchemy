@@ -33,18 +33,20 @@ Executes Cypher query without returning any results.
 #### create\_index
 
 ```python
+@abstractmethod
 def create_index(index: Index) -> None
 ```
 
-Creates an index (label or label-property type) in the database.
+Creates an index in the database.
 
 #### drop\_index
 
 ```python
+@abstractmethod
 def drop_index(index: Index) -> None
 ```
 
-Drops an index (label or label-property type) in the database.
+Drops an index in the database.
 
 #### get\_indexes
 
