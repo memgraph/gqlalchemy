@@ -34,6 +34,7 @@ __all__ = ("Neo4j",)
 
 NEO4J_HOST = os.getenv("NEO4J_HOST", "localhost")
 NEO4J_PORT = int(os.getenv("NEO4J_PORT", "7687"))
+NEO4J_SCHEME = os.getenv("NEO4J_SCHEME", "")
 NEO4J_USERNAME = os.getenv("NEO4J_USERNAME", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "test")
 NEO4J_ENCRYPTED = os.getenv("NEO4J_ENCRYPT", "false").lower() == "true"
@@ -58,13 +59,14 @@ class Neo4j(DatabaseClient):
         self,
         host: str = NEO4J_HOST,
         port: int = NEO4J_PORT,
+        scheme: str = NEO4J_SCHEME,
         username: str = NEO4J_USERNAME,
         password: str = NEO4J_PASSWORD,
         encrypted: bool = NEO4J_ENCRYPTED,
         client_name: str = NEO4J_CLIENT_NAME,
     ):
         super().__init__(
-            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+            host=host, port=port, scheme=scheme, username=username, password=password, encrypted=encrypted, client_name=client_name
         )
         self._cached_connection: Optional[Connection] = None
 
@@ -140,6 +142,7 @@ class Neo4j(DatabaseClient):
         args = dict(
             host=self._host,
             port=self._port,
+            scheme=self._scheme,
             username=self._username,
             password=self._password,
             encrypted=self._encrypted,
