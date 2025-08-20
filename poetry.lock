@@ -1911,28 +1911,28 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymgclient"
-version = "1.5.0"
+version = "1.5.1"
 description = "Memgraph database adapter for Python language"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pymgclient-1.5.0-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:adf3bc4017197126a81716d9853fb50fa8dfcb928a615abd91e1f4547fd8237a"},
-    {file = "pymgclient-1.5.0-cp310-cp310-macosx_15_0_arm64.whl", hash = "sha256:791b91bc479cc3ef3c5ad524cd43053d2efd5d4e55a58876b6bda5591ae93a89"},
-    {file = "pymgclient-1.5.0-cp310-cp310-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:4b4b3a1a2de5356e35ba07090d62ac028ab4f7f03ad841790c0251bca7312532"},
-    {file = "pymgclient-1.5.0-cp310-cp310-win_amd64.whl", hash = "sha256:875d4dac38c0df6caa3658672dfb28a05695ca653d3deab9741da59d908cbd46"},
-    {file = "pymgclient-1.5.0-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:260a4e2f7c7d0f8dcc272c41f2bf60be877b39a2fe99c86937d139bf14736c60"},
-    {file = "pymgclient-1.5.0-cp311-cp311-macosx_15_0_arm64.whl", hash = "sha256:d01475ebea8abdbb84bb541e4919a073f3d6f12689cfce996423b3ce4e470a28"},
-    {file = "pymgclient-1.5.0-cp311-cp311-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:145186ee73096d2c033e346171b3f3a3848490b5421f08f0761c65efcc210119"},
-    {file = "pymgclient-1.5.0-cp311-cp311-win_amd64.whl", hash = "sha256:b3797cf18ff33c6efdc6251d4a88bbb0922b2fda83bae07f80cc2ecd8d1a6504"},
-    {file = "pymgclient-1.5.0-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:973615e11d00edafa0f2e87bb643656578bdbc9bdeed48c091e3f2bebd6491aa"},
-    {file = "pymgclient-1.5.0-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:3651cd093ae29644605aa8c06279cb608629754b13f30493d6c0784bdc66dfef"},
-    {file = "pymgclient-1.5.0-cp312-cp312-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:a16dbea4d179c648878dd2d541dc43998e7690eccb8351f9344da64d82020c32"},
-    {file = "pymgclient-1.5.0-cp312-cp312-win_amd64.whl", hash = "sha256:2a71c87a233d5cca81bee2a0d3c074f8d7fbd13fdf3069c09842877148ecd416"},
-    {file = "pymgclient-1.5.0-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:09e8c52b5d5a3aacb6d95543f276306728796400f46dad972257bc8272a5643e"},
-    {file = "pymgclient-1.5.0-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:2920234bf3f409450e9ab192646597245301447cda4436a8beb8eb7c0c6776bc"},
-    {file = "pymgclient-1.5.0-cp313-cp313-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:c353d7a8548834980dabd3add247f56847af868abe688821a4362a730f32f90c"},
-    {file = "pymgclient-1.5.0-cp313-cp313-win_amd64.whl", hash = "sha256:08e80e4fb3bd88ca8e61bf0d9e67aacfde19a72454d0773a45b56b84771b7052"},
-    {file = "pymgclient-1.5.0.tar.gz", hash = "sha256:45ec4e9b4a9d5e43a844bdbad5f26f6472fffbf689a363160d0da58fb0204acc"},
+    {file = "pymgclient-1.5.1-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:36fc48656c3b28887495f7f3301fba5791a0ffa505caf07ee225f147c3e28162"},
+    {file = "pymgclient-1.5.1-cp310-cp310-macosx_15_0_arm64.whl", hash = "sha256:db43fbe52ed283f1d7f5db4687f29b6a0481b0fb3057d7da05104a9c669569c3"},
+    {file = "pymgclient-1.5.1-cp310-cp310-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:9d9b13774e996544cdae12757d7ae5530d78a112fd4b62cd583a22a508786b45"},
+    {file = "pymgclient-1.5.1-cp310-cp310-win_amd64.whl", hash = "sha256:53e9b6cd3742d4c9ebf25fe6fb646c8ca96f7b8836a5f6fdb7b8614624b81b3a"},
+    {file = "pymgclient-1.5.1-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:f953f690fa4d6343bba31f192b6740fb8e4dd570e4d6c08b51abfcf528a991fc"},
+    {file = "pymgclient-1.5.1-cp311-cp311-macosx_15_0_arm64.whl", hash = "sha256:f7463d60e2c4ce1492be8bf2a7e9cc89759b64e5ba98d9efa9e58b47c127aebd"},
+    {file = "pymgclient-1.5.1-cp311-cp311-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:a95df69dfe5eac4c66ea5974f401ea9cf635de7adb04c0a97ec8c1cb3909e615"},
+    {file = "pymgclient-1.5.1-cp311-cp311-win_amd64.whl", hash = "sha256:ce5cb8fc6de966cdf7d7c0a58a742321f50cda6ff84ec20ad8e6123bb9344494"},
+    {file = "pymgclient-1.5.1-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:504d0c3c3417d029a6376b810c66aa8b2299357c067d0f6292a78b1e1c5f89df"},
+    {file = "pymgclient-1.5.1-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:e543f9328f45254bdbc497a0afb03f75be25641595ef38faa27931a1bb143ac6"},
+    {file = "pymgclient-1.5.1-cp312-cp312-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:21af7e4eac4d3d6a68dc9fee9d9598c13d9700842ebb9c51c65d67add8bbfba1"},
+    {file = "pymgclient-1.5.1-cp312-cp312-win_amd64.whl", hash = "sha256:729c4a025c2eda7673bd7eeb60c3273194b63acbf0397ebbf7f33c272937ba8d"},
+    {file = "pymgclient-1.5.1-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:7ca3ca6a00c57638f141a20990fedf26f3558903ce92c8f9c1b5e3709280699f"},
+    {file = "pymgclient-1.5.1-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:cde56666e314406b7eace394b3f9cd067e15f73f0d55e1a3892ab02f8985ede2"},
+    {file = "pymgclient-1.5.1-cp313-cp313-manylinux_2_38_x86_64.manylinux_2_39_x86_64.whl", hash = "sha256:3b8b6c36a74970ba2e93b8329fddf9728c562c1a6f3df846ffbc833eea525052"},
+    {file = "pymgclient-1.5.1-cp313-cp313-win_amd64.whl", hash = "sha256:b8330095b124a783d2de7a57913e25928737cdf88f28fd72a5682abfd49e8eb4"},
+    {file = "pymgclient-1.5.1.tar.gz", hash = "sha256:defce8fc712ed2ca32ca75acfb3787b43a89592d8cef10b0f3e2aa7092e3d140"},
 ]
 
 [package.dependencies]
@@ -2562,4 +2562,4 @@ torch-pyg = ["torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3424331ecb6685ed9825b9ee2c8fd965dee0d107ab88f165a0976e6cf504d162"
+content-hash = "baa07551cbb2025d961fd89b239ce99428b04c1845d45e7fbf177518de20f722"
