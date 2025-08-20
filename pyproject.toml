@@ -32,7 +32,7 @@ exclude = '''
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pymgclient = "^1.3.1"
+pymgclient = "^1.5.1"
 networkx = ">=2.5.1,<4.0.0"
 pydantic = "^2.3.0"
 psutil = ">=5.9,<7.0"
