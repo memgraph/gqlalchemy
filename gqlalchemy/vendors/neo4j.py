@@ -14,7 +14,6 @@
 
 import os
 from typing import List, Optional, Union
-from enum import Enum
 
 from gqlalchemy.connection import Connection, Neo4jConnection
 from gqlalchemy.exceptions import (
@@ -107,14 +106,14 @@ class Neo4j(DatabaseClient):
     def get_enums(self) -> List[GraphEnum]:
         """Returns a list of all enums defined in the database."""
         raise GQLAlchemyError(f"SHOW ENUMS not yet implemented in Neo4j.")
-    
+
     def sync_enum(self, existing: GraphEnum, new: GraphEnum) -> None:
         """Ensures that database enum matches input enum."""
         raise GQLAlchemyError(f"ALTER ENUM not yet implemented in Neo4j.")
-    
+
     def drop_enum(self, graph_enum: GraphEnum):
         raise GQLAlchemyError(f"DROP ENUM not yet implemented in Neo4j.")
-    
+
     def drop_enums(self, graph_enums: List[GraphEnum]):
         raise GQLAlchemyError(f"DROP ENUM not yet implemented in Neo4j.")
 

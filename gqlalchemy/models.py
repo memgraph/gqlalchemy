@@ -16,7 +16,6 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
-from enum import Enum
 import json
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from enum import Enum, EnumMeta
@@ -59,34 +58,37 @@ def _format_timedelta(duration: timedelta) -> str:
 
     return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
 
+
 class GraphEnum(ABC):
     def __init__(self, enum):
 
         if not isinstance(enum, (Enum, EnumMeta)):
             raise TypeError()
-        
+
         self.enum = enum if isinstance(enum, Enum) else None
         self.cls = enum.__class__ if isinstance(enum, Enum) else enum
-    
+
     @property
     def name(self):
         return self.cls.__name__
-    
+
     @property
     def members(self):
         return self.cls.__members__
-    
+
     @abstractmethod
     def _to_cypher(self):
         pass
 
+
 class MemgraphEnum(GraphEnum):
     def _to_cypher(self):
         return f"{{ {', '.join(self.cls._member_names_)} }}"
-        
+
     def __repr__(self):
-        return f"<enum '{self.name}'>" if self.enum is None else f'{self.name}::{self.enum.name}'
-    
+        return f"<enum '{self.name}'>" if self.enum is None else f"{self.name}::{self.enum.name}"
+
+
 class TriggerEventType:
     """An enum representing types of trigger events."""
 
@@ -343,7 +345,7 @@ class GraphObject(BaseModel):
             if issubclass(cls, Enum) and not attrs.get("enum", False):
                 value = data.get(field)
                 if isinstance(value, dict):
-                    member  = value.get("__value").split('::')[1]
+                    member = value.get("__value").split("::")[1]
                     data[field] = cls[member].value
         super().__init__(**data)
 
@@ -583,7 +585,7 @@ class NodeMetaclass(BaseModel.__class__):
                 if cls.enums is None:
                     cls.enums = db.get_enums()
                 enum_names = [x.name for x in cls.enums]
-                if(field_cls.__name__ in enum_names):
+                if field_cls.__name__ in enum_names:
                     existing = cls.enums[enum_names.index(field_cls.__name__)]
                     db.sync_enum(existing, MemgraphEnum(field_cls))
                 else:
@@ -742,7 +744,7 @@ class RelationshipMetaclass(BaseModel.__class__):
                 if cls.enums is None:
                     cls.enums = db.get_enums()
                 enum_names = [x.name for x in cls.enums]
-                if(field_type in enum_names):
+                if field_type in enum_names:
                     existing = cls.enums[enum_names.index(field_type)]
                     db.sync_enum(existing, MemgraphEnum(field_cls))
                 else:

@@ -17,13 +17,8 @@ from typing import Any, Dict, Iterator, List, Optional
 
 from gqlalchemy.connection import Connection
 from gqlalchemy.exceptions import GQLAlchemyError
-from gqlalchemy.models import (
-    Constraint,
-    Index,
-    GraphEnum,
-    Node,
-    Relationship
-)
+from gqlalchemy.models import Constraint, Index, GraphEnum, Node, Relationship
+
 
 class DatabaseClient(ABC):
     def __init__(
@@ -127,7 +122,7 @@ class DatabaseClient(ABC):
             self.drop_constraint(obsolete_constraints)
         for missing_constraint in new_constraints.difference(old_constraints):
             self.create_constraint(missing_constraint)
-    
+
     @abstractmethod
     def create_enum(self, enum: GraphEnum) -> None:
         pass
@@ -136,7 +131,7 @@ class DatabaseClient(ABC):
     def get_enums(self) -> List[GraphEnum]:
         """Returns a list of all enums defined in the database."""
         pass
-    
+
     @abstractmethod
     def sync_enum(self, existing: GraphEnum, new: GraphEnum) -> None:
         """Ensures that database enum matches input enum."""
@@ -146,7 +141,7 @@ class DatabaseClient(ABC):
     def drop_enum(self, enum: GraphEnum) -> None:
         """Drops a single enum in the database."""
         pass
-    
+
     @abstractmethod
     def drop_enums(self) -> None:
         """Drops all enums in the database"""
