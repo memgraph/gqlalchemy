@@ -32,6 +32,7 @@ class Connection(ABC):
         self,
         host: str,
         port: int,
+        scheme: str,
         username: str,
         password: str,
         encrypted: bool,
@@ -39,6 +40,7 @@ class Connection(ABC):
     ):
         self.host = host
         self.port = port
+        self.scheme = scheme
         self.username = username
         self.password = password
         self.encrypted = encrypted
@@ -65,6 +67,7 @@ class MemgraphConnection(Connection):
         self,
         host: str,
         port: int,
+        scheme: str,
         username: str,
         password: str,
         encrypted: bool,
@@ -72,7 +75,13 @@ class MemgraphConnection(Connection):
         lazy: bool = False,
     ):
         super().__init__(
-            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+            host=host,
+            port=port,
+            scheme=scheme,
+            username=username,
+            password=password,
+            encrypted=encrypted,
+            client_name=client_name,
         )
         self.lazy = lazy
         self._connection = self._create_connection()
@@ -106,6 +115,7 @@ class MemgraphConnection(Connection):
         connection = mgclient.connect(
             host=self.host,
             port=self.port,
+            scheme=self.scheme,
             username=self.username,
             password=self.password,
             sslmode=sslmode,
@@ -154,6 +164,7 @@ class Neo4jConnection(Connection):
         self,
         host: str,
         port: int,
+        scheme: str,
         username: str,
         password: str,
         encrypted: bool,
@@ -161,7 +172,13 @@ class Neo4jConnection(Connection):
         lazy: bool = True,
     ):
         super().__init__(
-            host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
+            host=host,
+            port=port,
+            scheme=scheme,
+            username=username,
+            password=password,
+            encrypted=encrypted,
+            client_name=client_name,
         )
         self.lazy = lazy
         self._connection = self._create_connection()
@@ -184,6 +201,7 @@ class Neo4jConnection(Connection):
         return self._connection is not None
 
     def _create_connection(self):
+        # TODO: antepusic fit in scheme
         return GraphDatabase.driver(
             f"bolt://{self.host}:{self.port}", auth=(self.username, self.password), encrypted=self.encrypted
         )
