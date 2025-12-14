@@ -597,10 +597,25 @@ class Memgraph(DatabaseClient):
 
         return list(self.execute_and_fetch(query))
 
-    def delete_graph_statistics(self) -> None:
-        """Delete all graph statistics previously calculated by analyze_graph.
+    def delete_graph_statistics(self, labels: Optional[List[str]] = None) -> List[dict]:
+        """Delete graph statistics previously calculated by analyze_graph.
 
         Use this to reset the analysis data if you want to recalculate statistics
         after significant changes to the graph structure or data.
+
+        Args:
+            labels: Optional list of labels to delete statistics for.
+                If None, deletes statistics for all labels.
+
+        Returns:
+            List[dict]: A list of dictionaries containing deleted index info with keys:
+                - label: The deleted index's label
+                - property: The deleted index's property
         """
-        self.execute("ANALYZE GRAPH DELETE STATISTICS;")
+        if labels:
+            labels_str = ", ".join([f":{label}" for label in labels])
+            query = f"ANALYZE GRAPH ON LABELS {labels_str} DELETE STATISTICS;"
+        else:
+            query = "ANALYZE GRAPH DELETE STATISTICS;"
+
+        return list(self.execute_and_fetch(query))

@@ -63,11 +63,25 @@ def test_analyze_graph_single_label():
     assert result == mock_result
 
 
-def test_delete_graph_statistics():
-    """Test delete_graph_statistics."""
+def test_delete_graph_statistics_all():
+    """Test delete_graph_statistics for all labels."""
     memgraph = Memgraph()
+    mock_result = [{"label": "Person", "property": "name"}]
 
-    with patch.object(Memgraph, "execute", return_value=None) as mock:
-        memgraph.delete_graph_statistics()
+    with patch.object(Memgraph, "execute_and_fetch", return_value=iter(mock_result)) as mock:
+        result = memgraph.delete_graph_statistics()
 
     mock.assert_called_with("ANALYZE GRAPH DELETE STATISTICS;")
+    assert result == mock_result
+
+
+def test_delete_graph_statistics_specific_labels():
+    """Test delete_graph_statistics for specific labels."""
+    memgraph = Memgraph()
+    mock_result = []
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=iter(mock_result)) as mock:
+        result = memgraph.delete_graph_statistics(labels=["Person", "Company"])
+
+    mock.assert_called_with("ANALYZE GRAPH ON LABELS :Person, :Company DELETE STATISTICS;")
+    assert result == mock_result
