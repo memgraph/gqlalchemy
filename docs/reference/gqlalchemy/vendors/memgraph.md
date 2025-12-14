@@ -340,3 +340,27 @@ Terminate transactions in the database.
 
 - `List[MemgraphTerminatedTransaction]` - A list of MemgraphTerminatedTransaction objects with info on their status.
 
+#### get\_storage\_info
+
+```python
+def get_storage_info() -> List[dict]
+```
+
+Get detailed storage information about the database instance.
+
+**Returns**:
+
+- `List[dict]` - A list of dictionaries with 'storage info' and 'value' keys containing storage metrics like name, vertex_count, edge_count, memory_res, disk_usage, etc.
+
+#### get\_build\_info
+
+```python
+def get_build_info() -> List[dict]
+```
+
+Get build information about the Memgraph instance.
+
+**Returns**:
+
+- `List[dict]` - A list of dictionaries with 'build info' and 'value' keys containing build_type (the optimization level).
+
