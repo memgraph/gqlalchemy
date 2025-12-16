@@ -570,7 +570,6 @@ class Memgraph(DatabaseClient):
 
         return terminated_transactions
 
-
     def get_storage_info(self) -> List[dict]:
         """Get detailed storage information about the database instance.
 
@@ -645,4 +644,3 @@ class Memgraph(DatabaseClient):
             query = "ANALYZE GRAPH DELETE STATISTICS;"
 
         return list(self.execute_and_fetch(query))
-
