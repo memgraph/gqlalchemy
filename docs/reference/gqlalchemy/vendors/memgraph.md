@@ -340,6 +340,7 @@ Terminate transactions in the database.
 
 - `List[MemgraphTerminatedTransaction]` - A list of MemgraphTerminatedTransaction objects with info on their status.
 
+
 #### get\_storage\_info
 
 ```python
@@ -363,4 +364,40 @@ Get build information about the Memgraph instance.
 **Returns**:
 
 - `List[dict]` - A list of dictionaries with 'build info' and 'value' keys containing build_type (the optimization level).
+
+#### analyze\_graph
+
+```python
+def analyze_graph(labels: Optional[List[str]] = None) -> List[dict]
+```
+
+Analyze graph to calculate statistics for better index selection.
+
+Calculates distribution properties of a graph to enable the database
+to select more optimal indexes and MERGE operations.
+
+**Arguments**:
+
+- `labels` _Optional[List[str]]_ - Optional list of labels to analyze. If None, analyzes all labels.
+
+**Returns**:
+
+- `List[dict]` - A list of dictionaries containing analysis results with keys: label, property, num estimation nodes, num groups, avg group size, chi-squared value, avg degree.
+
+#### delete\_graph\_statistics
+
+```python
+def delete_graph_statistics(labels: Optional[List[str]] = None) -> List[dict]
+```
+
+Delete graph statistics previously calculated by analyze_graph.
+
+**Arguments**:
+
+- `labels` _Optional[List[str]]_ - Optional list of labels to delete statistics for. If None, deletes statistics for all labels.
+
+**Returns**:
+
+- `List[dict]` - A list of dictionaries containing deleted index info with keys: label, property.
+
 
