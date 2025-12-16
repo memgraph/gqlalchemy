@@ -570,6 +570,31 @@ class Memgraph(DatabaseClient):
 
         return terminated_transactions
 
+    def get_storage_info(self) -> List[dict]:
+        """Get detailed storage information about the database instance.
+
+        Returns:
+            List[dict]: A list of dictionaries with 'storage info' and 'value' keys containing:
+                - name: Current database name
+                - vertex_count: Total number of stored nodes
+                - edge_count: Total number of stored relationships
+                - average_degree: Average number of relationships per node
+                - memory_res: Non-swapped physical RAM memory used
+                - disk_usage: Data directory disk space consumption
+                - memory_tracked: RAM allocated and tracked by Memgraph
+                - and other storage-related metrics
+        """
+        return list(self.execute_and_fetch("SHOW STORAGE INFO;"))
+
+    def get_build_info(self) -> List[dict]:
+        """Get build information about the Memgraph instance.
+
+        Returns:
+            List[dict]: A list of dictionaries with 'build info' and 'value' keys containing:
+                - build_type: The optimization level the instance was built with
+        """
+        return list(self.execute_and_fetch("SHOW BUILD INFO;"))
+
     def analyze_graph(self, labels: Optional[List[str]] = None) -> List[dict]:
         """Analyze graph to calculate statistics for better index selection.
 
