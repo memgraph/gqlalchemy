@@ -1,6 +1,6 @@
 # How to import Python graphs into Memgraph
 
-GQLAlchemy holds translators that can import Python graphs ([NetworkX](https://networkx.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/) or [DGL](https://www.dgl.ai/) graphs) into Memgraph. These translators take the Python graph object and translate it to the appropriate Cypher queries. The Cypher queries are then executed to create a graph inside Memgraph. 
+GQLAlchemy holds translators that can import Python graphs ([NetworkX](https://networkx.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/), [DGL](https://www.dgl.ai/) or [TF-GNN](https://github.com/tensorflow/gnn) graphs) into Memgraph. These translators take the Python graph object and translate it to the appropriate Cypher queries. The Cypher queries are then executed to create a graph inside Memgraph. 
 
 [![docs-source](https://img.shields.io/badge/source-examples-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/tests/transformations/translators)
 [![docs-source](https://img.shields.io/badge/source-translators-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/gqlalchemy/transformations/translators)
@@ -12,6 +12,7 @@ In this guide you will learn how to:
 - [**Import NetworkX graph into Memgraph**](#import-networkx-graph-into-memgraph)
 - [**Import PyG graph into Memgraph**](#import-pyg-graph-into-memgraph)
 - [**Import DGL graph into Memgraph**](#import-dgl-graph-into-memgraph)
+- [**Import TF-GNN graph into Memgraph**](#import-tf-gnn-graph-into-memgraph)
 
 ## General prerequisites
 You need **Memgraph Platform** running, which includes both the MAGE library and Memgraph Lab, a visual interface. To run it on Linux/macOS, run the following in your terminal:
@@ -214,6 +215,93 @@ Click **Run Query** button to see the results.
 <img src={require('../data/dgl-example.png').default} alt="pyg-example" className={"imgBorder"}/>
 
 You can notice that we have nodes labeled with `user` and `movie` and relationships of type `PLUS` and `MINUS`. Besides that, nodes and relationships have randomized array properties ad well as `dgl_id` property.
+
+## Import TF-GNN graph into Memgraph
+
+### Prerequisites
+
+Except for the [**general prerequisites**](#general-prerequisites), you also need to install [**TensorFlow GNN**](https://github.com/tensorflow/gnn). You can install it with:
+
+```bash
+pip install tensorflow-gnn
+```
+
+Note: TF-GNN requires TensorFlow 2.x. For TensorFlow 2.16 and above, you may need to set `TF_USE_LEGACY_KERAS=1` environment variable.
+
+### Create and run a Python script
+
+Create a new Python script `tfgnn-graph.py` in the code editor of your choice, with the following code:
+
+```python
+import os
+os.environ["TF_USE_LEGACY_KERAS"] = "1"  # Required for TensorFlow 2.16+
+
+import tensorflow as tf
+import tensorflow_gnn as tfgnn
+from gqlalchemy import Memgraph
+from gqlalchemy.transformations.translators.tfgnn_translator import TFGNNTranslator
+
+memgraph = Memgraph()
+memgraph.drop_database()
+
+# Create a TF-GNN GraphTensor
+graph_tensor = tfgnn.GraphTensor.from_pieces(
+    node_sets={
+        "user": tfgnn.NodeSet.from_fields(
+            sizes=[3],
+            features={
+                "name": tf.constant(["Alice", "Bob", "Charlie"]),
+                "age": tf.constant([25, 30, 35], dtype=tf.int64),
+            }
+        ),
+        "movie": tfgnn.NodeSet.from_fields(
+            sizes=[2],
+            features={
+                "title": tf.constant(["Inception", "Matrix"]),
+                "rating": tf.constant([8.8, 8.7], dtype=tf.float32),
+            }
+        ),
+    },
+    edge_sets={
+        "LIKES": tfgnn.EdgeSet.from_fields(
+            sizes=[3],
+            adjacency=tfgnn.Adjacency.from_indices(
+                source=("user", tf.constant([0, 0, 1])),
+                target=("movie", tf.constant([0, 1, 0])),
+            ),
+            features={
+                "score": tf.constant([5, 4, 5], dtype=tf.int64),
+            }
+        ),
+    },
+)
+
+translator = TFGNNTranslator()
+
+for query in translator.to_cypher_queries(graph_tensor):
+    memgraph.execute(query)
+```
+
+First, connect to a running Memgraph instance. Next, drop the database to be sure that it's empty. After that, create a TF-GNN GraphTensor with `user` and `movie` node sets, and a `LIKES` edge set connecting users to movies. The GraphTensor includes node features (`name`, `age` for users; `title`, `rating` for movies) and edge features (`score`). In the end, call `to_cypher_queries` on `TFGNNTranslator` instance to transform the TF-GNN graph to Cypher queries which will be executed in Memgraph.
+
+To run it, open a command-line interpreter and run the following command:
+
+```python
+python3 tfgnn-graph.py
+```
+
+### Explore the graph
+
+[Connect to Memgraph](htps://memgraph.com/docs/data-visualization/install-and-connect) via Memgraph Lab which is running at `localhost:3000`. Open the **Query Execution** section and write the following query:
+
+```cypher
+MATCH (n)-[r]->(m)
+RETURN n, r, m;
+```
+
+Click **Run Query** button to see the results.
+
+You can notice that we have nodes labeled with `user` and `movie` and relationships of type `LIKES`. Besides that, nodes and relationships have their respective properties as well as `tfgnn_id` property which maps to the node/edge index in the original TF-GNN GraphTensor.
 
 ## Learn more
 
