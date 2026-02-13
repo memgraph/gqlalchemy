@@ -208,7 +208,7 @@ class TFGNNTranslator(Translator):
             "age": tf.ragged.constant([[30], []], dtype=tf.int64)
         }
 
-        Convertion rules:
+        Conversion rules:
 
             Properties are allowed to be missing for some nodes.
                 eg: one node can have property 'age' and another node can only have property 'name'
