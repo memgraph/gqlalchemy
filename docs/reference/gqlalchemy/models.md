@@ -20,7 +20,7 @@ class TriggerEventObject()
 An enum representing types of trigger objects.
 
 NODE -&gt; `()`
-RELATIONSHIP -&gt; `--&gt;`
+RELATIONSHIP -&gt; `-->`
 
 ## TriggerExecutionPhase Objects
 
@@ -33,6 +33,20 @@ An enum representing types of trigger objects.
 Enum:
     BEFORE
     AFTER
+
+## IndexType Objects
+
+```python
+class IndexType()
+```
+
+An enum representing different types of indexes.
+
+Enum:
+    LABEL_INDEX_TYPE
+    EDGE_INDEX_TYPE
+    EDGE_GLOBAL_INDEX_TYPE
+    POINT_INDEX_TYPE
 
 ## MemgraphKafkaStream Objects
 

@@ -1,0 +1,146 @@
+name: Build Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build"
+        required: false
+        type: string
+      branch:
+        description: "Branch to build"
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to build"
+        required: false
+        type: string
+      branch:
+        description: "Branch to build"
+        required: false
+        type: string
+        
+jobs:
+  build-packages:
+    name: Build Packages
+    runs-on: ["self-hosted", "Ubuntu24.04", "X64"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Override version
+        if: ${{ inputs.version != '' }}
+        run: |
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" pyproject.toml
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      
+      - name: Create virtual environment
+        run: |
+          python -m venv env
+          source env/bin/activate
+      
+      - name: Install poetry
+        run: |
+          source env/bin/activate
+          pip install poetry
+      
+      - name: Install dependencies
+        run: |
+          source env/bin/activate
+          poetry install
+
+      - name: Build wheel
+        run: |
+          source env/bin/activate
+          poetry build
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: dist
+          retention-days: 1
+
+  test-wheel:
+    needs: build-packages
+    name: Test Wheel Package
+    runs-on: ["ubuntu-latest"]
+    env:
+      MG_VERSION: "3.3.0"
+      VM_MAX_MAP_COUNT: "262144"
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: "1.8.2"
+
+      - name: Download wheel package
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist
+
+      - name: Set up pip and install packages
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install networkx numpy scipy
+          python -m pip install poethepoet==0.18.1
+
+      - name: Install Memgraph
+        run: |
+          mkdir /home/runner/memgraph
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-24.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
+          sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
+          sudo systemctl stop memgraph
+          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.python-version }}.log' &
+          sleep 1
+
+      - name: Install Neo4j
+        run: |
+          docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.7
+
+      - name: Install wheel and dependencies
+        run: |
+          python -m pip install dist/*.whl
+          poetry install --all-extras
+          poe install-pyg-cpu
+          poe install-dgl
+
+      - name: Run Tests
+        run: |
+          # Create a new directory and copy tests there
+          mkdir wheel_test
+          cp -r tests wheel_test/
+          cd wheel_test
+          mkdir -p gqlalchemy/query_modules/push_streams/
+          cp -v ../gqlalchemy/query_modules/push_streams/* gqlalchemy/query_modules/push_streams/
+          # Run tests from this directory to ensure we use the installed package
+          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+
+      - name: Upload Memgraph logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memgraph-logs-wheel-${{ matrix.python-version }}
+          path: /var/log/memgraph
+          overwrite: true

@@ -1,0 +1,160 @@
+name: Release GQLAlchemy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release"
+        required: true
+        type: string
+      build_docs:
+        description: "Build docs"
+        required: false
+        type: boolean
+        default: true
+      publish_packages:
+        description: "Publish packages"
+        required: false
+        type: boolean
+        default: true
+      test:
+        description: "Test"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  create-release-branch:
+    name: Create Release Branch
+    runs-on: ["ubuntu-latest"]
+    outputs:
+      release_branch: ${{ steps.create_release_branch.outputs.RELEASE_BRANCH }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Setup GitHub CLI
+        run: |
+          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y
+
+      - name: Create Release Branch
+        id: create_release_branch
+        run: |
+          # Parse version and create branch name
+          if [[ "${{ inputs.version }}" =~ ^([0-9]+\.[0-9]+)\.0$ ]]; then
+            # If version ends in .0, use shortened form (e.g., 1.2.0 -> release/1.2)
+            BRANCH_NAME="release/${BASH_REMATCH[1]}"
+          else
+            # Otherwise use full version (e.g., 1.2.1 -> release/1.2.1)
+            BRANCH_NAME="release/${{ inputs.version }}"
+          fi
+          
+          # Check if branch exists
+          if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+            echo "::error::Branch $BRANCH_NAME already exists!"
+            exit 1
+          fi
+          git checkout -b "$BRANCH_NAME"
+          
+          # Export branch name for later steps
+          echo "RELEASE_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Set version
+        run: |
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" pyproject.toml
+
+      - name: Commit version
+        run: |
+          git add pyproject.toml
+          git commit -m "Release v${{ inputs.version }}"
+          git push origin "$RELEASE_BRANCH"
+
+      - name: Create Release Tag
+        run: |
+          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
+          git push origin v${{ inputs.version }}
+
+      - name: Create Release Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr create --base main --head "$RELEASE_BRANCH" --title "Release v${{ inputs.version }}" --body "Release v${{ inputs.version }}"
+
+  build-packages:
+    needs: create-release-branch
+    name: Build Packages
+    uses: ./.github/workflows/build-packages.yml
+    with:
+      version: ${{ inputs.version }}
+      branch: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }} 
+    secrets: inherit
+
+  publish-packages:
+    needs: [create-release-branch, build-packages]
+    name: Publish Packages
+    if: ${{ inputs.publish_packages == true }}
+    runs-on: ["ubuntu-latest"]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }}
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install Poetry
+        run: |
+          pip install poetry --break-system-packages
+
+      - name: Publish packages
+        if: ${{ inputs.test == false }}
+        run: |
+          poetry publish --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
+    
+      - name: Publish Packages (Test PyPI)
+        if: ${{ inputs.test == true }}
+        continue-on-error: true
+        run: |
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry publish --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }} --repository testpypi
+
+  build-docs:
+    needs: [create-release-branch, build-packages, publish-packages]
+    name: Build Docs
+    uses: ./.github/workflows/build-docs.yml
+    if: ${{ inputs.build_docs == true }}
+    with:
+      branch: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }} 
+      version: ${{ inputs.version }}
+    secrets: inherit
+
+  create-github-release:
+    needs: [create-release-branch, build-packages, publish-packages, build-docs]
+    name: Create GitHub Release
+    uses: ./.github/workflows/create-github-release.yml
+    with:
+      version: ${{ inputs.version }}
+    secrets: inherit

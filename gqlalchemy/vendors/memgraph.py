@@ -569,3 +569,78 @@ class Memgraph(DatabaseClient):
         terminated_transactions = list(map(create_terminated_transaction, transactions_data))
 
         return terminated_transactions
+
+    def get_storage_info(self) -> List[dict]:
+        """Get detailed storage information about the database instance.
+
+        Returns:
+            List[dict]: A list of dictionaries with 'storage info' and 'value' keys containing:
+                - name: Current database name
+                - vertex_count: Total number of stored nodes
+                - edge_count: Total number of stored relationships
+                - average_degree: Average number of relationships per node
+                - memory_res: Non-swapped physical RAM memory used
+                - disk_usage: Data directory disk space consumption
+                - memory_tracked: RAM allocated and tracked by Memgraph
+                - and other storage-related metrics
+        """
+        return list(self.execute_and_fetch("SHOW STORAGE INFO;"))
+
+    def get_build_info(self) -> List[dict]:
+        """Get build information about the Memgraph instance.
+
+        Returns:
+            List[dict]: A list of dictionaries with 'build info' and 'value' keys containing:
+                - build_type: The optimization level the instance was built with
+        """
+        return list(self.execute_and_fetch("SHOW BUILD INFO;"))
+
+    def analyze_graph(self, labels: Optional[List[str]] = None) -> List[dict]:
+        """Analyze graph to calculate statistics for better index selection.
+
+        Calculates distribution properties of a graph to enable the database
+        to select more optimal indexes and MERGE operations.
+
+        Args:
+            labels: Optional list of labels to analyze. If None, analyzes all labels.
+
+        Returns:
+            List[dict]: A list of dictionaries containing analysis results with keys:
+                - label: Index's label
+                - property: Index's property
+                - num estimation nodes: Nodes used for estimation
+                - num groups: Distinct property values
+                - avg group size: Average group size per value
+                - chi-squared value: Statistical distribution measure
+                - avg degree: Average degree of indexed nodes
+        """
+        if labels:
+            labels_str = ", ".join([f":{label}" for label in labels])
+            query = f"ANALYZE GRAPH ON LABELS {labels_str};"
+        else:
+            query = "ANALYZE GRAPH;"
+
+        return list(self.execute_and_fetch(query))
+
+    def delete_graph_statistics(self, labels: Optional[List[str]] = None) -> List[dict]:
+        """Delete graph statistics previously calculated by analyze_graph.
+
+        Use this to reset the analysis data if you want to recalculate statistics
+        after significant changes to the graph structure or data.
+
+        Args:
+            labels: Optional list of labels to delete statistics for.
+                If None, deletes statistics for all labels.
+
+        Returns:
+            List[dict]: A list of dictionaries containing deleted index info with keys:
+                - label: The deleted index's label
+                - property: The deleted index's property
+        """
+        if labels:
+            labels_str = ", ".join([f":{label}" for label in labels])
+            query = f"ANALYZE GRAPH ON LABELS {labels_str} DELETE STATISTICS;"
+        else:
+            query = "ANALYZE GRAPH DELETE STATISTICS;"
+
+        return list(self.execute_and_fetch(query))
