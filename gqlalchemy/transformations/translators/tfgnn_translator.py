@@ -287,11 +287,11 @@ class TFGNNTranslator(Translator):
         return properties
 
     def to_cypher_queries(self, graph_tensor: tfgnn.GraphTensor) -> List[str]:
-        """Produce cypher queries for data saved as part of the TFGNN graph. If the graph is homogeneous, a default TFGNN's labels will be used.
-        _N as a node label and _E as edge label. The method converts 1D as well as multidimensional features. If there are some isolated nodes inside TFGNN graph, they won't get transferred. Nodes and edges
-        created in Memgraph DB will, for the consistency reasons, have property `dgl_id` set to the id they have as part of the TFGNN graph. Note that this method doesn't insert anything inside the database,
-        it just creates cypher queries. To insert queries the following code can be used:
-        >>> memgraph = Memgraph()
+        """Produce Cypher queries for data saved as part of the TFGNN graph. If the graph is homogeneous, a default TFGNN's labels will be used (_N as a node label and _E as edge label). The method converts 1D as well as multidimensional features. If there are some isolated nodes inside TFGNN graph, they won't get transferred. Nodes and edges
+        created in Memgraph DB will, for the consistency reasons, have property `tfgnn_id` set to the id they have as part of the TFGNN graph. Note that this method doesn't insert anything inside the database,
+        it just creates Cypher queries. To insert queries the following code can be used:
+        
+        memgraph = Memgraph()
         graph_tensor = TFGNNTranslator(...)
         for query in TFGNNTranslator().to_cypher_queries(graph_tensor):
            memgraph.execute(query)
