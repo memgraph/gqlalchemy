@@ -151,17 +151,17 @@ class TFGNNTranslator(Translator):
 
     def _infer_dtype_from_value(self, value: Any) -> tf.DType:
         """Infer TensorFlow dtype from a Python value.
-        
+
         Handles standard types (str, int, float, bool) as well as Memgraph-specific
         types like temporal types (Duration, Date, LocalTime, LocalDateTime, ZonedDateTime),
         Enum, and Point, which are converted to string representation.
-        
+
         Args:
             value: The Python value to infer dtype from.
-            
+
         Returns:
             The corresponding TensorFlow dtype.
-            
+
         Raises:
             ValueError: If the value is a dict (Map type not supported by TFGNN).
         """
@@ -183,16 +183,16 @@ class TFGNNTranslator(Translator):
 
     def _convert_value_for_tensor(self, value: Any) -> Any:
         """Convert a value to a format suitable for TensorFlow tensors.
-        
+
         Standard types (str, int, float, bool) are passed through unchanged.
         Memgraph-specific types (temporal types, Enum, Point, etc.) are converted
         to their string representation.
-        
+
         For lists, each element is recursively converted.
-        
+
         Args:
             value: The value to convert.
-            
+
         Returns:
             The converted value.
         """
@@ -283,7 +283,7 @@ class TFGNNTranslator(Translator):
             for key, value in properties.items():
                 converted_props[key] = self._convert_value_for_tensor(value)
             converted_properties_list.append(converted_props)
-        
+
         all_property_names, list_properties, dtypes, properties_with_missing_values = self._properties_metadata(
             converted_properties_list
         )
@@ -347,7 +347,7 @@ class TFGNNTranslator(Translator):
         """Produce Cypher queries for data saved as part of the TFGNN graph. If the graph is homogeneous, a default TFGNN's labels will be used (_N as a node label and _E as edge label). The method converts 1D as well as multidimensional features. If there are some isolated nodes inside TFGNN graph, they won't get transferred. Nodes and edges
         created in Memgraph DB will, for the consistency reasons, have property `tfgnn_id` set to the id they have as part of the TFGNN graph. Note that this method doesn't insert anything inside the database,
         it just creates Cypher queries. To insert queries the following code can be used:
-        
+
         memgraph = Memgraph()
         graph_tensor = TFGNNTranslator(...)
         for query in TFGNNTranslator().to_cypher_queries(graph_tensor):
