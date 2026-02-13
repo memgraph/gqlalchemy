@@ -52,15 +52,20 @@ jobs:
           docker run -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.7
       - name: Wait for Neo4j to be ready
         run: |
-          echo "Waiting for Neo4j to be ready..."
-          for i in {1..30}; do
-            if curl -s http://localhost:7474 > /dev/null 2>&1; then
+          echo "Waiting for Neo4j Bolt port (7688) to be ready..."
+          for i in {1..60}; do
+            if nc -z localhost 7688 2>/dev/null; then
+              echo "Neo4j Bolt port is open!"
+              # Give Neo4j a bit more time to fully initialize after port is open
+              sleep 5
               echo "Neo4j is ready!"
               break
             fi
-            echo "Waiting... ($i/30)"
+            echo "Waiting... ($i/60)"
             sleep 2
           done
+          # Verify Neo4j is actually responding
+          docker logs $(docker ps -q --filter ancestor=neo4j:4.4.7) 2>&1 | tail -20 || true
       - name: Install More Packages
         run: |
           ps aux | grep memgraph
