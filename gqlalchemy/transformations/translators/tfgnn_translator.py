@@ -13,23 +13,24 @@
 # limitations under the License.
 
 
-from typing import List, Dict, Any, Set, Tuple
+from collections import defaultdict
+from typing import Any, Dict, List, Set, Tuple
+
+import numpy as np
 import tensorflow as tf
 import tensorflow_gnn as tfgnn
-from collections import defaultdict
-from gqlalchemy.transformations.constants import DEFAULT_NODE_LABEL, TFGNN_ID
-from gqlalchemy.transformations.translators.translator import Translator
-import numpy as np
 
 from gqlalchemy.memgraph_constants import (
+    MG_CLIENT_NAME,
+    MG_ENCRYPTED,
     MG_HOST,
+    MG_LAZY,
+    MG_PASSWORD,
     MG_PORT,
     MG_USERNAME,
-    MG_PASSWORD,
-    MG_ENCRYPTED,
-    MG_CLIENT_NAME,
-    MG_LAZY,
 )
+from gqlalchemy.transformations.constants import DEFAULT_NODE_LABEL, TFGNN_ID
+from gqlalchemy.transformations.translators.translator import Translator
 
 
 class TFGNNTranslator(Translator):
