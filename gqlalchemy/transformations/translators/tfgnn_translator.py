@@ -150,18 +150,62 @@ class TFGNNTranslator(Translator):
         return tfgnn.GraphTensor.from_pieces(node_sets=node_sets, edge_sets=edge_sets)
 
     def _infer_dtype_from_value(self, value: Any) -> tf.DType:
+        """Infer TensorFlow dtype from a Python value.
+        
+        Handles standard types (str, int, float, bool) as well as Memgraph-specific
+        types like temporal types (Duration, Date, LocalTime, LocalDateTime, ZonedDateTime),
+        Enum, and Point, which are converted to string representation.
+        
+        Args:
+            value: The Python value to infer dtype from.
+            
+        Returns:
+            The corresponding TensorFlow dtype.
+            
+        Raises:
+            ValueError: If the value is a dict (Map type not supported by TFGNN).
+        """
         if isinstance(value, dict):
             raise ValueError(f"Map property type is not supported by TFGNN.")
         if isinstance(value, str):
             return tf.string
+        elif isinstance(value, bool):
+            # bool must come before int since bool is a subclass of int in Python
+            return tf.bool
         elif isinstance(value, int):
             return tf.int64
         elif isinstance(value, float):
             return tf.float32
-        elif isinstance(value, bool):
-            return tf.bool
         else:
-            raise ValueError(f"Unexpected type: {type(value)}.")
+            # For other types (temporal types, Enum, Point, etc.),
+            # convert to string representation
+            return tf.string
+
+    def _convert_value_for_tensor(self, value: Any) -> Any:
+        """Convert a value to a format suitable for TensorFlow tensors.
+        
+        Standard types (str, int, float, bool) are passed through unchanged.
+        Memgraph-specific types (temporal types, Enum, Point, etc.) are converted
+        to their string representation.
+        
+        For lists, each element is recursively converted.
+        
+        Args:
+            value: The value to convert.
+            
+        Returns:
+            The converted value.
+        """
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            return value
+        elif isinstance(value, list):
+            return [self._convert_value_for_tensor(v) for v in value]
+        elif isinstance(value, dict):
+            # Maps are not supported, but let _infer_dtype_from_value raise the error
+            return value
+        else:
+            # Convert temporal types, Enum, Point, etc. to string
+            return str(value)
 
     def _properties_metadata(
         self, properties_list: List[Dict[str, Any]]
@@ -227,14 +271,26 @@ class TFGNNTranslator(Translator):
 
             If a property have type Map:
                 Then exception will be raised as tfgnn.GraphTensor does not support map property type
+
+            If a property has a Memgraph-specific type (temporal types like Duration, Date, LocalTime,
+            LocalDateTime, ZonedDateTime, or Enum, Point):
+                Then it is converted to tf.string using str() representation.
         """
+        # Convert special Memgraph types to strings before processing
+        converted_properties_list = []
+        for properties in properties_list:
+            converted_props = {}
+            for key, value in properties.items():
+                converted_props[key] = self._convert_value_for_tensor(value)
+            converted_properties_list.append(converted_props)
+        
         all_property_names, list_properties, dtypes, properties_with_missing_values = self._properties_metadata(
-            properties_list
+            converted_properties_list
         )
 
         features = defaultdict(list)
 
-        for properties in properties_list:
+        for properties in converted_properties_list:
             for key in all_property_names:
                 if key not in properties:
                     # missing value

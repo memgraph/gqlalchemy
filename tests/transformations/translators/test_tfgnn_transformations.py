@@ -23,9 +23,9 @@ from gqlalchemy.transformations.translators.tfgnn_translator import TFGNNTransla
 from gqlalchemy.transformations.constants import DEFAULT_NODE_LABEL
 
 
-def test_export_homoginious_graph(memgraph: Memgraph):
+def test_export_homogeneous_graph(memgraph: Memgraph):
     """
-    Test exporting homoginious graph (nodes without labels)
+    Test exporting homogeneous graph (nodes without labels)
     """
     memgraph.execute(
         """
@@ -40,9 +40,9 @@ def test_export_homoginious_graph(memgraph: Memgraph):
     assert len(graph_tensor.edge_sets["FRIEND"].features) == 0
 
 
-def test_export_heteroghinious_graph(memgraph: Memgraph):
+def test_export_heterogeneous_graph(memgraph: Memgraph):
     """
-    Test exporting heteroghinious graph (nodes with one label)
+    Test exporting heterogeneous graph (nodes with one label)
     """
     memgraph.execute(
         """
@@ -54,9 +54,9 @@ def test_export_heteroghinious_graph(memgraph: Memgraph):
     assert graph_tensor.edge_sets["FRIEND"].sizes[0] == 1
 
 
-def test_export_heteroghinious_multi_label_graph(memgraph: Memgraph):
+def test_export_heterogeneous_multi_label_graph(memgraph: Memgraph):
     """
-    Test exporting heteroghinious graph and nodes with more than one label
+    Test exporting heterogeneous graph and nodes with more than one label
     GraphTensor will create a node for every label and edge type for each combination of source / target labels
     """
     memgraph.execute(
