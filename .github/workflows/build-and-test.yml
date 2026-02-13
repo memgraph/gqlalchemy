@@ -49,7 +49,8 @@ jobs:
           sleep 1 # Wait for Memgraph a bit.
       - name: Install Neo4j
         run: |
-          docker run --name neo4j-test -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.7
+          # Using Neo4j 4.4.18 which has cgroupv2 compatibility fixes for Ubuntu 24.04
+          docker run --name neo4j-test -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.18
       - name: Wait for Neo4j to be ready
         run: |
           echo "Waiting for Neo4j to be ready..."
