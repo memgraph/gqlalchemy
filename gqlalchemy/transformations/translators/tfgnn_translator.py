@@ -338,7 +338,7 @@ class TFGNNTranslator(Translator):
 
 def to_cypher_index_queries(self, graph_tensor: tfgnn.GraphTensor) -> List[str]:
     """
-    Creates cypher index queries for the graph.
+    Creates Cypher index queries for the graph.
     """
     queries = []
     for node_name in graph_tensor.node_sets:
