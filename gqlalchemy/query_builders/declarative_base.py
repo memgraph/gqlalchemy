@@ -92,6 +92,7 @@ class Operator(Enum):
     LEQ_THAN = "<="
     NOT_EQUAL = "!="
     INCREMENT = "+="
+    IS_NOT_NULL = "IS NOT NULL"
     SIMILAR = "=~"
 
 
@@ -184,6 +185,10 @@ class WhereConditionPartialQuery(PartialQuery):
 
         if operator_str not in Operator._value2member_map_:
             raise GQLAlchemyOperatorTypeError(clause=self.type)
+
+        # Unary operators (e.g., IS NOT NULL) don't require a literal or expression
+        if operator_str == Operator.IS_NOT_NULL.value:
+            return f"{item} {operator_str}"
 
         if value is None:
             if literal is None:
