@@ -1,6 +1,6 @@
 # How to export data from Memgraph into Python graphs
 
-GQLAlchemy holds translators that can export Memgraph graphs into Python graphs ([NetworkX](https://networkx.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/) or [DGL](https://www.dgl.ai/) graphs). These translators create a Python graph instance from the graph stored in Memgraph. 
+GQLAlchemy holds translators that can export Memgraph graphs into Python graphs ([NetworkX](https://networkx.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/), [DGL](https://www.dgl.ai/) or [TF-GNN](https://github.com/tensorflow/gnn) graphs). These translators create a Python graph instance from the graph stored in Memgraph. 
 
 [![docs-source](https://img.shields.io/badge/source-examples-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/tests/transformations/translators)
 [![docs-source](https://img.shields.io/badge/source-translators-FB6E00?logo=github&style=for-the-badge)](https://github.com/memgraph/gqlalchemy/tree/main/gqlalchemy/transformations/translators)
@@ -9,16 +9,36 @@ hood](https://img.shields.io/static/v1?label=Related&message=Under%20the%20hood&
 
 In this guide you will learn how to:
 
-- [**Export data from Memgraph into NetworkX graph**](#export-data-from-memgraph-into-networkx-graph)
-- [**Export data from Memgraph into PyG graph**](#import-pyg-graph-into-memgraph)
-- [**Export data from Memgraph into DGL graph**](#import-dgl-graph-into-memgraph)
+- [How to export data from Memgraph into Python graphs](#how-to-export-data-from-memgraph-into-python-graphs)
+  - [General prerequisites](#general-prerequisites)
+  - [Export data from Memgraph into NetworkX graph](#export-data-from-memgraph-into-networkx-graph)
+    - [Prerequisites](#prerequisites)
+    - [Create and run a Python script](#create-and-run-a-python-script)
+  - [Export data from Memgraph into PyG graph](#export-data-from-memgraph-into-pyg-graph)
+    - [Prerequisites](#prerequisites-1)
+    - [Create and run a Python script](#create-and-run-a-python-script-1)
+  - [Export data from Memgraph into DGL graph](#export-data-from-memgraph-into-dgl-graph)
+    - [Prerequisites](#prerequisites-2)
+    - [Create and run a Python script](#create-and-run-a-python-script-2)
+  - [Export data from Memgraph into TF-GNN graph](#export-data-from-memgraph-into-tf-gnn-graph)
+    - [Prerequisites](#prerequisites-3)
+    - [Create and run a Python script](#create-and-run-a-python-script-3)
+  - [Learn more](#learn-more)
 
 ## General prerequisites
-You need a running **Memgraph Platform instance**, which includes both the MAGE library and Memgraph Lab, a visual interface. To run the image, open a command-line interpreter and run the following Docker command:
+You need **Memgraph Platform** running, which includes both the MAGE library and Memgraph Lab, a visual interface. To run it on Linux/macOS, run the following in your terminal:
 
 ```
-docker run -it -p 7687:7687 -p 7444:7444 -p 3000:3000 memgraph/memgraph-platform:latest
+curl https://install.memgraph.com | sh
 ```
+
+To run it on Windows, execute the following command in the console:
+
+```
+iwr https://windows.memgraph.com | iex
+```
+
+The above command runs a script that downloads a Docker Compose file to your system, builds and starts `memgraph-mage` and `memgraph-lab` Docker services in two separate containers. 
 
 <details>
 <summary>To export data from Memgraph, you first have to <b>create a graph in Memgraph</b>. To do that, expand this section and run the given Python script.</summary>
@@ -187,6 +207,51 @@ You will get the following output:
 ```
 
 This means that the DGL graph has the correct number of node and edge types, total number of nodes and edges, as well as node and edge features. You can explore it more to see if it has all the required features.
+
+## Export data from Memgraph into TF-GNN graph
+
+### Prerequisites
+
+Except for the [**general prerequisites**](#general-prerequisites), you also need to install [**TensorFlow GNN**](https://github.com/tensorflow/gnn). You can install it with:
+
+```bash
+pip install tensorflow-gnn
+```
+
+Note: TF-GNN requires TensorFlow 2.x. For TensorFlow 2.16 and above, you may need to set `TF_USE_LEGACY_KERAS=1` environment variable.
+
+### Create and run a Python script
+
+Create a new Python script `memgraph-to-tfgnn.py`, in the code editor of your choice, with the following code:
+
+```python
+import os
+os.environ["TF_USE_LEGACY_KERAS"] = "1"  # Required for TensorFlow 2.16+
+
+from gqlalchemy.transformations.translators.tfgnn_translator import TFGNNTranslator
+
+translator = TFGNNTranslator()
+graph_tensor = translator.get_instance()
+
+print("Node sets:", list(graph_tensor.node_sets.keys()))
+print("Edge sets:", list(graph_tensor.edge_sets.keys()))
+
+for node_set_name, node_set in graph_tensor.node_sets.items():
+    print(f"Node set '{node_set_name}': {node_set.sizes[0]} nodes")
+    print(f"  Features: {list(node_set.features.keys())}")
+
+for edge_set_name, edge_set in graph_tensor.edge_sets.items():
+    print(f"Edge set '{edge_set_name}': {edge_set.sizes[0]} edges")
+    print(f"  Features: {list(edge_set.features.keys())}")
+```
+
+To run it, open a command-line interpreter and run the following command:
+
+```python
+python3 memgraph-to-tfgnn.py
+```
+
+You will get output showing the node sets, edge sets, and their features. The TF-GNN GraphTensor can now be used directly with TensorFlow GNN models for graph neural network training.
 
 ## Learn more
 
