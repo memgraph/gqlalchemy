@@ -16,9 +16,9 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
-from enum import Enum
 import json
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from enum import Enum, EnumMeta
 
 from pydantic.v1 import BaseModel, Extra, Field, PrivateAttr  # noqa F401
 
@@ -57,6 +57,36 @@ def _format_timedelta(duration: timedelta) -> str:
     remainder_sec -= minutes * 60
 
     return f"P{days}DT{hours}H{minutes}M{remainder_sec}S"
+
+
+class GraphEnum(ABC):
+    def __init__(self, enum):
+
+        if not isinstance(enum, (Enum, EnumMeta)):
+            raise TypeError()
+
+        self.enum = enum if isinstance(enum, Enum) else None
+        self.cls = enum.__class__ if isinstance(enum, Enum) else enum
+
+    @property
+    def name(self):
+        return self.cls.__name__
+
+    @property
+    def members(self):
+        return self.cls.__members__
+
+    @abstractmethod
+    def _to_cypher(self):
+        pass
+
+
+class MemgraphEnum(GraphEnum):
+    def _to_cypher(self):
+        return f"{{ {', '.join(self.cls._member_names_)} }}"
+
+    def __repr__(self):
+        return f"<enum '{self.name}'>" if self.enum is None else f"{self.name}::{self.enum.name}"
 
 
 class TriggerEventType:
@@ -357,6 +387,17 @@ class GraphObject(BaseModel):
     class Config:
         extra = Extra.allow
 
+    def __init__(self, **data):
+        for field in self.__class__.__fields__:
+            attrs = self.__class__.__fields__[field].field_info.extra
+            cls = self.__fields__[field].type_
+            if issubclass(cls, Enum) and not attrs.get("enum", False):
+                value = data.get(field)
+                if isinstance(value, dict):
+                    member = value.get("__value").split("::")[1]
+                    data[field] = cls[member].value
+        super().__init__(**data)
+
     def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None):
         """Stores the subclass by type if type is specified, or by class name
         when instantiating a subclass.
@@ -421,6 +462,8 @@ class GraphObject(BaseModel):
             return repr(value)
         elif value_type == float:
             return repr(value)
+        elif isinstance(value, Enum):
+            return repr(MemgraphEnum(value))
         elif isinstance(value, str):
             return json.dumps(value)
         elif isinstance(value, list):
@@ -495,7 +538,11 @@ class GraphObject(BaseModel):
         cypher_set_properties = []
         for field in self.__fields__:
             attributes = self.__fields__[field].field_info.extra
-            value = getattr(self, field)
+            cls = self.__fields__[field].type_
+            if issubclass(cls, Enum) and not attributes.get("enum", False):
+                value = getattr(self, field).value
+            else:
+                value = getattr(self, field)
             if value is not None and not attributes.get("on_disk", False):
                 cypher_set_properties.append(f" SET {variable_name}.{field} = {self.escape_value(value)}")
 
@@ -562,6 +609,9 @@ class NodeMetaclass(BaseModel.__class__):
             cls.labels = get_base_labels().union({cls.label}, kwargs.get("labels", set()))
 
         db = kwargs.get("db")
+
+        cls.enums = None
+
         if cls.index is True:
             if db is None:
                 raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
@@ -572,11 +622,24 @@ class NodeMetaclass(BaseModel.__class__):
         for field in cls.__fields__:
             attrs = cls.__fields__[field].field_info.extra
             field_type = cls.__fields__[field].type_.__name__
+            field_cls = cls.__fields__[field].type_
             label = attrs.get("label", cls.label)
             skip_constraints = False
 
             if db is None:
                 db = attrs.get("db")
+
+            if issubclass(field_cls, Enum) and attrs.get("enum", False):
+                if db is None:
+                    raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+                if cls.enums is None:
+                    cls.enums = db.get_enums()
+                enum_names = [x.name for x in cls.enums]
+                if field_cls.__name__ in enum_names:
+                    existing = cls.enums[enum_names.index(field_cls.__name__)]
+                    db.sync_enum(existing, MemgraphEnum(field_cls))
+                else:
+                    db.create_enum(MemgraphEnum(field_cls))
 
             for constraint in FieldAttrsConstants.list():
                 if constraint in attrs and db is None:
@@ -712,6 +775,30 @@ class RelationshipMetaclass(BaseModel.__class__):
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         if name != "Relationship":
             cls.type = kwargs.get("type", name)
+
+        db = kwargs.get("db")
+
+        cls.enums = None
+
+        for field in cls.__fields__:
+            attrs = cls.__fields__[field].field_info.extra
+            field_type = cls.__fields__[field].type_.__name__
+            field_cls = cls.__fields__[field].type_
+
+            if db is None:
+                db = attrs.get("db")
+
+            if issubclass(field_cls, Enum) and attrs.get("enum", False):
+                if db is None:
+                    raise GQLAlchemyDatabaseMissingInNodeClassError(cls=cls)
+                if cls.enums is None:
+                    cls.enums = db.get_enums()
+                enum_names = [x.name for x in cls.enums]
+                if field_type in enum_names:
+                    existing = cls.enums[enum_names.index(field_type)]
+                    db.sync_enum(existing, MemgraphEnum(field_cls))
+                else:
+                    db.create_enum(MemgraphEnum(field_cls))
 
         return cls
 
