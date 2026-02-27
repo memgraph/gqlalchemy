@@ -164,7 +164,7 @@ class GraphImporter(Importer):
         return normalized_graph
 
     def _graph_from_pydot(self, dot_graph) -> nx.MultiDiGraph:
-        """Builds a MultiDiGraph from a pydot graph without using nx.nx_pydot."""
+        """Builds a MultiDiGraph from a pydot graph."""
         graph = nx.MultiDiGraph()
 
         def _walk(current_graph) -> None:
