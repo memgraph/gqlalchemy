@@ -69,7 +69,7 @@ jobs:
       - name: Install More Packages
         run: |
           ps aux | grep memgraph
-          poetry install --all-extras
+          poetry install -E arrow -E dgl -E docker
           poe install-pyg-cpu
           poe install-dgl
           poe install-tfgnn
@@ -148,8 +148,9 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Test project
         run: |
-          poetry install --all-extras
+          poetry install -E arrow -E dgl -E docker
           poe install-pyg-cpu
+          poe install-dgl
           poe install-tfgnn
           export TF_USE_LEGACY_KERAS="1"
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
