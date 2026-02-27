@@ -47,6 +47,15 @@ def test_import_nx():
     importer.translate(None)  # it should fail safely no matter what
 
 
+def test_import_nx_normalize_dot_properties_json_key_collision():
+    importer = GraphImporter(graph_type="Nx")
+    normalized_properties = importer._normalize_dot_properties({"json": "raw-value", "label": "A"})
+
+    assert json.loads(normalized_properties["attributes_json"]) == {"json": "raw-value", "label": "A"}
+    assert normalized_properties["attributes_json_attribute"] == "raw-value"
+    assert normalized_properties["attributes_label"] == "A"
+
+
 def test_import_nx_from_dot_data(monkeypatch):
     pytest.importorskip("pydot")
 

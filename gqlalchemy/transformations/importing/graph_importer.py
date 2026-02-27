@@ -210,7 +210,10 @@ class GraphImporter(Importer):
         normalized_properties["attributes_json"] = json.dumps(normalized_attributes, sort_keys=True)
 
         for key, value in normalized_attributes.items():
-            normalized_properties[f"attributes_{key}"] = value
+            prefixed_key = f"attributes_{key}"
+            while prefixed_key in normalized_properties:
+                prefixed_key = f"{prefixed_key}_attribute"
+            normalized_properties[prefixed_key] = value
 
         return normalized_properties
 
