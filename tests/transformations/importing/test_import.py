@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 import pytest
 
 from gqlalchemy.transformations.importing.graph_importer import GraphImporter
@@ -57,21 +59,42 @@ def test_import_nx_from_dot_data(monkeypatch):
     monkeypatch.setattr(importer, "translate", _capture_translate)
 
     importer.translate_dot_data(
-        'digraph G { "A" [label="A", shape="ellipse"]; "B"; "A" -> "B" [fontsize="10"]; "A" -> "B" [fontsize="10"]; }'
+        'digraph G { "A" [label="A", shape="ellipse", color="blue"]; "B"; "A" -> "B" [fontsize="10", style="dashed"]; "A" -> "B" [fontsize="10", style="dashed"]; }'
     )
 
     assert "graph" in captured
     assert captured["graph"].is_multigraph()
+    assert captured["graph"].number_of_nodes() == 2
     assert captured["graph"].number_of_edges() == 2
+
     node_data = captured["graph"].nodes["A"]
     assert node_data["dot_type"] == "node"
     assert node_data["source_graph"] == "dot"
+    assert node_data["display_name"] == "A"
     assert node_data["attributes_label"] == "A"
-    edge_data = list(captured["graph"].edges(data=True))[0][2]
-    assert edge_data["type"] == "DOT_EDGE"
-    assert edge_data["dot_type"] == "edge"
-    assert edge_data["points"] == ["A", "B"]
-    assert edge_data["id"] == "A->B"
+    assert node_data["attributes_shape"] == "ellipse"
+    assert node_data["attributes_color"] == "blue"
+    assert json.loads(node_data["attributes_json"]) == {"color": "blue", "label": "A", "shape": "ellipse"}
+
+    node_b_data = captured["graph"].nodes["B"]
+    assert node_b_data["dot_type"] == "node"
+    assert node_b_data["display_name"] == "B"
+    assert json.loads(node_b_data["attributes_json"]) == {}
+
+    edge_data_list = [edge_data for *_, edge_data in captured["graph"].edges(data=True)]
+    assert sorted(edge_data["id"] for edge_data in edge_data_list) == ["A->B", "A->B#1"]
+    for edge_data in edge_data_list:
+        assert edge_data["type"] == "DOT_EDGE"
+        assert edge_data["dot_type"] == "edge"
+        assert edge_data["points"] == ["A", "B"]
+        assert edge_data["attributes_fontsize"] == "10"
+        assert edge_data["attributes_style"] == "dashed"
+        assert json.loads(edge_data["attributes_json"]) == {"fontsize": "10", "style": "dashed"}
+
+    sequences = [data["sequence"] for _, data in captured["graph"].nodes(data=True)] + [
+        data["sequence"] for *_, data in captured["graph"].edges(data=True)
+    ]
+    assert sorted(sequences) == [0, 1, 2, 3]
 
 
 def test_import_nx_from_dot_file(tmp_path, monkeypatch):
@@ -93,6 +116,8 @@ def test_import_nx_from_dot_file(tmp_path, monkeypatch):
 
     assert "graph" in captured
     assert captured["graph"].is_multigraph()
+    assert captured["graph"].number_of_nodes() == 2
     assert captured["graph"].number_of_edges() == 2
     edge_ids = sorted([edge_data["id"] for *_, edge_data in captured["graph"].edges(data=True)])
     assert edge_ids == ["S->T", "S->T#1"]
+    assert captured["graph"].nodes["S"]["source_graph"] == "dot"
