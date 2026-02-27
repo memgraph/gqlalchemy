@@ -14,6 +14,7 @@
 
 import json
 
+import networkx as nx
 import pytest
 
 from gqlalchemy.transformations.importing.graph_importer import GraphImporter
@@ -54,6 +55,33 @@ def test_import_nx_normalize_dot_properties_json_key_collision():
     assert json.loads(normalized_properties["attributes_json"]) == {"json": "raw-value", "label": "A"}
     assert normalized_properties["attributes_json_attribute"] == "raw-value"
     assert normalized_properties["attributes_label"] == "A"
+
+
+def test_import_nx_normalize_dot_graph_for_digraph():
+    importer = GraphImporter(graph_type="Nx")
+    dot_graph = nx.DiGraph()
+    dot_graph.add_node("A", label="A")
+    dot_graph.add_node("B")
+    dot_graph.add_edge("A", "B", style="dashed")
+
+    normalized_graph = importer._normalize_dot_graph(dot_graph)
+
+    assert isinstance(normalized_graph, nx.DiGraph)
+    assert normalized_graph.number_of_nodes() == 2
+    assert normalized_graph.number_of_edges() == 1
+
+    edge_data = normalized_graph.edges["A", "B"]
+    assert edge_data["id"] == "A->B"
+    assert edge_data["type"] == "DOT_EDGE"
+    assert edge_data["dot_type"] == "edge"
+    assert edge_data["points"] == ["A", "B"]
+    assert edge_data["attributes_style"] == "dashed"
+    assert json.loads(edge_data["attributes_json"]) == {"style": "dashed"}
+
+    sequences = [data["sequence"] for _, data in normalized_graph.nodes(data=True)] + [
+        data["sequence"] for *_, data in normalized_graph.edges(data=True)
+    ]
+    assert sorted(sequences) == [0, 1, 2]
 
 
 def test_import_nx_from_dot_data(monkeypatch):

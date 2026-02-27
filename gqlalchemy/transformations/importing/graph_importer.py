@@ -130,36 +130,19 @@ class GraphImporter(Importer):
                 node_properties["id"] = self._normalize_dot_value(node_id)
             normalized_graph.add_node(node_id, **node_properties)
 
-        if graph.is_multigraph():
-            edge_iter = graph.edges(data=True, keys=True)
-            for source, dest, _edge_key, data in edge_iter:
-                edge_properties = self._normalize_dot_properties(data)
-                edge_properties["dot_type"] = "edge"
-                edge_properties["type"] = "DOT_EDGE"
-                edge_key = f"{source}->{dest}"
-                edge_index = edge_ids[edge_key]
-                edge_ids[edge_key] += 1
-                edge_id = edge_key if edge_index == 0 else f"{edge_key}#{edge_index}"
-                edge_properties["id"] = self._normalize_dot_value(edge_id)
-                edge_properties["points"] = [self._normalize_dot_value(source), self._normalize_dot_value(dest)]
-                edge_properties["sequence"] = sequence
-                sequence += 1
-                normalized_graph.add_edge(source, dest, **edge_properties)
-        else:
-            edge_iter = graph.edges(data=True)
-            for source, dest, data in edge_iter:
-                edge_properties = self._normalize_dot_properties(data)
-                edge_properties["dot_type"] = "edge"
-                edge_properties["type"] = "DOT_EDGE"
-                edge_key = f"{source}->{dest}"
-                edge_index = edge_ids[edge_key]
-                edge_ids[edge_key] += 1
-                edge_id = edge_key if edge_index == 0 else f"{edge_key}#{edge_index}"
-                edge_properties["id"] = self._normalize_dot_value(edge_id)
-                edge_properties["points"] = [self._normalize_dot_value(source), self._normalize_dot_value(dest)]
-                edge_properties["sequence"] = sequence
-                sequence += 1
-                normalized_graph.add_edge(source, dest, **edge_properties)
+        for source, dest, data in graph.edges(data=True):
+            edge_properties = self._normalize_dot_properties(data)
+            edge_properties["dot_type"] = "edge"
+            edge_properties["type"] = "DOT_EDGE"
+            edge_key = f"{source}->{dest}"
+            edge_index = edge_ids[edge_key]
+            edge_ids[edge_key] += 1
+            edge_id = edge_key if edge_index == 0 else f"{edge_key}#{edge_index}"
+            edge_properties["id"] = self._normalize_dot_value(edge_id)
+            edge_properties["points"] = [self._normalize_dot_value(source), self._normalize_dot_value(dest)]
+            edge_properties["sequence"] = sequence
+            sequence += 1
+            normalized_graph.add_edge(source, dest, **edge_properties)
 
         return normalized_graph
 
