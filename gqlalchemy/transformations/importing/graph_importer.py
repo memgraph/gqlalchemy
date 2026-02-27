@@ -90,7 +90,11 @@ class GraphImporter(Importer):
         self._raise_if_not_nx_importer()
         raise_if_not_imported(dependency=pydot, dependency_name="pydot")
 
-        graph = self._normalize_dot_graph(nx.nx_pydot.read_dot(path))
+        pydot_graphs = pydot.graph_from_dot_file(path)
+        if not pydot_graphs:
+            raise ValueError("Unable to parse DOT file.")
+
+        graph = self._normalize_dot_graph(self._graph_from_pydot(pydot_graphs[0]))
         self.translate(graph)
 
     def translate_dot_data(self, dot_data: str) -> None:
@@ -102,7 +106,7 @@ class GraphImporter(Importer):
         if not pydot_graphs:
             raise ValueError("Unable to parse DOT data.")
 
-        graph = self._normalize_dot_graph(nx.nx_pydot.from_pydot(pydot_graphs[0]))
+        graph = self._normalize_dot_graph(self._graph_from_pydot(pydot_graphs[0]))
         self.translate(graph)
 
     def _raise_if_not_nx_importer(self) -> None:
@@ -158,6 +162,45 @@ class GraphImporter(Importer):
                 normalized_graph.add_edge(source, dest, **edge_properties)
 
         return normalized_graph
+
+    def _graph_from_pydot(self, dot_graph) -> nx.MultiDiGraph:
+        """Builds a MultiDiGraph from a pydot graph without using nx.nx_pydot."""
+        graph = nx.MultiDiGraph()
+
+        def _walk(current_graph) -> None:
+            for node in current_graph.get_nodes():
+                node_id = self._normalize_dot_value(node.get_name())
+                # Ignore pydot/graphviz pseudo-nodes used for defaults.
+                if node_id in {"", "node", "edge", "graph"}:
+                    continue
+
+                properties = {
+                    self._sanitize_property_key(key): self._normalize_dot_value(value)
+                    for key, value in (node.get_attributes() or {}).items()
+                }
+                if node_id in graph.nodes:
+                    graph.nodes[node_id].update(properties)
+                else:
+                    graph.add_node(node_id, **properties)
+
+            for edge in current_graph.get_edges():
+                source = self._normalize_dot_value(edge.get_source())
+                dest = self._normalize_dot_value(edge.get_destination())
+                if not source or not dest:
+                    continue
+
+                properties = {
+                    self._sanitize_property_key(key): self._normalize_dot_value(value)
+                    for key, value in (edge.get_attributes() or {}).items()
+                }
+                graph.add_edge(source, dest, **properties)
+
+            for subgraph in current_graph.get_subgraphs():
+                _walk(subgraph)
+
+        _walk(dot_graph)
+
+        return graph
 
     def _normalize_dot_properties(self, properties: Dict[str, Any]) -> Dict[str, Any]:
         normalized_attributes = {
