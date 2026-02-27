@@ -10,6 +10,7 @@ hood](https://img.shields.io/static/v1?label=Related&message=Under%20the%20hood&
 In this guide you will learn how to:
 
 - [**Import NetworkX graph into Memgraph**](#import-networkx-graph-into-memgraph)
+- [**Import DOT graph into Memgraph**](#import-dot-graph-into-memgraph)
 - [**Import PyG graph into Memgraph**](#import-pyg-graph-into-memgraph)
 - [**Import DGL graph into Memgraph**](#import-dgl-graph-into-memgraph)
 - [**Import TF-GNN graph into Memgraph**](#import-tf-gnn-graph-into-memgraph)
@@ -79,6 +80,29 @@ Click **Run Query** button to see the results.
 <img src={require('../data/networkx-example-2.png').default} alt="networkx-example-1" className={"imgBorder"}/>
 
 The NetworkX node identification number maps to the `id` node property in Memgraph. The `labels` key is reserved for the node label in Memgraph, while the edge `type` key is reserved for the relationship type in Memgraph. If no `type` is defined, then the relationship will be of type `TO` in Memgraph. You can notice that the node with the property `name` Kata and property `id` 2 doesn't have a label. This happened because the node property key `labels` was not defined. 
+
+## Import DOT graph into Memgraph
+
+You can import DOT files by using `GraphImporter` with `graph_type="NX"`. DOT parsing uses `pydot` and NetworkX under the hood.
+
+### Create and run a Python script
+
+Create a new Python script `dot-graph.py` with the following code:
+
+```python
+from gqlalchemy.transformations.importing.graph_importer import GraphImporter
+
+importer = GraphImporter(graph_type="NX")
+
+# Import from a DOT file path.
+importer.translate_dot_file("graph.dot")
+
+# Or import directly from DOT content.
+dot_data = 'digraph G { "A" [label="A"]; "B"; "A" -> "B" [fontsize="10"]; }'
+importer.translate_dot_data(dot_data)
+```
+
+During DOT import, GQLAlchemy enriches parsed nodes and edges with DOT-specific metadata (for example `dot_type`, `attributes_json`, flattened `attributes_*` keys, `sequence`, and stable edge `id` values).
 
 ## Import PyG graph into Memgraph 
 

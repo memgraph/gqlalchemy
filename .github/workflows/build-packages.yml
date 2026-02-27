@@ -122,9 +122,10 @@ jobs:
       - name: Install wheel and dependencies
         run: |
           python -m pip install dist/*.whl
-          poetry install --all-extras
+          poetry install -E arrow -E dgl -E docker
           poe install-pyg-cpu
           poe install-dgl
+          poe install-tfgnn
 
       - name: Run Tests
         run: |

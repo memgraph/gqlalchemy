@@ -33,6 +33,7 @@ To import Parquet, ORC or IPC/Feather/Arrow file into Memgraph via GQLAlchemy, [
 ## Python graphs - NetworkX, PyG or DGL graph
 
 To import NetworkX, PyG or DGL graph into Memgraph via GQLAlchemy, [transform the source graph into Memgraph graph](how-to-guides/translators/import-python-graphs.md).
+DOT files and DOT strings are also supported through the NetworkX importer (`GraphImporter(graph_type="NX")`) with `translate_dot_file(...)` and `translate_dot_data(...)`.
 
 ## Kafka, RedPanda or Pulsar data stream
 
