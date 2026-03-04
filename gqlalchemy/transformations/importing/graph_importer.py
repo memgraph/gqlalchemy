@@ -79,7 +79,7 @@ class GraphImporter(Importer):
     def translate(self, graph) -> None:
         """Gets cypher queries using the underlying translator and then inserts all queries to Memgraph DB.
         Args:
-            graph: dgl, pytorch geometric or nx graph instance.
+            graph: dgl, pytorch geometric, dot or nx graph instance.
         """
         memgraph = Memgraph()
         for query in self.translator.to_cypher_queries(graph):
