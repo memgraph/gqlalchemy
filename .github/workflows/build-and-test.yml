@@ -69,7 +69,7 @@ jobs:
       - name: Install More Packages
         run: |
           ps aux | grep memgraph
-          poetry install -E arrow -E dgl -E docker
+          poetry install -E arrow -E dgl -E docker -E dot
           poe install-pyg-cpu
           poe install-dgl
           poe install-tfgnn
@@ -148,7 +148,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Test project
         run: |
-          poetry install -E arrow -E dgl -E docker
+          poetry install -E arrow -E dgl -E docker -E dot
           poe install-pyg-cpu
           poe install-dgl
           poe install-tfgnn

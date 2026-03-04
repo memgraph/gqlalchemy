@@ -85,6 +85,14 @@ The NetworkX node identification number maps to the `id` node property in Memgra
 
 You can import DOT files by using `GraphImporter` with `graph_type="NX"`. DOT parsing uses `pydot` and NetworkX under the hood.
 
+### Prerequisites
+
+Except for the [**general prerequisites**](#general-prerequisites), install DOT parsing support:
+
+```bash
+pip install gqlalchemy[dot]
+```
+
 ### Create and run a Python script
 
 Create a new Python script `dot-graph.py` with the following code:
