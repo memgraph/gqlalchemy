@@ -57,6 +57,76 @@ def test_import_nx_normalize_dot_properties_json_key_collision():
     assert normalized_properties["attributes_label"] == "A"
 
 
+def test_import_nx_normalize_dot_properties_sanitized_key_collision_preserves_all_values():
+    importer = GraphImporter(graph_type="Nx")
+
+    normalized_properties = importer._normalize_dot_properties({"my.attr": "dot-value", "my-attr": "dash-value"})
+
+    assert json.loads(normalized_properties["attributes_json"]) == {"my_attr": "dot-value", "my_attr_1": "dash-value"}
+    assert normalized_properties["attributes_my_attr"] == "dot-value"
+    assert normalized_properties["attributes_my_attr_1"] == "dash-value"
+
+
+def test_import_nx_graph_from_pydot_sanitized_key_collision_preserves_all_values():
+    importer = GraphImporter(graph_type="Nx")
+
+    class _DummyNode:
+        def __init__(self, name, attributes):
+            self._name = name
+            self._attributes = attributes
+
+        def get_name(self):
+            return self._name
+
+        def get_attributes(self):
+            return self._attributes
+
+    class _DummyEdge:
+        def __init__(self, source, destination, attributes):
+            self._source = source
+            self._destination = destination
+            self._attributes = attributes
+
+        def get_source(self):
+            return self._source
+
+        def get_destination(self):
+            return self._destination
+
+        def get_attributes(self):
+            return self._attributes
+
+    class _DummyDotGraph:
+        def __init__(self, nodes, edges):
+            self._nodes = nodes
+            self._edges = edges
+
+        def get_nodes(self):
+            return self._nodes
+
+        def get_edges(self):
+            return self._edges
+
+        def get_subgraphs(self):
+            return []
+
+    dot_graph = _DummyDotGraph(
+        nodes=[
+            _DummyNode("A", {"my.attr": "dot-value", "my-attr": "dash-value"}),
+            _DummyNode("B", {}),
+        ],
+        edges=[_DummyEdge("A", "B", {"edge.attr": "left", "edge-attr": "right"})],
+    )
+
+    graph = importer._graph_from_pydot(dot_graph)
+    edge_data = next(iter(graph.edges(data=True)))[2]
+
+    assert graph.nodes["A"]["my_attr"] == "dot-value"
+    assert graph.nodes["A"]["my_attr_1"] == "dash-value"
+    assert edge_data["edge_attr"] == "left"
+    assert edge_data["edge_attr_1"] == "right"
+
+
 def test_import_nx_normalize_dot_graph_for_digraph():
     importer = GraphImporter(graph_type="Nx")
     dot_graph = nx.DiGraph()

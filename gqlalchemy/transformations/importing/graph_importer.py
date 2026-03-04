@@ -157,10 +157,7 @@ class GraphImporter(Importer):
                 if node_id in {"", "node", "edge", "graph"}:
                     continue
 
-                properties = {
-                    self._sanitize_property_key(key): self._normalize_dot_value(value)
-                    for key, value in (node.get_attributes() or {}).items()
-                }
+                properties = self._normalize_dot_attributes(node.get_attributes() or {})
                 if node_id in graph.nodes:
                     graph.nodes[node_id].update(properties)
                 else:
@@ -172,10 +169,7 @@ class GraphImporter(Importer):
                 if not source or not dest:
                     continue
 
-                properties = {
-                    self._sanitize_property_key(key): self._normalize_dot_value(value)
-                    for key, value in (edge.get_attributes() or {}).items()
-                }
+                properties = self._normalize_dot_attributes(edge.get_attributes() or {})
                 graph.add_edge(source, dest, **properties)
 
             for subgraph in current_graph.get_subgraphs():
@@ -186,9 +180,7 @@ class GraphImporter(Importer):
         return graph
 
     def _normalize_dot_properties(self, properties: Dict[str, Any]) -> Dict[str, Any]:
-        normalized_attributes = {
-            self._sanitize_property_key(key): self._normalize_dot_value(value) for key, value in properties.items()
-        }
+        normalized_attributes = self._normalize_dot_attributes(properties)
         normalized_properties: Dict[str, Any] = dict(normalized_attributes)
         normalized_properties["attributes_json"] = json.dumps(normalized_attributes, sort_keys=True)
 
@@ -199,6 +191,23 @@ class GraphImporter(Importer):
             normalized_properties[prefixed_key] = value
 
         return normalized_properties
+
+    def _normalize_dot_attributes(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
+        normalized_attributes: Dict[str, Any] = {}
+        for key, value in attributes.items():
+            sanitized_key = self._sanitize_property_key(key)
+            unique_key = self._resolve_key_collision(sanitized_key, normalized_attributes)
+            normalized_attributes[unique_key] = self._normalize_dot_value(value)
+        return normalized_attributes
+
+    @staticmethod
+    def _resolve_key_collision(base_key: str, properties: Dict[str, Any]) -> str:
+        unique_key = base_key
+        suffix = 1
+        while unique_key in properties:
+            unique_key = f"{base_key}_{suffix}"
+            suffix += 1
+        return unique_key
 
     @staticmethod
     def _normalize_dot_value(value: Any) -> Any:
