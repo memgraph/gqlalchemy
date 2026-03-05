@@ -36,6 +36,7 @@ additional import/export capabilities, use one of the following install options:
 ```bash
 pip install gqlalchemy[arrow] # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
 pip install gqlalchemy[dgl] # DGL support (also includes torch)
+pip install gqlalchemy[dot] # DOT graph import support (pydot)
 pip install gqlalchemy[docker] # Docker support
 
 pip install gqlalchemy[all] # All of the above
@@ -70,6 +71,7 @@ poetry install # No extras
 
 poetry install -E arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
 poetry install -E dgl # DGL support (also includes torch)
+poetry install -E dot # DOT graph import support (pydot)
 poetry install -E docker # Docker support
 
 ```
