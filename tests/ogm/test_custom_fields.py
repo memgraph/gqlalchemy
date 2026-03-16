@@ -13,10 +13,13 @@
 
 from pydantic.v1 import Field
 
+from enum import Enum
+
 from gqlalchemy import (
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
+    MemgraphEnum,
     Neo4jConstraintUnique,
     Neo4jIndex,
     Node,
@@ -54,6 +57,19 @@ def test_create_index(memgraph):
     actual_constraints = memgraph.get_indexes()
 
     assert actual_constraints == [memgraph_index]
+
+
+def test_create_graph_enum(memgraph):
+    enum1 = Enum("MgEnum", (("MEMBER1", "value1"), ("MEMBER2", "value2"), ("MEMBER3", "value3")))
+
+    class Node3(Node):
+        type: enum1
+
+    memgraph_enum = MemgraphEnum(enum1)
+
+    actual_enums = memgraph.get_enums()
+
+    assert actual_enums == [memgraph_enum]
 
 
 def test_create_constraint_unique_neo4j(neo4j):
