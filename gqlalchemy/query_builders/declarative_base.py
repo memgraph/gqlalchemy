@@ -86,6 +86,7 @@ class Operator(Enum):
     EQUAL = "="
     GEQ_THAN = ">="
     GREATER_THAN = ">"
+    IN = "IN"
     INEQUAL = "<>"
     LABEL_FILTER = ":"
     LESS_THAN = "<"

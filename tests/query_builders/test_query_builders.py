@@ -420,6 +420,23 @@ class TestMemgraphNeo4jQueryBuilder:
 
         mock.assert_called_with(expected_query)
 
+    def test_where_in(self, vendor):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .where(item="n.name", operator=Operator.IN, literal=["best_name", "worst_name"])
+            .return_()
+        )
+        expected_query = ' MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name IN ["best_name", "worst_name"] RETURN * '
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
     def test_where_not_label(self, vendor):
         query_builder = (
             vendor[1]
