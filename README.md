@@ -129,6 +129,7 @@ Other parts of the documentation are written and located at docs directory. To t
 pip3 install mkdocs
 pip3 install mkdocs-material
 pip3 install pymdown-extensions
+pip3 install cairosvg 
 mkdocs serve
 ```
 
