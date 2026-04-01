@@ -44,8 +44,14 @@ numpy = ">=1.26.4, <3.0"
 pandas = "<=2.2.3"
 pyarrow = { version = "^16", optional = true } # higher version of pyarrow will not be compatible with apache-beam (tensorflow-gnn dependency)
 tensorflow-gnn = { version = ">=1.0.0,<2.0.0", optional = true }
-tensorflow-macos = {version = "2.16.2", markers="platform_machine == 'arm64' or platform_system == 'Darwin'" }
-tensorflow = {version = "2.16.2", markers="platform_machine != 'arm64' or platform_system != 'Darwin'" }
+tensorflow-macos = [
+  {version = "2.16.2", optional = true, markers="platform_machine == 'arm64' and platform_system == 'Darwin' and python_version < '3.13'" },
+  {version = ">=2.21,<2.22", optional = true, markers="platform_machine == 'arm64' and platform_system == 'Darwin' and python_version >= '3.13' and python_version < '3.14'" },
+]
+tensorflow = [
+  {version = "2.16.2", optional = true, markers="(platform_machine != 'arm64' or platform_system != 'Darwin') and python_version < '3.13'" },
+  {version = ">=2.21,<2.22", optional = true, markers="(platform_machine != 'arm64' or platform_system != 'Darwin') and python_version >= '3.13' and python_version < '3.14'" },
+]
 tf-keras = {version = ">=2.16,<3.0", optional = true}
 torch = { version = "^2.4", optional = true, source = "pytorch-cpu" }
 docker = { version = "^6.1.3", optional = true }

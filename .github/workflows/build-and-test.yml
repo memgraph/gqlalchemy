@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
         os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
@@ -66,13 +66,26 @@ jobs:
           # Show Neo4j logs for debugging
           echo "=== Neo4j logs ==="
           docker logs neo4j-test 2>&1 | tail -30 || true
-      - name: Install More Packages
+      - name: Install native build dependencies (Python 3.14)
+        if: ${{ matrix.python-version == '3.14' }}
+        run: |
+          # Needed when packages fall back to source builds (for example h5py).
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libhdf5-dev
+      - name: Install More Packages (Python <= 3.12)
+        if: ${{ matrix.python-version == '3.9' || matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         run: |
           ps aux | grep memgraph
           poetry install -E arrow -E dgl -E docker -E dot
           poe install-pyg-cpu
           poe install-dgl
           poe install-tfgnn
+      - name: Install More Packages (Python >= 3.13)
+        if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
+        run: |
+          ps aux | grep memgraph
+          # Keep Arrow/TF-GNN-related installs off for 3.13+ to avoid pyarrow/h5py build failures in CI.
+          poetry install -E docker -E dot
       - name: Run Tests
         run: |
           export TF_USE_LEGACY_KERAS="1"
@@ -91,7 +104,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
