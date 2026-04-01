@@ -2,7 +2,7 @@ name: Build and Test
 
 env:
   MG_VERSION: "3.3.0"
-  POETRY_VERSION: "1.8.2"
+  UV_VERSION: "0.11.2"
   VM_MAX_MAP_COUNT: "262144"
 
 on:
@@ -34,11 +34,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           sudo -H pip install networkx numpy scipy
-          sudo -H pip install poethepoet==0.18.1
-      - name: Setup poetry
-        uses: abatilo/actions-poetry@v2.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          poetry-version: ${{ env.POETRY_VERSION }}
+          version: ${{ env.UV_VERSION }}
       - name: Install Memgraph
         run: |
           mkdir /home/runner/memgraph
@@ -69,14 +68,14 @@ jobs:
       - name: Install More Packages
         run: |
           ps aux | grep memgraph
-          poetry install -E arrow -E dgl -E docker -E dot
-          poe install-pyg-cpu
-          poe install-dgl
-          poe install-tfgnn
+          uv sync --extra arrow --extra dgl --extra docker --extra dot
+          uv pip install dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation
+          uv pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
+          uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0' 'tf-keras>=2.16,<3.0'
       - name: Run Tests
         run: |
           export TF_USE_LEGACY_KERAS="1"
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+          uv run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v4
         if: always()
@@ -105,7 +104,6 @@ jobs:
         run: |
           python -m pip install -U pip
           python -m pip install networkx numpy scipy
-          python -m pip install poethepoet==0.18.1
       - name: Set default WSL version to 2
         run: wsl --set-default-version 2
       - uses: Vampire/setup-wsl@v3
@@ -142,18 +140,18 @@ jobs:
           cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.python-version }}/neo4j.conf
           sudo service neo4j start
           sleep 10 # Wait for Neo4j a bit.
-      - name: Setup poetry
-        uses: abatilo/actions-poetry@v2.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          poetry-version: ${{ env.POETRY_VERSION }}
+          version: ${{ env.UV_VERSION }}
       - name: Test project
         run: |
-          poetry install -E arrow -E dgl -E docker -E dot
-          poe install-pyg-cpu
-          poe install-dgl
-          poe install-tfgnn
+          uv sync --extra arrow --extra dgl --extra docker --extra dot
+          uv pip install dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation
+          uv pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
+          uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0' 'tf-keras>=2.16,<3.0'
           export TF_USE_LEGACY_KERAS="1"
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+          uv run pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Save Memgraph Logs
         uses: actions/upload-artifact@v4
         if: always()

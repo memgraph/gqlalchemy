@@ -1,7 +1,7 @@
 # How to install GQLAlchemy
 
 There are two main ways of installing GQLAlchemy: with package managers such
-as pip and Poetry, and by building it from source.
+as pip and uv, and by building it from source.
 
 ## Prerequisites
 
@@ -56,38 +56,38 @@ pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geo
     ```
 ## Build from source
 
-Clone or download the [GQLAlchemy source code](https://github.com/memgraph/gqlalchemy) locally and run the following command to build it from source with Poetry:
+Clone or download the [GQLAlchemy source code](https://github.com/memgraph/gqlalchemy) locally and run the following command to build it from source with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-poetry install --all-extras
+uv sync --all-extras
 ```
 
-The `poetry install --all-extras` command installs GQLAlchemy with all extras
-(optional dependencies). Alternatively, you can use the `-E` option to define
+The `uv sync --all-extras` command installs GQLAlchemy with all extras
+(optional dependencies). Alternatively, you can use the `--extra` option to define
 what extras to install:
 
 ```bash
-poetry install # No extras
+uv sync # No extras
 
-poetry install -E arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
-poetry install -E dgl # DGL support (also includes torch)
-poetry install -E dot # DOT graph import support (pydot)
-poetry install -E docker # Docker support
+uv sync --extra arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
+uv sync --extra dgl # DGL support (also includes torch)
+uv sync --extra dot # DOT graph import support (pydot)
+uv sync --extra docker # Docker support
 
 ```
 
 To run the tests, make sure you have an [active Memgraph instance](https://memgraph.com/docs/getting-started/install-memgraph), and execute one of the following commands:
 
 ```bash
-poetry run pytest . -k "not slow" # If all extras installed
+uv run pytest . -k "not slow" # If all extras installed
 
-poetry run pytest . -k "not slow and not extras" # Otherwise
+uv run pytest . -k "not slow and not extras" # Otherwise
 ```
 
 If you’ve installed only certain extras, it’s also possible to run their associated tests:
 
 ```bash
-poetry run pytest . -k "arrow"
-poetry run pytest . -k "dgl"
-poetry run pytest . -k "docker"
+uv run pytest . -k "arrow"
+uv run pytest . -k "dgl"
+uv run pytest . -k "docker"
 ```
