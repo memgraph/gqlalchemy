@@ -44,7 +44,10 @@ dacite = "^1.6.0"
 adlfs = ">=2023.9.0,<2025.0.0"
 neo4j = ">=4.4.3,<6.0.0"
 numpy = ">=1.26.4, <3.0"
-pandas = "<=2.2.3"
+pandas = [
+  { version = "<=2.2.3", python = ">=3.9,<3.14" },
+  { version = ">=2.3,<4.0", python = ">=3.14,<4.0" },
+]
 pyarrow = [
   { version = ">=16,<17", optional = true, python = ">=3.9,<3.13" },
   { version = ">=22,<24", optional = true, python = ">=3.13,<4.0" },
