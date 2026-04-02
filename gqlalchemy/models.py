@@ -18,9 +18,9 @@ from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
 from enum import Enum
 import json
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, ClassVar, Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from pydantic.v1 import BaseModel, Extra, Field, PrivateAttr  # noqa F401
+from pydantic import BaseModel, ConfigDict, Field as PydanticField, PrivateAttr  # noqa F401
 
 from gqlalchemy.exceptions import (
     GQLAlchemyError,
@@ -46,6 +46,64 @@ datetimeKwMapping = {
     datetime: DatetimeKeywords.LOCALDATETIME.value,
     date: DatetimeKeywords.DATE.value,
 }
+
+
+def _get_model_fields(model: Any) -> Dict[str, Any]:
+    model_fields = getattr(model, "model_fields", None)
+    if model_fields is not None:
+        return model_fields
+    return getattr(model, "__fields__", {})
+
+
+def _get_field_attrs(field: Any) -> Dict[str, Any]:
+    attrs = getattr(field, "json_schema_extra", None)
+    if isinstance(attrs, dict):
+        return attrs
+
+    field_info = getattr(field, "field_info", None)
+    if field_info is not None:
+        extra = getattr(field_info, "extra", None)
+        if isinstance(extra, dict):
+            return extra
+        json_schema_extra = getattr(field_info, "json_schema_extra", None)
+        if isinstance(json_schema_extra, dict):
+            return json_schema_extra
+
+    return {}
+
+
+def _set_field_attrs(field: Any, attrs: Dict[str, Any]) -> None:
+    copied_attrs = dict(attrs)
+    if hasattr(field, "json_schema_extra"):
+        field.json_schema_extra = copied_attrs
+        return
+
+    field_info = getattr(field, "field_info", None)
+    if field_info is not None and hasattr(field_info, "extra"):
+        field_info.extra = copied_attrs
+
+
+def _get_field_type_name(field: Any) -> str:
+    if hasattr(field, "type_"):
+        return field.type_.__name__
+
+    annotation = getattr(field, "annotation", None)
+    return getattr(annotation, "__name__", str(annotation))
+
+
+def Field(default=..., **kwargs):  # noqa N802
+    """Pydantic Field wrapper that stores custom OGM metadata in json_schema_extra."""
+    json_schema_extra = kwargs.pop("json_schema_extra", None)
+    extras = dict(json_schema_extra or {})
+
+    for attr in ("index", "exists", "unique", "db", "on_disk", "label"):
+        if attr in kwargs:
+            extras[attr] = kwargs.pop(attr)
+
+    if extras:
+        kwargs["json_schema_extra"] = extras
+
+    return PydanticField(default, **kwargs)
 
 
 def _format_timedelta(duration: timedelta) -> str:
@@ -352,10 +410,16 @@ class MemgraphTrigger:
 
 
 class GraphObject(BaseModel):
-    _subtypes_: Dict = dict()
+    _subtypes_: ClassVar[Dict[str, Any]] = {}
+    model_config = ConfigDict(extra="allow", coerce_numbers_to_str=True)
 
-    class Config:
-        extra = Extra.allow
+    def __init__(self, **data):
+        # Preserve explicitly provided underscore-prefixed attributes.
+        private_data = {key: value for key, value in data.items() if key.startswith("_")}
+        super().__init__(**data)
+        for key, value in private_data.items():
+            if key in self.__private_attributes__:
+                setattr(self, key, value)
 
     def __init_subclass__(cls, type=None, label=None, labels=None, index=None, db=None):
         """Stores the subclass by type if type is specified, or by class name
@@ -402,11 +466,20 @@ class GraphObject(BaseModel):
         return sub(**data)
 
     @classmethod
+    def model_validate(cls, obj, *args, **kwargs):
+        """Used to convert a dictionary object into the appropriate GraphObject."""
+        if isinstance(obj, cls):
+            return obj
+        if isinstance(obj, dict):
+            return cls._convert_to_real_type_(obj)
+        return super().model_validate(obj, *args, **kwargs)
+
+    @classmethod
     def parse_obj(cls, obj):
         """Used to convert a dictionary object into the appropriate
         GraphObject.
         """
-        return cls._convert_to_real_type_(obj)
+        return cls.model_validate(obj)
 
     def escape_value(
         self, value: Union[None, bool, int, float, str, list, dict, datetime, timedelta, date, time]
@@ -463,7 +536,7 @@ class GraphObject(BaseModel):
                 "user.name = 'John' AND user.age = 34"
         """
         cypher_fields = []
-        for field in self.__fields__:
+        for field in _get_model_fields(type(self)):
             value = getattr(self, field)
             if value is not None:
                 cypher_fields.append(f"{variable_name}.{field} = {self.escape_value(value)}")
@@ -493,8 +566,8 @@ class GraphObject(BaseModel):
     def _get_cypher_set_properties(self, variable_name: str) -> str:
         """Returns a cypher set properties block."""
         cypher_set_properties = []
-        for field in self.__fields__:
-            attributes = self.__fields__[field].field_info.extra
+        for field, field_definition in _get_model_fields(type(self)).items():
+            attributes = _get_field_attrs(field_definition)
             value = getattr(self, field)
             if value is not None and not attributes.get("on_disk", False):
                 cypher_set_properties.append(f" SET {variable_name}.{field} = {self.escape_value(value)}")
@@ -520,7 +593,7 @@ class UniqueGraphObject(GraphObject):
 
     @property
     def _properties(self) -> Dict[str, Any]:  # noqa: F811
-        return {k: v for k, v in dict(self).items() if not k.startswith("_") and k != "labels"}
+        return {k: v for k, v in self.model_dump().items() if not k.startswith("_") and k != "labels"}
 
     def __str__(self) -> str:
         return f"<GraphObject id={self._id} properties={self._properties}>"
@@ -539,8 +612,9 @@ class NodeMetaclass(BaseModel.__class__):
         def field_in_superclass(field, constraint):
             nonlocal bases
             for base in bases:
-                if field in base.__fields__:
-                    attrs = base.__fields__[field].field_info.extra
+                base_fields = _get_model_fields(base)
+                if field in base_fields:
+                    attrs = _get_field_attrs(base_fields[field])
                     if constraint in attrs:
                         return base
 
@@ -569,9 +643,10 @@ class NodeMetaclass(BaseModel.__class__):
             index = MemgraphIndex(cls.label)
             db.create_index(index)
 
-        for field in cls.__fields__:
-            attrs = cls.__fields__[field].field_info.extra
-            field_type = cls.__fields__[field].type_.__name__
+        cls_fields = _get_model_fields(cls)
+        for field, field_definition in cls_fields.items():
+            attrs = _get_field_attrs(field_definition)
+            field_type = _get_field_type_name(field_definition)
             label = attrs.get("label", cls.label)
             skip_constraints = False
 
@@ -582,7 +657,8 @@ class NodeMetaclass(BaseModel.__class__):
                 if constraint in attrs and db is None:
                     base = field_in_superclass(field, constraint)
                     if base is not None:
-                        cls.__fields__[field].field_info.extra = base.__fields__[field].field_info.extra
+                        base_fields = _get_model_fields(base)
+                        _set_field_attrs(field_definition, _get_field_attrs(base_fields[field]))
                         skip_constraints = True
                         break
 
@@ -634,8 +710,8 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
     def _get_cypher_unique_fields_or_block(self, variable_name: str) -> str:
         """Get's a cypher assignment block using the unique fields."""
         cypher_unique_fields = []
-        for field in self.__fields__:
-            attrs = self.__fields__[field].field_info.extra
+        for field, field_definition in _get_model_fields(type(self)).items():
+            attrs = _get_field_attrs(field_definition)
             if "unique" in attrs:
                 value = getattr(self, field)
                 if value is not None:
@@ -645,8 +721,8 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
 
     def has_unique_fields(self) -> bool:
         """Returns True if the Node has any unique fields."""
-        for field in self.__fields__:
-            if "unique" in self.__fields__[field].field_info.extra:
+        for field, field_definition in _get_model_fields(type(self)).items():
+            if "unique" in _get_field_attrs(field_definition):
                 if getattr(self, field) is not None:
                     return True
         return False
@@ -665,7 +741,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         Null properties are ignored.
         """
         node = db.save_node(self)
-        for field in self.__fields__:
+        for field in _get_model_fields(type(self)):
             setattr(self, field, getattr(node, field))
         self._id = node._id
         return self
@@ -681,7 +757,7 @@ class Node(UniqueGraphObject, metaclass=NodeMetaclass):
         If no node is found or no properties are set it raises a GQLAlchemyError.
         """
         node = db.load_node(self)
-        for field in self.__fields__:
+        for field in _get_model_fields(type(self)):
             setattr(self, field, getattr(node, field))
         self._id = node._id
         return self
@@ -754,7 +830,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
         relationship, use `load_relationship` first.
         """
         relationship = db.save_relationship(self)
-        for field in self.__fields__:
+        for field in _get_model_fields(type(self)):
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id
         return self
@@ -770,7 +846,7 @@ class Relationship(UniqueGraphObject, metaclass=RelationshipMetaclass):
         multiple relationships like that in Memgraph, throws GQLAlchemyError.
         """
         relationship = db.load_relationship(self)
-        for field in self.__fields__:
+        for field in _get_model_fields(type(self)):
             setattr(self, field, getattr(relationship, field))
         self._id = relationship._id
         return self

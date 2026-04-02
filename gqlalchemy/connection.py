@@ -119,7 +119,7 @@ class MemgraphConnection(Connection):
 def _convert_memgraph_value(value: Any) -> Any:
     """Converts Memgraph objects to custom Node/Relationship objects."""
     if isinstance(value, mgclient.Relationship):
-        return Relationship.parse_obj(
+        return Relationship.model_validate(
             {
                 "_type": value.type,
                 "_id": value.id,
@@ -130,7 +130,7 @@ def _convert_memgraph_value(value: Any) -> Any:
         )
 
     if isinstance(value, mgclient.Node):
-        return Node.parse_obj(
+        return Node.model_validate(
             {
                 "_id": value.id,
                 "_labels": set(value.labels),
@@ -139,7 +139,7 @@ def _convert_memgraph_value(value: Any) -> Any:
         )
 
     if isinstance(value, mgclient.Path):
-        return Path.parse_obj(
+        return Path.model_validate(
             {
                 "_nodes": list([_convert_memgraph_value(node) for node in value.nodes]),
                 "_relationships": list([_convert_memgraph_value(rel) for rel in value.relationships]),
@@ -192,7 +192,7 @@ class Neo4jConnection(Connection):
 def _convert_neo4j_value(value: Any) -> Any:
     """Converts Neo4j objects to custom Node/Relationship objects."""
     if isinstance(value, Neo4jRelationship):
-        return Relationship.parse_obj(
+        return Relationship.model_validate(
             {
                 "_type": value.type,
                 "_id": value.id,
@@ -203,7 +203,7 @@ def _convert_neo4j_value(value: Any) -> Any:
         )
 
     if isinstance(value, Neo4jNode):
-        return Node.parse_obj(
+        return Node.model_validate(
             {
                 "_id": value.id,
                 "_labels": set(value.labels),
@@ -212,7 +212,7 @@ def _convert_neo4j_value(value: Any) -> Any:
         )
 
     if isinstance(value, Neo4jPath):
-        return Path.parse_obj(
+        return Path.model_validate(
             {
                 "_nodes": list([_convert_neo4j_value(node) for node in value.nodes]),
                 "_relationships": list([_convert_neo4j_value(rel) for rel in value.relationships]),

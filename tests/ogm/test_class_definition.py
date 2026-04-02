@@ -30,8 +30,8 @@ def test_node(database):
     assert User.label == "User"
     assert User.labels == {"User"}
 
-    assert "id" in User.__fields__
-    assert "name" in User.__fields__
+    assert "id" in User.model_fields
+    assert "name" in User.model_fields
 
     assert user.id == 0
     assert user.name == "Kate"
@@ -52,8 +52,8 @@ def test_node_inheritance(database):
     assert User.label == "User"
     assert User.labels == {"User"}
 
-    assert "id" in User.__fields__
-    assert "name" in User.__fields__
+    assert "id" in User.model_fields
+    assert "name" in User.model_fields
 
     assert user.id == 0
     assert user.name == "Kate"
@@ -61,9 +61,9 @@ def test_node_inheritance(database):
     assert Admin.label == "Admin"
     assert Admin.labels == {"Admin", "User"}
 
-    assert "id" in Admin.__fields__
-    assert "admin_id" in Admin.__fields__
-    assert "name" in Admin.__fields__
+    assert "id" in Admin.model_fields
+    assert "admin_id" in Admin.model_fields
+    assert "name" in Admin.model_fields
 
     assert admin.id == 1
     assert admin.admin_id == 0
@@ -156,7 +156,7 @@ def test_node_various_inheritance(database):
     streamerOne = StreamerOne(id=8, name="Bruno", followers=173).save(database)
     streamerTwo = StreamerTwo(id=9, name="Marko", followers=174).save(database)
 
-    assert "name" in Streamer.__fields__
+    assert "name" in Streamer.model_fields
     assert user.name == "Kate"
     assert streamer.name == "Ivan"
     assert streamer.followers == 172
