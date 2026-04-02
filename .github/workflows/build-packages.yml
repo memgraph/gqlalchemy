@@ -131,7 +131,7 @@ jobs:
           mkdir -p gqlalchemy/query_modules/push_streams/
           cp -v ../gqlalchemy/query_modules/push_streams/* gqlalchemy/query_modules/push_streams/
           # Run tests from this directory to ensure we use the installed package
-          uv run pytest -vvv -m "not slow and not ubuntu and not docker"
+          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker"
 
       - name: Upload Memgraph logs
         uses: actions/upload-artifact@v4
