@@ -1208,8 +1208,7 @@ dependencies = [
     { name = "psutil" },
     { name = "pydantic" },
     { name = "pymgclient" },
-    { name = "tensorflow", marker = "platform_machine != 'arm64' or sys_platform != 'darwin'" },
-    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
+    { name = "tensorflow" },
 ]
 
 [package.optional-dependencies]
@@ -1235,9 +1234,8 @@ dot = [
     { name = "pydot" },
 ]
 tfgnn = [
-    { name = "tensorflow", marker = "platform_machine != 'arm64' or sys_platform != 'darwin'" },
+    { name = "tensorflow" },
     { name = "tensorflow-gnn" },
-    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "tf-keras" },
 ]
 torch-pyg = [
@@ -1274,12 +1272,10 @@ requires-dist = [
     { name = "pydot", marker = "extra == 'all'", specifier = ">=1.4.2,<5.0.0" },
     { name = "pydot", marker = "extra == 'dot'", specifier = ">=1.4.2,<5.0.0" },
     { name = "pymgclient", specifier = ">=1.5.1,<2.0.0" },
-    { name = "tensorflow", marker = "platform_machine != 'arm64' or sys_platform != 'darwin'", specifier = "==2.16.2" },
-    { name = "tensorflow", marker = "(platform_machine != 'arm64' and extra == 'tfgnn') or (sys_platform != 'darwin' and extra == 'tfgnn')", specifier = "==2.16.2" },
+    { name = "tensorflow", specifier = "==2.16.2" },
+    { name = "tensorflow", marker = "extra == 'tfgnn'", specifier = "==2.16.2" },
     { name = "tensorflow-gnn", marker = "extra == 'all'", specifier = ">=1.0.0,<2.0.0" },
     { name = "tensorflow-gnn", marker = "extra == 'tfgnn'", specifier = ">=1.0.0,<2.0.0" },
-    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", specifier = "==2.16.2" },
-    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin' and extra == 'tfgnn'", specifier = "==2.16.2" },
     { name = "tf-keras", marker = "extra == 'tfgnn'", specifier = ">=2.16,<3.0" },
     { name = "torch", marker = "extra == 'all'", specifier = ">=2.4,<3.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torch", marker = "extra == 'dgl'", specifier = ">=2.4,<3.0", index = "https://download.pytorch.org/whl/cpu" },

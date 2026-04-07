@@ -20,16 +20,14 @@ dependencies = [
     "neo4j>=4.4.3,<6.0.0",
     "numpy>=1.26.4,<3.0",
     "pandas<=2.2.3",
-    "tensorflow-macos==2.16.2; platform_system == 'Darwin' and platform_machine == 'arm64'",
-    "tensorflow==2.16.2; platform_system != 'Darwin' or platform_machine != 'arm64'",
+    "tensorflow==2.16.2",
 ]
 
 [project.optional-dependencies]
 arrow = ["pyarrow>=16,<17"]
 tfgnn = [
     "tensorflow-gnn>=1.0.0,<2.0.0",
-    "tensorflow-macos==2.16.2; platform_system == 'Darwin' and platform_machine == 'arm64'",
-    "tensorflow==2.16.2; platform_system != 'Darwin' or platform_machine != 'arm64'",
+    "tensorflow==2.16.2",
     "tf-keras>=2.16,<3.0",
 ]
 dgl = ["torch>=2.4,<3.0"]
