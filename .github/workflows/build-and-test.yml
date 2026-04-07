@@ -166,6 +166,7 @@ jobs:
           systemctl mask memgraph
           dpkg -i /memgraph/memgraph-community.deb
           mkdir /mnt/c/memgraph
+          systemctl unmask memgraph
           runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
       - name: Wait for Memgraph to be ready (WSL)
         shell: wsl-bash {0} # root shell
