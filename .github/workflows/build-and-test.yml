@@ -165,7 +165,7 @@ jobs:
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-24.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /memgraph/memgraph-community.deb
           dpkg -i /memgraph/memgraph-community.deb
           mkdir /mnt/c/memgraph
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
+          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-address 0.0.0.0 --bolt-port 7687 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
       - name: Wait for Memgraph to be ready (WSL)
         shell: wsl-bash {0} # root shell
         run: |
@@ -180,6 +180,26 @@ jobs:
           done
           echo "Memgraph did not become ready in time."
           exit 1
+      - name: Resolve WSL Memgraph host for Windows tests
+        run: |
+          $wslIp = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
+          if (-not $wslIp) {
+            throw "Failed to resolve WSL IP address."
+          }
+          "MG_HOST=$wslIp" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MG_PORT=7687" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Resolved MG_HOST=$wslIp"
+      - name: Wait for Memgraph to be reachable from Windows
+        run: |
+          for ($i = 1; $i -le 60; $i++) {
+            if (Test-NetConnection -ComputerName $env:MG_HOST -Port $env:MG_PORT -InformationLevel Quiet) {
+              Write-Host "Memgraph reachable at $env:MG_HOST`:$env:MG_PORT"
+              exit 0
+            }
+            Write-Host "Waiting for Memgraph from Windows... ($i/60)"
+            Start-Sleep -Seconds 1
+          }
+          throw "Memgraph not reachable at $env:MG_HOST`:$env:MG_PORT"
       - name: Download, install and run Neo4j under WSL
         shell: wsl-bash {0} # root shell
         run: |
