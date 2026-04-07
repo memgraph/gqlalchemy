@@ -165,7 +165,7 @@ jobs:
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-24.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /memgraph/memgraph-community.deb
           dpkg -i /memgraph/memgraph-community.deb
           mkdir /mnt/c/memgraph
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-address 0.0.0.0 --bolt-port 7687 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
+          runuser -l memgraph -c 'nohup /usr/lib/memgraph/memgraph --bolt-address 0.0.0.0 --bolt-port 7687 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log >/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}-stdout.log 2>&1 < /dev/null &' 
       - name: Wait for Memgraph to be ready (WSL)
         shell: wsl-bash {0} # root shell
         run: |
@@ -219,6 +219,23 @@ jobs:
         uses: abatilo/actions-poetry@3765cf608f2d4a72178a9fc5b918668e542b89b1 # v4.0.0
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Ensure Memgraph is still running (WSL)
+        shell: wsl-bash {0} # root shell
+        run: |
+          if ! timeout 1 bash -c "echo > /dev/tcp/127.0.0.1/7687" 2>/dev/null; then
+            echo "Memgraph is down, restarting..."
+            runuser -l memgraph -c 'nohup /usr/lib/memgraph/memgraph --bolt-address 0.0.0.0 --bolt-port 7687 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log >/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}-stdout.log 2>&1 < /dev/null &'
+          fi
+          for i in {1..60}; do
+            if timeout 1 bash -c "echo > /dev/tcp/127.0.0.1/7687" 2>/dev/null; then
+              echo "Memgraph is ready."
+              exit 0
+            fi
+            echo "Waiting for Memgraph... ($i/60)"
+            sleep 1
+          done
+          echo "Memgraph did not become ready in time."
+          exit 1
       - name: Test project
         run: |
           $env:MG_HOST = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
