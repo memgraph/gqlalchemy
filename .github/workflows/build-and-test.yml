@@ -136,7 +136,12 @@ jobs:
           distribution: Ubuntu-24.04
       - name: Update vm.max_map_count
         shell: wsl-bash {0} #root shell
-        run: sysctl -w vm.max_map_count=${{ env.VM_MAX_MAP_COUNT }}
+        run: |
+          if [ -f /proc/sys/vm/max_map_count ]; then
+            sudo sysctl -w vm.max_map_count=${{ env.VM_MAX_MAP_COUNT }}
+          else
+            echo "Skipping vm.max_map_count update: /proc/sys/vm/max_map_count not available in this WSL environment."
+          fi
       - name: Download, install and run Memgraph under WSL
         shell: wsl-bash {0} # root shell
         run: |
