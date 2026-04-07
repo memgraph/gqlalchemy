@@ -221,6 +221,15 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: Test project
         run: |
+          $env:MG_HOST = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
+          if (-not $env:MG_HOST) {
+            throw "Failed to resolve WSL IP address before tests."
+          }
+          $env:MG_PORT = "7687"
+          Write-Host "Using Memgraph at $env:MG_HOST`:$env:MG_PORT"
+          if (-not (Test-NetConnection -ComputerName $env:MG_HOST -Port $env:MG_PORT -InformationLevel Quiet)) {
+            throw "Memgraph is not reachable from Windows at $env:MG_HOST`:$env:MG_PORT"
+          }
           poetry install -E arrow -E docker -E dot
           $env:TF_USE_LEGACY_KERAS = "1"
           poetry run pytest -vvv -m "not slow and not ubuntu and not docker and not extras"
