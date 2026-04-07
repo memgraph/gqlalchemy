@@ -11,9 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pydantic.v1 import Field
-
 from gqlalchemy import (
+    Field,
     MemgraphConstraintExists,
     MemgraphConstraintUnique,
     MemgraphIndex,
