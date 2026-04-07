@@ -223,22 +223,6 @@ jobs:
         uses: abatilo/actions-poetry@3765cf608f2d4a72178a9fc5b918668e542b89b1 # v4.0.0
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
-      - name: Ensure Memgraph is still running (WSL)
-        shell: wsl-bash {0} # root shell
-        run: |
-          mkdir -p /var/lib/memgraph/data-windows-${{ matrix.python-version }}
-          chown -R memgraph:memgraph /var/lib/memgraph/data-windows-${{ matrix.python-version }}
-          for i in {1..60}; do
-            if timeout 1 bash -c "echo > /dev/tcp/127.0.0.1/7687" 2>/dev/null; then
-              echo "Memgraph is ready."
-              exit 0
-            fi
-            echo "Waiting for Memgraph... ($i/60)"
-            sleep 1
-          done
-          echo "Memgraph did not become ready in time."
-          ps aux | grep memgraph || true
-          exit 1
       - name: Test project
         run: |
           $env:MG_HOST = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
