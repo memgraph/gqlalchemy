@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import subprocess
+import sys
 import zipfile
 import shutil
 from pathlib import Path
@@ -20,6 +22,30 @@ from pathlib import Path
 import pytest
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+
+# Read version and requires-python from pyproject.toml
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    try:
+        import tomllib
+    except ImportError:
+        import tomli as tomllib  # noqa: F401
+
+with open(ROOT_DIR / "pyproject.toml", "rb") as f:
+    _pyproject = tomllib.load(f)
+
+PROJECT_NAME = _pyproject["project"]["name"]
+PROJECT_VERSION = _pyproject["project"]["version"]
+REQUIRES_PYTHON = _pyproject["project"]["requires-python"]
+CURRENT_PYTHON = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+
+def _python_bin(venv_dir: Path) -> Path:
+    """Return the platform-appropriate Python binary path inside a venv."""
+    if os.name == "nt":
+        return venv_dir / "Scripts" / "python.exe"
+    return venv_dir / "bin" / "python"
 
 
 def _uv_available() -> bool:
@@ -63,9 +89,9 @@ class TestUvBuild:
             assert len(metadata_files) == 1, f"Expected 1 METADATA file, found: {metadata_files}"
             metadata = zf.read(metadata_files[0]).decode("utf-8")
 
-        assert "Name: GQLAlchemy" in metadata
-        assert "Version: 1.8.0" in metadata
-        assert "Requires-Python: >=3.10" in metadata
+        assert f"Name: {PROJECT_NAME}" in metadata
+        assert f"Version: {PROJECT_VERSION}" in metadata
+        assert f"Requires-Python: {REQUIRES_PYTHON}" in metadata
 
     def test_wheel_contains_package(self, tmp_path):
         """The wheel should include the gqlalchemy package directory."""
@@ -86,6 +112,7 @@ class TestUvBuild:
         assert len(gqlalchemy_files) > 0, "Wheel does not contain gqlalchemy/ package"
         assert any(n == "gqlalchemy/__init__.py" for n in gqlalchemy_files), "Missing gqlalchemy/__init__.py"
 
+    @pytest.mark.slow
     def test_wheel_install_in_isolated_venv(self, tmp_path):
         """The wheel should install successfully into a fresh venv."""
         wheel_dir = tmp_path / "dist"
@@ -103,16 +130,16 @@ class TestUvBuild:
 
         wheel_file = next(wheel_dir.glob("*.whl"))
 
-        # Create isolated venv + install
+        # Create isolated venv using the current Python version
         subprocess.run(
-            ["uv", "venv", "--python", "3.12", str(venv_dir)],
+            ["uv", "venv", "--python", CURRENT_PYTHON, str(venv_dir)],
             capture_output=True,
             text=True,
             timeout=60,
             check=True,
         )
 
-        python = venv_dir / "bin" / "python"
+        python = _python_bin(venv_dir)
         result = subprocess.run(
             ["uv", "pip", "install", "--python", str(python), str(wheel_file)],
             capture_output=True,
@@ -149,14 +176,14 @@ def _make_venv_and_install_extra(tmp_path, extra, import_check):
     wheel_file = next(wheel_dir.glob("*.whl"))
 
     subprocess.run(
-        ["uv", "venv", "--python", "3.12", str(venv_dir)],
+        ["uv", "venv", "--python", CURRENT_PYTHON, str(venv_dir)],
         capture_output=True,
         text=True,
         timeout=60,
         check=True,
     )
 
-    python = str(venv_dir / "bin" / "python")
+    python = str(_python_bin(venv_dir))
 
     # Install wheel with the extra
     result = subprocess.run(

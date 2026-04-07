@@ -1209,7 +1209,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pymgclient" },
     { name = "tensorflow", marker = "platform_machine != 'arm64' or sys_platform != 'darwin'" },
-    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' or sys_platform == 'darwin'" },
+    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
 ]
 
 [package.optional-dependencies]
@@ -1237,7 +1237,7 @@ dot = [
 tfgnn = [
     { name = "tensorflow", marker = "platform_machine != 'arm64' or sys_platform != 'darwin'" },
     { name = "tensorflow-gnn" },
-    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' or sys_platform == 'darwin'" },
+    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "tf-keras" },
 ]
 torch-pyg = [
@@ -1278,8 +1278,8 @@ requires-dist = [
     { name = "tensorflow", marker = "(platform_machine != 'arm64' and extra == 'tfgnn') or (sys_platform != 'darwin' and extra == 'tfgnn')", specifier = "==2.16.2" },
     { name = "tensorflow-gnn", marker = "extra == 'all'", specifier = ">=1.0.0,<2.0.0" },
     { name = "tensorflow-gnn", marker = "extra == 'tfgnn'", specifier = ">=1.0.0,<2.0.0" },
-    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' or sys_platform == 'darwin'", specifier = "==2.16.2" },
-    { name = "tensorflow-macos", marker = "(platform_machine == 'arm64' and extra == 'tfgnn') or (sys_platform == 'darwin' and extra == 'tfgnn')", specifier = "==2.16.2" },
+    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", specifier = "==2.16.2" },
+    { name = "tensorflow-macos", marker = "platform_machine == 'arm64' and sys_platform == 'darwin' and extra == 'tfgnn'", specifier = "==2.16.2" },
     { name = "tf-keras", marker = "extra == 'tfgnn'", specifier = ">=2.16,<3.0" },
     { name = "torch", marker = "extra == 'all'", specifier = ">=2.4,<3.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torch", marker = "extra == 'dgl'", specifier = ">=2.4,<3.0", index = "https://download.pytorch.org/whl/cpu" },
@@ -3356,36 +3356,6 @@ wheels = [
 ]
 
 [[package]]
-name = "tensorflow-intel"
-version = "2.16.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "absl-py" },
-    { name = "astunparse" },
-    { name = "flatbuffers" },
-    { name = "gast" },
-    { name = "google-pasta" },
-    { name = "grpcio" },
-    { name = "h5py" },
-    { name = "keras", version = "3.12.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "keras", version = "3.13.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "libclang" },
-    { name = "ml-dtypes" },
-    { name = "numpy" },
-    { name = "opt-einsum" },
-    { name = "packaging" },
-    { name = "protobuf" },
-    { name = "requests" },
-    { name = "setuptools" },
-    { name = "six" },
-    { name = "tensorboard" },
-    { name = "tensorflow-io-gcs-filesystem", marker = "python_full_version < '3.12'" },
-    { name = "termcolor" },
-    { name = "typing-extensions" },
-    { name = "wrapt" },
-]
-
-[[package]]
 name = "tensorflow-io-gcs-filesystem"
 version = "0.37.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3410,7 +3380,6 @@ version = "2.16.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "tensorflow", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
-    { name = "tensorflow-intel", marker = "sys_platform == 'win32'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/25/66/c504f415d5356def468e44e09dad60bf0d0f720b399e6c9af3488382e433/tensorflow_macos-2.16.2-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:6a945ad9c0add0d9be46f1addc07e5475ac24217609bfea6e05d9c5ab66e7204", size = 2135 },

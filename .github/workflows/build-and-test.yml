@@ -35,7 +35,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           sudo -H pip install networkx numpy scipy
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
         with:
           version: ${{ env.UV_VERSION }}
       - name: Install Memgraph
@@ -143,7 +143,7 @@ jobs:
           sudo service neo4j start
           sleep 10 # Wait for Neo4j a bit.
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
         with:
           version: ${{ env.UV_VERSION }}
       - name: Install packages

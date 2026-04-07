@@ -82,9 +82,22 @@ what extras to install:
 uv sync # No extras
 
 uv sync --extra arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
-uv sync --extra dgl # DGL support (also includes torch)
+uv sync --extra dgl # Installs torch (DGL must be installed separately, see below)
 uv sync --extra docker # Docker support
 uv sync --extra tfgnn # TFGNN support
+```
+
+The `dgl` and `torch_pyg` extras install PyTorch only. DGL and PyTorch Geometric wheels
+must be installed separately due to their custom package indexes:
+
+```bash
+# DGL
+uv sync --extra dgl
+uv pip install dgl -f https://data.dgl.ai/wheels/torch-2.4/repo.html
+
+# PyTorch Geometric
+uv sync --extra torch_pyg
+uv pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html
 ```
 
 To run the tests, make sure you have an [active Memgraph instance](https://memgraph.com/docs/getting-started), and execute one of the following commands:
