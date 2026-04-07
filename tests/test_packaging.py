@@ -65,7 +65,7 @@ class TestUvBuild:
 
         assert "Name: GQLAlchemy" in metadata
         assert "Version: 1.8.0" in metadata
-        assert "Requires-Python: >=3.9" in metadata
+        assert "Requires-Python: >=3.10" in metadata
 
     def test_wheel_contains_package(self, tmp_path):
         """The wheel should include the gqlalchemy package directory."""

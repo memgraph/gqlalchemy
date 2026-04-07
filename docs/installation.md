@@ -7,7 +7,7 @@ as pip and uv, and by building it from source.
 
 To install GQLAlchemy, you will need the following:
 
-- **Python 3.9 - 3.12**
+- **Python 3.10 - 3.12**
 - [`pymgclient`](https://github.com/memgraph/pymgclient):
 
     * Install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites)
