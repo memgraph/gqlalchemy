@@ -18,9 +18,10 @@ from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
 from enum import Enum
 import json
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, ClassVar, Dict, Iterable, List, Optional, Set, Tuple, Union, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, Field as PydanticField, PrivateAttr  # noqa F401
+from pydantic_core import PydanticUndefined
 
 from gqlalchemy.exceptions import (
     GQLAlchemyError,
@@ -91,10 +92,24 @@ def _get_field_type_name(field: Any) -> str:
     return getattr(annotation, "__name__", str(annotation))
 
 
+def _allows_none(annotation: Any) -> bool:
+    if annotation is None or annotation is Any:
+        return True
+
+    origin = get_origin(annotation)
+    if origin is Union:
+        return type(None) in get_args(annotation)
+
+    return False
+
+
 def Field(default=..., **kwargs):  # noqa N802
     """Pydantic Field wrapper that stores custom OGM metadata in json_schema_extra."""
     json_schema_extra = kwargs.pop("json_schema_extra", None)
     extras = dict(json_schema_extra or {})
+
+    if "exist" in kwargs and "exists" not in kwargs:
+        kwargs["exists"] = kwargs.pop("exist")
 
     for attr in ("index", "exists", "unique", "db", "on_disk", "label"):
         if attr in kwargs:
@@ -414,6 +429,20 @@ class GraphObject(BaseModel):
     model_config = ConfigDict(extra="allow", coerce_numbers_to_str=True)
 
     def __init__(self, **data):
+        model_fields = _get_model_fields(type(self))
+        for field_name, field_definition in model_fields.items():
+            if field_name in data:
+                continue
+            if not _allows_none(getattr(field_definition, "annotation", None)):
+                continue
+            if not getattr(field_definition, "is_required", lambda: False)():
+                continue
+            if getattr(field_definition, "default", PydanticUndefined) is not PydanticUndefined:
+                continue
+            if getattr(field_definition, "default_factory", None) is not None:
+                continue
+            data[field_name] = None
+
         # Preserve explicitly provided underscore-prefixed attributes.
         private_data = {key: value for key, value in data.items() if key.startswith("_")}
         super().__init__(**data)
