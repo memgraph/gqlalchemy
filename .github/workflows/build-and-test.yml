@@ -12,10 +12,21 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, review_requested, ready_for_review]
   workflow_dispatch:
+    inputs:
+      run_linux:
+        description: "Run Linux tests"
+        required: false
+        type: boolean
+        default: true
+      run_windows:
+        description: "Run Windows tests"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_and_test_ubuntu:
-    if: github.event.pull_request.draft == false
+    if: ${{ github.event.pull_request.draft == false || ( github.event_name == 'workflow_dispatch' && inputs.run_linux == true ) }}
     strategy:
       fail-fast: false
       matrix:
@@ -98,10 +109,10 @@ jobs:
           overwrite: true
 
   build_and_test_windows:
-    if: false
-    # if: github.event.pull_request.draft == false
+    if: ${{ github.event.pull_request.draft == false || ( github.event_name == 'workflow_dispatch' && inputs.run_windows == true ) }}
     continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         os: [windows-latest]
