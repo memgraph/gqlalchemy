@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from typing import Optional
 import sys
 
@@ -26,6 +27,11 @@ if sys.version_info >= (3, 14):
         allow_module_level=True,
     )
 
+print(
+    f"[test_ogm] Connecting to Memgraph at host={os.getenv('MG_HOST', '127.0.0.1')} "
+    f"port={os.getenv('MG_PORT', '7687')}",
+    flush=True,
+)
 db = Memgraph()
 
 
