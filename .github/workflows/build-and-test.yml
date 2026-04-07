@@ -2,7 +2,7 @@ name: Build and Test
 
 env:
   MG_VERSION: "3.3.0"
-  UV_VERSION: "0.11.2"
+  UV_VERSION: "0.11.3"
   VM_MAX_MAP_COUNT: "262144"
 
 on:
