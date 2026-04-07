@@ -11,8 +11,7 @@ authors = [
     { name = "Josip Mrden", email = "josip.mrden@memgraph.com" },
 ]
 dependencies = [
-    "pymgclient>=1.5.1,<1.6.0; python_version < '3.10'",
-    "pymgclient>=1.5.2,<2.0.0; python_version >= '3.10'",
+    "pymgclient>=1.5.1,<2.0.0",
     "networkx>=2.5.1,<4.0.0",
     "pydantic>=2.3.0,<3.0.0",
     "psutil>=5.9,<7.0",
@@ -20,29 +19,28 @@ dependencies = [
     "adlfs>=2023.9.0,<2025.0.0",
     "neo4j>=4.4.3,<6.0.0",
     "numpy>=1.26.4,<3.0",
-    "pandas<=2.2.3; python_version < '3.14'",
-    "pandas>=2.3,<4.0; python_version >= '3.14'",
+    "pandas<=2.2.3",
+    "tensorflow-macos==2.16.2; platform_machine == 'arm64' or platform_system == 'Darwin'",
+    "tensorflow==2.16.2; platform_machine != 'arm64' or platform_system != 'Darwin'",
 ]
 
 [project.optional-dependencies]
-arrow = [
-    "pyarrow>=16,<17; python_version < '3.13'",
-    "pyarrow>=22,<24; python_version >= '3.13'",
-]
+arrow = ["pyarrow>=16,<17"]
 tfgnn = [
-    "tensorflow-gnn>=1.0.0,<2.0.0; python_version >= '3.10' and python_version < '3.13' and platform_system != 'Darwin'",
-    "tf-keras>=2.16,<2.21; python_version >= '3.10' and python_version < '3.13'",
+    "tensorflow-gnn>=1.0.0,<2.0.0",
+    "tensorflow-macos==2.16.2; platform_machine == 'arm64' or platform_system == 'Darwin'",
+    "tensorflow==2.16.2; platform_machine != 'arm64' or platform_system != 'Darwin'",
+    "tf-keras>=2.16,<3.0",
 ]
 dgl = ["torch>=2.4,<3.0"]
 dot = ["pydot>=1.4.2,<5.0.0"]
 torch_pyg = ["torch>=2.4,<3.0"]
 docker = ["docker>=6.1.3,<7.0.0"]
 all = [
-    "pyarrow>=16,<17; python_version < '3.13'",
-    "pyarrow>=22,<24; python_version >= '3.13'",
+    "pyarrow>=16,<17",
     "torch>=2.4,<3.0",
     "docker>=6.1.3,<7.0.0",
-    "tensorflow-gnn>=1.0.0,<2.0.0; python_version >= '3.10' and python_version < '3.13' and platform_system != 'Darwin'",
+    "tensorflow-gnn>=1.0.0,<2.0.0",
     "pydot>=1.4.2,<5.0.0",
 ]
 

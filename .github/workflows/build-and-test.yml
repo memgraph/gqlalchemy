@@ -71,10 +71,7 @@ jobs:
           uv sync --extra arrow --extra dgl --extra docker --extra dot
           uv pip install dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation
           uv pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
-      - name: Install TFGNN (Python 3.10-3.12 only)
-        if: matrix.python-version != '3.9'
-        run: |
-          uv pip install 'tf-keras>=2.16,<2.21'
+          uv pip install 'tf-keras>=2.16,<3.0'
           uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0'
       - name: Run Tests
         env:
