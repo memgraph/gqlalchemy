@@ -74,6 +74,14 @@ certain algorithm.
 
 - [**Create a graph projection**](query-builder/graph-projection.md)
 
+## Manage Memgraph database
+
+GQLAlchemy provides methods for managing and inspecting your Memgraph database
+instance, including retrieving storage and build information, and analyzing graph
+statistics for index optimization.
+
+- [**Manage Memgraph database**](manage-database.md)
+
 ## Transform Python graphs into Memgraph graphs
 
 GQLAlchemy holds transformations that can transform NetworkX, PyG and DGL graphs
