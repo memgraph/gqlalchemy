@@ -18,7 +18,8 @@ from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
 from enum import Enum
 import json
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Set, Tuple, Union, get_args, get_origin
+import types
+from typing import Annotated, Any, ClassVar, Dict, Iterable, List, Optional, Set, Tuple, Union, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, Field as PydanticField, PrivateAttr  # noqa F401
 from pydantic_core import PydanticUndefined
@@ -32,6 +33,7 @@ from gqlalchemy.exceptions import (
 
 # Suppress the warning GQLAlchemySubclassNotFoundWarning
 IGNORE_SUBCLASSNOTFOUNDWARNING = False
+UNION_ORIGINS = (Union, types.UnionType) if hasattr(types, "UnionType") else (Union,)
 
 
 class DatetimeKeywords(Enum):
@@ -93,11 +95,14 @@ def _get_field_type_name(field: Any) -> str:
 
 
 def _allows_none(annotation: Any) -> bool:
-    if annotation is None or annotation is Any:
+    while get_origin(annotation) is Annotated:
+        annotation = get_args(annotation)[0]
+
+    if annotation is None or annotation is Any or annotation is type(None):
         return True
 
     origin = get_origin(annotation)
-    if origin is Union:
+    if origin in UNION_ORIGINS:
         return type(None) in get_args(annotation)
 
     return False

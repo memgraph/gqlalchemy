@@ -14,8 +14,9 @@
 
 import pytest
 from typing import List, Optional
+from pydantic import field_validator
 
-from gqlalchemy import Field, Node, validator
+from gqlalchemy import Field, Node
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)
@@ -25,23 +26,26 @@ def test_raise_value_error(database):
         age: int = Field()
         friends: Optional[List[str]] = Field()
 
-        @validator("name", allow_reuse=True)
+        @field_validator("name")
+        @classmethod
         def name_can_not_be_empty(cls, v):
             if v == "":
                 raise ValueError("name can't be empty")
 
             return v
 
-        @validator("age", allow_reuse=True)
+        @field_validator("age")
+        @classmethod
         def age_must_be_greater_than_zero(cls, v):
             if v <= 0:
                 raise ValueError("age must be greater than zero")
 
             return v
 
-        @validator("friends", each_item=True, allow_reuse=True)
+        @field_validator("friends")
+        @classmethod
         def friends_must_be_(cls, v):
-            if v == "":
+            if v is not None and any(friend == "" for friend in v):
                 raise ValueError("name can't be empty")
 
             return v
