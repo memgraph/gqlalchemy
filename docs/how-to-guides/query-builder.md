@@ -19,6 +19,7 @@ Through this guide, you will learn how to use the GQLAlchemy query builder to:
 - [**Filter data**](#filter-data)
     - [**Filter data by property comparison**](#filter-data-by-property-comparison)
     - [**Filter data by property value**](#filter-data-by-property-value)
+    - [**Filter data with the IN operator**](#filter-data-with-the-in-operator)
     - [**Filter data by label**](#filter-data-by-label)
 - [**Return results**](#return-results)
     - [**Return all variables from a query**](#return-all-variables-from-a-query)
@@ -704,6 +705,45 @@ MATCH (p:Person) WHERE p.age > 18 OR p.name = "John" RETURN *;
 
 The `literal` keyword is used again since you want `John` to be quoted in the
 Cypher query (to be saved as a string in the database).
+
+### Filter data with the IN operator
+
+You can use the `IN` operator to **check if a property value is contained in a list** of values.
+
+<Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy">
+
+```python
+from gqlalchemy import match
+from gqlalchemy.query_builders.memgraph_query_builder import Operator
+
+results = list(
+    match()
+    .node(labels="Person", variable="p")
+    .where(item="p.name", operator=Operator.IN, literal=["Alice", "Bob"])
+    .return_()
+    .execute()
+)
+
+print(results)
+```
+
+  </TabItem>
+  <TabItem value="cypher">
+
+```cypher
+MATCH (p:Person) WHERE p.name IN ["Alice", "Bob"] RETURN *;
+```
+
+  </TabItem>
+</Tabs>
+
+The `literal` keyword argument is used because you want list values to be properly quoted in the Cypher query. You can also combine `IN` with other boolean operators like `AND`, `OR`, etc.
 
 ### Filter data by label
 

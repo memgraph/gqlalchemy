@@ -17,7 +17,7 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow that allows
 
 ### Prerequisites
 
-- **Python 3.9 - 3.12**
+- **Python 3.10 - 3.12**
 - [`pymgclient`](https://github.com/memgraph/pymgclient):
 
   - Install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites)
@@ -68,48 +68,61 @@ If you are using [Conda](https://docs.conda.io/en/latest/) for Python environmen
 
 ## Build & Test
 
-The project uses [Poetry](https://python-poetry.org/) to build the library. Clone or download the [GQLAlchemy source code](https://github.com/memgraph/gqlalchemy) locally and run the following command to build it from source with Poetry:
+The project uses [uv](https://docs.astral.sh/uv/) to manage dependencies and build the library. Clone or download the [GQLAlchemy source code](https://github.com/memgraph/gqlalchemy) locally and run the following command to build it from source with uv:
 
 ```bash
-poetry install --all-extras
+uv sync --all-extras
 ```
 
-The `poetry install --all-extras` command installs GQLAlchemy with all extras
-(optional dependencies). Alternatively, you can use the `-E` option to define
+The `uv sync --all-extras` command installs GQLAlchemy with all extras
+(optional dependencies). Alternatively, you can use the `--extra` option to define
 what extras to install:
 
 ```bash
-poetry install # No extras
+uv sync # No extras
 
-poetry install -E arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
-poetry install -E dgl # DGL support (also includes torch)
-poetry install -E docker # Docker support
-poetry install -E tfgnn # TFGNN support
+uv sync --extra arrow # Support for the CSV, Parquet, ORC and IPC/Feather/Arrow formats
+uv sync --extra dgl # Installs torch (DGL must be installed separately, see below)
+uv sync --extra docker # Docker support
+uv sync --extra tfgnn # TFGNN support
+```
+
+The `dgl` and `torch_pyg` extras install PyTorch only. DGL and PyTorch Geometric wheels
+must be installed separately due to their custom package indexes:
+
+```bash
+# DGL
+uv sync --extra dgl
+uv pip install dgl -f https://data.dgl.ai/wheels/torch-2.4/repo.html
+
+# PyTorch Geometric
+uv sync --extra torch_pyg
+uv pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html
 ```
 
 To run the tests, make sure you have an [active Memgraph instance](https://memgraph.com/docs/getting-started), and execute one of the following commands:
 
 ```bash
-poetry run pytest . -k "not slow" # If all extras installed
+uv run pytest . -k "not slow" # If all extras installed
 
-poetry run pytest . -k "not slow and not extras" # Otherwise
+uv run pytest . -k "not slow and not extras" # Otherwise
 ```
 
 If you’ve installed only certain extras, it’s also possible to run their associated tests:
 
 ```bash
-poetry run pytest . -k "arrow"
-poetry run pytest . -k "dgl"
-poetry run pytest . -k "docker"
-poetry run pytest . -k "tfgnn"
+uv run pytest . -k "arrow"
+uv run pytest . -k "dgl"
+uv run pytest . -k "docker"
+uv run pytest . -k "tfgnn"
 ```
 
 ## Development (how to build)
 
 ```bash
-poetry run flake8 .
-poetry run black .
-poetry run pytest . -k "not slow and not extras"
+uv run flake8 .
+uv run black .
+uv run pytest . -k "not slow and not extras"
 ```
 
 ## Documentation

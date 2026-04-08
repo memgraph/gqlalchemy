@@ -2,7 +2,7 @@ name: Build and Test
 
 env:
   MG_VERSION: "3.3.0"
-  POETRY_VERSION: "1.8.2"
+  UV_VERSION: "0.11.3"
   VM_MAX_MAP_COUNT: "262144"
 
 on:
@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,15 +41,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Set up pip and install packages
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          sudo -H pip install networkx numpy scipy
-          sudo -H pip install poethepoet==0.18.1
-      - name: Setup poetry
-        uses: abatilo/actions-poetry@3765cf608f2d4a72178a9fc5b918668e542b89b1 # v4.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
         with:
-          poetry-version: ${{ env.POETRY_VERSION }}
+          version: ${{ env.UV_VERSION }}
       - name: Install Memgraph
         run: |
           mkdir /home/runner/memgraph
@@ -91,28 +86,30 @@ jobs:
           echo "=== Neo4j logs ==="
           docker logs neo4j-test 2>&1 | tail -30 || true
       - name: Install More Packages (Python <= 3.12)
-        if: ${{ matrix.python-version == '3.9' || matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         run: |
           ps aux | grep memgraph
-          poetry install -E arrow -E dgl -E docker -E dot
-          poe install-pyg-cpu
-          poe install-dgl
-          poe install-tfgnn
+          uv sync --extra arrow --extra dgl --extra docker --extra dot
+          uv pip install dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation
+          uv pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
+          uv pip install 'tf-keras>=2.16,<3.0'
+          uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0'
       - name: Install More Packages (Python >= 3.13)
         if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
         run: |
           ps aux | grep memgraph
           # Keep TensorFlow/TF-GNN stacks off for 3.13+.
-          poetry install -E docker -E dot -E arrow
+          uv sync --extra docker --extra dot --extra arrow
       - name: Run Tests (Python <= 3.12)
-        if: ${{ matrix.python-version == '3.9' || matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
+        env:
+          TF_USE_LEGACY_KERAS: "1"
         run: |
-          export TF_USE_LEGACY_KERAS="1"
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker"
       - name: Run Tests (Python >= 3.13)
         if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
         run: |
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker and not tfgnn"
+          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker and not tfgnn"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
@@ -137,11 +134,6 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Set up pip and install packages
-        run: |
-          python -m pip install -U pip
-          python -m pip install networkx numpy scipy
-          python -m pip install poethepoet==0.18.1
       - name: Set default WSL version to 2
         run: wsl --set-default-version 2
       - uses: Vampire/setup-wsl@6a8db447be7ed35f2f499c02c6e60ff77ef11278 # v6.0.0
@@ -219,11 +211,12 @@ jobs:
           cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.python-version }}/neo4j.conf
           sudo service neo4j start
           sleep 10 # Wait for Neo4j a bit.
-      - name: Setup poetry
-        uses: abatilo/actions-poetry@3765cf608f2d4a72178a9fc5b918668e542b89b1 # v4.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
         with:
-          poetry-version: ${{ env.POETRY_VERSION }}
-      - name: Test project
+          version: ${{ env.UV_VERSION }}
+      - name: Install packages (Python <= 3.12)
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         run: |
           $env:MG_HOST = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
           if (-not $env:MG_HOST) {
@@ -234,9 +227,34 @@ jobs:
           if (-not (Test-NetConnection -ComputerName $env:MG_HOST -Port $env:MG_PORT -InformationLevel Quiet)) {
             throw "Memgraph is not reachable from Windows at $env:MG_HOST`:$env:MG_PORT"
           }
-          poetry install -E arrow -E docker -E dot
-          $env:TF_USE_LEGACY_KERAS = "1"
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker and not extras"
+          uv sync --extra arrow --extra dgl --extra docker --extra dot
+          uv pip install dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation
+          uv pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
+          uv pip install 'tf-keras>=2.16,<3.0'
+          uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0'
+      - name: Install packages (Python >= 3.13)
+        if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
+        run: |
+          $env:MG_HOST = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
+          if (-not $env:MG_HOST) {
+            throw "Failed to resolve WSL IP address before tests."
+          }
+          $env:MG_PORT = "7687"
+          Write-Host "Using Memgraph at $env:MG_HOST`:$env:MG_PORT"
+          if (-not (Test-NetConnection -ComputerName $env:MG_HOST -Port $env:MG_PORT -InformationLevel Quiet)) {
+            throw "Memgraph is not reachable from Windows at $env:MG_HOST`:$env:MG_PORT"
+          }
+          uv sync --extra docker --extra dot --extra arrow
+      - name: Test project (Python <= 3.12)
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
+        env:
+          TF_USE_LEGACY_KERAS: "1"
+        run: |
+          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker"
+      - name: Test project (Python >= 3.13)
+        if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
+        run: |
+          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker and not tfgnn"
       - name: Save Memgraph Logs
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()

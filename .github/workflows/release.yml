@@ -125,21 +125,21 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install Poetry
-        run: |
-          pip install poetry --break-system-packages
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
+        with:
+          version: "0.11.3"
 
       - name: Publish packages
         if: ${{ inputs.test == false }}
         run: |
-          poetry publish --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
+          uv publish --token ${{ secrets.PYPI_API_TOKEN }}
     
       - name: Publish Packages (Test PyPI)
         if: ${{ inputs.test == true }}
         continue-on-error: true
         run: |
-          poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry publish --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }} --repository testpypi
+          uv publish --token ${{ secrets.TEST_PYPI_API_TOKEN }} --publish-url https://test.pypi.org/legacy/
 
   build-docs:
     needs: [create-release-branch, build-packages, publish-packages]

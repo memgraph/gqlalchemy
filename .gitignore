@@ -134,3 +134,6 @@ dmypy.json
 .DS_Store
 
 /.vscode
+
+# uv
+.python-version

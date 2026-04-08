@@ -41,26 +41,19 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
-      
-      - name: Create virtual environment
-        run: |
-          python -m venv env
-          source env/bin/activate
-      
-      - name: Install poetry
-        run: |
-          source env/bin/activate
-          pip install poetry
-      
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
+        with:
+          version: "0.11.3"
+
       - name: Install dependencies
         run: |
-          source env/bin/activate
-          poetry install
+          uv sync
 
       - name: Build wheel
         run: |
-          source env/bin/activate
-          poetry build
+          uv build
 
       - name: Upload packages
         uses: actions/upload-artifact@v4
@@ -79,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -89,10 +82,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Setup poetry
-        uses: abatilo/actions-poetry@v2.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
         with:
-          poetry-version: "1.8.2"
+          version: "0.11.3"
 
       - name: Download wheel package
         uses: actions/download-artifact@v4
@@ -100,11 +93,9 @@ jobs:
           name: packages
           path: dist
 
-      - name: Set up pip and install packages
+      - name: Create test virtual environment
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install networkx numpy scipy
-          python -m pip install poethepoet==0.18.1
+          uv venv wheel-test-venv --python ${{ matrix.python-version }}
 
       - name: Install Memgraph
         run: |
@@ -121,14 +112,23 @@ jobs:
 
       - name: Install wheel and dependencies
         run: |
-          python -m pip install dist/*.whl
-          poetry install -E arrow -E dgl -E docker -E dot
-          poe install-pyg-cpu
-          poe install-dgl
-          poe install-tfgnn
+          source wheel-test-venv/bin/activate
+          uv pip install dist/*.whl
+          uv pip install pytest networkx numpy scipy
+          uv pip install pyarrow
+          uv pip install pydot
+          uv pip install docker
+          uv pip install 'torch>=2.4.0,<=2.5.0'
+          uv pip install dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation
+          uv pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
+          uv pip install 'tf-keras>=2.16,<3.0'
+          uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0'
 
       - name: Run Tests
+        env:
+          TF_USE_LEGACY_KERAS: "1"
         run: |
+          source wheel-test-venv/bin/activate
           # Create a new directory and copy tests there
           mkdir wheel_test
           cp -r tests wheel_test/
@@ -136,7 +136,7 @@ jobs:
           mkdir -p gqlalchemy/query_modules/push_streams/
           cp -v ../gqlalchemy/query_modules/push_streams/* gqlalchemy/query_modules/push_streams/
           # Run tests from this directory to ensure we use the installed package
-          poetry run pytest -vvv -m "not slow and not ubuntu and not docker"
+          pytest -vvv -m "not slow and not ubuntu and not docker"
 
       - name: Upload Memgraph logs
         uses: actions/upload-artifact@v4
