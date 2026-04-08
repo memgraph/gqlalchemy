@@ -17,7 +17,7 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow that allows
 
 ### Prerequisites
 
-- **Python 3.10 - 3.12**
+- **Python 3.10+**
 - [`pymgclient`](https://github.com/memgraph/pymgclient):
 
   - Install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites)
@@ -27,8 +27,10 @@ An Object Graph Mapper or OGM provides a developer-friendly workflow that allows
   pip install --user pymgclient
   ```
 
-> [!WARNING]  
-> Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. Linux users can install GQLAlchemy **without** the DGL extra (due to its dependencies not supporting Python 3.11 yet). If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
+> [!NOTE]
+> GQLAlchemy is tested on Python `3.10` through `3.14` in CI. Some optional extras
+> (for example TensorFlow/TF-GNN stacks) are available only for a subset of Python
+> versions due to upstream wheel availability.
 
 ### Install GQLAlchemy
 
