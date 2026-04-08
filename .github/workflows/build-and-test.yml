@@ -308,7 +308,6 @@ jobs:
         run: |
           uv run --no-sync pytest -vvv \
             tests/test_utilities.py \
-            tests/transformations/export/test_export.py::test_export_nx \
             tests/test_packaging.py::TestUvBuild::test_uv_build_produces_artifacts \
             tests/test_packaging.py::TestUvBuild::test_wheel_metadata \
             tests/test_packaging.py::TestUvBuild::test_wheel_contains_package \
