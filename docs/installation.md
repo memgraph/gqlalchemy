@@ -7,7 +7,7 @@ as pip and uv, and by building it from source.
 
 To install GQLAlchemy, you will need the following:
 
-- **Python 3.10 - 3.12**
+- **Python 3.10+**
 - [`pymgclient`](https://github.com/memgraph/pymgclient):
 
     * Install `pymgclient` [build prerequisites](https://memgraph.github.io/pymgclient/introduction.html#build-prerequisites)
@@ -17,8 +17,10 @@ To install GQLAlchemy, you will need the following:
     pip install --user pymgclient
     ```
 
-!!! danger
-    Python 3.11 users: On Windows, GQLAlchemy is not yet compatible with this Python version. If this is currently a blocker for you, please let us know by [opening an issue](https://github.com/memgraph/gqlalchemy/issues).
+!!! note
+    GQLAlchemy is tested on Python `3.10` through `3.14` in CI. Some optional extras
+    (for example TensorFlow/TF-GNN stacks) are available only for a subset of Python
+    versions due to upstream wheel availability.
 
 ## Install with pip
 
