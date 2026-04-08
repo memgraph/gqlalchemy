@@ -1148,7 +1148,7 @@ dependencies = [
     { name = "psutil" },
     { name = "pydantic" },
     { name = "pymgclient" },
-    { name = "tensorflow", marker = "python_full_version < '3.13'" },
+    { name = "tensorflow", marker = "(python_full_version < '3.13' and sys_platform != 'win32') or (python_full_version == '3.12.*' and sys_platform == 'win32')" },
 ]
 
 [package.optional-dependencies]
@@ -1157,7 +1157,7 @@ all = [
     { name = "pyarrow", version = "16.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
     { name = "pyarrow", version = "23.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and python_full_version < '4.0'" },
     { name = "pydot" },
-    { name = "tensorflow-gnn", marker = "python_full_version < '3.13'" },
+    { name = "tensorflow-gnn", marker = "(python_full_version < '3.13' and sys_platform != 'win32') or (python_full_version == '3.12.*' and sys_platform == 'win32')" },
     { name = "torch", version = "2.11.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.11.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
 ]
@@ -1176,9 +1176,9 @@ dot = [
     { name = "pydot" },
 ]
 tfgnn = [
-    { name = "tensorflow", marker = "python_full_version < '3.13'" },
-    { name = "tensorflow-gnn", marker = "python_full_version < '3.13'" },
-    { name = "tf-keras", marker = "python_full_version < '3.13'" },
+    { name = "tensorflow", marker = "(python_full_version < '3.13' and sys_platform != 'win32') or (python_full_version == '3.12.*' and sys_platform == 'win32')" },
+    { name = "tensorflow-gnn", marker = "(python_full_version < '3.13' and sys_platform != 'win32') or (python_full_version == '3.12.*' and sys_platform == 'win32')" },
+    { name = "tf-keras", marker = "(python_full_version < '3.13' and sys_platform != 'win32') or (python_full_version == '3.12.*' and sys_platform == 'win32')" },
 ]
 torch-pyg = [
     { name = "torch", version = "2.11.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
@@ -1217,11 +1217,11 @@ requires-dist = [
     { name = "pydot", marker = "extra == 'all'", specifier = ">=1.4.2,<5.0.0" },
     { name = "pydot", marker = "extra == 'dot'", specifier = ">=1.4.2,<5.0.0" },
     { name = "pymgclient", specifier = ">=1.5.1,<2.0.0" },
-    { name = "tensorflow", marker = "python_full_version >= '3.10' and python_full_version < '3.13'", specifier = "==2.16.2" },
-    { name = "tensorflow", marker = "python_full_version >= '3.10' and python_full_version < '3.13' and extra == 'tfgnn'", specifier = "==2.16.2" },
-    { name = "tensorflow-gnn", marker = "python_full_version >= '3.10' and python_full_version < '3.13' and extra == 'all'", specifier = ">=1.0.0,<2.0.0" },
-    { name = "tensorflow-gnn", marker = "python_full_version >= '3.10' and python_full_version < '3.13' and extra == 'tfgnn'", specifier = ">=1.0.0,<2.0.0" },
-    { name = "tf-keras", marker = "python_full_version >= '3.10' and python_full_version < '3.13' and extra == 'tfgnn'", specifier = ">=2.16,<3.0" },
+    { name = "tensorflow", marker = "(python_full_version >= '3.10' and python_full_version < '3.13' and sys_platform != 'win32') or (python_full_version == '3.12.*' and sys_platform == 'win32')", specifier = "==2.16.2" },
+    { name = "tensorflow", marker = "(python_full_version >= '3.10' and python_full_version < '3.13' and sys_platform != 'win32' and extra == 'tfgnn') or (python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'tfgnn')", specifier = "==2.16.2" },
+    { name = "tensorflow-gnn", marker = "(python_full_version >= '3.10' and python_full_version < '3.13' and sys_platform != 'win32' and extra == 'all') or (python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'all')", specifier = ">=1.0.0,<2.0.0" },
+    { name = "tensorflow-gnn", marker = "(python_full_version >= '3.10' and python_full_version < '3.13' and sys_platform != 'win32' and extra == 'tfgnn') or (python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'tfgnn')", specifier = ">=1.0.0,<2.0.0" },
+    { name = "tf-keras", marker = "(python_full_version >= '3.10' and python_full_version < '3.13' and sys_platform != 'win32' and extra == 'tfgnn') or (python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'tfgnn')", specifier = ">=2.16,<3.0" },
     { name = "torch", marker = "extra == 'all'", specifier = ">=2.4,<3.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torch", marker = "extra == 'dgl'", specifier = ">=2.4,<3.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torch", marker = "extra == 'torch-pyg'", specifier = ">=2.4,<3.0", index = "https://download.pytorch.org/whl/cpu" },
