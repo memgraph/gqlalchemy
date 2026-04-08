@@ -36,8 +36,9 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
-        os: [ubuntu-24.04]
-    runs-on: ${{ matrix.os }}
+    env:
+      OS: ubuntu-24.04
+    runs-on: ${{ env.OS }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -62,7 +63,7 @@ jobs:
       - name: Install Memgraph
         run: |
           mkdir /home/runner/memgraph
-          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/${{ matrix.os }}/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/${{ env.OS }}/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
           sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
           sudo systemctl stop memgraph
           sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.python-version }}.log' &
@@ -136,7 +137,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
-          name: memgraph-logs-${{ matrix.os }}-py${{ matrix.python-version }}
+          name: memgraph-logs-${{ env.OS }}-py${{ matrix.python-version }}
           path: /var/log/memgraph
           overwrite: true
 
@@ -147,8 +148,9 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
+    env:
+      OS: windows-latest
+    runs-on: ${{ env.OS }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -271,7 +273,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
-          name: memgraph-log
+          name: memgraph-logs-${{ env.OS }}-py${{ matrix.python-version }}
           path: C:\memgraph
           overwrite: true
 
@@ -279,7 +281,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
-          name: neo4j-log
+          name: neo4j-logs-${{ env.OS }}-py${{ matrix.python-version }}
           path: C:\neo4j
           overwrite: true
 
