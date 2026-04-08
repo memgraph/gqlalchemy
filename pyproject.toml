@@ -19,8 +19,9 @@ dependencies = [
     "adlfs>=2023.9.0,<2025.0.0",
     "neo4j>=4.4.3,<6.0.0",
     "numpy>=1.26.4,<3.0",
-    "pandas<=2.2.3",
-    "tensorflow==2.16.2",
+    "pandas<=2.2.3; python_version >= '3.10' and python_version < '3.14'",
+    "pandas>=2.3,<4.0; python_version >= '3.14' and python_version < '4.0'",
+    "tensorflow==2.16.2; python_version >= '3.10' and python_version < '3.13'",
 ]
 
 [project.optional-dependencies]
