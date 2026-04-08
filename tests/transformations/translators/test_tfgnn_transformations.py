@@ -21,7 +21,8 @@ from gqlalchemy.transformations.constants import DEFAULT_NODE_LABEL
 
 tf = pytest.importorskip("tensorflow")
 tfgnn = pytest.importorskip("tensorflow_gnn")
-TFGNNTranslator = pytest.importorskip("gqlalchemy.transformations.translators.tfgnn_translator.TFGNNTranslator")
+tfgnn_translator_module = pytest.importorskip("gqlalchemy.transformations.translators.tfgnn_translator")
+TFGNNTranslator = tfgnn_translator_module.TFGNNTranslator
 
 pytestmark = [pytest.mark.extras, pytest.mark.tfgnn]
 

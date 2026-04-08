@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     env:
       OS: ubuntu-24.04
     runs-on: ${{ env.OS }}
@@ -51,9 +51,8 @@ jobs:
       - name: Set up pip and install packages
         run: |
           # these tools installed globally for Memgraph
-          python -m pip install --upgrade pip setuptools wheel
-          sudo -H pip install networkx numpy scipy
-          sudo -H pip install poethepoet==0.18.1
+          python3 -m pip install --upgrade pip setuptools wheel
+          sudo -H python3 -m pip install networkx numpy scipy
 
       - name: Install uv
         uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
@@ -105,7 +104,7 @@ jobs:
           docker logs neo4j-test 2>&1 | tail -30 || true
 
       - name: Install More Packages (Python <= 3.12)
-        if: ${{ matrix.python-version == '3.9' || matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         run: |
           ps aux | grep memgraph
           uv sync --extra arrow --extra dgl --extra docker --extra dot
@@ -122,7 +121,7 @@ jobs:
           uv sync --extra docker --extra dot --extra arrow
 
       - name: Run Tests (Python <= 3.12)
-        if: ${{ matrix.python-version == '3.9' || matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         env:
           TF_USE_LEGACY_KERAS: "1"
         run: |

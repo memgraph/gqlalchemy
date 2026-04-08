@@ -13,18 +13,9 @@
 # limitations under the License.
 
 from typing import Optional
-import sys
-
-import pytest
 
 from gqlalchemy import Memgraph, Node, Relationship, Field, match
 from gqlalchemy.query_builders.memgraph_query_builder import Operator
-
-if sys.version_info >= (3, 14):
-    pytest.skip(
-        "OGM docs tests rely on Pydantic v1 behavior not compatible with Python 3.14+.",
-        allow_module_level=True,
-    )
 
 db = Memgraph()
 

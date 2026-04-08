@@ -46,7 +46,7 @@ def test_raise_value_error(database):
         @classmethod
         def friends_must_be_(cls, v):
             if v is not None and any(friend == "" for friend in v):
-                raise ValueError("name can't be empty")
+                raise ValueError("friends can't contain empty entries")
 
             return v
 
