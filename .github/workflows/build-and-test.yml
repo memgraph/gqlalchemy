@@ -23,6 +23,11 @@ on:
         required: false
         type: boolean
         default: false
+      run_macos:
+        description: "Run macOS tests"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_and_test_ubuntu:
@@ -277,3 +282,34 @@ jobs:
           name: neo4j-log
           path: C:\neo4j
           overwrite: true
+
+  build_and_test_macos:
+    if: ${{ (github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false) || ( github.event_name == 'workflow_dispatch' && inputs.run_macos == true ) }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install packages
+        run: |
+          uv sync
+
+      - name: Run macOS smoke tests
+        run: |
+          uv run --no-sync pytest -vvv \
+            tests/test_utilities.py \
+            tests/transformations/export/test_export.py::test_export_nx \
+            tests/test_packaging.py::TestUvBuild::test_uv_build_produces_artifacts \
+            tests/test_packaging.py::TestUvBuild::test_wheel_metadata \
+            tests/test_packaging.py::TestUvBuild::test_wheel_contains_package \
+            -m "not slow and not extras and not docker and not ubuntu"
