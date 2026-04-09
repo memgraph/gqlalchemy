@@ -420,6 +420,37 @@ To check which constraints have been created, run:
 print(db.get_constraints())
 ```
 
+## Using enums
+
+Memgraph's built-in [enum data type](https://memgraph.com/docs/fundamentals/data-types#enum) can be utilized on your GQLAlchemy OGM models.  GQLAlchemy's enum implementation extends Python's [enum support](https://docs.python.org/3.11/library/enum.html).
+
+First, create an enum.
+
+```python
+from enum import Enum
+
+class SubscriptionType(Enum):
+    FREE = 1
+    BASIC = 2
+    EXTENDED = 3
+```
+
+Then, use the defined enum class in your model definition.  Using the `Field` class, set the `enum` attribute to `True`.  This will indicate that GQLAlchemy should treat the property value stored as a Memgraph enum.  If the enum does not exist in the database, it will be created.
+
+```python
+class User(Node):
+    id: str = Field(index=True, db=db)
+    username: str
+    subscription: SubscriptionType = Field(enum=True, db=db)
+```
+
+Enum types may be defined for properties on Nodes and Relationships.
+
+!!! info 
+    If the `Field` class specification on the property isn't specified, or if `enum` is explicitly set to `False`, GQLAlchemy will use the `value` of the enum member when serializing to a Cypher query.  A corresponding enum will not be created in the database.
+
+    This functionality allows for flexiblity when using the Python `Enum` class, and would, for instance, respect an overridden `__getattribute__` method to customize the value passed to Cypher.
+
 ## Full code example
 
 The above mentioned examples can be merged into a working code example which you can run. Here is the code:
@@ -427,12 +458,19 @@ The above mentioned examples can be merged into a working code example which you
 ```python
 from gqlalchemy import Memgraph, Node, Relationship, Field
 from typing import Optional
+from enum import Enum
 
 db = Memgraph()
+
+class SubscriptionType(Enum):
+    FREE = 1
+    BASIC = 2
+    EXTENDED = 3
 
 class User(Node):
     id: str = Field(index=True, db=db)
     username: str = Field(exists=True, db=db)
+    subscription: SubscriptionType = Field(enum=True, db=db)
 
 class Streamer(User):
     id: str
@@ -448,8 +486,8 @@ class ChatsWith(Relationship, type="CHATS_WITH"):
 class Speaks(Relationship, type="SPEAKS"):
     since: Optional[str]
 
-john = User(id="1", username="John").save(db)
-jane = Streamer(id="2", username="janedoe", followers=111).save(db)
+john = User(id="1", username="John", subscription=SubscriptionType(1)).save(db)
+jane = Streamer(id="2", username="janedoe", subscription=SubscriptionType(3), followers=111).save(db)
 language = Language(name="en").save(db)
 
 ChatsWith(
@@ -474,7 +512,7 @@ try:
     streamer = Streamer(id="3").load(db=db)
 except:
     print("Creating new Streamer node in the database.")
-    streamer = Streamer(id="3", username="anne", followers=222).save(db=db)
+    streamer = Streamer(id="3", username="anne", subscription=SubscriptionType(2), followers=222).save(db=db)
 
 try:
     speaks = Speaks(_start_node_id=streamer._id, _end_node_id=language._id).load(db)
