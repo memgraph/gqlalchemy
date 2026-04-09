@@ -63,6 +63,7 @@ from gqlalchemy.vendors.neo4j import Neo4j  # noqa F401
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]
+_validator_deprecation_warning_shown = False
 
 call = Call
 create = Create
@@ -77,12 +78,15 @@ MemgraphQueryBuilder = QueryBuilder
 
 
 def validator(*args, **kwargs):
-    warnings.warn(
-        "Importing 'validator' from this module is deprecated and will be "
-        "removed in a future release. For Pydantic v2, migrate to "
-        "'field_validator' where applicable, or keep importing "
-        "'validator' from 'pydantic' for v1 compatibility.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
+    global _validator_deprecation_warning_shown
+    if not _validator_deprecation_warning_shown:
+        warnings.warn(
+            "Importing 'validator' from this module is deprecated and will be "
+            "removed in a future release. For Pydantic v2, migrate to "
+            "'field_validator' where applicable, or keep importing "
+            "'validator' from 'pydantic' for v1 compatibility.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        _validator_deprecation_warning_shown = True
     return _validator(*args, **kwargs)
