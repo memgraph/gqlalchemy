@@ -75,6 +75,7 @@ return_ = Return
 load_csv = LoadCsv
 MemgraphQueryBuilder = QueryBuilder
 
+
 def validator(*args, **kwargs):
     warnings.warn(
         "Importing 'validator' from this module is deprecated and will be "
