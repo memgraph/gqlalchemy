@@ -7,6 +7,9 @@
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
     <a href="https://memgraph.com/docs/gqlalchemy" alt="Documentation"><img src="https://img.shields.io/badge/documentation-GQLAlchemy-orange" /></a>
     <a href="https://github.com/memgraph/gqlalchemy/stargazers" alt="Stargazers"><img src="https://img.shields.io/github/stars/memgraph/gqlalchemy?style=social" /></a>
+    <a href="https://gitcgr.com/memgraph/gqlalchemy">
+      <img src="https://gitcgr.com/badge/memgraph/gqlalchemy.svg" alt="gitcgr" />
+    </a>
 </p>
 
 **GQLAlchemy** is a fully open-source Python library and **Object Graph Mapper** (OGM) - a link between graph database objects and Python objects.
