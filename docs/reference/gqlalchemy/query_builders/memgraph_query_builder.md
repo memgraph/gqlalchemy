@@ -9,6 +9,24 @@ title: gqlalchemy.query_builders.memgraph_query_builder
 class QueryBuilder(DeclarativeBase)
 ```
 
+#### data\_directory\_lock\_status
+
+```python
+def data_directory_lock_status() -> "DeclarativeBase"
+```
+
+Check whether Memgraph data directory locking is currently enabled.
+
+**Returns**:
+
+  A `DeclarativeBase` instance for constructing queries.
+
+
+**Examples**:
+
+- `Python` - `data_directory_lock_status().execute()`
+- `Cypher` - `DATA DIRECTORY LOCK STATUS;`
+
 #### load\_csv
 
 ```python
@@ -89,6 +107,12 @@ Cypher query defining the MATCH clause which selects the nodes and relationships
   
 - `Python` - `call("export_util.json", "/home/user", subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()`
 - `Cypher` - `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, "/home/user")`
+
+## DataDirectoryLockStatus Objects
+
+```python
+class DataDirectoryLockStatus(DeclarativeBase)
+```
 
 ## ProjectPartialQuery Objects
 
