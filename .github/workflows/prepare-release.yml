@@ -1,0 +1,107 @@
+name: Prepare Release
+
+# Phase 1 of the release process: bump the version, regenerate the docs and
+# changelog, and open a PR against main. A human reviews the rendered docs and
+# changelog and merges. The actual tag/publish happens in release.yml (phase 2)
+# once this PR is merged.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to prepare for release"
+        required: true
+        type: string
+
+jobs:
+  test:
+    # Verify the current state of main is healthy before preparing a release.
+    # If this fails, no branch is created and no PR is opened.
+    name: Build and Test
+    uses: ./.github/workflows/build-and-test.yml
+    with:
+      run_linux: true
+      run_windows: false
+      run_macos: false
+    secrets: inherit
+
+  prepare-release:
+    needs: test
+    name: Prepare Release
+    runs-on: ["ubuntu-latest"]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          fetch-depth: 0  # Fetch all history and tags for changelog generation
+          fetch-tags: true
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Setup GitHub CLI
+        run: |
+          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y
+
+      - name: Create Prepare Release Branch
+        id: create_branch
+        run: |
+          BRANCH_NAME="prepare-release/v${{ inputs.version }}"
+          if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+            echo "::error::Branch $BRANCH_NAME already exists!"
+            exit 1
+          fi
+          git checkout -b "$BRANCH_NAME"
+          echo "PREPARE_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Set version
+        run: |
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" pyproject.toml
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Install docs dependencies
+        run: |
+          pip install pydoc-markdown mkdocs mkdocs-material
+
+      - name: Get previous version
+        id: get_previous_version
+        run: |
+          # The new tag does not exist yet (it is created in phase 2), so the
+          # latest existing tag is the previous version.
+          previous_version=$(git tag --sort=-version:refname | sed -n '1p')
+          echo "previous_version=${previous_version}" >> $GITHUB_OUTPUT
+
+      - name: Update changelog
+        run: |
+          ./scripts/update_changelog.sh "${{ steps.get_previous_version.outputs.previous_version }}" "v${{ inputs.version }}"
+
+      - name: Build docs
+        run: |
+          pydoc-markdown
+          mkdocs build
+
+      - name: Commit and push changes
+        run: |
+          git add docs/ pyproject.toml
+          git commit -m "Prepare release v${{ inputs.version }}"
+          git push origin "$PREPARE_BRANCH"
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr create --base main --head "$PREPARE_BRANCH" \
+            --title "Prepare release v${{ inputs.version }}" \
+            --body "Version bump, regenerated docs and changelog for v${{ inputs.version }}. Merge this, then run the Release workflow against main to tag and publish."
