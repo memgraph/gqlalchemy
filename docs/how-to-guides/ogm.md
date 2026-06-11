@@ -231,6 +231,12 @@ class Streamer(User):
 
 The above class definition is not ideal, since it is not enforcing schema as before. To do that, [add constraints](#create-constraints).
 
+!!! note
+    In the current Pydantic-compatible OGM behavior, omitted nullable fields
+    (`Optional[...]`) can be treated as `None` during model initialization.
+    This preserves historical GQLAlchemy usage patterns, but differs from strict
+    "required but nullable" validation semantics some users may expect.
+
 If you try loading the node again, the following code:
 
 ```python

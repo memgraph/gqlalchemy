@@ -36,10 +36,10 @@ def test_properties(database):
     assert hasattr(loaded_user, "_age") is True
     assert hasattr(loaded_user2, "_name") is False
     assert hasattr(loaded_user2, "_age") is False
-    assert "id" in User.__fields__
-    assert "last_name" in User.__fields__
-    assert "_name" not in User.__fields__
-    assert "_age" not in User.__fields__
+    assert "id" in User.model_fields
+    assert "last_name" in User.model_fields
+    assert "_name" not in User.model_fields
+    assert "_age" not in User.model_fields
     assert loaded_user.id == 1
     assert loaded_user.last_name == "Smith"
     assert loaded_user._label == "User"
@@ -88,7 +88,7 @@ def test_list_property(database):
     loaded_user = database.load_node(user)
 
     assert type(loaded_user) is User
-    assert "my_list" in User.__fields__
+    assert "my_list" in User.model_fields
     assert loaded_user.my_list == [1, 2, 3]
 
 
@@ -103,5 +103,5 @@ def test_dict_property(database):
     loaded_user = database.load_node(user)
 
     assert type(loaded_user) is User
-    assert "my_dict" in User.__fields__
+    assert "my_dict" in User.model_fields
     assert loaded_user.my_dict == expected_dict

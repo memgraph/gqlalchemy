@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import warnings
-
-from pydantic.v1 import validator  # noqa F401
+from pydantic import validator as _validator  # noqa F401
 
 from gqlalchemy.models import (  # noqa F401
     MemgraphConstraintExists,
@@ -64,6 +63,7 @@ from gqlalchemy.vendors.neo4j import Neo4j  # noqa F401
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
 __all__ = ["Memgraph"]
+_validator_deprecation_warning_shown = False
 
 call = Call
 create = Create
@@ -75,3 +75,18 @@ foreach = Foreach
 return_ = Return
 load_csv = LoadCsv
 MemgraphQueryBuilder = QueryBuilder
+
+
+def validator(*args, **kwargs):
+    global _validator_deprecation_warning_shown
+    if not _validator_deprecation_warning_shown:
+        warnings.warn(
+            "Importing 'validator' from this module is deprecated and will be "
+            "removed in a future release. For Pydantic v2, migrate to "
+            "'field_validator' where applicable, or keep importing "
+            "'validator' from 'pydantic' for v1 compatibility.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        _validator_deprecation_warning_shown = True
+    return _validator(*args, **kwargs)

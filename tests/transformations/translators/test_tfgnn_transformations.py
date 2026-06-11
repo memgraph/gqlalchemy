@@ -14,13 +14,17 @@
 
 
 import pytest
-import tensorflow as tf
-import tensorflow_gnn as tfgnn
 import numpy as np
 
 from gqlalchemy import Memgraph
-from gqlalchemy.transformations.translators.tfgnn_translator import TFGNNTranslator
 from gqlalchemy.transformations.constants import DEFAULT_NODE_LABEL
+
+tf = pytest.importorskip("tensorflow")
+tfgnn = pytest.importorskip("tensorflow_gnn")
+tfgnn_translator_module = pytest.importorskip("gqlalchemy.transformations.translators.tfgnn_translator")
+TFGNNTranslator = tfgnn_translator_module.TFGNNTranslator
+
+pytestmark = [pytest.mark.extras, pytest.mark.tfgnn]
 
 
 def test_export_homogeneous_graph(memgraph: Memgraph):

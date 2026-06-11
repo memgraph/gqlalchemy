@@ -12,40 +12,81 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, review_requested, ready_for_review]
   workflow_dispatch:
+    inputs:
+      run_linux:
+        description: "Run Linux tests"
+        required: false
+        type: boolean
+        default: true
+      run_windows:
+        description: "Run Windows tests"
+        required: false
+        type: boolean
+        default: false
+      run_macos:
+        description: "Run macOS tests"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_and_test_ubuntu:
-    if: github.event.pull_request.draft == false
+    if: ${{ (github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false) || ( github.event_name == 'workflow_dispatch' && inputs.run_linux == true ) }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-        os: [ubuntu-24.04]
-    runs-on: ${{ matrix.os }}
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    env:
+      OS: ubuntu-24.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
           version: ${{ env.UV_VERSION }}
+
+      - name: Set up pip and install packages
+        run: |
+          # these tools installed globally for Memgraph
+          UV_BIN="$(command -v uv)"
+          sudo -H "$UV_BIN" pip install --system --python /usr/bin/python3 networkx numpy scipy --break-system-packages
+
       - name: Install Memgraph
         run: |
           mkdir /home/runner/memgraph
-          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/${{ matrix.os }}/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
+          curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/${{ env.OS }}/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /home/runner/memgraph/memgraph-community.deb
           sudo dpkg -i /home/runner/memgraph/memgraph-community.deb
           sudo systemctl stop memgraph
-          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.python-version }}.log' &
-          sleep 1 # Wait for Memgraph a bit.
+          sudo runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --data-directory="/var/lib/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/var/log/memgraph/memgraph-ubuntu-${{ matrix.python-version }}.log' &
+
+      - name: Wait for Memgraph to be ready
+        run: |
+          echo "Waiting for Memgraph to accept Bolt connections..."
+          for i in {1..60}; do
+            if timeout 1 bash -c "echo > /dev/tcp/127.0.0.1/7687" 2>/dev/null; then
+              echo "Memgraph is ready."
+              exit 0
+            fi
+            echo "Waiting for Memgraph... ($i/60)"
+            sleep 1
+          done
+          echo "Memgraph did not become ready in time."
+          sudo journalctl -u memgraph --no-pager | tail -50 || true
+          exit 1
+
       - name: Install Neo4j
         run: |
           # Using Neo4j 4.4.18 which has cgroupv2 compatibility fixes for Ubuntu 24.04
           docker run --name neo4j-test -p 7474:7474 -p 7688:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:4.4.18
+
       - name: Wait for Neo4j to be ready
         run: |
           echo "Waiting for Neo4j to be ready..."
@@ -61,7 +102,9 @@ jobs:
           # Show Neo4j logs for debugging
           echo "=== Neo4j logs ==="
           docker logs neo4j-test 2>&1 | tail -30 || true
-      - name: Install More Packages
+
+      - name: Install More Packages (Python <= 3.12)
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         run: |
           ps aux | grep memgraph
           uv sync --extra arrow --extra dgl --extra docker --extra dot
@@ -69,56 +112,128 @@ jobs:
           uv pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
           uv pip install 'tf-keras>=2.16,<3.0'
           uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0'
-      - name: Run Tests
+
+      - name: Install More Packages (Python >= 3.13)
+        if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
+        run: |
+          ps aux | grep memgraph
+          # Keep TensorFlow/TF-GNN stacks off for 3.13+.
+          uv sync --extra docker --extra dot --extra arrow
+
+      - name: Run Tests (Python <= 3.12)
+        if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         env:
           TF_USE_LEGACY_KERAS: "1"
         run: |
           uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker"
+
+      - name: Run Tests (Python >= 3.13)
+        if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
+        run: |
+          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker and not tfgnn"
+
       - name: Use the Upload Artifact GitHub Action
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
-          name: assets-for-download
+          name: memgraph-logs-${{ env.OS }}-py${{ matrix.python-version }}
           path: /var/log/memgraph
           overwrite: true
 
   build_and_test_windows:
-    if: false
-    # if: github.event.pull_request.draft == false
+    if: ${{ (github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false) || ( github.event_name == 'workflow_dispatch' && inputs.run_windows == true ) }}
     continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    env:
+      OS: windows-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          version: ${{ env.UV_VERSION }}
+
       - name: Set default WSL version to 2
         run: wsl --set-default-version 2
-      - uses: Vampire/setup-wsl@v3
+
+      - uses: Vampire/setup-wsl@6a8db447be7ed35f2f499c02c6e60ff77ef11278 # v6.0.0
         with:
           distribution: Ubuntu-24.04
+
       - name: Update vm.max_map_count
         shell: wsl-bash {0} #root shell
-        run: sysctl -w vm.max_map_count=${{ env.VM_MAX_MAP_COUNT }}
+        run: |
+          if [ -f /proc/sys/vm/max_map_count ]; then
+            sudo sysctl -w vm.max_map_count=${{ env.VM_MAX_MAP_COUNT }}
+          else
+            echo "Skipping vm.max_map_count update: /proc/sys/vm/max_map_count not available in this WSL environment."
+          fi
+
       - name: Download, install and run Memgraph under WSL
         shell: wsl-bash {0} # root shell
         run: |
           sudo apt-get update
           sudo apt-get -y install python3 python3-pip ipython3
-          pip3 install networkx numpy scipy
+          # uv is not installed in WSL here, so we use pip
+          pip3 install networkx numpy scipy --break-system-packages
           mkdir /memgraph
           curl -L https://download.memgraph.com/memgraph/v${{env.MG_VERSION}}/ubuntu-24.04/memgraph_${{env.MG_VERSION}}-1_amd64.deb --output /memgraph/memgraph-community.deb
-          systemctl mask memgraph
           dpkg -i /memgraph/memgraph-community.deb
+          systemctl stop memgraph || true
           mkdir /mnt/c/memgraph
-          runuser -l memgraph -c '/usr/lib/memgraph/memgraph --bolt-port 7687 --bolt-session-inactivity-timeout=300 --data-directory="/mnt/c/memgraph/data" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-recover-on-startup=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log' &
-          sleep 1 # Wait for Memgraph a bit.
+          mkdir -p /var/lib/memgraph/data-windows-${{ matrix.python-version }}
+          chown -R memgraph:memgraph /var/lib/memgraph/data-windows-${{ matrix.python-version }}
+          pkill -f '/usr/lib/memgraph/memgraph' || true
+          runuser -l memgraph -c 'nohup /usr/lib/memgraph/memgraph --bolt-address 0.0.0.0 --bolt-port 7687 --data-directory="/var/lib/memgraph/data-windows-${{ matrix.python-version }}" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log >/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}-stdout.log 2>&1 < /dev/null &' 
+
+      - name: Wait for Memgraph to be ready (WSL)
+        shell: wsl-bash {0} # root shell
+        run: |
+          echo "Waiting for Memgraph to accept Bolt connections..."
+          for i in {1..60}; do
+            if timeout 1 bash -c "echo > /dev/tcp/127.0.0.1/7687" 2>/dev/null; then
+              echo "Memgraph is ready."
+              exit 0
+            fi
+            echo "Waiting for Memgraph... ($i/60)"
+            sleep 1
+          done
+          echo "Memgraph did not become ready in time."
+          exit 1
+
+      - name: Resolve WSL Memgraph host for Windows tests
+        run: |
+          $wslIp = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
+          if (-not $wslIp) {
+            throw "Failed to resolve WSL IP address."
+          }
+          "MG_HOST=$wslIp" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MG_PORT=7687" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Resolved MG_HOST=$wslIp"
+
+      - name: Wait for Memgraph to be reachable from Windows
+        run: |
+          for ($i = 1; $i -le 60; $i++) {
+            if (Test-NetConnection -ComputerName $env:MG_HOST -Port $env:MG_PORT -InformationLevel Quiet) {
+              Write-Host "Memgraph reachable at $env:MG_HOST`:$env:MG_PORT"
+              exit 0
+            }
+            Write-Host "Waiting for Memgraph from Windows... ($i/60)"
+            Start-Sleep -Seconds 1
+          }
+          throw "Memgraph not reachable at $env:MG_HOST`:$env:MG_PORT"
+
       - name: Download, install and run Neo4j under WSL
         shell: wsl-bash {0} # root shell
         run: |
@@ -134,33 +249,68 @@ jobs:
           cp /etc/neo4j/neo4j.conf /mnt/c/neo4j/${{ matrix.python-version }}/neo4j.conf
           sudo service neo4j start
           sleep 10 # Wait for Neo4j a bit.
-      - name: Install uv
-        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4
-        with:
-          version: ${{ env.UV_VERSION }}
+
       - name: Install packages
         run: |
-          uv sync --extra arrow --extra dgl --extra docker --extra dot
-          uv pip install dgl==2.4.0 -f https://data.dgl.ai/wheels/torch-2.4/repo.html --no-build-isolation
-          uv pip install 'torch>=2.4.0,<=2.5.0' torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.4.0+cpu.html --no-build-isolation
-          uv pip install 'tf-keras>=2.16,<3.0'
-          uv pip install 'tensorflow-gnn>=1.0.0,<2.0.0'
+          $env:MG_HOST = (wsl hostname -I).Trim().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)[0]
+          if (-not $env:MG_HOST) {
+            throw "Failed to resolve WSL IP address before tests."
+          }
+          $env:MG_PORT = "7687"
+          Write-Host "Using Memgraph at $env:MG_HOST`:$env:MG_PORT"
+          if (-not (Test-NetConnection -ComputerName $env:MG_HOST -Port $env:MG_PORT -InformationLevel Quiet)) {
+            throw "Memgraph is not reachable from Windows at $env:MG_HOST`:$env:MG_PORT"
+          }
+          uv sync --extra arrow --extra docker --extra dot
+
       - name: Test project
         env:
           TF_USE_LEGACY_KERAS: "1"
         run: |
-          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker"
+          uv run --no-sync pytest -vvv -m "not slow and not ubuntu and not docker and not extras"
+
       - name: Save Memgraph Logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
-          name: memgraph-log
+          name: memgraph-logs-${{ env.OS }}-py${{ matrix.python-version }}
           path: C:\memgraph
           overwrite: true
+
       - name: Save Neo4j Logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
-          name: neo4j-log
+          name: neo4j-logs-${{ env.OS }}-py${{ matrix.python-version }}
           path: C:\neo4j
           overwrite: true
+
+  build_and_test_macos:
+    if: ${{ (github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false) || ( github.event_name == 'workflow_dispatch' && inputs.run_macos == true ) }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install packages
+        run: |
+          uv sync
+
+      - name: Run macOS smoke tests
+        run: |
+          uv run --no-sync pytest -vvv \
+            tests/test_utilities.py \
+            tests/test_packaging.py::TestUvBuild::test_uv_build_produces_artifacts \
+            tests/test_packaging.py::TestUvBuild::test_wheel_metadata \
+            tests/test_packaging.py::TestUvBuild::test_wheel_contains_package \
+            -m "not slow and not extras and not docker and not ubuntu"

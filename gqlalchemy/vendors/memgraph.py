@@ -35,6 +35,8 @@ from gqlalchemy.models import (
     MemgraphTrigger,
     Node,
     Relationship,
+    _get_field_attrs,
+    _get_model_fields,
 )
 from gqlalchemy.vendors.database_client import DatabaseClient
 from gqlalchemy.graph_algorithms.query_modules import QueryModule
@@ -346,9 +348,9 @@ class Memgraph(DatabaseClient):
         """Saves all on_disk properties to the on disk database attached to
         the database.
         """
-        for field in node.__fields__:
+        for field, field_definition in _get_model_fields(type(node)).items():
             value = getattr(node, field, None)
-            if value is not None and "on_disk" in node.__fields__[field].field_info.extra:
+            if value is not None and "on_disk" in _get_field_attrs(field_definition):
                 if self.on_disk_db is None:
                     raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 self.on_disk_db.save_node_property(result._id, field, value)
@@ -381,9 +383,9 @@ class Memgraph(DatabaseClient):
 
     def _load_node_properties_on_disk(self, result: Node) -> Node:
         """Loads all on_disk properties from the on disk database."""
-        for field in result.__fields__:
+        for field, field_definition in _get_model_fields(type(result)).items():
             value = getattr(result, field, None)
-            if "on_disk" in result.__fields__[field].field_info.extra:
+            if "on_disk" in _get_field_attrs(field_definition):
                 if self.on_disk_db is None:
                     raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 try:
@@ -420,9 +422,9 @@ class Memgraph(DatabaseClient):
         Memgraph().init_disk_storage() throws a
         GQLAlchemyOnDiskPropertyDatabaseNotDefinedError.
         """
-        for field in result.__fields__:
+        for field, field_definition in _get_model_fields(type(result)).items():
             value = getattr(result, field, None)
-            if "on_disk" in result.__fields__[field].field_info.extra:
+            if "on_disk" in _get_field_attrs(field_definition):
                 if self.on_disk_db is None:
                     raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 try:
@@ -456,9 +458,9 @@ class Memgraph(DatabaseClient):
         added with Memgraph().init_disk_storage(db). If OnDiskPropertyDatabase
         is not defined raises GQLAlchemyOnDiskPropertyDatabaseNotDefinedError.
         """
-        for field in relationship.__fields__:
+        for field, field_definition in _get_model_fields(type(relationship)).items():
             value = getattr(relationship, field, None)
-            if value is not None and "on_disk" in relationship.__fields__[field].field_info.extra:
+            if value is not None and "on_disk" in _get_field_attrs(field_definition):
                 if self.on_disk_db is None:
                     raise GQLAlchemyOnDiskPropertyDatabaseNotDefinedError()
                 self.on_disk_db.save_relationship_property(result._id, field, value)
