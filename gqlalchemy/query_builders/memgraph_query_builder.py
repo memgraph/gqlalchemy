@@ -36,7 +36,16 @@ from gqlalchemy.utilities import CypherVariable, CypherNode, CypherRelationship,
 
 
 class MemgraphQueryBuilderTypes(DeclarativeBaseTypes):
+    DATA_DIRECTORY_LOCK_STATUS = "DATA_DIRECTORY_LOCK_STATUS"
     LOAD_CSV = "LOAD_CSV"
+
+
+class DataDirectoryLockStatusPartialQuery(PartialQuery):
+    def __init__(self):
+        super().__init__(MemgraphQueryBuilderTypes.DATA_DIRECTORY_LOCK_STATUS)
+
+    def construct_query(self) -> str:
+        return " DATA DIRECTORY LOCK STATUS "
 
 
 class LoadCsvPartialQuery(PartialQuery):
@@ -53,6 +62,21 @@ class LoadCsvPartialQuery(PartialQuery):
 class QueryBuilder(DeclarativeBase):
     def __init__(self, connection: Optional[Memgraph] = None):
         super().__init__(connection)
+
+    def data_directory_lock_status(self) -> "DeclarativeBase":
+        """Check whether Memgraph data directory locking is currently enabled.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+
+        Examples:
+            Python: `data_directory_lock_status().execute()`
+            Cypher: `DATA DIRECTORY LOCK STATUS;`
+        """
+        self._query.append(DataDirectoryLockStatusPartialQuery())
+        self._fetch_results = True
+
+        return self
 
     def load_csv(self, path: str, header: bool, row: str) -> "DeclarativeBase":
         """Load data from a CSV file by executing a Cypher query for each row.
@@ -198,6 +222,13 @@ class LoadCsv(DeclarativeBase):
     def __init__(self, path: str, header: bool, row: str, connection: Optional[DatabaseClient] = None):
         super().__init__(connection)
         self._query.append(LoadCsvPartialQuery(path, header, row))
+
+
+class DataDirectoryLockStatus(DeclarativeBase):
+    def __init__(self, connection: Optional[DatabaseClient] = None):
+        super().__init__(connection)
+        self._query.append(DataDirectoryLockStatusPartialQuery())
+        self._fetch_results = True
 
 
 class ProjectPartialQuery(PartialQuery):

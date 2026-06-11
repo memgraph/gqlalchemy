@@ -15,7 +15,13 @@
 import pytest
 from unittest.mock import patch
 
-from gqlalchemy import InvalidMatchChainException, Memgraph, QueryBuilder
+from gqlalchemy import (
+    DataDirectoryLockStatus,
+    InvalidMatchChainException,
+    Memgraph,
+    QueryBuilder,
+    data_directory_lock_status,
+)
 from gqlalchemy.query_builders.memgraph_query_builder import (
     Call,
     Create,
@@ -53,6 +59,14 @@ def test_load_csv_with_header(memgraph):
 def test_load_csv_no_header(memgraph):
     query_builder = QueryBuilder().load_csv(path="path/to/my/file.csv", header=False, row="row").return_()
     expected_query = " LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN * "
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+    mock.assert_called_with(expected_query)
+
+
+def test_data_directory_lock_status():
+    query_builder = QueryBuilder().data_directory_lock_status()
+    expected_query = " DATA DIRECTORY LOCK STATUS "
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
     mock.assert_called_with(expected_query)
@@ -197,6 +211,26 @@ def test_yield_multiple_alias(memgraph):
 def test_base_class_load_csv(memgraph):
     query_builder = LoadCsv("path/to/my/file.csv", True, "row").return_()
     expected_query = " LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN * "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_base_class_data_directory_lock_status():
+    query_builder = DataDirectoryLockStatus()
+    expected_query = " DATA DIRECTORY LOCK STATUS "
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
+        query_builder.execute()
+
+    mock.assert_called_with(expected_query)
+
+
+def test_function_data_directory_lock_status():
+    query_builder = data_directory_lock_status()
+    expected_query = " DATA DIRECTORY LOCK STATUS "
 
     with patch.object(Memgraph, "execute_and_fetch", return_value=None) as mock:
         query_builder.execute()
