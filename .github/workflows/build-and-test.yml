@@ -166,6 +166,12 @@ jobs:
           rm -rf "${RUNNER_TEMP}/wheel-test"
           mkdir -p "${RUNNER_TEMP}/wheel-test"
           cp -r tests "${RUNNER_TEMP}/wheel-test/"
+          # Some tests read query-module files via a path relative to the working
+          # directory (e.g. gqlalchemy/query_modules/push_streams/kafka.py), so make
+          # them available there. No __init__.py is created, so this stays a
+          # namespace dir and imports still resolve to the installed package.
+          mkdir -p "${RUNNER_TEMP}/wheel-test/gqlalchemy/query_modules/push_streams"
+          cp gqlalchemy/query_modules/push_streams/* "${RUNNER_TEMP}/wheel-test/gqlalchemy/query_modules/push_streams/"
 
       - name: Test installed wheel (Python <= 3.12)
         if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
