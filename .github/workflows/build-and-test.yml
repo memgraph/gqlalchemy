@@ -174,14 +174,18 @@ jobs:
         working-directory: ${{ runner.temp }}/wheel-test
         run: |
           source "${GITHUB_WORKSPACE}/.venv/bin/activate"
-          pytest tests -o addopts='' -vvv -m "not slow and not ubuntu and not docker"
+          # Skip test_packaging.py: it builds/inspects the source repo (reads
+          # pyproject.toml from the repo root) and is covered by the source run.
+          pytest tests --ignore=tests/test_packaging.py -o addopts='' -vvv -m "not slow and not ubuntu and not docker"
 
       - name: Test installed wheel (Python >= 3.13)
         if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.14' }}
         working-directory: ${{ runner.temp }}/wheel-test
         run: |
           source "${GITHUB_WORKSPACE}/.venv/bin/activate"
-          pytest tests -o addopts='' -vvv -m "not slow and not ubuntu and not docker and not tfgnn"
+          # Skip test_packaging.py: it builds/inspects the source repo (reads
+          # pyproject.toml from the repo root) and is covered by the source run.
+          pytest tests --ignore=tests/test_packaging.py -o addopts='' -vvv -m "not slow and not ubuntu and not docker and not tfgnn"
 
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
