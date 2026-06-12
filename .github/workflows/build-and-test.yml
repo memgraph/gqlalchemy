@@ -74,7 +74,7 @@ jobs:
         run: |
           # these tools installed globally for Memgraph
           UV_BIN="$(command -v uv)"
-          sudo -H "$UV_BIN" pip install --system --python /usr/bin/python3 networkx numpy scipy --break-system-packages
+          sudo -H "$UV_BIN" pip install --system --python /usr/bin/python3 numpy==1.26.4 scipy==1.13.0 networkx==3.4.2 gensim==4.3.3 xmlsec==1.3.16 --break-system-packages
 
       - name: Install Memgraph
         run: |
