@@ -42,15 +42,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Setup GitHub CLI
-        run: |
-          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-          && sudo apt update \
-          && sudo apt install gh -y
-
       - name: Create Prepare Release Branch
         id: create_branch
         run: |
@@ -73,7 +64,7 @@ jobs:
 
       - name: Install docs dependencies
         run: |
-          pip install pydoc-markdown mkdocs mkdocs-material
+          pip install pydoc-markdown==4.8.2 mkdocs==1.6.1 mkdocs-material==9.7.6
 
       - name: Get previous version
         id: get_previous_version

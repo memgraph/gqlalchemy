@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pydoc-markdown mkdocs mkdocs-material
+          pip install pydoc-markdown==4.8.2 mkdocs==1.6.1 mkdocs-material==9.7.6
 
       - name: Publish docs
         run: |
