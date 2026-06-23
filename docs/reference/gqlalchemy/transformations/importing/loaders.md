@@ -77,7 +77,7 @@ Class that contains new label name and all of the column name mappings for a sin
 **Attributes**:
 
 - `label` - New label (Optional).
-- `column_names_mapping` - Dictionary containing key-value pairs in form (&quot;column name&quot;, &quot;property name&quot;) (Optional).
+- `column_names_mapping` - Dictionary containing key-value pairs in form ("column name", "property name") (Optional).
 
 ## NameMapper Objects
 
@@ -162,7 +162,7 @@ Initializes connection and data bucket.
 
 **Raises**:
 
-- `KeyError` - kwargs doesn&#x27;t contain necessary fields.
+- `KeyError` - kwargs doesn't contain necessary fields.
 
 #### get\_path
 
@@ -204,7 +204,7 @@ Initializes connection and data container.
 
 **Raises**:
 
-- `KeyError` - kwargs doesn&#x27;t contain necessary fields.
+- `KeyError` - kwargs doesn't contain necessary fields.
 
 #### get\_path
 
@@ -305,8 +305,8 @@ class PyArrowDataLoader(DataLoader)
 
 Loads data using PyArrow.
 
-PyArrow currently supports &quot;parquet&quot;, &quot;ipc&quot;/&quot;arrow&quot;/&quot;feather&quot;, &quot;csv&quot;,
-and &quot;orc&quot;, see pyarrow.dataset.dataset for up-to-date info.
+PyArrow currently supports "parquet", "ipc"/"arrow"/"feather", "csv",
+and "orc", see pyarrow.dataset.dataset for up-to-date info.
 ds.dataset in load_data accepts any fsspec subclass, making this DataLoader
 compatible with fsspec-compatible filesystems.
 
@@ -399,7 +399,7 @@ def __init__(file_system_handler: str,
 
 **Raises**:
 
-- `ValueError` - PyArrow doesn&#x27;t support ORC on Windows.
+- `ValueError` - PyArrow doesn't support ORC on Windows.
 
 ## PyArrowS3Importer Objects
 

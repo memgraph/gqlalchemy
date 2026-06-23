@@ -10,7 +10,7 @@ class GraphTransporter(Transporter)
 ```
 
 Here is a possible example for using this module:
-&gt;&gt;&gt; transporter = GraphTransporter(&quot;dgl&quot;)
+>>> transporter = GraphTransporter("dgl")
 graph = transporter.export()
 
 #### \_\_init\_\_
@@ -28,7 +28,7 @@ def __init__(graph_type: str,
 
 Initializes GraphTransporter. It is used for converting Memgraph graph to the specific graph type offered by some Python package (PyG, DGL, NX...)
 Here is a possible example for using this module:
-&gt;&gt;&gt; transporter = GraphTransporter(&quot;dgl&quot;)
+>>> transporter = GraphTransporter("dgl")
 graph = transporter.export()
 
 **Arguments**:

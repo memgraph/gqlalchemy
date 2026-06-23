@@ -50,7 +50,7 @@ Wait for a Docker container to enter the status `running`.
 
 **Raises**:
 
-- `TimeoutError` - Raises an error when the container isn&#x27;t running after the
+- `TimeoutError` - Raises an error when the container isn't running after the
   timeout period has passed.
 
 ## MemgraphInstance Objects
@@ -71,7 +71,7 @@ connection object.
 **Attributes**:
 
 - `restart` - A bool indicating if the instance should be
-  restarted if it&#x27;s already running.
+  restarted if it's already running.
 
 #### start
 
@@ -84,7 +84,7 @@ Start the Memgraph instance.
 **Attributes**:
 
 - `restart` - A bool indicating if the instance should be
-  restarted if it&#x27;s already running.
+  restarted if it's already running.
 
 #### stop
 
