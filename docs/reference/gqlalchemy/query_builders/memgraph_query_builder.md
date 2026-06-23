@@ -82,15 +82,13 @@ Cypher query defining the MATCH clause which selects the nodes and relationships
 
 **Examples**:
 
-- `Python` - `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
-- `Cypher`query_module.procedure`0MATCH p=(a)-[:TYPE1 | :TYPE2]-&gt;(b) WHERE (a:LABEL) AND (b:LABEL)
-  WITH project(p) AS graph CALL export_util.json(graph, &#x27;/home/user&#x27;)`
+- `Python` - `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()`
+- `query_module.procedure`0 - `query_module.procedure`1
   
   or
   
-- `Python` - `call(&#x27;export_util.json&#x27;, &#x27;/home/user&#x27;, subgraph_path=&quot;(:LABEL)-[:TYPE]-&gt;(:LABEL)&quot;).execute()
-- `Cypher`query_module.procedure`0MATCH p=(:LABEL)-[:TYPE1]-&gt;(:LABEL) WITH project(p) AS graph
-  CALL export_util.json(graph, &#x27;/home/user&#x27;)`
+- `Python` - `query_module.procedure`3
+- `query_module.procedure`0 - `query_module.procedure`5
 
 ## ProjectPartialQuery Objects
 
