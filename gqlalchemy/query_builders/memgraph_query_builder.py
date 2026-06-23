@@ -137,13 +137,13 @@ class QueryBuilder(DeclarativeBase):
             A `DeclarativeBase` instance for constructing queries.
 
         Examples:
-            Python: `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
+            Python: `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()`
             Cypher: `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
                      WITH project(p) AS graph CALL export_util.json(graph, '/home/user')`
 
             or
 
-            Python: `call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()
+            Python: `call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()`
             Cypher: `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
                     CALL export_util.json(graph, '/home/user')`
         """
