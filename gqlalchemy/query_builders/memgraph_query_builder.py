@@ -139,14 +139,14 @@ class QueryBuilder(DeclarativeBase):
         Examples:
             Using node labels and relationship types:
 
-            - `Python` - `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()`
-            - `Cypher` - `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
+            - Python: `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()`
+            - Cypher: `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
                      WITH project(p) AS graph CALL export_util.json(graph, '/home/user')`
 
             or using a subgraph path string:
 
-            - `Python` - `call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()`
-            - `Cypher` - `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
+            - Python: `call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()`
+            - Cypher: `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
                     CALL export_util.json(graph, '/home/user')`
         """
 
