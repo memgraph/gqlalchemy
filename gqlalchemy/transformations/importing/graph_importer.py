@@ -102,7 +102,7 @@ class GraphImporter(Importer):
         self.translate(graph)
 
     def translate_dot_data(self, dot_data: str) -> None:
-        """Parses DOT content to a NetworkX graph and imports it to Memgraph.
+        """Parses DOT content to a NetworkX graph and imports it to Memgraph. This method is available when `graph_type="NX".
 
         Args:
             - ``dot_data`` - Raw DOT graph content.
