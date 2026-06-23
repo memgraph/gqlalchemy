@@ -37,7 +37,11 @@ Gets cypher queries using the underlying translator and then inserts all queries
 def translate_dot_file(path: str) -> None
 ```
 
-Parses a DOT file to a NetworkX graph and imports it to Memgraph.
+Parses a DOT file to a NetworkX graph and imports it to Memgraph. This method is available when ``graph_type=&quot;NX&quot;``
+
+**Arguments**:
+
+  - ``path`` - Path to a DOT file.
 
 #### translate\_dot\_data
 
@@ -46,4 +50,8 @@ def translate_dot_data(dot_data: str) -> None
 ```
 
 Parses DOT content to a NetworkX graph and imports it to Memgraph.
+
+**Arguments**:
+
+  - ``dot_data`` - Raw DOT graph content.
 

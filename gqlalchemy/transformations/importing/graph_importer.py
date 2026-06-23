@@ -86,7 +86,11 @@ class GraphImporter(Importer):
             memgraph.execute(query)
 
     def translate_dot_file(self, path: str) -> None:
-        """Parses a DOT file to a NetworkX graph and imports it to Memgraph."""
+        """Parses a DOT file to a NetworkX graph and imports it to Memgraph. This method is available when ``graph_type="NX"``
+
+        Args:
+            - ``path`` - Path to a DOT file.
+        """
         self._raise_if_not_nx_importer()
         raise_if_not_imported(dependency=pydot, dependency_name="pydot")
 
@@ -98,7 +102,11 @@ class GraphImporter(Importer):
         self.translate(graph)
 
     def translate_dot_data(self, dot_data: str) -> None:
-        """Parses DOT content to a NetworkX graph and imports it to Memgraph."""
+        """Parses DOT content to a NetworkX graph and imports it to Memgraph.
+
+        Args:
+            - ``dot_data`` - Raw DOT graph content.
+        """
         self._raise_if_not_nx_importer()
         raise_if_not_imported(dependency=pydot, dependency_name="pydot")
 

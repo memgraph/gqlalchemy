@@ -413,7 +413,7 @@ after significant changes to the graph structure or data.
 
 **Arguments**:
 
-- `labels` - Optional list of labels to delete statistics for.
+  labels ``_Optional[List[str]]_``:  Optional list of labels to delete statistics for.
   If None, deletes statistics for all labels.
   
 

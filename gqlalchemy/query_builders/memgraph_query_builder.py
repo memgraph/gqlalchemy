@@ -139,7 +139,7 @@ class QueryBuilder(DeclarativeBase):
 
         Args:
             procedure: A string representing the name of the procedure in the
-              format `query_module.procedure`.
+              format ``query_module.procedure``.
             arguments: A string representing the arguments of the procedure in
               text format.
             node_labels: Either a string, which is then used as the label for all nodes, or
@@ -150,18 +150,30 @@ class QueryBuilder(DeclarativeBase):
             subgraph_path: Optional way to define the subgraph via a Cypher MATCH clause.
 
         Returns:
-            A `DeclarativeBase` instance for constructing queries.
+            A ``DeclarativeBase`` instance for constructing queries.
 
         Examples:
-            Python: `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()`
-            Cypher: `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
-                     WITH project(p) AS graph CALL export_util.json(graph, '/home/user')`
+            Python:
+                ```python
+                call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
+                ```
+            Cypher:
+                ```cypher
+                MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
+                WITH project(p) AS graph CALL export_util.json(graph, '/home/user')
+                ```
 
             or
 
-            Python: `call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()`
-            Cypher: `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
-                    CALL export_util.json(graph, '/home/user')`
+            Python:
+                ```python
+                call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()
+                ```
+            Cypher:
+                ```cypher
+                MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
+                CALL export_util.json(graph, '/home/user')
+                ```
         """
 
         if not (node_labels is None and relationship_types is None):

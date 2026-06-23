@@ -512,6 +512,9 @@ class GraphObject(BaseModel):
     def parse_obj(cls, obj):
         """Used to convert a dictionary object into the appropriate
         GraphObject.
+
+        Compatibility note: `parse_obj` is retained for backward compatibility.
+        For Pydantic v2-style usage, prefer `model_validate`.
         """
         return cls.model_validate(obj)
 
