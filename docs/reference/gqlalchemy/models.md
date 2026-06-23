@@ -3,6 +3,14 @@ sidebar_label: models
 title: gqlalchemy.models
 ---
 
+#### Field
+
+```python
+def Field(default=..., **kwargs)
+```
+
+Pydantic Field wrapper that stores custom OGM metadata in json_schema_extra.
+
 ## TriggerEventType Objects
 
 ```python
@@ -146,6 +154,15 @@ Converts the GraphObject class into the appropriate subclass.
 This is used when deserialising a json representation of the class,
 or the object returned from the GraphDatabase.
 
+#### model\_validate
+
+```python
+@classmethod
+def model_validate(cls, obj, *args, **kwargs)
+```
+
+Used to convert a dictionary object into the appropriate GraphObject.
+
 #### parse\_obj
 
 ```python
@@ -155,9 +172,6 @@ def parse_obj(cls, obj)
 
 Used to convert a dictionary object into the appropriate
 GraphObject.
-
-Compatibility note: `parse_obj` is retained for backward compatibility.
-For Pydantic v2-style usage, prefer `model_validate`.
 
 ## NodeMetaclass Objects
 

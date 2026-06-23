@@ -33,7 +33,7 @@ graph = transporter.export()
 
 **Arguments**:
 
-- `graph_type` - dgl, pyg or nx
+- `graph_type` - dgl, pyg, nx or tfgnn
 
 #### export
 
