@@ -1,160 +1,129 @@
 name: Release GQLAlchemy
 
+# Phase 2 of the release process. Run this against main AFTER the
+# "Prepare release" PR (prepare-release.yml) has been reviewed and merged.
+# The version comes from main's pyproject.toml (set and reviewed in phase 1),
+# so there is no version input here. main was already tested in phase 1, so
+# this only builds, publishes, tags, deploys the docs, and creates the
+# GitHub release.
+
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Version to release"
-        required: true
-        type: string
-      build_docs:
-        description: "Build docs"
-        required: false
-        type: boolean
-        default: true
       publish_packages:
         description: "Publish packages"
         required: false
         type: boolean
         default: true
-      test:
-        description: "Test"
+      publish_docs:
+        description: "Publish docs (mkdocs gh-deploy)"
         required: false
         type: boolean
         default: true
+      test:
+        description: "Publish to Test PyPI instead of PyPI"
+        required: false
+        type: boolean
+        default: true
+      dry_run:
+        description: "Dry run (skip creating the release tag, docs deploy and GitHub release)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-  create-release-branch:
-    name: Create Release Branch
-    runs-on: ["ubuntu-latest"]
-    outputs:
-      release_branch: ${{ steps.create_release_branch.outputs.RELEASE_BRANCH }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Fetch all history for changelog generation
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-      - name: Setup GitHub CLI
-        run: |
-          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-          && sudo apt update \
-          && sudo apt install gh -y
-
-      - name: Create Release Branch
-        id: create_release_branch
-        run: |
-          # Parse version and create branch name
-          if [[ "${{ inputs.version }}" =~ ^([0-9]+\.[0-9]+)\.0$ ]]; then
-            # If version ends in .0, use shortened form (e.g., 1.2.0 -> release/1.2)
-            BRANCH_NAME="release/${BASH_REMATCH[1]}"
-          else
-            # Otherwise use full version (e.g., 1.2.1 -> release/1.2.1)
-            BRANCH_NAME="release/${{ inputs.version }}"
-          fi
-          
-          # Check if branch exists
-          if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
-            echo "::error::Branch $BRANCH_NAME already exists!"
-            exit 1
-          fi
-          git checkout -b "$BRANCH_NAME"
-          
-          # Export branch name for later steps
-          echo "RELEASE_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
-      - name: Set version
-        run: |
-          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" pyproject.toml
-
-      - name: Commit version
-        run: |
-          git add pyproject.toml
-          git commit -m "Release v${{ inputs.version }}"
-          git push origin "$RELEASE_BRANCH"
-
-      - name: Create Release Tag
-        run: |
-          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
-          git push origin v${{ inputs.version }}
-
-      - name: Create Release Pull Request
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh pr create --base main --head "$RELEASE_BRANCH" --title "Release v${{ inputs.version }}" --body "Release v${{ inputs.version }}"
-
-  build-packages:
-    needs: create-release-branch
-    name: Build Packages
-    uses: ./.github/workflows/build-packages.yml
-    with:
-      version: ${{ inputs.version }}
-      branch: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }} 
-    secrets: inherit
-
   publish-packages:
-    needs: [create-release-branch, build-packages]
-    name: Publish Packages
+    name: Build and Publish Packages
     if: ${{ inputs.publish_packages == true }}
     runs-on: ["ubuntu-latest"]
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }}
-          fetch-depth: 0  # Fetch all history for changelog generation
-
-      - name: Download packages
-        uses: actions/download-artifact@v4
-        with:
-          name: packages
-          path: dist
+          ref: main
+          fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: 3.12
+          python-version: "3.12"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
         with:
           version: "0.11.3"
+
+      - name: Build packages
+        run: |
+          uv build
 
       - name: Publish packages
         if: ${{ inputs.test == false }}
         run: |
           uv publish --token ${{ secrets.PYPI_API_TOKEN }}
-    
+
       - name: Publish Packages (Test PyPI)
         if: ${{ inputs.test == true }}
         continue-on-error: true
         run: |
           uv publish --token ${{ secrets.TEST_PYPI_API_TOKEN }} --publish-url https://test.pypi.org/legacy/
 
-  build-docs:
-    needs: [create-release-branch, build-packages, publish-packages]
-    name: Build Docs
-    uses: ./.github/workflows/build-docs.yml
-    if: ${{ inputs.build_docs == true }}
-    with:
-      branch: ${{ needs.create-release-branch.outputs.RELEASE_BRANCH }} 
-      version: ${{ inputs.version }}
+  create-tag:
+    needs: publish-packages
+    name: Create Release Tag
+    # Tag main HEAD only on a real release, after publishing succeeded (or was
+    # intentionally skipped via publish_packages=false). always() lets this run
+    # even when publish-packages was skipped.
+    if: >-
+      ${{ always() && inputs.dry_run == false
+          && (needs.publish-packages.result == 'success' || needs.publish-packages.result == 'skipped') }}
+    runs-on: ["ubuntu-latest"]
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Read version from pyproject.toml
+        id: version
+        run: |
+          version=$(grep -m1 -E '^version = ' pyproject.toml | sed -E 's/^version = "(.*)"/\1/')
+          if [ -z "$version" ]; then
+            echo "::error::Could not read version from pyproject.toml"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Releasing version: $version"
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Create and push tag
+        run: |
+          tag="v${{ steps.version.outputs.version }}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "::error::Tag $tag already exists!"
+            exit 1
+          fi
+          git tag -a "$tag" -m "Release $tag"
+          git push origin "$tag"
+
+  publish-docs:
+    name: Publish Docs
+    if: ${{ inputs.dry_run == false && inputs.publish_docs == true }}
+    uses: ./.github/workflows/publish-docs.yml
     secrets: inherit
 
   create-github-release:
-    needs: [create-release-branch, build-packages, publish-packages, build-docs]
+    needs: create-tag
     name: Create GitHub Release
     uses: ./.github/workflows/create-github-release.yml
     with:
-      version: ${{ inputs.version }}
+      version: ${{ needs.create-tag.outputs.version }}
     secrets: inherit
