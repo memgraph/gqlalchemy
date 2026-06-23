@@ -306,7 +306,7 @@ Call a query module procedure.
   
   Call procedure with arguments:
   
-- `Python` - `call('json_util.load_from_url', "'https://some-url.com'").yield_('objects').return_(results='objects').execute()
+- `Python` - `call(&#x27;json_util.load_from_url&#x27;, &quot;&#x27;https://some-url.com&#x27;&quot;).yield_(&#x27;objects&#x27;).return_(results=&#x27;objects&#x27;).execute()
 - `Cypher` - `CALL json_util.load_from_url(https://some-url.com) YIELD objects RETURN objects;`
 
 #### node
@@ -376,7 +376,7 @@ Add a relationship pattern to the query.
   Match and return a relationship:
   
 - `Python` - `match().node(labels='Town', variable='t').to(relationship_type='BELONGS_TO', variable='b').node(labels='Country', variable='c').return_(results='b').execute()`
-- `Cypher` - `MATCH (t:Town)-[b:BELONGS_TO]->(c:Country) RETURN b;`
+- `directed`0 - `directed`1
 
 #### from\_
 
@@ -411,7 +411,7 @@ Add a relationship pattern to the query.
   Match and return a relationship:
   
 - `Python` - `match().node(labels='Country', variable='c').from_(relationship_type='BELONGS_TO', variable='b').node(labels='Town', variable='t').return_(results='b').execute()`
-- `Cypher` - `MATCH (c:Country)<-[b:BELONGS_TO]-(t:Town) RETURN b;`
+- `Cypher` - `directed`0
 
 #### where
 
@@ -428,7 +428,7 @@ Creates a WHERE statement Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Raises**:
@@ -447,17 +447,17 @@ Creates a WHERE statement Cypher partial query.
   Filtering query results by the equality of `name` properties of two connected nodes.
   
 - `Python` - `match().node(variable='n').to().node(variable='m').where(item='n.name', operator=Operator.EQUAL, expression='m.name').return_()`
-- `Cypher` - `MATCH (n)-[]->(m) WHERE n.name = m.name RETURN *;`
+- `operator`0 - `operator`1
   
   Filtering query results by the node label.
   
-- `Python` - `match().node(variable='n').where(item='n', operator=Operator.LABEL_FILTER, expression='User').return_()`
-- `Cypher` - `MATCH (n) WHERE n:User RETURN *;`
+- `Python` - `operator`3
+- `operator`0 - `operator`5
   
   Filtering query results by the comparison of node property and literal.
   
-- `Python` - `match().node(variable='n').where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
-- `Cypher` - `MATCH (n) WHERE n.age > 18 RETURN *;`
+- `Python` - `operator`7
+- `operator`0 - `operator`9
 
 #### where\_not
 
@@ -474,7 +474,7 @@ Creates a WHERE NOT statement Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Raises**:
@@ -493,7 +493,7 @@ Creates a WHERE NOT statement Cypher partial query.
   Filtering query results by the equality of `name` properties of two connected nodes.
   
 - `Python` - `match().node(variable='n').to().node(variable='m').where_not(item='n.name', operator='=', expression='m.name').return_()`
-- `Cypher` - `MATCH (n)-[]->(m) WHERE NOT n.name = m.name RETURN *;`
+- `operator`0 - `operator`1
 
 #### and\_where
 
@@ -510,7 +510,7 @@ Creates an AND statement as a part of WHERE Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Returns**:
@@ -541,7 +541,7 @@ Creates an AND NOT statement as a part of WHERE Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Returns**:
@@ -571,7 +571,7 @@ Creates an OR statement as a part of WHERE Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Returns**:
@@ -601,7 +601,7 @@ Creates an OR NOT statement as a part of WHERE Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Returns**:
@@ -631,7 +631,7 @@ Creates an XOR statement as a part of WHERE Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Returns**:
@@ -662,7 +662,7 @@ Creates an XOR NOT statement as a part of WHERE Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Returns**:
@@ -870,7 +870,7 @@ Yield data from the query.
   Yield some data from a query:
   
 - `Python` - `.call(procedure='pagerank.get').yield_(results=['node', 'rank']).return_(results=['node','rank']).execute()`
-- `Cypher` - `CALL pagerank.get() YIELD node, rank RETURN node, rank;`
+- `Cypher` - `GQLAlchemyResultQueryTypeError`1
 
 #### return\_
 
@@ -914,7 +914,7 @@ Return data from the query.
   Return specific variables from a query:
   
 - `Python` - `match().node(labels='Person', variable='p1').to().node(labels='Person', variable='p2').return_(results=[('p1','first'), 'p2']).execute()`
-- `Cypher` - `MATCH (p1:Person)-[]->(p2:Person) RETURN p1 AS first, p2;`
+- `Cypher` - `GQLAlchemyResultQueryTypeError`1
 
 #### order\_by
 
@@ -1084,7 +1084,7 @@ Creates a SET statement Cypher partial query.
   
   Kwargs:
 - `literal` - A value that will be converted to Cypher value, such as int, float, string, etc.
-- `expression` - A node label or property that won't be converted to Cypher value (no additional quotes will be added).
+- `expression` - A node label or property that won&#x27;t be converted to Cypher value (no additional quotes will be added).
   
 
 **Raises**:
@@ -1103,27 +1103,27 @@ Creates a SET statement Cypher partial query.
   Set or update a property.
   
 - `Python` - `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n.population', operator=Operator.ASSIGNMENT, literal=83000001).return_().execute()`
-- `Cypher` - `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 RETURN *;`
+- `Cypher` - `operator`0
   
   Set or update multiple properties.
   
-- `Python` - `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n.population', operator=Operator.ASSIGNMENT, literal=83000001).set_(item='n.capital', operator=Operator.ASSIGNMENT, literal='Berlin').return_().execute()`
-- `Cypher` - `MATCH (n) WHERE n.name = 'Germany' SET n.population = 83000001 SET n.capital = 'Berlin' RETURN *;`
+- `Python` - `operator`2
+- `Cypher` - `operator`4
   
   Set node label.
   
-- `Python` - `match().node(variable='n').where(item='n.name', operator=Operator.EQUAL, literal='Germany').set_(item='n', operator=Operator.LABEL_FILTER, expression='Land').return_().execute()`
-- `Cypher` - `MATCH (n) WHERE n.name = 'Germany' SET n:Land RETURN *;`
+- `Python` - `operator`6
+- `Cypher` - `operator`8
   
   Replace all properties using map.
   
-- `Python` - `match().node(variable='c', labels='Country').where(item='c.name', operator=Operator.EQUAL, literal='Germany').set_(item='c', operator=Operator.ASSIGNMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
-- `Cypher` - `MATCH (c:Country) WHERE c.name = 'Germany' SET c = {name: 'Germany', population: '85000000'} RETURN *;`
+- `Python` - `literal`0
+- `Cypher` - `literal`2
   
   Update all properties using map.
   
-- `Python` - `match().node(variable='c', labels='Country').where(item='c.name', operator=Operator.EQUAL, literal='Germany').set_(item='c', operator=Operator.INCREMENT, literal={'name': 'Germany', 'population': '85000000'}).return_().execute()`
-- `Cypher` - `MATCH (c:Country) WHERE c.name = 'Germany' SET c += {name: 'Germany', population: '85000000'} RETURN *;`
+- `Python` - `literal`4
+- `Cypher` - `literal`6
 
 #### execute
 

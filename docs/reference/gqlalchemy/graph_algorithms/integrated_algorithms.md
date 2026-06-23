@@ -9,13 +9,13 @@ title: gqlalchemy.graph_algorithms.integrated_algorithms
 class IntegratedAlgorithm(ABC)
 ```
 
-Abstract class modeling Memgraph's built-in graph algorithms.
+Abstract class modeling Memgraph&#x27;s built-in graph algorithms.
 
-These algorithms are integrated into Memgraph's codebase and are called
+These algorithms are integrated into Memgraph&#x27;s codebase and are called
 within a relationship part of a query. For instance:
-MATCH p = (:City {name: "Paris"})
-      -[:Road * bfs (r, n | r.length <= 200 AND n.name != "Metz")]->
-      (:City {name: "Berlin"})
+MATCH p = (:City {name: &quot;Paris&quot;})
+      -[:Road * bfs (r, n | r.length &lt;= 200 AND n.name != &quot;Metz&quot;)]-&gt;
+      (:City {name: &quot;Berlin&quot;})
 
 #### \_\_str\_\_
 
@@ -38,9 +38,9 @@ Method for creating a general lambda expression.
 Variables `r` and `n` stand for relationship and node. The expression is
 used e.g. for a filter lambda, to use only relationships of length less
 than 200:
-expression="r.length < 200"
+expression=&quot;r.length &lt; 200&quot;
 with the filter lambda being:
-(r, n | r.length < 200)
+(r, n | r.length &lt; 200)
 
 **Arguments**:
 
@@ -100,10 +100,10 @@ class DepthFirstSearch(IntegratedAlgorithm)
 Build a DFS call for a Cypher query.
 The Depth-First Search can be called in Memgraph with Cypher queries
 such as:
-MATCH (a {id: 723})-[* ..10 (r, n | r.x > 12 AND n.y < 3)]-() RETURN *;
-It is called inside the relationship clause, "*" naming the algorithm
-("*" without "DFS" because it is defined like such in openCypher),
-"..10" specifying depth bounds, and "(r, n | <expression>)" is a filter
+MATCH (a {id: 723})-[* ..10 (r, n | r.x &gt; 12 AND n.y &lt; 3)]-() RETURN *;
+It is called inside the relationship clause, &quot;*&quot; naming the algorithm
+(&quot;*&quot; without &quot;DFS&quot; because it is defined like such in openCypher),
+&quot;..10&quot; specifying depth bounds, and &quot;(r, n | &lt;expression&gt;)&quot; is a filter
 lambda.
 
 #### \_\_init\_\_
@@ -147,10 +147,10 @@ Build a Dijkstra shortest path call for a Cypher query.
 
 The weighted shortest path algorithm can be called in Memgraph with Cypher
 queries such as:
-" MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum
-        (r, n | r.x > 12 AND r.y < 3)]-(b {id: 882}) RETURN * "
-It is called inside the relationship clause, "*WSHORTEST" naming the
-algorithm, "10" specifying search depth bounds, and "(r, n | <expression>)"
+&quot; MATCH (a {id: 723})-[r *WSHORTEST 10 (r, n | r.weight) weight_sum
+        (r, n | r.x &gt; 12 AND r.y &lt; 3)]-(b {id: 882}) RETURN * &quot;
+It is called inside the relationship clause, &quot;*WSHORTEST&quot; naming the
+algorithm, &quot;10&quot; specifying search depth bounds, and &quot;(r, n | &lt;expression&gt;)&quot;
 is a filter lambda, used to filter which relationships and nodes to use.
 
 #### \_\_init\_\_
@@ -181,10 +181,10 @@ Build a Dijkstra shortest path call for a Cypher query.
 
 The weighted shortest path algorithm can be called in Memgraph with Cypher
 queries such as:
-" MATCH (a {id: 723})-[r *ALLSHORTEST 10 (r, n | r.weight) total_weight
-        (r, n | r.x > 12 AND r.y < 3)]-(b {id: 882}) RETURN * "
-It is called inside the relationship clause, "*ALLSHORTEST" naming the
-algorithm, "10" specifying search depth bounds, and "(r, n | <expression>)"
+&quot; MATCH (a {id: 723})-[r *ALLSHORTEST 10 (r, n | r.weight) total_weight
+        (r, n | r.x &gt; 12 AND r.y &lt; 3)]-(b {id: 882}) RETURN * &quot;
+It is called inside the relationship clause, &quot;*ALLSHORTEST&quot; naming the
+algorithm, &quot;10&quot; specifying search depth bounds, and &quot;(r, n | &lt;expression&gt;)&quot;
 is a filter lambda, used to filter which relationships and nodes to use.
 
 #### \_\_init\_\_

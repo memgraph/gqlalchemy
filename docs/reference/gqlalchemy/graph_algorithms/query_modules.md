@@ -32,7 +32,7 @@ Named arguments in self.arguments.
 def get_arguments_for_call() -> str
 ```
 
-return inputs in form "value1, value2, ..." for QueryBuilder call()
+return inputs in form &quot;value1, value2, ...&quot; for QueryBuilder call()
 method.
 
 **Raises**:
@@ -54,12 +54,12 @@ One list is for arguments and another for returns.
 For instance, if a query module signature is:
 dummy_module.dummy(lst :: LIST OF STRING, num = 3 :: NUMBER) :: (ret :: STRING)
 the method should return a list of arguments:
-[{"name": "lst", "type": "LIST OF STRING"}, {"name": "num", "type": "NUMBER", "default": 3}]
+[{&quot;name&quot;: &quot;lst&quot;, &quot;type&quot;: &quot;LIST OF STRING&quot;}, {&quot;name&quot;: &quot;num&quot;, &quot;type&quot;: &quot;NUMBER&quot;, &quot;default&quot;: 3}]
 and a list of returns:
-[{"name": "ret", "type": "STRING"}]
+[{&quot;name&quot;: &quot;ret&quot;, &quot;type&quot;: &quot;STRING&quot;}]
 
-Dictionary consists of fields: "name" - argument name, "type" - data
-type of argument and "default" where default argument value is given
+Dictionary consists of fields: &quot;name&quot; - argument name, &quot;type&quot; - data
+type of argument and &quot;default&quot; where default argument value is given
 
 **Arguments**:
 

@@ -11,7 +11,7 @@ class GraphImporter(Importer)
 
 Imports dgl, pyg or networkx graph representations to Memgraph.
 The following code will suffice for importing queries.
->>> importer = GraphImporter("dgl")
+&gt;&gt;&gt; importer = GraphImporter(&quot;dgl&quot;)
 graph = DGLGraph(...)
 importer.translate(graph)  # queries are inserted in this step
 

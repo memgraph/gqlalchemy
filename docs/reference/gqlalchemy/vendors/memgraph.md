@@ -181,9 +181,9 @@ def save_node(node: Node) -> Node
 
 Saves node to the database.
 If the node._id is not None it fetches the node with the same id from
-the database and updates it's fields.
+the database and updates it&#x27;s fields.
 If the node has unique fields it fetches the nodes with the same unique
-fields from the database and updates it's fields.
+fields from the database and updates it&#x27;s fields.
 Otherwise it creates a new node with the same properties.
 Null properties are ignored.
 
@@ -225,7 +225,7 @@ def save_relationship(relationship: Relationship) -> Optional[Relationship]
 
 Saves a relationship to the database.
 If relationship._id is not None it finds the relationship in the database
-and updates it's properties with the values in `relationship`.
+and updates it&#x27;s properties with the values in `relationship`.
 If relationship._id is None, it creates a new relationship.
 If you want to set a relationship._id instead of creating a new
 relationship, use `load_relationship` first.
@@ -350,7 +350,7 @@ Get detailed storage information about the database instance.
 
 **Returns**:
 
-- `List[dict]` - A list of dictionaries with 'storage info' and 'value' keys containing:
+- `List[dict]` - A list of dictionaries with &#x27;storage info&#x27; and &#x27;value&#x27; keys containing:
   - name: Current database name
   - vertex_count: Total number of stored nodes
   - edge_count: Total number of stored relationships
@@ -370,7 +370,7 @@ Get build information about the Memgraph instance.
 
 **Returns**:
 
-- `List[dict]` - A list of dictionaries with 'build info' and 'value' keys containing:
+- `List[dict]` - A list of dictionaries with &#x27;build info&#x27; and &#x27;value&#x27; keys containing:
   - build_type: The optimization level the instance was built with
 
 #### analyze\_graph
@@ -392,8 +392,8 @@ to select more optimal indexes and MERGE operations.
 **Returns**:
 
 - `List[dict]` - A list of dictionaries containing analysis results with keys:
-  - label: Index's label
-  - property: Index's property
+  - label: Index&#x27;s label
+  - property: Index&#x27;s property
   - num estimation nodes: Nodes used for estimation
   - num groups: Distinct property values
   - avg group size: Average group size per value
@@ -420,6 +420,6 @@ after significant changes to the graph structure or data.
 **Returns**:
 
 - `List[dict]` - A list of dictionaries containing deleted index info with keys:
-  - label: The deleted index's label
-  - property: The deleted index's property
+  - label: The deleted index&#x27;s label
+  - property: The deleted index&#x27;s property
 

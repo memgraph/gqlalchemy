@@ -27,8 +27,8 @@ class TriggerEventObject()
 
 An enum representing types of trigger objects.
 
-NODE -> `()`
-RELATIONSHIP -> `-->`
+NODE -&gt; `()`
+RELATIONSHIP -&gt; `-->`
 
 ## TriggerExecutionPhase Objects
 
@@ -211,9 +211,9 @@ def save(db: "Database") -> "Node"
 
 Saves node to Memgraph.
 If the node._id is not None it fetches the node with the same id from
-Memgraph and updates it's fields.
+Memgraph and updates it&#x27;s fields.
 If the node has unique fields it fetches the nodes with the same unique
-fields from Memgraph and updates it's fields.
+fields from Memgraph and updates it&#x27;s fields.
 Otherwise it creates a new node with the same properties.
 Null properties are ignored.
 
@@ -281,7 +281,7 @@ def save(db: "Database") -> "Relationship"
 
 Saves a relationship to Memgraph.
 If relationship._id is not None it finds the relationship in Memgraph
-and updates it's properties with the values in `relationship`.
+and updates it&#x27;s properties with the values in `relationship`.
 If relationship._id is None, it creates a new relationship.
 If you want to set a relationship._id instead of creating a new
 relationship, use `load_relationship` first.
