@@ -2,9 +2,9 @@ loaders:
   - type: python
     search_path: [.]
     modules:
-      - gqlalchemy.connection 
+      - gqlalchemy.connection
       - gqlalchemy.disk_storage
-      - gqlalchemy.exceptions 
+      - gqlalchemy.exceptions
       - gqlalchemy.instance_runner
       - gqlalchemy.models
       - gqlalchemy.utilities
@@ -39,3 +39,5 @@ renderer:
   relative_output_path: reference
   relative_sidebar_path: sidebar.json
   sidebar_top_level_label: 'Reference'
+  markdown:
+    escape_html_in_docstring: false
