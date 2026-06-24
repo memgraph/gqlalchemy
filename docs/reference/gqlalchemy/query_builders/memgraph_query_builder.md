@@ -36,24 +36,24 @@ Load data from a CSV file by executing a Cypher query for each row.
   Load CSV with header:
   
   - Python:
-    ```
+    ```python
     load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()
     ```
   
   - Cypher:
-    ```
+    ```cypher
     LOAD CSV FROM "path/to/my/file.csv" WITH HEADER AS row RETURN *;
     ```
   
   Load CSV without header:
   
   - Python:
-    ```
+    ```python
     load_csv(path="path/to/my/file.csv", header=False, row="row").return_().execute()
     ```
   
   - Cypher:
-    ```
+    ```cypher
     LOAD CSV FROM "path/to/my/file.csv" NO HEADER AS row RETURN *;
     ```
 
@@ -79,7 +79,7 @@ Cypher query defining the MATCH clause which selects the nodes and relationships
 **Arguments**:
 
 - `procedure` - A string representing the name of the procedure in the
-  format ``query_module.procedure``.
+  format &quot;query_module.procedure&quot;.
 - `arguments` - A string representing the arguments of the procedure in
   text format.
 - `node_labels` - Either a string, which is then used as the label for all nodes, or
@@ -92,31 +92,33 @@ Cypher query defining the MATCH clause which selects the nodes and relationships
 
 **Returns**:
 
-  A ``DeclarativeBase`` instance for constructing queries.
+  A DeclarativeBase instance for constructing queries.
   
 
 **Examples**:
 
-  Python:
+  - Python:
         ```python
-        call(&#x27;export_util.json&#x27;, &#x27;/home/user&#x27;, &quot;LABEL&quot;, [&quot;TYPE1&quot;, &quot;TYPE2&quot;]).execute()
+        call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
         ```
-  Cypher:
+  
+  - Cypher:
         ```cypher
-        MATCH p=(a)-[:TYPE1 | :TYPE2]-&gt;(b) WHERE (a:LABEL) AND (b:LABEL)
-        WITH project(p) AS graph CALL export_util.json(graph, &#x27;/home/user&#x27;)
+        MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
+        WITH project(p) AS graph CALL export_util.json(graph, '/home/user')
         ```
   
   or
   
-  Python:
+  - Python:
         ```python
-        call(&#x27;export_util.json&#x27;, &#x27;/home/user&#x27;, subgraph_path=&quot;(:LABEL)-[:TYPE]-&gt;(:LABEL)&quot;).execute()
+        call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()
         ```
-  Cypher:
+  
+  - Cypher:
         ```cypher
-        MATCH p=(:LABEL)-[:TYPE1]-&gt;(:LABEL) WITH project(p) AS graph
-        CALL export_util.json(graph, &#x27;/home/user&#x27;)
+        MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
+        CALL export_util.json(graph, '/home/user')
         ```
 
 ## ProjectPartialQuery Objects

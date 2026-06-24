@@ -31,6 +31,12 @@ loaders:
 processors:
   - type: filter
     skip_empty_modules: true
+    expression: >
+      not (
+        name == 'Field'
+        and obj.location.filename.replace('\\', '/').endswith('gqlalchemy/models.py')
+      )
+      and default()
   - type: smart
   - type: crossref
 renderer:

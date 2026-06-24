@@ -3,14 +3,6 @@ sidebar_label: models
 title: gqlalchemy.models
 ---
 
-#### Field
-
-```python
-def Field(default=..., **kwargs)
-```
-
-Pydantic Field wrapper that stores custom OGM metadata in json_schema_extra.
-
 ## TriggerEventType Objects
 
 ```python
