@@ -58,7 +58,8 @@ class QueryBuilder(DeclarativeBase):
         """Load data from a CSV file by executing a Cypher query for each row.
 
         Args:
-            path: A string representing the path to the CSV file. If beginning with `http://`, `https://`, or `ftp://`, the CSV file will be fetched over the network.
+            path: A string representing the path to the CSV file. If beginning with
+              "http://", "https://" or "ftp://", the CSV file will be fetched over the network.
             header: A bool indicating if the CSV file starts with a header row.
             row: A string representing the name of the variable for iterating
               over each row.
@@ -69,13 +70,28 @@ class QueryBuilder(DeclarativeBase):
         Examples:
             Load CSV with header:
 
-            Python: `load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()`
-            Cypher: `LOAD CSV FROM 'path/to/my/file.csv' WITH HEADER AS row RETURN *;`
+            - Python:
+            ```python
+            load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()
+            ```
+
+            - Cypher:
+            ```cypher
+            LOAD CSV FROM "path/to/my/file.csv" WITH HEADER AS row RETURN *;
+            ```
 
             Load CSV without header:
 
-            Python: `load_csv(path='path/to/my/file.csv', header=False, row='row').return_().execute()`
-            Cypher: `LOAD CSV FROM 'path/to/my/file.csv' NO HEADER AS row RETURN *;`
+            - Python:
+            ```python
+            load_csv(path="path/to/my/file.csv", header=False, row="row").return_().execute()
+            ```
+
+            - Cypher:
+            ```cypher
+            LOAD CSV FROM "path/to/my/file.csv" NO HEADER AS row RETURN *;
+            ```
+
         """
         self._query.append(LoadCsvPartialQuery(path, header, row))
 
@@ -123,7 +139,7 @@ class QueryBuilder(DeclarativeBase):
 
         Args:
             procedure: A string representing the name of the procedure in the
-              format `query_module.procedure`.
+              format "query_module.procedure".
             arguments: A string representing the arguments of the procedure in
               text format.
             node_labels: Either a string, which is then used as the label for all nodes, or
@@ -134,18 +150,32 @@ class QueryBuilder(DeclarativeBase):
             subgraph_path: Optional way to define the subgraph via a Cypher MATCH clause.
 
         Returns:
-            A `DeclarativeBase` instance for constructing queries.
+            A DeclarativeBase instance for constructing queries.
 
         Examples:
-            Python: `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
-            Cypher: `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
-                     WITH project(p) AS graph CALL export_util.json(graph, '/home/user')`
+            - Python:
+                ```python
+                call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
+                ```
+
+            - Cypher:
+                ```cypher
+                MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
+                WITH project(p) AS graph CALL export_util.json(graph, '/home/user')
+                ```
 
             or
 
-            Python: `call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()
-            Cypher: `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
-                    CALL export_util.json(graph, '/home/user')`
+            - Python:
+                ```python
+                call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()
+                ```
+
+            - Cypher:
+                ```cypher
+                MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
+                CALL export_util.json(graph, '/home/user')
+                ```
         """
 
         if not (node_labels is None and relationship_types is None):

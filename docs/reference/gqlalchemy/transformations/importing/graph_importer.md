@@ -29,29 +29,29 @@ Gets cypher queries using the underlying translator and then inserts all queries
 
 **Arguments**:
 
-- `graph` - dgl, pytorch geometric or nx graph instance.
+- `graph` - dgl, pytorch geometric, dot or nx graph instance.
 
-#### translate_dot_file
+#### translate\_dot\_file
 
 ```python
 def translate_dot_file(path: str) -> None
 ```
 
-Parses a DOT file into a NetworkX graph and imports it to Memgraph. This method is available when `graph_type="NX"`.
+Parses a DOT file to a NetworkX graph and imports it to Memgraph. This method is available when ```graph_type="NX"```
 
 **Arguments**:
 
-- `path` - Path to a DOT file.
+  - ``path`` - Path to a DOT file.
 
-#### translate_dot_data
+#### translate\_dot\_data
 
 ```python
 def translate_dot_data(dot_data: str) -> None
 ```
 
-Parses DOT content from a string into a NetworkX graph and imports it to Memgraph. This method is available when `graph_type="NX"`.
+Parses DOT content to a NetworkX graph and imports it to Memgraph. This method is available when ```graph_type="NX"```.
 
 **Arguments**:
 
-- `dot_data` - Raw DOT graph content.
+  - ``dot_data`` - Raw DOT graph content.
 

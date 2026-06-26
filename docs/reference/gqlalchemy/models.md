@@ -146,6 +146,15 @@ Converts the GraphObject class into the appropriate subclass.
 This is used when deserialising a json representation of the class,
 or the object returned from the GraphDatabase.
 
+#### model\_validate
+
+```python
+@classmethod
+def model_validate(cls, obj, *args, **kwargs)
+```
+
+Used to convert a dictionary object into the appropriate GraphObject.
+
 #### parse\_obj
 
 ```python

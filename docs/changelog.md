@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.9.0 - June 23, 2026
+
+### Features and improvements
+
+
+* Fix release process (#387)
+* feat: Build for Python 3.14 (#383)
+* feat: Migrate to uv  (#382)
+* Add DOT import (#377)
+* Add TensorflowGNN transformer (#353)
+* Support Transport of ZonedDateTimes (#370)
+* Added missing dependency for publish docs workflow (#368)
+
+
 ## v1.8.0 - June 12, 2025
 
 ### Features and improvements

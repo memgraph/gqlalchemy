@@ -19,7 +19,8 @@ Load data from a CSV file by executing a Cypher query for each row.
 
 **Arguments**:
 
-- `path` - A string representing the path to the CSV file. If beginning with `http://`, `https://`, or `ftp://`, the CSV file will be fetched over the network.
+- `path` - A string representing the path to the CSV file. If beginning with
+  &quot;http://&quot;, &quot;https://&quot; or &quot;ftp://&quot;, the CSV file will be fetched over the network.
 - `header` - A bool indicating if the CSV file starts with a header row.
 - `row` - A string representing the name of the variable for iterating
   over each row.
@@ -34,13 +35,27 @@ Load data from a CSV file by executing a Cypher query for each row.
 
   Load CSV with header:
   
-- `Python` - `load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()`
-- `Cypher` - `LOAD CSV FROM "path/to/my/file.csv" WITH HEADER AS row RETURN *;`
+  - Python:
+    ```python
+    load_csv(path="path/to/my/file.csv", header=True, row="row").return_().execute()
+    ```
+  
+  - Cypher:
+    ```cypher
+    LOAD CSV FROM "path/to/my/file.csv" WITH HEADER AS row RETURN *;
+    ```
   
   Load CSV without header:
   
-- `Python` - `load_csv(path="path/to/my/file.csv", header=False, row="row").return_().execute()`
-- `Cypher` - `LOAD CSV FROM "path/to/my/file.csv" NO HEADER AS row RETURN *;`
+  - Python:
+    ```python
+    load_csv(path="path/to/my/file.csv", header=False, row="row").return_().execute()
+    ```
+  
+  - Cypher:
+    ```cypher
+    LOAD CSV FROM "path/to/my/file.csv" NO HEADER AS row RETURN *;
+    ```
 
 #### call
 
@@ -55,7 +70,7 @@ def call(procedure: str,
          subgraph_path: str = None) -> "DeclarativeBase"
 ```
 
-Override of base class method to support Memgraph subgraph functionality.
+Override of base class method to support Memgraph&#x27;s subgraph functionality.
 
 Method can be called with node labels and relationship types, both being optional, which are used to construct
 a subgraph, or if neither is provided, a subgraph query is used, which can be passed as a string representing a
@@ -64,7 +79,7 @@ Cypher query defining the MATCH clause which selects the nodes and relationships
 **Arguments**:
 
 - `procedure` - A string representing the name of the procedure in the
-  format `query_module.procedure`.
+  format &quot;query_module.procedure&quot;.
 - `arguments` - A string representing the arguments of the procedure in
   text format.
 - `node_labels` - Either a string, which is then used as the label for all nodes, or
@@ -77,18 +92,34 @@ Cypher query defining the MATCH clause which selects the nodes and relationships
 
 **Returns**:
 
-  A `DeclarativeBase` instance for constructing queries.
+  A DeclarativeBase instance for constructing queries.
   
 
 **Examples**:
 
-- `Python` - `call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()`
-- `Cypher` - `MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL) WITH project(p) AS graph CALL export_util.json(graph, "/home/user")`
+  - Python:
+        ```python
+        call('export_util.json', '/home/user', "LABEL", ["TYPE1", "TYPE2"]).execute()
+        ```
+  
+  - Cypher:
+        ```cypher
+        MATCH p=(a)-[:TYPE1 | :TYPE2]->(b) WHERE (a:LABEL) AND (b:LABEL)
+        WITH project(p) AS graph CALL export_util.json(graph, '/home/user')
+        ```
   
   or
   
-- `Python` - `call("export_util.json", "/home/user", subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()`
-- `Cypher` - `MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph CALL export_util.json(graph, "/home/user")`
+  - Python:
+        ```python
+        call('export_util.json', '/home/user', subgraph_path="(:LABEL)-[:TYPE]->(:LABEL)").execute()
+        ```
+  
+  - Cypher:
+        ```cypher
+        MATCH p=(:LABEL)-[:TYPE1]->(:LABEL) WITH project(p) AS graph
+        CALL export_util.json(graph, '/home/user')
+        ```
 
 ## ProjectPartialQuery Objects
 
@@ -104,6 +135,6 @@ def construct_query() -> str
 
 Constructs a Project partial query.
 
-Given path part of a query (e.g. (:LABEL)-[:TYPE]->(:LABEL2)),
+Given path part of a query (e.g. (:LABEL)-[:TYPE]-&gt;(:LABEL2)),
 adds MATCH, a path identifier and appends the WITH clause.
 

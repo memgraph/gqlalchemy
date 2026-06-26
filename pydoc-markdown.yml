@@ -2,9 +2,9 @@ loaders:
   - type: python
     search_path: [.]
     modules:
-      - gqlalchemy.connection 
+      - gqlalchemy.connection
       - gqlalchemy.disk_storage
-      - gqlalchemy.exceptions 
+      - gqlalchemy.exceptions
       - gqlalchemy.instance_runner
       - gqlalchemy.models
       - gqlalchemy.utilities
@@ -31,6 +31,12 @@ loaders:
 processors:
   - type: filter
     skip_empty_modules: true
+    expression: >
+      not (
+        name == 'Field'
+        and obj.location.filename.replace('\\', '/').endswith('gqlalchemy/models.py')
+      )
+      and default()
   - type: smart
   - type: crossref
 renderer:
@@ -39,3 +45,5 @@ renderer:
   relative_output_path: reference
   relative_sidebar_path: sidebar.json
   sidebar_top_level_label: 'Reference'
+  markdown:
+    escape_html_in_docstring: true

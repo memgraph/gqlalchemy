@@ -340,7 +340,6 @@ Terminate transactions in the database.
 
 - `List[MemgraphTerminatedTransaction]` - A list of MemgraphTerminatedTransaction objects with info on their status.
 
-
 #### get\_storage\_info
 
 ```python
@@ -351,7 +350,15 @@ Get detailed storage information about the database instance.
 
 **Returns**:
 
-- `List[dict]` - A list of dictionaries with 'storage info' and 'value' keys containing storage metrics like name, vertex_count, edge_count, memory_res, disk_usage, etc.
+- `List[dict]` - A list of dictionaries with &#x27;storage info&#x27; and &#x27;value&#x27; keys containing:
+  - name: Current database name
+  - vertex_count: Total number of stored nodes
+  - edge_count: Total number of stored relationships
+  - average_degree: Average number of relationships per node
+  - memory_res: Non-swapped physical RAM memory used
+  - disk_usage: Data directory disk space consumption
+  - memory_tracked: RAM allocated and tracked by Memgraph
+  - and other storage-related metrics
 
 #### get\_build\_info
 
@@ -363,7 +370,8 @@ Get build information about the Memgraph instance.
 
 **Returns**:
 
-- `List[dict]` - A list of dictionaries with 'build info' and 'value' keys containing build_type (the optimization level).
+- `List[dict]` - A list of dictionaries with &#x27;build info&#x27; and &#x27;value&#x27; keys containing:
+  - build_type: The optimization level the instance was built with
 
 #### analyze\_graph
 
@@ -378,11 +386,19 @@ to select more optimal indexes and MERGE operations.
 
 **Arguments**:
 
-- `labels` _Optional[List[str]]_ - Optional list of labels to analyze. If None, analyzes all labels.
+- `labels` - Optional list of labels to analyze. If None, analyzes all labels.
+  
 
 **Returns**:
 
-- `List[dict]` - A list of dictionaries containing analysis results with keys: label, property, num estimation nodes, num groups, avg group size, chi-squared value, avg degree.
+- `List[dict]` - A list of dictionaries containing analysis results with keys:
+  - label: Index&#x27;s label
+  - property: Index&#x27;s property
+  - num estimation nodes: Nodes used for estimation
+  - num groups: Distinct property values
+  - avg group size: Average group size per value
+  - chi-squared value: Statistical distribution measure
+  - avg degree: Average degree of indexed nodes
 
 #### delete\_graph\_statistics
 
@@ -392,12 +408,18 @@ def delete_graph_statistics(labels: Optional[List[str]] = None) -> List[dict]
 
 Delete graph statistics previously calculated by analyze_graph.
 
+Use this to reset the analysis data if you want to recalculate statistics
+after significant changes to the graph structure or data.
+
 **Arguments**:
 
-- `labels` _Optional[List[str]]_ - Optional list of labels to delete statistics for. If None, deletes statistics for all labels.
+  labels ``_Optional[List[str]]_``:  Optional list of labels to delete statistics for.
+  If None, deletes statistics for all labels.
+  
 
 **Returns**:
 
-- `List[dict]` - A list of dictionaries containing deleted index info with keys: label, property.
-
+- `List[dict]` - A list of dictionaries containing deleted index info with keys:
+  - label: The deleted index&#x27;s label
+  - property: The deleted index&#x27;s property
 
