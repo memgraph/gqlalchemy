@@ -56,7 +56,11 @@ from gqlalchemy.query_builders.declarative_base import (  # noqa F401
     Unwind,
     With,
 )
-from gqlalchemy.query_builders.memgraph_query_builder import LoadCsv, QueryBuilder
+from gqlalchemy.query_builders.memgraph_query_builder import (
+    DataDirectoryLockStatus,
+    LoadCsv,
+    QueryBuilder,
+)
 from gqlalchemy.query_builders.neo4j_query_builder import Neo4jQueryBuilder  # noqa F401
 from gqlalchemy.vendors.memgraph import Memgraph  # noqa F401
 from gqlalchemy.vendors.neo4j import Neo4j  # noqa F401
@@ -74,6 +78,7 @@ with_ = With
 foreach = Foreach
 return_ = Return
 load_csv = LoadCsv
+data_directory_lock_status = DataDirectoryLockStatus
 MemgraphQueryBuilder = QueryBuilder
 
 
