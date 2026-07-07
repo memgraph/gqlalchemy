@@ -437,6 +437,65 @@ class TestMemgraphNeo4jQueryBuilder:
 
         mock.assert_called_with(expected_query)
 
+    def test_where_is_not_null(self, vendor):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .where(item="n.name", operator=Operator.IS_NOT_NULL)
+            .return_()
+        )
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name IS NOT NULL RETURN * "
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_and_where_is_not_null(self, vendor):
+        query_builder = (
+            vendor[1]
+            .match()
+            .node(labels="L1", variable="n")
+            .to(relationship_type="TO")
+            .node(labels="L2", variable="m")
+            .where(item="n.name", operator=Operator.IS_NOT_NULL)
+            .and_where(item="m.name", operator=Operator.IS_NOT_NULL)
+            .return_()
+        )
+        expected_query = " MATCH (n:L1)-[:TO]->(m:L2) WHERE n.name IS NOT NULL AND m.name IS NOT NULL RETURN * "
+
+        with patch.object(vendor[0], "execute_and_fetch", return_value=None) as mock:
+            query_builder.execute()
+
+        mock.assert_called_with(expected_query)
+
+    def test_where_is_not_null_with_literal_throws(self, vendor):
+        with pytest.raises(GQLAlchemyExtraKeywordArguments):
+            (
+                vendor[1]
+                .match()
+                .node(labels="L1", variable="n")
+                .to(relationship_type="TO")
+                .node(labels="L2", variable="m")
+                .where(item="n.name", operator=Operator.IS_NOT_NULL, literal="best_name")
+                .return_()
+            )
+
+    def test_where_is_not_null_with_expression_throws(self, vendor):
+        with pytest.raises(GQLAlchemyExtraKeywordArguments):
+            (
+                vendor[1]
+                .match()
+                .node(labels="L1", variable="n")
+                .to(relationship_type="TO")
+                .node(labels="L2", variable="m")
+                .where(item="n.name", operator=Operator.IS_NOT_NULL, expression="m.name")
+                .return_()
+            )
+
     def test_where_not_label(self, vendor):
         query_builder = (
             vendor[1]

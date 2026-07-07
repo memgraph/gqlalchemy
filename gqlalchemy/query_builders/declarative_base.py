@@ -88,6 +88,7 @@ class Operator(Enum):
     GREATER_THAN = ">"
     IN = "IN"
     INEQUAL = "<>"
+    IS_NOT_NULL = "IS NOT NULL"
     LABEL_FILTER = ":"
     LESS_THAN = "<"
     LEQ_THAN = "<="
@@ -167,6 +168,8 @@ class CallPartialQuery(PartialQuery):
 class WhereConditionPartialQuery(PartialQuery):
     _LITERAL = "literal"
     _EXPRESSION = "expression"
+    # Postfix operators that take no right-hand side (no literal or expression).
+    _UNARY_OPERATORS = (Operator.IS_NOT_NULL.value,)
 
     def __init__(self, item: str, operator: Operator, keyword: Where = Where.WHERE, is_negated: bool = False, **kwargs):
         super().__init__(type=keyword.name if not is_negated else f"{keyword.name} {Where.NOT.name}")
@@ -185,6 +188,12 @@ class WhereConditionPartialQuery(PartialQuery):
 
         if operator_str not in Operator._value2member_map_:
             raise GQLAlchemyOperatorTypeError(clause=self.type)
+
+        if operator_str in WhereConditionPartialQuery._UNARY_OPERATORS:
+            if literal is not None or value is not None:
+                raise GQLAlchemyExtraKeywordArguments(clause=self.type)
+
+            return " ".join([item, operator_str])
 
         if value is None:
             if literal is None:
@@ -871,8 +880,8 @@ class DeclarativeBase(ABC):
             expression: A node label or property that won't be converted to Cypher value (no additional quotes will be added).
 
         Raises:
-            GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error when neither literal nor expression keyword arguments were provided.
-            GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both literal and expression keyword arguments were provided.
+            GQLAlchemyLiteralAndExpressionMissingInWhere: Raises an error when neither literal nor expression keyword arguments were provided, except for unary operators such as `Operator.IS_NOT_NULL`, which take neither.
+            GQLAlchemyExtraKeywordArgumentsInWhere: Raises an error when both literal and expression keyword arguments were provided, or when either is provided with a unary operator.
 
         Returns:
             self: A partial Cypher query built from the given parameters.
@@ -892,6 +901,11 @@ class DeclarativeBase(ABC):
 
             Python: `match().node(variable='n').where(item='n.age', operator=Operator.GREATER_THAN, literal=18).return_()`
             Cypher: `MATCH (n) WHERE n.age > 18 RETURN *;`
+
+            Filtering query results by property existence, using a unary operator (no literal or expression).
+
+            Python: `match().node(variable='n').to().node(variable='m').where(item='n.name', operator=Operator.IS_NOT_NULL).return_()`
+            Cypher: `MATCH (n)-[]->(m) WHERE n.name IS NOT NULL RETURN *;`
         """
         # WHERE item operator (literal | expression)
         # item: variable | property

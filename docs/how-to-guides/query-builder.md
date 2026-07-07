@@ -743,6 +743,44 @@ MATCH (p:Person) WHERE p.name IN ["Alice", "Bob"] RETURN *;
   </TabItem>
 </Tabs>
 
+### Filter data with the IS NOT NULL operator
+
+You can use the `IS NOT NULL` operator to **check that a property is set**. It is a unary
+operator: pass neither `literal` nor `expression`.
+
+<Tabs
+defaultValue="gqlalchemy"
+values={[
+{label: 'GQLAlchemy', value: 'gqlalchemy'},
+{label: 'Cypher', value: 'cypher'}
+]}>
+<TabItem value="gqlalchemy">
+
+```python
+from gqlalchemy import match
+from gqlalchemy.query_builders.memgraph_query_builder import Operator
+
+results = list(
+    match()
+    .node(labels="Person", variable="p")
+    .where(item="p.name", operator=Operator.IS_NOT_NULL)
+    .return_()
+    .execute()
+)
+
+print(results)
+```
+
+  </TabItem>
+  <TabItem value="cypher">
+
+```cypher
+MATCH (p:Person) WHERE p.name IS NOT NULL RETURN *;
+```
+
+  </TabItem>
+</Tabs>
+
 The `literal` keyword argument is used because you want list values to be properly quoted in the Cypher query. You can also combine `IN` with other boolean operators like `AND`, `OR`, etc.
 
 ### Filter data by label
