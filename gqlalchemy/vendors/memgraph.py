@@ -122,11 +122,17 @@ class Memgraph(DatabaseClient):
         encrypted: bool = mg_consts.MG_ENCRYPTED,
         client_name: str = mg_consts.MG_CLIENT_NAME,
         lazy: bool = mg_consts.MG_LAZY,
+        routing: bool = False,
+        access_mode: Optional[str] = None,
+        resolver: Optional[object] = None,
     ):
         super().__init__(
             host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
         )
         self._lazy = lazy
+        self._routing = routing
+        self._access_mode = access_mode
+        self._resolver = resolver
         self._on_disk_db = None
 
     @staticmethod
@@ -228,6 +234,9 @@ class Memgraph(DatabaseClient):
             password=self._password,
             encrypted=self._encrypted,
             client_name=self._client_name,
+            routing=self._routing,
+            access_mode=self._access_mode,
+            resolver=self._resolver,
         )
         return MemgraphConnection(**args)
 
@@ -301,6 +310,9 @@ class Memgraph(DatabaseClient):
             password=self._password,
             encrypted=self._encrypted,
             client_name=self._client_name,
+            routing=self._routing,
+            access_mode=self._access_mode,
+            resolver=self._resolver,
         )
         return MemgraphConnection(**args)
 

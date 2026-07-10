@@ -17,8 +17,7 @@
 These tests need a running HA cluster whose coordinator is advertised through
 ``MEMGRAPH_HA_COORDINATOR_HOST`` / ``MEMGRAPH_HA_COORDINATOR_PORT`` (started in
 CI by the "Run Memgraph HA Cluster" step, ``scripts/ha_cluster.sh``, or locally
-by running that script). They are skipped otherwise, and also when the
-installed pymgclient predates client-side routing.
+by running that script). They are skipped otherwise.
 """
 
 import os
@@ -26,6 +25,7 @@ import os
 import mgclient
 import pytest
 
+from gqlalchemy import Memgraph
 from gqlalchemy.connection import MemgraphConnection
 
 HA_HOST = os.environ.get("MEMGRAPH_HA_COORDINATOR_HOST")
@@ -36,10 +36,6 @@ pytestmark = [
     pytest.mark.skipif(
         not (HA_HOST and HA_PORT),
         reason="requires a Memgraph HA cluster (set MEMGRAPH_HA_COORDINATOR_HOST/PORT)",
-    ),
-    pytest.mark.skipif(
-        not hasattr(mgclient, "ACCESS_MODE_WRITE"),
-        reason="requires a routing-capable pymgclient",
     ),
 ]
 
@@ -84,3 +80,27 @@ def test_routed_write_is_readable_from_main():
     connection.execute("MERGE (n:RoutingTest {id: 1}) SET n.value = 'ok'")
     result = list(connection.execute_and_fetch("MATCH (n:RoutingTest {id: 1}) RETURN n.value AS value"))
     assert result[0]["value"] == "ok"
+
+
+# The Memgraph vendor client (routing plumbed through new_connection).
+
+
+def _routing_memgraph(access_mode=None):
+    return Memgraph(host=HA_HOST, port=int(HA_PORT), routing=True, access_mode=access_mode)
+
+
+def _vendor_role(db):
+    row = list(db.execute_and_fetch("SHOW REPLICATION ROLE"))[0]
+    return next(iter(row.values()))
+
+
+def test_vendor_write_client_targets_main():
+    assert _vendor_role(_routing_memgraph(mgclient.ACCESS_MODE_WRITE)) == "main"
+
+
+def test_vendor_read_client_targets_replica():
+    assert _vendor_role(_routing_memgraph(mgclient.ACCESS_MODE_READ)) == "replica"
+
+
+def test_vendor_default_access_mode_targets_main():
+    assert _vendor_role(_routing_memgraph()) == "main"
