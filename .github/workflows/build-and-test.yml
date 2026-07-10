@@ -120,6 +120,20 @@ jobs:
           echo "=== Neo4j logs ==="
           docker logs neo4j-test 2>&1 | tail -30 || true
 
+      - name: Run Memgraph HA Cluster
+        env:
+          MEMGRAPH_ENTERPRISE_LICENSE: ${{ secrets.MEMGRAPH_ENTERPRISE_LICENSE }}
+          MEMGRAPH_ORGANIZATION_NAME: ${{ secrets.MEMGRAPH_ORGANIZATION_NAME }}
+        run: |
+          if [ -z "$MEMGRAPH_ENTERPRISE_LICENSE" ] || [ -z "$MEMGRAPH_ORGANIZATION_NAME" ]; then
+            echo "::warning::Memgraph enterprise license secrets are not set; skipping the HA cluster and the routing tests."
+            exit 0
+          fi
+
+          bash scripts/ha_cluster.sh start
+          echo "MEMGRAPH_HA_COORDINATOR_HOST=127.0.0.1" >> "$GITHUB_ENV"
+          echo "MEMGRAPH_HA_COORDINATOR_PORT=7703" >> "$GITHUB_ENV"
+
       - name: Install More Packages (Python <= 3.12)
         if: ${{ matrix.python-version == '3.10' || matrix.python-version == '3.11' || matrix.python-version == '3.12' }}
         run: |
@@ -193,6 +207,10 @@ jobs:
           # pyproject.toml from the repo root) and is covered by the source run.
           pytest tests --ignore=tests/test_packaging.py -o addopts='' -vvv -m "not slow and not ubuntu and not docker and not tfgnn"
 
+      - name: Stop Memgraph HA Cluster
+        if: always()
+        run: bash scripts/ha_cluster.sh stop || echo "HA cluster does not exist"
+
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
@@ -256,7 +274,7 @@ jobs:
           mkdir -p /var/lib/memgraph/data-windows-${{ matrix.python-version }}
           chown -R memgraph:memgraph /var/lib/memgraph/data-windows-${{ matrix.python-version }}
           pkill -f '/usr/lib/memgraph/memgraph' || true
-          runuser -l memgraph -c 'nohup /usr/lib/memgraph/memgraph --bolt-address 0.0.0.0 --bolt-port 7687 --data-directory="/var/lib/memgraph/data-windows-${{ matrix.python-version }}" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log >/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}-stdout.log 2>&1 < /dev/null &' 
+          runuser -l memgraph -c 'nohup /usr/lib/memgraph/memgraph --bolt-address 0.0.0.0 --bolt-port 7687 --data-directory="/var/lib/memgraph/data-windows-${{ matrix.python-version }}" --storage-properties-on-edges=true --storage-snapshot-interval-sec=0 --storage-wal-enabled=false --storage-snapshot-on-exit=false --telemetry-enabled=false --log-level=TRACE --also-log-to-stderr=true --log-file=/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}.log >/mnt/c/memgraph/memgraph-windows-${{ matrix.python-version }}-stdout.log 2>&1 < /dev/null &'
 
       - name: Wait for Memgraph to be ready (WSL)
         shell: wsl-bash {0} # root shell
