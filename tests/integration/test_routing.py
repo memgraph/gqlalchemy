@@ -44,11 +44,6 @@ def _routing_memgraph(access_mode=None, **kwargs):
     return Memgraph(host=HA_HOST, port=int(HA_PORT), routing=True, access_mode=access_mode, **kwargs)
 
 
-# ---------------------------------------------------------------------------
-# One-shot routed connection (Tier A): connect() picks the instance.
-# ---------------------------------------------------------------------------
-
-
 def _routing_connection(access_mode=None):
     """A routed ``MemgraphConnection`` against the cluster coordinator."""
     return MemgraphConnection(
@@ -92,11 +87,6 @@ def test_routed_write_is_readable_from_main():
     assert result[0]["value"] == "ok"
 
 
-# ---------------------------------------------------------------------------
-# The Memgraph vendor client with routing (Tier A plumbing).
-# ---------------------------------------------------------------------------
-
-
 def _vendor_role(db):
     row = list(db.execute_and_fetch("SHOW REPLICATION ROLE"))[0]
     return next(iter(row.values()))
@@ -115,15 +105,6 @@ def test_vendor_read_client_targets_replica():
 @requires_cluster
 def test_vendor_default_access_mode_targets_main():
     assert _vendor_role(_routing_memgraph()) == "main"
-
-
-# ---------------------------------------------------------------------------
-# Managed transactions via the long-lived Router (Tier C).
-#
-# execute_write / execute_read take a callable work(tx); tx exposes the usual
-# execute / execute_and_fetch, and execute_and_fetch yields gqlalchemy-converted
-# rows. The work may run more than once on retry, so it must be idempotent.
-# ---------------------------------------------------------------------------
 
 
 @requires_cluster

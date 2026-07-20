@@ -302,10 +302,6 @@ class Memgraph(DatabaseClient):
 
     @database_error_handler
     def _run_managed(self, run, work):
-        # Router-level errors (e.g. an exhausted retry budget -> TransientError)
-        # are mapped to the gqlalchemy hierarchy here. The routing check in
-        # _get_router runs outside this wrapper so a misconfiguration surfaces
-        # as GQLAlchemyError, not a database error.
         return run(lambda cursor: work(_RoutedTransaction(cursor)))
 
     def get_routing_table(self):
