@@ -137,6 +137,33 @@ class MemgraphConnection(Connection):
         return connection
 
 
+class _RoutedTransaction:
+    """The object handed to an ``execute_read`` / ``execute_write`` work function.
+
+    Wraps the pymgclient cursor of a managed transaction and exposes the same
+    ``execute`` / ``execute_and_fetch`` surface as :class:`MemgraphConnection`,
+    converting rows to gqlalchemy values. The surrounding transaction is managed
+    by the router (begun, committed and retried around the work), so the work
+    must not commit or roll back itself.
+    """
+
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def execute(self, query: str, parameters: Dict[str, Any] = {}) -> None:
+        """Executes Cypher query without returning any results."""
+        self._cursor.execute(query, parameters)
+
+    def execute_and_fetch(self, query: str, parameters: Dict[str, Any] = {}) -> Iterator[Dict[str, Any]]:
+        """Executes Cypher query and returns iterator of results."""
+        self._cursor.execute(query, parameters)
+        while True:
+            row = self._cursor.fetchone()
+            if row is None:
+                break
+            yield {dsc.name: _convert_memgraph_value(row[index]) for index, dsc in enumerate(self._cursor.description)}
+
+
 def _convert_memgraph_value(value: Any) -> Any:
     """Converts Memgraph objects to custom Node/Relationship objects."""
     if isinstance(value, mgclient.Relationship):
