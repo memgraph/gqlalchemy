@@ -11,7 +11,7 @@ authors = [
     { name = "Josip Mrden", email = "josip.mrden@memgraph.io" },
 ]
 dependencies = [
-    "pymgclient>=1.5.1,<2.0.0",
+    "pymgclient>=1.6.0,<2.0.0",
     "networkx>=2.5.1,<4.0.0",
     "pydantic>=2.3.0,<3.0.0",
     "psutil>=5.9,<7.0",
@@ -94,10 +94,6 @@ explicit = true
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
-# TEMPORARY: client-side routing (connect(routing=True, ...)) is not yet in a
-# released pymgclient. Track the branch so routing can be developed/tested;
-# drop this and bump the "pymgclient" pin above once it ships in a release.
-pymgclient = { git = "https://github.com/memgraph/pymgclient.git", branch = "bolt-routing-wrapper" }
 
 [tool.uv]
 constraint-dependencies = [
