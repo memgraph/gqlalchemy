@@ -287,7 +287,7 @@ class Memgraph(DatabaseClient):
         The router wraps the work in a transaction, commits it, and retries
         transient failover conditions (with a routing refresh and capped
         exponential backoff). Because the work may run more than once, make it
-        idempotent (e.g. ``MERGE`` rather than ``CREATE``). Requires routing=True.
+        idempotent (e.g. ``MERGE`` rather than ``CREATE``). Requires ``routing=True``.
         """
         router = self._get_router()
         return self._run_managed(router.execute_write, work)
@@ -295,7 +295,7 @@ class Memgraph(DatabaseClient):
     def execute_read(self, work):
         """Runs ``work(tx)`` as a managed read against a replica.
 
-        Same retry semantics as :meth:`execute_write`. Requires routing=True.
+        Same retry semantics as :meth:`execute_write`. Requires ``routing=True``.
         """
         router = self._get_router()
         return self._run_managed(router.execute_read, work)
@@ -306,7 +306,7 @@ class Memgraph(DatabaseClient):
 
     def get_routing_table(self):
         """Returns a snapshot of the cluster routing table as a dict with
-        ``ttl``, ``write``, ``read`` and ``route`` entries. Requires routing=True.
+        ``ttl``, ``write``, ``read`` and ``route`` entries. Requires ``routing=True``.
         """
         return self._get_router().routing_table
 

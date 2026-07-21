@@ -141,7 +141,7 @@ class _RoutedTransaction:
     """The object handed to an ``execute_read`` / ``execute_write`` work function.
 
     Wraps the pymgclient cursor of a managed transaction and exposes the same
-    ``execute`` / ``execute_and_fetch`` surface as :class:`MemgraphConnection`,
+    ``execute`` / ``execute_and_fetch`` surface as ``class MemgraphConnection()``,
     converting rows to gqlalchemy values. The surrounding transaction is managed
     by the router (begun, committed and retried around the work), so the work
     must not commit or roll back itself.

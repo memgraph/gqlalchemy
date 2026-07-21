@@ -102,7 +102,7 @@ Runs ``work(tx)`` as a managed write against the main.
 The router wraps the work in a transaction, commits it, and retries
 transient failover conditions (with a routing refresh and capped
 exponential backoff). Because the work may run more than once, make it
-idempotent (e.g. ``MERGE`` rather than ``CREATE``). Requires routing=True.
+idempotent (e.g. ``MERGE`` rather than ``CREATE``). Requires ``routing=True``.
 
 #### execute\_read
 
@@ -112,7 +112,7 @@ def execute_read(work)
 
 Runs ``work(tx)`` as a managed read against a replica.
 
-Same retry semantics as :meth:`execute_write`. Requires routing=True.
+Same retry semantics as :meth:`execute_write`. Requires ``routing=True``.
 
 #### get\_routing\_table
 
@@ -121,7 +121,7 @@ def get_routing_table()
 ```
 
 Returns a snapshot of the cluster routing table as a dict with
-``ttl``, ``write``, ``read`` and ``route`` entries. Requires routing=True.
+``ttl``, ``write``, ``read`` and ``route`` entries. Requires ``routing=True``.
 
 #### create\_stream
 
