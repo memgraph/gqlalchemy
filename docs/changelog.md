@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.10.0 - July 22, 2026
+
+### Features and improvements
+
+
+* feat: support bolt+routing (#391)
+* fix publish docs (#389)
+
+
 ## v1.9.0 - June 23, 2026
 
 ### Features and improvements
