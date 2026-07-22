@@ -6,7 +6,6 @@
 
 
 * feat: support bolt+routing (#391)
-* fix publish docs (#389)
 
 
 ## v1.9.0 - June 23, 2026
