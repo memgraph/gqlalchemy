@@ -37,7 +37,12 @@ from gqlalchemy.instance_runner import (  # noqa F401
     wait_for_docker_container,
     wait_for_port,
 )
-from gqlalchemy.exceptions import GQLAlchemyError, GQLAlchemyWarning  # noqa F401
+from gqlalchemy.exceptions import (  # noqa F401
+    GQLAlchemyError,
+    GQLAlchemyWarning,
+    GQLAlchemyDatabaseError,
+    GQLAlchemyTransientError,
+)
 
 from gqlalchemy.query_builders import (  # noqa F401
     neo4j_query_builder,

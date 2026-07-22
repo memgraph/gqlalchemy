@@ -3,6 +3,14 @@ sidebar_label: exceptions
 title: gqlalchemy.exceptions
 ---
 
+## GQLAlchemyTransientError Objects
+
+```python
+class GQLAlchemyTransientError(GQLAlchemyDatabaseError)
+```
+
+A database error that is worth retrying.
+
 #### connection\_handler
 
 ```python

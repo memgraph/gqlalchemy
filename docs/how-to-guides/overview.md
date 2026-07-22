@@ -82,6 +82,15 @@ statistics for index optimization.
 
 - [**Manage Memgraph database**](manage-database.md)
 
+## Connect to a high-availability cluster
+
+GQLAlchemy can connect to a Memgraph high-availability cluster through a
+coordinator and route each query to the right data instance — writes to the
+main, reads to a replica — including failover-safe managed transactions that
+retry transient cluster conditions automatically.
+
+- [**Connect to a high-availability cluster**](high-availability.md)
+
 ## Transform Python graphs into Memgraph graphs
 
 GQLAlchemy holds transformations that can transform NetworkX, PyG and DGL graphs

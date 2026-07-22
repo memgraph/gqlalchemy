@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Memgraph Ltd. [https://memgraph.com]
+# Copyright (c) 2016-2026 Memgraph Ltd. [https://memgraph.com]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,11 +70,15 @@ class MemgraphConnection(Connection):
         encrypted: bool,
         client_name: Optional[str] = None,
         lazy: bool = False,
+        routing: bool = False,
+        access_mode: Optional[str] = None,
     ):
         super().__init__(
             host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
         )
         self.lazy = lazy
+        self.routing = routing
+        self.access_mode = access_mode
         self._connection = self._create_connection()
 
     @database_error_handler
@@ -101,19 +105,59 @@ class MemgraphConnection(Connection):
 
     @connection_handler
     def _create_connection(self) -> Connection:
-        """Creates and returns a connection with Memgraph."""
+        """Creates and returns a connection with Memgraph.
+
+        When ``routing`` is enabled the ``host``/``port`` are treated as a
+        cluster coordinator and the connection is routed to a data instance
+        serving ``access_mode`` (writes to the main, reads to a replica); see
+        pymgclient's ``connect(routing=True, ...)``.
+        """
         sslmode = mgclient.MG_SSLMODE_REQUIRE if self.encrypted else mgclient.MG_SSLMODE_DISABLE
-        connection = mgclient.connect(
+        kwargs = dict(
             host=self.host,
             port=self.port,
             username=self.username,
             password=self.password,
             sslmode=sslmode,
-            lazy=self.lazy,
             client_name=self.client_name,
         )
+
+        if self.routing:
+            kwargs["routing"] = True
+            if self.access_mode is not None:
+                kwargs["access_mode"] = self.access_mode
+        else:
+            kwargs["lazy"] = self.lazy
+        connection = mgclient.connect(**kwargs)
         connection.autocommit = True
         return connection
+
+
+class _RoutedTransaction:
+    """The object handed to an ``execute_read`` / ``execute_write`` work function.
+
+    Wraps the pymgclient cursor of a managed transaction and exposes the same
+    ``execute`` / ``execute_and_fetch`` surface as ``class MemgraphConnection()``,
+    converting rows to gqlalchemy values. The surrounding transaction is managed
+    by the router (begun, committed and retried around the work), so the work
+    must not commit or roll back itself.
+    """
+
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def execute(self, query: str, parameters: Dict[str, Any] = {}) -> None:
+        """Executes Cypher query without returning any results."""
+        self._cursor.execute(query, parameters)
+
+    def execute_and_fetch(self, query: str, parameters: Dict[str, Any] = {}) -> Iterator[Dict[str, Any]]:
+        """Executes Cypher query and returns iterator of results."""
+        self._cursor.execute(query, parameters)
+        while True:
+            row = self._cursor.fetchone()
+            if row is None:
+                break
+            yield {dsc.name: _convert_memgraph_value(row[index]) for index, dsc in enumerate(self._cursor.description)}
 
 
 def _convert_memgraph_value(value: Any) -> Any:
