@@ -72,7 +72,6 @@ class MemgraphConnection(Connection):
         lazy: bool = False,
         routing: bool = False,
         access_mode: Optional[str] = None,
-        resolver: Optional[Any] = None,
     ):
         super().__init__(
             host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
@@ -80,7 +79,6 @@ class MemgraphConnection(Connection):
         self.lazy = lazy
         self.routing = routing
         self.access_mode = access_mode
-        self.resolver = resolver
         self._connection = self._create_connection()
 
     @database_error_handler
@@ -128,8 +126,6 @@ class MemgraphConnection(Connection):
             kwargs["routing"] = True
             if self.access_mode is not None:
                 kwargs["access_mode"] = self.access_mode
-            if self.resolver is not None:
-                kwargs["resolver"] = self.resolver
         else:
             kwargs["lazy"] = self.lazy
         connection = mgclient.connect(**kwargs)

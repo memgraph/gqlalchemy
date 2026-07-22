@@ -11,8 +11,7 @@
 # gets a distinct port. The ports sit above the ones the rest of the test
 # suite uses (7687 for the standalone Memgraph, 7688 for Neo4j) so the cluster
 # can run alongside them. The advertised addresses are 127.0.0.1:<port>, which
-# are directly reachable from the test runner on the host, so no address
-# resolver is needed.
+# are directly reachable from the test runner on the host.
 #
 # Usage:
 #   scripts/ha_cluster.sh start   # start, register the topology, wait to converge

@@ -127,7 +127,6 @@ class Memgraph(DatabaseClient):
         lazy: bool = mg_consts.MG_LAZY,
         routing: bool = False,
         access_mode: Optional[str] = None,
-        resolver: Optional[object] = None,
         max_retries: Optional[int] = None,
         retry_backoff: Optional[float] = None,
         retry_backoff_cap: Optional[float] = None,
@@ -138,7 +137,6 @@ class Memgraph(DatabaseClient):
         self._lazy = lazy
         self._routing = routing
         self._access_mode = access_mode
-        self._resolver = resolver
         self._max_retries = max_retries
         self._retry_backoff = retry_backoff
         self._retry_backoff_cap = retry_backoff_cap
@@ -246,7 +244,6 @@ class Memgraph(DatabaseClient):
             client_name=self._client_name,
             routing=self._routing,
             access_mode=self._access_mode,
-            resolver=self._resolver,
         )
         return MemgraphConnection(**args)
 
@@ -272,7 +269,6 @@ class Memgraph(DatabaseClient):
             # Forward the routing options only when set; the Router applies its
             # own defaults for anything omitted.
             optional = {
-                "resolver": self._resolver,
                 "max_retries": self._max_retries,
                 "retry_backoff": self._retry_backoff,
                 "retry_backoff_cap": self._retry_backoff_cap,
@@ -382,7 +378,6 @@ class Memgraph(DatabaseClient):
             client_name=self._client_name,
             routing=self._routing,
             access_mode=self._access_mode,
-            resolver=self._resolver,
         )
         return MemgraphConnection(**args)
 

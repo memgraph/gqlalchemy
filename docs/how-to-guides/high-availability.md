@@ -10,7 +10,6 @@ each query to the right data instance — writes to the main, reads to a replica
   - [Choose an access mode](#choose-an-access-mode)
   - [Run managed transactions](#run-managed-transactions)
   - [Handle transient errors and tune retries](#handle-transient-errors-and-tune-retries)
-  - [Resolve advertised addresses](#resolve-advertised-addresses)
   - [Inspect the routing table](#inspect-the-routing-table)
 
 >If you have any more questions, join our community and ping us on [Discord](https://discord.gg/memgraph).
@@ -146,23 +145,6 @@ db = Memgraph(
     retry_backoff=1.0,
     retry_backoff_cap=15.0,
 )
-```
-
-## Resolve advertised addresses
-
-If the addresses the cluster advertises are not directly reachable from the
-client (for example in-cluster names reached from outside, or a port-forward),
-pass a `resolver` — a callable that maps an advertised `"host:port"` to a list
-of reachable targets to try:
-
-```python
-from gqlalchemy import Memgraph
-
-def resolver(advertised):
-    mapping = {"memgraph-data-0.default.svc.cluster.local:7687": "127.0.0.1:7687"}
-    return [mapping.get(advertised, advertised)]
-
-db = Memgraph(host="127.0.0.1", port=7687, routing=True, resolver=resolver)
 ```
 
 ## Inspect the routing table

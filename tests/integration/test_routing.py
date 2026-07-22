@@ -26,7 +26,7 @@ import os
 import mgclient
 import pytest
 
-from gqlalchemy import Memgraph, Node, GQLAlchemyError, GQLAlchemyTransientError
+from gqlalchemy import Memgraph, Node, GQLAlchemyError
 from gqlalchemy.connection import MemgraphConnection
 
 HA_HOST = os.environ.get("MEMGRAPH_HA_COORDINATOR_HOST")
@@ -140,36 +140,6 @@ def test_execute_read_converts_graph_values():
     # Read the node back on the main (execute_write) to avoid replica lag.
     node = db.execute_write(lambda tx: list(tx.execute_and_fetch("MATCH (n:RoutingTest {id: 4}) RETURN n"))[0]["n"])
     assert isinstance(node, Node)
-
-
-@requires_cluster
-def test_execute_read_fails_over_across_replicas():
-    # Make the first replica the router tries unreachable; the managed read must
-    # refresh routing and succeed against another replica.
-    killed = []
-
-    def resolver(address):
-        if not killed:
-            killed.append(address)
-        return ["127.0.0.1:1"] if address == killed[0] else [address]
-
-    db = _routing_memgraph(mgclient.ACCESS_MODE_READ, resolver=resolver)
-    result = db.execute_read(lambda tx: list(tx.execute_and_fetch("RETURN 1 AS one"))[0]["one"])
-    assert result == 1
-
-
-@requires_cluster
-def test_execute_write_exhausts_retries_raises_transient():
-    # Nothing is reachable, so the managed write exhausts its retry budget and
-    # surfaces the transient classification.
-    db = _routing_memgraph(
-        resolver=lambda address: ["127.0.0.1:1"],
-        max_retries=1,
-        retry_backoff=0.01,
-        retry_backoff_cap=0.02,
-    )
-    with pytest.raises(GQLAlchemyTransientError):
-        db.execute_write(lambda tx: tx.execute("MERGE (:RoutingTest {id: 5})"))
 
 
 @requires_cluster
