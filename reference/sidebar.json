@@ -1,0 +1,76 @@
+{
+  "items": [
+    {
+      "items": [
+        {
+          "items": [
+            "reference/gqlalchemy/graph_algorithms/integrated_algorithms",
+            "reference/gqlalchemy/graph_algorithms/query_builder",
+            "reference/gqlalchemy/graph_algorithms/query_modules"
+          ],
+          "label": "gqlalchemy.graph_algorithms",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/gqlalchemy/query_builders/declarative_base",
+            "reference/gqlalchemy/query_builders/memgraph_query_builder"
+          ],
+          "label": "gqlalchemy.query_builders",
+          "type": "category"
+        },
+        {
+          "items": [
+            {
+              "items": [
+                "reference/gqlalchemy/transformations/export/graph_transporter",
+                "reference/gqlalchemy/transformations/export/transporter"
+              ],
+              "label": "gqlalchemy.transformations.export",
+              "type": "category"
+            },
+            {
+              "items": [
+                "reference/gqlalchemy/transformations/importing/graph_importer",
+                "reference/gqlalchemy/transformations/importing/loaders"
+              ],
+              "label": "gqlalchemy.transformations.importing",
+              "type": "category"
+            },
+            {
+              "items": [
+                "reference/gqlalchemy/transformations/translators/dgl_translator",
+                "reference/gqlalchemy/transformations/translators/nx_translator",
+                "reference/gqlalchemy/transformations/translators/pyg_translator",
+                "reference/gqlalchemy/transformations/translators/translator"
+              ],
+              "label": "gqlalchemy.transformations.translators",
+              "type": "category"
+            }
+          ],
+          "label": "gqlalchemy.transformations",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/gqlalchemy/vendors/database_client",
+            "reference/gqlalchemy/vendors/memgraph",
+            "reference/gqlalchemy/vendors/neo4j"
+          ],
+          "label": "gqlalchemy.vendors",
+          "type": "category"
+        },
+        "reference/gqlalchemy/connection",
+        "reference/gqlalchemy/disk_storage",
+        "reference/gqlalchemy/exceptions",
+        "reference/gqlalchemy/instance_runner",
+        "reference/gqlalchemy/models",
+        "reference/gqlalchemy/utilities"
+      ],
+      "label": "gqlalchemy",
+      "type": "category"
+    }
+  ],
+  "label": "Reference",
+  "type": "category"
+}
