@@ -38,6 +38,7 @@ nav:
   - Use on-disk storage: 'how-to-guides/on-disk-storage/on-disk-storage.md'
   - Create a graph projection: 'how-to-guides/query-builder/graph-projection.md'
   - Manage Memgraph database: 'how-to-guides/manage-database.md'
+  - Connect to a high-availability cluster: 'how-to-guides/high-availability.md'
   - Translate Python graphs:
     - Import Python graphs into Memgraph: 'how-to-guides/translators/import-python-graphs.md'
     - Export data from Memgraph into Python graphs: 'how-to-guides/translators/export-python-graphs.md'

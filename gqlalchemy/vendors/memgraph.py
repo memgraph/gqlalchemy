@@ -17,13 +17,16 @@ import os
 import sqlite3
 from typing import List, Optional, Union
 
-from gqlalchemy.connection import Connection, MemgraphConnection
+import mgclient
+
+from gqlalchemy.connection import Connection, MemgraphConnection, _RoutedTransaction
 from gqlalchemy.disk_storage import OnDiskPropertyDatabase
 from gqlalchemy.exceptions import (
     GQLAlchemyError,
     GQLAlchemyFileNotFoundError,
     GQLAlchemyOnDiskPropertyDatabaseNotDefinedError,
     GQLAlchemyUniquenessConstraintError,
+    database_error_handler,
 )
 from gqlalchemy.models import (
     Index,
@@ -122,11 +125,22 @@ class Memgraph(DatabaseClient):
         encrypted: bool = mg_consts.MG_ENCRYPTED,
         client_name: str = mg_consts.MG_CLIENT_NAME,
         lazy: bool = mg_consts.MG_LAZY,
+        routing: bool = False,
+        access_mode: Optional[str] = None,
+        max_retries: Optional[int] = None,
+        retry_backoff: Optional[float] = None,
+        retry_backoff_cap: Optional[float] = None,
     ):
         super().__init__(
             host=host, port=port, username=username, password=password, encrypted=encrypted, client_name=client_name
         )
         self._lazy = lazy
+        self._routing = routing
+        self._access_mode = access_mode
+        self._max_retries = max_retries
+        self._retry_backoff = retry_backoff
+        self._retry_backoff_cap = retry_backoff_cap
+        self._router = None
         self._on_disk_db = None
 
     @staticmethod
@@ -228,8 +242,69 @@ class Memgraph(DatabaseClient):
             password=self._password,
             encrypted=self._encrypted,
             client_name=self._client_name,
+            routing=self._routing,
+            access_mode=self._access_mode,
         )
         return MemgraphConnection(**args)
+
+    def _get_router(self):
+        """Lazily builds and caches the long-lived routing engine (a Router).
+
+        Raises GQLAlchemyError if this client was not created with routing=True.
+        """
+        if not self._routing:
+            raise GQLAlchemyError(
+                "Managed transactions (execute_read/execute_write) and get_routing_table() require routing=True."
+            )
+        if self._router is None:
+            sslmode = mgclient.MG_SSLMODE_REQUIRE if self._encrypted else mgclient.MG_SSLMODE_DISABLE
+            kwargs = dict(
+                host=self._host,
+                port=self._port,
+                username=self._username,
+                password=self._password,
+                sslmode=sslmode,
+                client_name=self._client_name,
+            )
+            # Forward the routing options only when set; the Router applies its
+            # own defaults for anything omitted.
+            optional = {
+                "max_retries": self._max_retries,
+                "retry_backoff": self._retry_backoff,
+                "retry_backoff_cap": self._retry_backoff_cap,
+            }
+            kwargs.update({key: value for key, value in optional.items() if value is not None})
+            self._router = mgclient.Router(**kwargs)
+        return self._router
+
+    def execute_write(self, work):
+        """Runs ``work(tx)`` as a managed write against the main.
+
+        The router wraps the work in a transaction, commits it, and retries
+        transient failover conditions (with a routing refresh and capped
+        exponential backoff). Because the work may run more than once, make it
+        idempotent (e.g. ``MERGE`` rather than ``CREATE``). Requires ``routing=True``.
+        """
+        router = self._get_router()
+        return self._run_managed(router.execute_write, work)
+
+    def execute_read(self, work):
+        """Runs ``work(tx)`` as a managed read against a replica.
+
+        Same retry semantics as :meth:`execute_write`. Requires ``routing=True``.
+        """
+        router = self._get_router()
+        return self._run_managed(router.execute_read, work)
+
+    @database_error_handler
+    def _run_managed(self, run, work):
+        return run(lambda cursor: work(_RoutedTransaction(cursor)))
+
+    def get_routing_table(self):
+        """Returns a snapshot of the cluster routing table as a dict with
+        ``ttl``, ``write``, ``read`` and ``route`` entries. Requires ``routing=True``.
+        """
+        return self._get_router().routing_table
 
     def create_stream(self, stream: MemgraphStream) -> None:
         """Create a stream."""
@@ -301,6 +376,8 @@ class Memgraph(DatabaseClient):
             password=self._password,
             encrypted=self._encrypted,
             client_name=self._client_name,
+            routing=self._routing,
+            access_mode=self._access_mode,
         )
         return MemgraphConnection(**args)
 

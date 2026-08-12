@@ -1,6 +1,6 @@
 [project]
 name = "GQLAlchemy"
-version = "1.9.0"
+version = "1.10.0"
 description = "GQLAlchemy is a library developed to assist with writing and running queries in Memgraph."
 readme = "README.md"
 license = "Apache-2.0"
@@ -11,7 +11,7 @@ authors = [
     { name = "Josip Mrden", email = "josip.mrden@memgraph.io" },
 ]
 dependencies = [
-    "pymgclient>=1.5.1,<2.0.0",
+    "pymgclient>=1.6.0,<2.0.0",
     "networkx>=2.5.1,<4.0.0",
     "pydantic>=2.3.0,<3.0.0",
     "psutil>=5.9,<7.0",

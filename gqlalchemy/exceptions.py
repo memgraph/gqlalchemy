@@ -15,6 +15,8 @@
 from enum import Enum
 import time
 
+import mgclient
+
 DATABASE_MISSING_IN_FIELD_ERROR_MESSAGE = """
 Can't have an index on a property without providing the database `db` object.
 Define your property as:
@@ -172,6 +174,12 @@ class GQLAlchemyDatabaseError(GQLAlchemyError):
         self.message = message
 
 
+class GQLAlchemyTransientError(GQLAlchemyDatabaseError):
+    """A database error that is worth retrying."""
+
+    pass
+
+
 class GQLAlchemyOperatorTypeError(GQLAlchemyError):
     def __init__(self, clause) -> None:
         self.message = OPERATOR_TYPE_ERROR.format(clause=clause)
@@ -212,6 +220,8 @@ def database_error_handler(func):
     def inner_function(*args, **kwargs):
         try:
             return func(*args, **kwargs)
+        except mgclient.TransientError as e:
+            raise GQLAlchemyTransientError(e) from e
         except Exception as e:
             raise GQLAlchemyDatabaseError(e) from e
 
