@@ -6,6 +6,7 @@
 
 
 * feat: support bolt+routing (#391)
+* Added `DATA DIRECTORY LOCK STATUS` support to the query builder.
 
 
 ## v1.9.0 - June 23, 2026

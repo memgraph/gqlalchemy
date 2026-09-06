@@ -35,12 +35,26 @@ Through this guide, you will learn how to use the GQLAlchemy query builder to:
     - [**Call procedure with no arguments**](#call-procedure-with-no-arguments)
     - [**Call procedure with arguments**](#call-procedure-with-arguments)
 - [**Load CSV file**](#load-csv-file)
+- [**Check the data directory lock status**](#check-the-data-directory-lock-status)
 
 >Hopefully, this guide will teach you how to properly use GQLAlchemy query builder. If you
 >have any more questions, join our community and ping us on [Discord](https://discord.gg/memgraph).
 
 !!! info 
     To test the above features, you must install [GQLAlchemy](../installation.md) and have a running Memgraph instance. If you're unsure how to run Memgraph, check out the Memgraph [Quick start](https://memgraph.com/docs/getting-started)).
+
+
+## Check the data directory lock status
+
+Use `data_directory_lock_status()` to build and execute Memgraph's `DATA DIRECTORY LOCK STATUS` query:
+
+```python
+from gqlalchemy import QueryBuilder
+
+status = list(QueryBuilder().data_directory_lock_status().execute())
+```
+
+The method uses the query builder's connection and returns the rows reported by Memgraph.
 
 
 ## Create nodes and relationships
@@ -1604,4 +1618,3 @@ load_csv(
 
 >Hopefully, this guide has taught you how to properly use GQLAlchemy query builder. If you
 >have any more questions, join our community and ping us on [Discord](https://discord.gg/memgraph).
-

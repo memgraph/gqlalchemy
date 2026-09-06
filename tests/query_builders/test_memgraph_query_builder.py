@@ -37,6 +37,16 @@ from gqlalchemy.graph_algorithms.integrated_algorithms import (
 from gqlalchemy.utilities import CypherVariable, RelationshipDirection
 
 
+def test_data_directory_lock_status():
+    query_builder = QueryBuilder().data_directory_lock_status()
+
+    with patch.object(Memgraph, "execute_and_fetch", return_value=iter([{"locked": True}])) as mock:
+        result = list(query_builder.execute())
+
+    mock.assert_called_once_with(" DATA DIRECTORY LOCK STATUS; ")
+    assert result == [{"locked": True}]
+
+
 def test_invalid_match_chain_throws_exception():
     with pytest.raises(InvalidMatchChainException):
         QueryBuilder().node(labels=":Label", variable="n").node(labels=":Label", variable="m").return_()
