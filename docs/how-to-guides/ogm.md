@@ -81,7 +81,19 @@ class ChatsWith(Relationship, type="CHATS_WITH"):
 ```
 
 !!! info 
-    Objects are modeled using GQLAlchemy’s Object Graph Mapper (OGM) which provides schema validation, so you can be sure that the data inside Memgraph is accurate. If you tried saving data that is not following the defined schema, you will get a `ValidationError`. 
+Objects are modeled using GQLAlchemy’s Object Graph Mapper (OGM) which provides schema validation, so you can be sure that the data inside Memgraph is accurate. If you tried saving data that is not following the defined schema, you will get a `ValidationError`.
+
+NumPy arrays can be declared directly as node or relationship properties. GQLAlchemy serializes arrays, including multidimensional arrays, as Cypher lists when the object is saved:
+
+```python
+import numpy as np
+
+class Embedding(Node):
+    values: np.ndarray
+
+embedding = Embedding(values=np.array([0.1, 0.2, 0.3]))
+embedding.save(db)
+```
 
 To use the above classes, you need to [save](#save-nodes-and-relationships) or [load](#load-nodes-and-relationships) data first. 
 

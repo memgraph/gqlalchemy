@@ -11,9 +11,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 import pytest
 
-from gqlalchemy import Node
+from gqlalchemy import Node, Relationship
+
+
+@pytest.mark.parametrize(
+    "values, expected",
+    [
+        (np.array([1, 2, 3]), "[1, 2, 3]"),
+        (np.array([[1.5, 2.5], [3.5, 4.5]]), "[[1.5, 2.5], [3.5, 4.5]]"),
+        (np.array(["first", "second"]), '["first", "second"]'),
+        (np.array([]), "[]"),
+    ],
+)
+@pytest.mark.parametrize("model_base", [Node, Relationship])
+def test_numpy_array_property(values, expected, model_base):
+    class Sample(model_base):
+        values: np.ndarray
+
+    sample = Sample(values=values)
+
+    assert sample.values is values
+    assert sample._get_cypher_set_properties("sample") == f"  SET sample.values = {expected} "
 
 
 @pytest.mark.parametrize("database", ["neo4j", "memgraph"], indirect=True)

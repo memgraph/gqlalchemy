@@ -21,6 +21,7 @@ import json
 import types
 from typing import Annotated, Any, ClassVar, Dict, Iterable, List, Optional, Set, Tuple, Union, get_args, get_origin
 
+import numpy as np
 from pydantic import BaseModel, ConfigDict, Field as PydanticField, PrivateAttr  # noqa F401
 from pydantic_core import PydanticUndefined
 
@@ -431,7 +432,7 @@ class MemgraphTrigger:
 
 class GraphObject(BaseModel):
     _subtypes_: ClassVar[Dict[str, Any]] = {}
-    model_config = ConfigDict(extra="allow", coerce_numbers_to_str=True)
+    model_config = ConfigDict(extra="allow", coerce_numbers_to_str=True, arbitrary_types_allowed=True)
 
     def __init__(self, **data):
         model_fields = _get_model_fields(type(self))
@@ -519,7 +520,7 @@ class GraphObject(BaseModel):
         return cls.model_validate(obj)
 
     def escape_value(
-        self, value: Union[None, bool, int, float, str, list, dict, datetime, timedelta, date, time]
+        self, value: Union[None, bool, int, float, str, list, dict, np.ndarray, datetime, timedelta, date, time]
     ) -> str:
         value_type = type(value)
 
@@ -535,6 +536,8 @@ class GraphObject(BaseModel):
             return json.dumps(value)
         elif isinstance(value, list):
             return "[" + ", ".join(self.escape_value(val) for val in value) + "]"
+        elif isinstance(value, np.ndarray):
+            return self.escape_value(value.tolist())
         elif value_type == dict:
             return "{" + ", ".join(f"{key}: {self.escape_value(val)}" for key, val in value.items()) + "}"
 
