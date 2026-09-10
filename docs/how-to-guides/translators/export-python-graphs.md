@@ -29,13 +29,13 @@ In this guide you will learn how to:
 You need **Memgraph Platform** running, which includes both the MAGE library and Memgraph Lab, a visual interface. To run it on Linux/macOS, run the following in your terminal:
 
 ```
-curl https://install.memgraph.com | sh
+curl -sSf https://install.memgraph.com | sh
 ```
 
 To run it on Windows, execute the following command in the console:
 
 ```
-iwr https://windows.memgraph.com | iex
+iwr https://install.memgraph.com/windows -useb | iex
 ```
 
 The above command runs a script that downloads a Docker Compose file to your system, builds and starts `memgraph-mage` and `memgraph-lab` Docker services in two separate containers. 
