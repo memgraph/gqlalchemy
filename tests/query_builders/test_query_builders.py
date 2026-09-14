@@ -14,7 +14,7 @@
 
 import pytest
 from typing import Optional
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from datetime import datetime
 
 from gqlalchemy.exceptions import (
@@ -26,6 +26,7 @@ from gqlalchemy.exceptions import (
     GQLAlchemyOperatorTypeError,
 )
 from gqlalchemy import Field, InvalidMatchChainException, Node, QueryBuilder, Relationship
+from gqlalchemy.query_builders.neo4j_query_builder import Neo4jQueryBuilder
 from gqlalchemy.exceptions import GQLAlchemyMissingOrder, GQLAlchemyOrderByTypeError
 from gqlalchemy.query_builders.declarative_base import Operator, Order, _ResultPartialQuery
 from gqlalchemy.utilities import CypherVariable
@@ -1789,3 +1790,55 @@ class TestMemgraphNeo4jQueryBuilder:
             query_builder.execute()
 
         mock.assert_called_with(expected_query)
+
+
+@pytest.mark.parametrize("builder_class", [QueryBuilder, Neo4jQueryBuilder])
+class TestOnCreateOnMatch:
+    """Offline tests for the ON CREATE and ON MATCH prefix clauses (issue #252).
+
+    These construct the query builders with a mocked connection so no database
+    is required, and assert on the generated Cypher directly.
+    """
+
+    @pytest.mark.parametrize("prefix, keyword", [("on_create", "ON CREATE"), ("on_match", "ON MATCH")])
+    def test_prefix_clause(self, builder_class, prefix, keyword):
+        query_builder = getattr(builder_class(connection=MagicMock()), prefix)()
+        expected_query = f" {keyword} "
+
+        assert query_builder.construct_query() == expected_query
+
+    @pytest.mark.parametrize("prefix, keyword", [("on_create", "ON CREATE"), ("on_match", "ON MATCH")])
+    def test_prefix_set_literal(self, builder_class, prefix, keyword):
+        query_builder = getattr(builder_class(connection=MagicMock()), prefix)().set_(
+            item="n.name", operator=Operator.ASSIGNMENT, literal="Ana"
+        )
+        expected_query = f' {keyword} SET n.name = "Ana"'
+
+        assert query_builder.construct_query() == expected_query
+
+    @pytest.mark.parametrize("operator", [Operator.ASSIGNMENT, Operator.INCREMENT])
+    @pytest.mark.parametrize("prefix, keyword", [("on_create", "ON CREATE"), ("on_match", "ON MATCH")])
+    def test_prefix_set_expression(self, builder_class, prefix, keyword, operator):
+        query_builder = getattr(builder_class(connection=MagicMock()), prefix)().set_(
+            item="n.count", operator=operator, expression="value"
+        )
+        expected_query = f" {keyword} SET n.count {operator.value} value"
+
+        assert query_builder.construct_query() == expected_query
+
+    def test_merge_on_create_on_match_chained(self, builder_class):
+        connection = MagicMock()
+        query_builder = (
+            builder_class(connection=connection)
+            .merge()
+            .node(variable="n")
+            .on_create()
+            .set_(item="n.created", operator=Operator.ASSIGNMENT, literal=1)
+            .on_match()
+            .set_(item="n.updated", operator=Operator.ASSIGNMENT, literal=2)
+            .return_()
+        )
+        expected_query = " MERGE (n) ON CREATE SET n.created = 1 ON MATCH SET n.updated = 2 RETURN * "
+        query_builder.execute()
+
+        connection.execute_and_fetch.assert_called_once_with(expected_query)

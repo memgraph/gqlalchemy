@@ -44,6 +44,8 @@ class DeclarativeBaseTypes:
     MATCH = "MATCH"
     MERGE = "MERGE"
     NODE = "NODE"
+    ON_CREATE = "ON CREATE"
+    ON_MATCH = "ON MATCH"
     ORDER_BY = "ORDER BY"
     RELATIONSHIP = "RELATIONSHIP"
     REMOVE = "REMOVE"
@@ -152,6 +154,22 @@ class CreatePartialQuery(PartialQuery):
 
     def construct_query(self) -> str:
         return " CREATE "
+
+
+class OnCreatePartialQuery(PartialQuery):
+    def __init__(self):
+        super().__init__(DeclarativeBaseTypes.ON_CREATE)
+
+    def construct_query(self) -> str:
+        return " ON CREATE "
+
+
+class OnMatchPartialQuery(PartialQuery):
+    def __init__(self):
+        super().__init__(DeclarativeBaseTypes.ON_MATCH)
+
+    def construct_query(self) -> str:
+        return " ON MATCH "
 
 
 class CallPartialQuery(PartialQuery):
@@ -693,6 +711,40 @@ class DeclarativeBase(ABC):
             Cypher: `CREATE (p:Person) RETURN p;`
         """
         self._query.append(CreatePartialQuery())
+
+        return self
+
+    def on_create(self) -> "DeclarativeBase":
+        """Prefix a SET clause so it only applies when a preceding MERGE
+        creates the pattern. Follow this with `set_()`.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Set a property only when the node is created:
+
+            Python: `merge().node(variable='n', labels='Person').where(item='n.name', operator=Operator.EQUAL, literal='Ana').on_create().set_(item='n.created', operator=Operator.ASSIGNMENT, literal=True).return_().execute()`
+            Cypher: `MERGE (n:Person) WHERE n.name = 'Ana' ON CREATE SET n.created = true RETURN *;`
+        """
+        self._query.append(OnCreatePartialQuery())
+
+        return self
+
+    def on_match(self) -> "DeclarativeBase":
+        """Prefix a SET clause so it only applies when a preceding MERGE
+        matches an existing pattern. Follow this with `set_()`.
+
+        Returns:
+            A `DeclarativeBase` instance for constructing queries.
+
+        Example:
+            Set a property only when the node already exists:
+
+            Python: `merge().node(variable='n', labels='Person').where(item='n.name', operator=Operator.EQUAL, literal='Ana').on_match().set_(item='n.seen', operator=Operator.ASSIGNMENT, literal=True).return_().execute()`
+            Cypher: `MERGE (n:Person) WHERE n.name = 'Ana' ON MATCH SET n.seen = true RETURN *;`
+        """
+        self._query.append(OnMatchPartialQuery())
 
         return self
 
