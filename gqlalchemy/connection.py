@@ -24,7 +24,7 @@ from neo4j.graph import Relationship as Neo4jRelationship
 from gqlalchemy.exceptions import database_error_handler, connection_handler
 from gqlalchemy.models import Node, Path, Relationship
 
-__all__ = ("Connection",)
+__all__ = ("Connection", "MemgraphConnection", "Neo4jConnection")
 
 
 class Connection(ABC):

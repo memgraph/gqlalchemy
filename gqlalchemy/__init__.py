@@ -29,6 +29,11 @@ from gqlalchemy.models import (  # noqa F401
     Relationship,
     Field,
 )
+from gqlalchemy.connection import (  # noqa F401
+    Connection,
+    MemgraphConnection,
+    Neo4jConnection,
+)
 from gqlalchemy.disk_storage import SQLitePropertyDatabase  # noqa F401
 from gqlalchemy.instance_runner import (  # noqa F401
     DockerImage,
@@ -67,7 +72,7 @@ from gqlalchemy.vendors.memgraph import Memgraph  # noqa F401
 from gqlalchemy.vendors.neo4j import Neo4j  # noqa F401
 
 warnings.filterwarnings("once", category=GQLAlchemyWarning)
-__all__ = ["Memgraph"]
+__all__ = ["Memgraph", "Neo4j", "Connection", "MemgraphConnection", "Neo4jConnection"]
 _validator_deprecation_warning_shown = False
 
 call = Call
