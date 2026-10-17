@@ -87,17 +87,17 @@ def _is_torch_tensor(value):
 
 
 def handle_datetime(value, config):
-    if value.tzinfo == pytz.UTC:
-        formatted_date = value.strftime("%Y-%m-%dT%H:%M:%SZ")
-        return f"datetime('{formatted_date}')"
-    elif value.tzinfo is not None:
-        tz = value.strftime("%z")
-        tz = f"{tz[:3]}:{tz[3:]}"
-        tz_name = value.tzinfo.zone
-        formatted_date = value.strftime(f"%Y-%m-%dT%H:%M:%S{tz}")
-        return f"datetime('{formatted_date}[{tz_name}]')"
-    else:
+    if value.utcoffset() is None:
         return f"{DatetimeKeywords.LOCALDATETIME.value}('{value.isoformat()}')"
+
+    formatted_date = value.isoformat()
+    if value.tzinfo == pytz.UTC:
+        formatted_date = formatted_date.removesuffix("+00:00") + "Z"
+    else:
+        tz_name = getattr(value.tzinfo, "zone", None) or getattr(value.tzinfo, "key", None)
+        if tz_name:
+            formatted_date += f"[{tz_name}]"
+    return f"datetime('{formatted_date}')"
 
 
 def to_cypher_value(value: Any, config: NetworkXCypherConfig = None) -> str:

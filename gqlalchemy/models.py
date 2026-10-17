@@ -24,6 +24,8 @@ from typing import Annotated, Any, ClassVar, Dict, Iterable, List, Optional, Set
 from pydantic import BaseModel, ConfigDict, Field as PydanticField, PrivateAttr  # noqa F401
 from pydantic_core import PydanticUndefined
 
+from gqlalchemy.utilities import handle_datetime
+
 from gqlalchemy.exceptions import (
     GQLAlchemyError,
     GQLAlchemySubclassNotFoundWarning,
@@ -539,13 +541,7 @@ class GraphObject(BaseModel):
             return "{" + ", ".join(f"{key}: {self.escape_value(val)}" for key, val in value.items()) + "}"
 
         if isinstance(value, datetime):
-            if value.tzinfo is not None:
-                tz_offset = value.strftime("%z")
-                tz_name = value.tzinfo.zone
-                return f"datetime('{value.strftime('%Y-%m-%dT%H:%M:%S')}{tz_offset}[{tz_name}]')"
-            keyword = datetimeKwMapping[datetime]
-            formatted_value = value.isoformat()
-            return f"{keyword}('{formatted_value}')"
+            return handle_datetime(value, None)
         elif isinstance(value, timedelta):
             formatted_value = _format_timedelta(value)
             keyword = datetimeKwMapping[timedelta]
